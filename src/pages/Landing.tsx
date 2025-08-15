@@ -134,7 +134,7 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/cadastro">
+              <Link to="/login">
                 <Button size="lg" variant="hero" className="text-lg px-8">
                   Começar Gratuitamente
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -311,7 +311,7 @@ const Landing = () => {
                     ))}
                   </ul>
                   
-                  <Link to="/cadastro">
+                  <Link to="/login">
                     <Button 
                       className="w-full" 
                       variant={plan.highlighted ? "hero" : "outline"}

@@ -1,0 +1,347 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { 
+  Users, 
+  FileText, 
+  Clock, 
+  CheckCircle, 
+  AlertTriangle,
+  TrendingUp,
+  Filter,
+  Plus,
+  Search,
+  MoreHorizontal,
+  Eye,
+  LogOut
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+const EmpresaDashboard = () => {
+  const stats = [
+    {
+      title: "Total de Clientes",
+      value: "156",
+      change: "+12%",
+      icon: Users,
+      color: "text-primary"
+    },
+    {
+      title: "Documentos Ativos",
+      value: "2.847",
+      change: "+8%",
+      icon: FileText,
+      color: "text-accent"
+    },
+    {
+      title: "Pendentes",
+      value: "23",
+      change: "-15%",
+      icon: Clock,
+      color: "text-orange-500"
+    },
+    {
+      title: "Concluídos Hoje",
+      value: "89",
+      change: "+22%",
+      icon: CheckCircle,
+      color: "text-green-500"
+    }
+  ];
+
+  const recentClients = [
+    {
+      id: 1,
+      name: "TechCorp Ltda",
+      status: "Documentos Pendentes",
+      documents: 12,
+      lastUpdate: "2 horas atrás",
+      priority: "high"
+    },
+    {
+      id: 2,
+      name: "Inovação Digital",
+      status: "Em Análise",
+      documents: 8,
+      lastUpdate: "4 horas atrás",
+      priority: "medium"
+    },
+    {
+      id: 3,
+      name: "Consultoria Moderna",
+      status: "Aprovado",
+      documents: 15,
+      lastUpdate: "1 dia atrás",
+      priority: "low"
+    },
+    {
+      id: 4,
+      name: "StartupXYZ",
+      status: "Documentos Pendentes",
+      documents: 6,
+      lastUpdate: "2 dias atrás",
+      priority: "high"
+    }
+  ];
+
+  const recentProcesses = [
+    {
+      id: 1,
+      client: "TechCorp Ltda",
+      process: "Contrato de Prestação de Serviços",
+      status: "Em Análise",
+      progress: 75,
+      dueDate: "24/08/2024"
+    },
+    {
+      id: 2,
+      client: "Inovação Digital",
+      process: "Documentação Fiscal",
+      status: "Pendente",
+      progress: 30,
+      dueDate: "26/08/2024"
+    },
+    {
+      id: 3,
+      client: "Consultoria Moderna",
+      process: "Renovação de Licenças",
+      status: "Aprovado",
+      progress: 100,
+      dueDate: "20/08/2024"
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Aprovado":
+      case "Concluído":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
+      case "Em Análise":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
+      case "Pendente":
+      case "Documentos Pendentes":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400";
+      default:
+        return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "border-l-red-500";
+      case "medium":
+        return "border-l-yellow-500";
+      case "low":
+        return "border-l-green-500";
+      default:
+        return "border-l-muted";
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
+              <p className="text-muted-foreground">Visão geral dos processos e clientes</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button variant="hero">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Cliente
+              </Button>
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Processo
+              </Button>
+              <Link to="/">
+                <Button variant="ghost" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="p-6 space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, index) => (
+            <Card key={index} className="hover:shadow-card transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {stat.value}
+                    </p>
+                    <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                      {stat.change} vs mês anterior
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Clients */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
+                  <span>Clientes Recentes</span>
+                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filtrar
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    Ver Todos
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentClients.map((client) => (
+                  <div
+                    key={client.id}
+                    className={`p-4 rounded-lg border-l-4 ${getPriorityColor(client.priority)} bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">{client.name}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge className={getStatusColor(client.status)}>
+                            {client.status}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {client.documents} documentos
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Atualizado {client.lastUpdate}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Processes */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5" />
+                  <span>Processos em Andamento</span>
+                </CardTitle>
+                <Button variant="ghost" size="sm">
+                  Ver Todos
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentProcesses.map((process) => (
+                  <div
+                    key={process.id}
+                    className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-foreground text-sm">
+                        {process.process}
+                      </h3>
+                      <Badge className={getStatusColor(process.status)}>
+                        {process.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Cliente: {process.client}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 mr-4">
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${process.progress}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {process.progress}% concluído
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">
+                          Prazo: {process.dueDate}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <Button variant="outline" className="h-20 flex-col">
+                <Plus className="h-6 w-6 mb-2" />
+                <span className="text-xs">Novo Cliente</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col">
+                <FileText className="h-6 w-6 mb-2" />
+                <span className="text-xs">Novo Processo</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col">
+                <Search className="h-6 w-6 mb-2" />
+                <span className="text-xs">Buscar Documentos</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col">
+                <TrendingUp className="h-6 w-6 mb-2" />
+                <span className="text-xs">Relatórios</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col">
+                <Users className="h-6 w-6 mb-2" />
+                <span className="text-xs">Todos os Clientes</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col">
+                <MoreHorizontal className="h-6 w-6 mb-2" />
+                <span className="text-xs">Configurações</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default EmpresaDashboard;
