@@ -332,6 +332,12 @@ const EmpresaDashboard = () => {
                 <Users className="h-6 w-6 mb-2" />
                 <span className="text-xs">Todos os Clientes</span>
               </Button>
+              <Link to="/modelos-documentos">
+                <Button variant="outline" className="h-20 flex-col">
+                  <FileText className="h-6 w-6 mb-2" />
+                  <span className="text-xs">Modelos de Documentos</span>
+                </Button>
+              </Link>
               <Button variant="outline" className="h-20 flex-col">
                 <MoreHorizontal className="h-6 w-6 mb-2" />
                 <span className="text-xs">Configurações</span>
