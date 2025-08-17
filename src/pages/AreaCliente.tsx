@@ -2,6 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   FileText, 
   Clock, 
@@ -15,6 +20,7 @@ import {
   LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const AreaCliente = () => {
   const clientInfo = {
@@ -171,6 +177,27 @@ const AreaCliente = () => {
     }
   };
 
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadForm, setUploadForm] = useState({
+    title: "",
+    type: "",
+    description: "",
+    file: null as File | null
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadForm({ ...uploadForm, file: e.target.files[0] });
+    }
+  };
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Documento enviado:", uploadForm);
+    setIsUploadModalOpen(false);
+    setUploadForm({ title: "", type: "", description: "", file: null });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -182,10 +209,14 @@ const AreaCliente = () => {
               <p className="text-muted-foreground">Acompanhe seus processos e documentos</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="hero">
-                <Upload className="h-4 w-4 mr-2" />
-                Enviar Documento
-              </Button>
+              <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="hero">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Enviar Documento
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
               <Link to="/">
                 <Button variant="ghost" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
@@ -327,7 +358,7 @@ const AreaCliente = () => {
                         <Calendar className="h-3 w-3" />
                         <span>Prazo: {new Date(request.dueDate).toLocaleDateString('pt-BR')}</span>
                       </span>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => setIsUploadModalOpen(true)}>
                         <Upload className="h-3 w-3 mr-1" />
                         Enviar
                       </Button>
@@ -395,7 +426,7 @@ const AreaCliente = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-20 flex-col">
+              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsUploadModalOpen(true)}>
                 <Upload className="h-6 w-6 mb-2" />
                 <span className="text-xs">Enviar Documento</span>
               </Button>
@@ -415,6 +446,74 @@ const AreaCliente = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upload Modal */}
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enviar Documento</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUploadSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="documentTitle">Título do Documento</Label>
+              <Input
+                id="documentTitle"
+                value={uploadForm.title}
+                onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+                placeholder="Ex: Contrato Social Atualizado"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="documentType">Tipo de Documento</Label>
+              <Select value={uploadForm.type} onValueChange={(value) => setUploadForm({ ...uploadForm, type: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contrato">Contrato</SelectItem>
+                  <SelectItem value="financeiro">Financeiro</SelectItem>
+                  <SelectItem value="certidao">Certidão</SelectItem>
+                  <SelectItem value="identificacao">Identificação</SelectItem>
+                  <SelectItem value="comprovante">Comprovante</SelectItem>
+                  <SelectItem value="declaracao">Declaração</SelectItem>
+                  <SelectItem value="ata">Ata</SelectItem>
+                  <SelectItem value="outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="documentFile">Arquivo</Label>
+              <Input
+                id="documentFile"
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Formatos aceitos: PDF, DOC, DOCX, JPG, PNG (máx. 10MB)
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="documentDescription">Observações</Label>
+              <Textarea
+                id="documentDescription"
+                value={uploadForm.description}
+                onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                placeholder="Observações adicionais sobre o documento..."
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">Enviar Documento</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

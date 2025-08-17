@@ -2,6 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Users, 
   FileText, 
@@ -17,6 +21,7 @@ import {
   LogOut
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const EmpresaDashboard = () => {
   const stats = [
@@ -140,6 +145,37 @@ const EmpresaDashboard = () => {
     }
   };
 
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+  const [clientForm, setClientForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    status: ""
+  });
+  const [processForm, setProcessForm] = useState({
+    client: "",
+    processType: "",
+    description: "",
+    dueDate: "",
+    priority: ""
+  });
+
+  const handleClientSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Novo cliente:", clientForm);
+    setIsClientModalOpen(false);
+    setClientForm({ name: "", email: "", phone: "", company: "", status: "" });
+  };
+
+  const handleProcessSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Novo processo:", processForm);
+    setIsProcessModalOpen(false);
+    setProcessForm({ client: "", processType: "", description: "", dueDate: "", priority: "" });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -151,14 +187,22 @@ const EmpresaDashboard = () => {
               <p className="text-muted-foreground">Visão geral dos processos e clientes</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="hero">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Cliente
-              </Button>
-              <Button variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Processo
-              </Button>
+              <Dialog open={isClientModalOpen} onOpenChange={setIsClientModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="hero">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Cliente
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+              <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Processo
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
               <Link to="/">
                 <Button variant="ghost" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
@@ -312,11 +356,11 @@ const EmpresaDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <Button variant="outline" className="h-20 flex-col">
+              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsClientModalOpen(true)}>
                 <Plus className="h-6 w-6 mb-2" />
                 <span className="text-xs">Novo Cliente</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col">
+              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsProcessModalOpen(true)}>
                 <FileText className="h-6 w-6 mb-2" />
                 <span className="text-xs">Novo Processo</span>
               </Button>
@@ -346,6 +390,145 @@ const EmpresaDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modals */}
+      <Dialog open={isClientModalOpen} onOpenChange={setIsClientModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo Cliente</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleClientSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="clientName">Nome do Cliente</Label>
+              <Input
+                id="clientName"
+                value={clientForm.name}
+                onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="clientEmail">E-mail</Label>
+              <Input
+                id="clientEmail"
+                type="email"
+                value={clientForm.email}
+                onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="clientPhone">Telefone</Label>
+              <Input
+                id="clientPhone"
+                value={clientForm.phone}
+                onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="clientCompany">Empresa</Label>
+              <Input
+                id="clientCompany"
+                value={clientForm.company}
+                onChange={(e) => setClientForm({ ...clientForm, company: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="clientStatus">Status</Label>
+              <Select value={clientForm.status} onValueChange={(value) => setClientForm({ ...clientForm, status: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ativo">Ativo</SelectItem>
+                  <SelectItem value="inativo">Inativo</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsClientModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">Cadastrar Cliente</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo Processo</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleProcessSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="processClient">Cliente</Label>
+              <Select value={processForm.client} onValueChange={(value) => setProcessForm({ ...processForm, client: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="techcorp">TechCorp Ltda</SelectItem>
+                  <SelectItem value="inovacao">Inovação Digital</SelectItem>
+                  <SelectItem value="consultoria">Consultoria Moderna</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="processType">Tipo de Processo</Label>
+              <Select value={processForm.processType} onValueChange={(value) => setProcessForm({ ...processForm, processType: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contrato">Contrato</SelectItem>
+                  <SelectItem value="documentacao">Documentação</SelectItem>
+                  <SelectItem value="licenca">Licença</SelectItem>
+                  <SelectItem value="fiscal">Fiscal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="processDescription">Descrição</Label>
+              <Textarea
+                id="processDescription"
+                value={processForm.description}
+                onChange={(e) => setProcessForm({ ...processForm, description: e.target.value })}
+                placeholder="Descreva o processo..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="processDueDate">Data de Prazo</Label>
+              <Input
+                id="processDueDate"
+                type="date"
+                value={processForm.dueDate}
+                onChange={(e) => setProcessForm({ ...processForm, dueDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="processPriority">Prioridade</Label>
+              <Select value={processForm.priority} onValueChange={(value) => setProcessForm({ ...processForm, priority: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a prioridade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="high">Alta</SelectItem>
+                  <SelectItem value="medium">Média</SelectItem>
+                  <SelectItem value="low">Baixa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsProcessModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">Criar Processo</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
