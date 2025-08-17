@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PontoClock from "@/components/PontoClock";
 import { 
   Users, 
   FileText, 
@@ -349,46 +350,56 @@ const EmpresaDashboard = () => {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsClientModalOpen(true)}>
-                <Plus className="h-6 w-6 mb-2" />
-                <span className="text-xs">Novo Cliente</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsProcessModalOpen(true)}>
-                <FileText className="h-6 w-6 mb-2" />
-                <span className="text-xs">Novo Processo</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
-                <Search className="h-6 w-6 mb-2" />
-                <span className="text-xs">Buscar Documentos</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
-                <TrendingUp className="h-6 w-6 mb-2" />
-                <span className="text-xs">Relatórios</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
-                <Users className="h-6 w-6 mb-2" />
-                <span className="text-xs">Todos os Clientes</span>
-              </Button>
-              <Link to="/modelos-documentos">
-                <Button variant="outline" className="h-20 flex-col">
-                  <FileText className="h-6 w-6 mb-2" />
-                  <span className="text-xs">Modelos de Documentos</span>
-                </Button>
-              </Link>
-              <Button variant="outline" className="h-20 flex-col">
-                <MoreHorizontal className="h-6 w-6 mb-2" />
-                <span className="text-xs">Configurações</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Ponto Clock and Quick Actions Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Ponto Clock */}
+          <div>
+            <PontoClock />
+          </div>
+
+          {/* Quick Actions - taking 2 columns */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsClientModalOpen(true)}>
+                    <Plus className="h-6 w-6 mb-2" />
+                    <span className="text-xs">Novo Cliente</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsProcessModalOpen(true)}>
+                    <FileText className="h-6 w-6 mb-2" />
+                    <span className="text-xs">Novo Processo</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex-col">
+                    <Search className="h-6 w-6 mb-2" />
+                    <span className="text-xs">Buscar Documentos</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex-col">
+                    <TrendingUp className="h-6 w-6 mb-2" />
+                    <span className="text-xs">Relatórios</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex-col">
+                    <Users className="h-6 w-6 mb-2" />
+                    <span className="text-xs">Todos os Clientes</span>
+                  </Button>
+                  <Link to="/modelos-documentos">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <FileText className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Modelos de Documentos</span>
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="h-20 flex-col">
+                    <MoreHorizontal className="h-6 w-6 mb-2" />
+                    <span className="text-xs">Configurações</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Modals */}

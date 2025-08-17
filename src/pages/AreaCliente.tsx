@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { 
   FileText, 
   Clock, 
@@ -17,7 +18,10 @@ import {
   Calendar,
   MessageSquare,
   User,
-  LogOut
+  LogOut,
+  FileDown,
+  ExternalLink,
+  Printer
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -178,12 +182,32 @@ const AreaCliente = () => {
   };
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedProcess, setSelectedProcess] = useState<any>(null);
   const [uploadForm, setUploadForm] = useState({
     title: "",
     type: "",
     description: "",
     file: null as File | null
   });
+
+  const processDocuments = {
+    1: [
+      { id: 1, name: "Contrato Original.pdf", link: "/docs/contrato-original.pdf", status: "Aprovado" },
+      { id: 2, name: "Proposta Comercial.pdf", link: "/docs/proposta-comercial.pdf", status: "Aprovado" },
+      { id: 3, name: "Termo Aditivo.pdf", link: "/docs/termo-aditivo.pdf", status: "Em Análise" },
+      { id: 4, name: "Comprovante de Pagamento.pdf", link: "/docs/comprovante-pagamento.pdf", status: "Pendente" }
+    ],
+    2: [
+      { id: 5, name: "Balanço Patrimonial.pdf", link: "/docs/balanco-patrimonial.pdf", status: "Aprovado" },
+      { id: 6, name: "DRE 2024.pdf", link: "/docs/dre-2024.pdf", status: "Em Análise" },
+      { id: 7, name: "Certidões Negativas.pdf", link: "/docs/certidoes-negativas.pdf", status: "Pendente" }
+    ],
+    3: [
+      { id: 8, name: "ISO 9001 Atual.pdf", link: "/docs/iso-9001.pdf", status: "Aprovado" },
+      { id: 9, name: "Auditoria Interna.pdf", link: "/docs/auditoria-interna.pdf", status: "Pendente" }
+    ]
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -196,6 +220,20 @@ const AreaCliente = () => {
     console.log("Documento enviado:", uploadForm);
     setIsUploadModalOpen(false);
     setUploadForm({ title: "", type: "", description: "", file: null });
+  };
+
+  const handleGenerateReport = (process: any) => {
+    setSelectedProcess(process);
+    setIsReportModalOpen(true);
+  };
+
+  const handleDownloadReport = () => {
+    if (selectedProcess) {
+      console.log("Gerando relatório para:", selectedProcess.title);
+      // Aqui você implementaria a geração real do PDF
+      alert(`Relatório do processo "${selectedProcess.title}" foi gerado e baixado!`);
+      setIsReportModalOpen(false);
+    }
   };
 
   return (
@@ -312,6 +350,16 @@ const AreaCliente = () => {
                           <Calendar className="h-3 w-3" />
                           <span>{new Date(process.dueDate).toLocaleDateString('pt-BR')}</span>
                         </span>
+                      </div>
+                      <div className="flex justify-end pt-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleGenerateReport(process)}
+                        >
+                          <FileDown className="h-3 w-3 mr-1" />
+                          Gerar Relatório
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -512,6 +560,121 @@ const AreaCliente = () => {
               <Button type="submit">Enviar Documento</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Modal */}
+      <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Printer className="h-5 w-5" />
+              <span>Relatório do Processo</span>
+            </DialogTitle>
+          </DialogHeader>
+          {selectedProcess && (
+            <div className="space-y-6">
+              {/* Process Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground">
+                  {selectedProcess.title}
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Status:</span>
+                    <Badge className={`ml-2 ${getStatusColor(selectedProcess.status)}`}>
+                      {selectedProcess.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Progresso:</span>
+                    <span className="ml-2 font-medium">{selectedProcess.progress}%</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Prazo:</span>
+                    <span className="ml-2">{new Date(selectedProcess.dueDate).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Documentos:</span>
+                    <span className="ml-2">{selectedProcess.documents} enviados, {selectedProcess.pending} pendentes</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Descrição:</span>
+                  <p className="mt-1">{selectedProcess.description}</p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Documents List */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-foreground">Documentos Relacionados</h4>
+                <div className="space-y-3">
+                  {(processDocuments[selectedProcess.id as keyof typeof processDocuments] || []).map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <FileText className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-foreground text-sm">{doc.name}</h5>
+                          <Badge className={`${getStatusColor(doc.status)} text-xs`}>
+                            {doc.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(doc.link, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            // Simula download do documento
+                            const link = document.createElement('a');
+                            link.href = doc.link;
+                            link.download = doc.name;
+                            link.click();
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Report Actions */}
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsReportModalOpen(false)}
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  onClick={handleDownloadReport}
+                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Baixar Relatório PDF
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
