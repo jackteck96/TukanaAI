@@ -143,11 +143,22 @@ const GerenciarProcessos = () => {
     setMessageForm({ message: "", requestDocs: [] });
   };
 
+  // Simulação dos tipos de documentos cadastrados pelo administrador
   const availableDocuments = [
-    "RG", "CPF", "Comprovante de Residência", "Carteira de Trabalho",
-    "Contrato Social", "CNPJ", "Inscrição Estadual", "Alvará de Funcionamento",
-    "Declaração de Imposto de Renda", "Comprovante de Renda", "Certidão de Nascimento",
-    "Certidão de Casamento", "Procuração", "Contrato de Prestação de Serviços"
+    "RG - Registro Geral",
+    "CPF - Cadastro de Pessoa Física", 
+    "Comprovante de Residência",
+    "CNPJ - Cadastro Nacional da Pessoa Jurídica",
+    "Carteira de Trabalho",
+    "Contrato Social", 
+    "Inscrição Estadual", 
+    "Alvará de Funcionamento",
+    "Declaração de Imposto de Renda", 
+    "Comprovante de Renda", 
+    "Certidão de Nascimento",
+    "Certidão de Casamento", 
+    "Procuração", 
+    "Contrato de Prestação de Serviços"
   ];
 
   return (

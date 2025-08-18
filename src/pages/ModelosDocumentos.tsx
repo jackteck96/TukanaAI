@@ -17,14 +17,14 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface ModeloDocumento {
+interface TipoDocumento {
   id: number;
   nomeDocumento: string;
   tipoDocumento: string;
-  dataEmissao: string;
-  dataExpiracao: string;
-  localDocumento: string;
+  exigeDatas: boolean;
+  exigeLocal: boolean;
   observacoes: string;
+  ativo: boolean;
 }
 
 const ModelosDocumentos = () => {
@@ -32,30 +32,47 @@ const ModelosDocumentos = () => {
   const [formData, setFormData] = useState({
     nomeDocumento: "",
     tipoDocumento: "",
-    dataEmissao: "",
-    dataExpiracao: "",
-    localDocumento: "",
+    exigeDatas: false,
+    exigeLocal: false,
     observacoes: ""
   });
 
-  const [modelos, setModelos] = useState<ModeloDocumento[]>([
+  const [tiposDocumentos, setTiposDocumentos] = useState<TipoDocumento[]>([
     {
       id: 1,
-      nomeDocumento: "Contrato de Prestação de Serviços",
-      tipoDocumento: "Contrato",
-      dataEmissao: "2024-01-15",
-      dataExpiracao: "2024-12-15",
-      localDocumento: "São Paulo - SP",
-      observacoes: "Modelo padrão para contratos de prestação de serviços"
+      nomeDocumento: "RG - Registro Geral",
+      tipoDocumento: "Documento de Identidade",
+      exigeDatas: true,
+      exigeLocal: true,
+      observacoes: "Documento de identificação pessoal",
+      ativo: true
     },
     {
       id: 2,
-      nomeDocumento: "Certidão Negativa de Débitos",
-      tipoDocumento: "Certidão",
-      dataEmissao: "2024-02-10",
-      dataExpiracao: "2024-08-10",
-      localDocumento: "Receita Federal",
-      observacoes: "Renovação automática a cada 6 meses"
+      nomeDocumento: "CPF - Cadastro de Pessoa Física",
+      tipoDocumento: "Documento Fiscal",
+      exigeDatas: false,
+      exigeLocal: false,
+      observacoes: "Documento fiscal obrigatório",
+      ativo: true
+    },
+    {
+      id: 3,
+      nomeDocumento: "Comprovante de Residência",
+      tipoDocumento: "Comprovante",
+      exigeDatas: true,
+      exigeLocal: false,
+      observacoes: "Comprovante de endereço atualizado",
+      ativo: true
+    },
+    {
+      id: 4,
+      nomeDocumento: "CNPJ - Cadastro Nacional da Pessoa Jurídica",
+      tipoDocumento: "Documento Empresarial",
+      exigeDatas: true,
+      exigeLocal: true,
+      observacoes: "Documento de identificação da empresa",
+      ativo: true
     }
   ]);
 
@@ -71,25 +88,32 @@ const ModelosDocumentos = () => {
   ];
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (field === "exigeDatas" || field === "exigeLocal") {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value === "true"
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const novoModelo: ModeloDocumento = {
-      id: modelos.length + 1,
-      ...formData
+    const novoTipo: TipoDocumento = {
+      id: tiposDocumentos.length + 1,
+      ...formData,
+      ativo: true
     };
-    setModelos(prev => [...prev, novoModelo]);
+    setTiposDocumentos(prev => [...prev, novoTipo]);
     setFormData({
       nomeDocumento: "",
       tipoDocumento: "",
-      dataEmissao: "",
-      dataExpiracao: "",
-      localDocumento: "",
+      exigeDatas: false,
+      exigeLocal: false,
       observacoes: ""
     });
     setShowForm(false);
@@ -120,8 +144,8 @@ const ModelosDocumentos = () => {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Modelos de Documentos</h1>
-                <p className="text-muted-foreground">Gerencie os modelos de documentos da empresa</p>
+                <h1 className="text-2xl font-bold text-foreground">Tipos de Documentos</h1>
+                <p className="text-muted-foreground">Cadastre os tipos de documentos que podem ser solicitados aos clientes</p>
               </div>
             </div>
             <Button 
@@ -130,7 +154,7 @@ const ModelosDocumentos = () => {
               disabled={showForm}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Novo Modelo
+              Novo Tipo
             </Button>
           </div>
         </div>
@@ -143,7 +167,7 @@ const ModelosDocumentos = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <FileText className="h-5 w-5" />
-                <span>Cadastrar Novo Modelo</span>
+                <span>Cadastrar Novo Tipo de Documento</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -155,16 +179,16 @@ const ModelosDocumentos = () => {
                       id="nomeDocumento"
                       value={formData.nomeDocumento}
                       onChange={(e) => handleInputChange("nomeDocumento", e.target.value)}
-                      placeholder="Ex: Contrato de Prestação de Serviços"
+                      placeholder="Ex: RG - Registro Geral"
                       required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="tipoDocumento">Tipo do Documento</Label>
+                    <Label htmlFor="tipoDocumento">Categoria do Documento</Label>
                     <Select onValueChange={(value) => handleInputChange("tipoDocumento", value)} required>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
+                        <SelectValue placeholder="Selecione a categoria" />
                       </SelectTrigger>
                       <SelectContent>
                         {tiposDocumento.map((tipo) => (
@@ -173,38 +197,29 @@ const ModelosDocumentos = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="dataEmissao">Data de Emissão</Label>
-                    <Input
-                      id="dataEmissao"
-                      type="date"
-                      value={formData.dataEmissao}
-                      onChange={(e) => handleInputChange("dataEmissao", e.target.value)}
-                      required
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="exigeDatas"
+                      checked={formData.exigeDatas}
+                      onChange={(e) => handleInputChange("exigeDatas", e.target.checked.toString())}
+                      className="rounded border-border"
                     />
+                    <Label htmlFor="exigeDatas">Exige datas de emissão/expiração</Label>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="dataExpiracao">Data de Expiração</Label>
-                    <Input
-                      id="dataExpiracao"
-                      type="date"
-                      value={formData.dataExpiracao}
-                      onChange={(e) => handleInputChange("dataExpiracao", e.target.value)}
-                      required
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="exigeLocal"
+                      checked={formData.exigeLocal}
+                      onChange={(e) => handleInputChange("exigeLocal", e.target.checked.toString())}
+                      className="rounded border-border"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="localDocumento">Local do Documento</Label>
-                    <Input
-                      id="localDocumento"
-                      value={formData.localDocumento}
-                      onChange={(e) => handleInputChange("localDocumento", e.target.value)}
-                      placeholder="Ex: São Paulo - SP"
-                      required
-                    />
+                    <Label htmlFor="exigeLocal">Exige local de expedição</Label>
                   </div>
                 </div>
 
@@ -214,7 +229,7 @@ const ModelosDocumentos = () => {
                     id="observacoes"
                     value={formData.observacoes}
                     onChange={(e) => handleInputChange("observacoes", e.target.value)}
-                    placeholder="Adicione observações sobre este modelo de documento..."
+                    placeholder="Adicione observações sobre este tipo de documento..."
                     rows={3}
                   />
                 </div>
@@ -222,7 +237,7 @@ const ModelosDocumentos = () => {
                 <div className="flex space-x-2">
                   <Button type="submit" variant="hero">
                     <Save className="h-4 w-4 mr-2" />
-                    Salvar Modelo
+                    Salvar Tipo
                   </Button>
                   <Button 
                     type="button" 
@@ -237,19 +252,19 @@ const ModelosDocumentos = () => {
           </Card>
         )}
 
-        {/* Lista de Modelos */}
+        {/* Lista de Tipos */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <FileText className="h-5 w-5" />
-                <span>Modelos Cadastrados</span>
+                <span>Tipos de Documentos Cadastrados</span>
               </CardTitle>
               <div className="flex items-center space-x-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Buscar modelos..."
+                    placeholder="Buscar tipos..."
                     className="pl-10 w-64"
                   />
                 </div>
@@ -258,35 +273,43 @@ const ModelosDocumentos = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {modelos.map((modelo) => (
+              {tiposDocumentos.map((tipo) => (
                 <div
-                  key={modelo.id}
+                  key={tipo.id}
                   className="p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="font-semibold text-foreground">{modelo.nomeDocumento}</h3>
-                        <Badge className={getTipoColor(modelo.tipoDocumento)}>
-                          {modelo.tipoDocumento}
+                        <h3 className="font-semibold text-foreground">{tipo.nomeDocumento}</h3>
+                        <Badge className={getTipoColor(tipo.tipoDocumento)}>
+                          {tipo.tipoDocumento}
                         </Badge>
+                        {tipo.ativo && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                            Ativo
+                          </Badge>
+                        )}
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground mb-2">
-                        <div>
-                          <span className="font-medium">Emissão:</span> {new Date(modelo.dataEmissao).toLocaleDateString('pt-BR')}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground mb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">Datas:</span> 
+                          <span className={tipo.exigeDatas ? "text-green-600" : "text-red-600"}>
+                            {tipo.exigeDatas ? "Obrigatórias" : "Não exigidas"}
+                          </span>
                         </div>
-                        <div>
-                          <span className="font-medium">Expiração:</span> {new Date(modelo.dataExpiracao).toLocaleDateString('pt-BR')}
-                        </div>
-                        <div>
-                          <span className="font-medium">Local:</span> {modelo.localDocumento}
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">Local:</span> 
+                          <span className={tipo.exigeLocal ? "text-green-600" : "text-red-600"}>
+                            {tipo.exigeLocal ? "Obrigatório" : "Não exigido"}
+                          </span>
                         </div>
                       </div>
 
-                      {modelo.observacoes && (
+                      {tipo.observacoes && (
                         <p className="text-sm text-muted-foreground">
-                          <span className="font-medium">Observações:</span> {modelo.observacoes}
+                          <span className="font-medium">Observações:</span> {tipo.observacoes}
                         </p>
                       )}
                     </div>
