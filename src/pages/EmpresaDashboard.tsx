@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import PontoClock from "@/components/PontoClock";
 import { 
   Users, 
@@ -163,8 +164,16 @@ const EmpresaDashboard = () => {
     processType: "",
     description: "",
     dueDate: "",
-    priority: ""
+    priority: "",
+    requiredDocuments: [] as string[]
   });
+
+  const availableDocuments = [
+    "RG", "CPF", "Comprovante de Residência", "Carteira de Trabalho",
+    "Contrato Social", "CNPJ", "Inscrição Estadual", "Alvará de Funcionamento",
+    "Declaração de Imposto de Renda", "Comprovante de Renda", "Certidão de Nascimento",
+    "Certidão de Casamento", "Procuração", "Contrato de Prestação de Serviços"
+  ];
 
   const handleClientSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,7 +186,7 @@ const EmpresaDashboard = () => {
     e.preventDefault();
     console.log("Novo processo:", processForm);
     setIsProcessModalOpen(false);
-    setProcessForm({ client: "", processType: "", description: "", dueDate: "", priority: "" });
+    setProcessForm({ client: "", processType: "", description: "", dueDate: "", priority: "", requiredDocuments: [] });
   };
 
   return (
@@ -372,10 +381,12 @@ const EmpresaDashboard = () => {
                     <Plus className="h-6 w-6 mb-2" />
                     <span className="text-xs">Novo Cliente</span>
                   </Button>
-                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsProcessModalOpen(true)}>
-                    <FileText className="h-6 w-6 mb-2" />
-                    <span className="text-xs">Novo Processo</span>
-                  </Button>
+                  <Link to="/gerenciar-processos">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <FileText className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Gerenciar Processos</span>
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="h-20 flex-col" onClick={() => setIsSearchModalOpen(true)}>
                     <Search className="h-6 w-6 mb-2" />
                     <span className="text-xs">Buscar Documentos</span>
@@ -537,6 +548,36 @@ const EmpresaDashboard = () => {
                   <SelectItem value="low">Baixa</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Documentos Necessários</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
+                {availableDocuments.map((doc) => (
+                  <div key={doc} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={doc}
+                      checked={processForm.requiredDocuments.includes(doc)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setProcessForm({
+                            ...processForm,
+                            requiredDocuments: [...processForm.requiredDocuments, doc]
+                          });
+                        } else {
+                          setProcessForm({
+                            ...processForm,
+                            requiredDocuments: processForm.requiredDocuments.filter(d => d !== doc)
+                          });
+                        }
+                      }}
+                    />
+                    <Label htmlFor={doc} className="text-sm">{doc}</Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {processForm.requiredDocuments.length} documento(s) selecionado(s)
+              </p>
             </div>
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => setIsProcessModalOpen(false)}>

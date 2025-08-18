@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import EmpresaDashboard from "./pages/EmpresaDashboard";
 import AreaCliente from "./pages/AreaCliente";
 import ModelosDocumentos from "./pages/ModelosDocumentos";
+import GerenciarProcessos from "./pages/GerenciarProcessos";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/empresa" element={<EmpresaDashboard />} />
           <Route path="/cliente" element={<AreaCliente />} />
           <Route path="/modelos-documentos" element={<ModelosDocumentos />} />
+          <Route path="/gerenciar-processos" element={<GerenciarProcessos />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
