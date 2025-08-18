@@ -148,6 +148,9 @@ const EmpresaDashboard = () => {
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [clientForm, setClientForm] = useState({
     name: "",
     email: "",
@@ -373,25 +376,29 @@ const EmpresaDashboard = () => {
                     <FileText className="h-6 w-6 mb-2" />
                     <span className="text-xs">Novo Processo</span>
                   </Button>
-                  <Button variant="outline" className="h-20 flex-col">
+                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsSearchModalOpen(true)}>
                     <Search className="h-6 w-6 mb-2" />
                     <span className="text-xs">Buscar Documentos</span>
                   </Button>
-                  <Button variant="outline" className="h-20 flex-col">
-                    <TrendingUp className="h-6 w-6 mb-2" />
-                    <span className="text-xs">Relatórios</span>
-                  </Button>
-                  <Button variant="outline" className="h-20 flex-col">
-                    <Users className="h-6 w-6 mb-2" />
-                    <span className="text-xs">Todos os Clientes</span>
-                  </Button>
+                  <Link to="/relatorios">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <TrendingUp className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Relatórios</span>
+                    </Button>
+                  </Link>
+                  <Link to="/todos-clientes">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <Users className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Todos os Clientes</span>
+                    </Button>
+                  </Link>
                   <Link to="/modelos-documentos">
                     <Button variant="outline" className="h-20 flex-col">
                       <FileText className="h-6 w-6 mb-2" />
                       <span className="text-xs">Modelos de Documentos</span>
                     </Button>
                   </Link>
-                  <Button variant="outline" className="h-20 flex-col">
+                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsConfigModalOpen(true)}>
                     <MoreHorizontal className="h-6 w-6 mb-2" />
                     <span className="text-xs">Configurações</span>
                   </Button>
@@ -538,6 +545,72 @@ const EmpresaDashboard = () => {
               <Button type="submit">Criar Processo</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Search Modal */}
+      <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Buscar Documentos</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="searchTerm">Termo de Busca</Label>
+              <Input
+                id="searchTerm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Digite o nome do documento, cliente ou tipo..."
+                className="w-full"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsSearchModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={() => {
+                console.log("Buscando:", searchTerm);
+                setIsSearchModalOpen(false);
+                setSearchTerm("");
+              }}>
+                Buscar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Config Modal */}
+      <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configurações</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-medium">Configurações Gerais</h3>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">
+                  Configurar Perfil da Empresa
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Gerenciar Usuários
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Configurações de Notificação
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Backup e Segurança
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" onClick={() => setIsConfigModalOpen(false)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
