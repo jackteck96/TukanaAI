@@ -20,7 +20,8 @@ import {
   Search,
   MoreHorizontal,
   Eye,
-  LogOut
+  LogOut,
+  Brain
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -407,6 +408,12 @@ const EmpresaDashboard = () => {
                     <Button variant="outline" className="h-20 flex-col">
                       <FileText className="h-6 w-6 mb-2" />
                       <span className="text-xs">Modelos de Documentos</span>
+                    </Button>
+                  </Link>
+                  <Link to="/treinar-ia">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <Brain className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Treinar IA</span>
                     </Button>
                   </Link>
                   <Button variant="outline" className="h-20 flex-col" onClick={() => setIsConfigModalOpen(true)}>
