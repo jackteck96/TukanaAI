@@ -20,6 +20,7 @@ import {
   Plus
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import AIProcessAnalyzer from "@/components/AIProcessAnalyzer";
 
 const GerenciarProcessos = () => {
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -223,6 +224,12 @@ const GerenciarProcessos = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  {/* IA Analysis */}
+                  <AIProcessAnalyzer 
+                    process={process} 
+                    availableDocuments={availableDocuments}
+                  />
+
                   {/* Progress */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
