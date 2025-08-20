@@ -125,11 +125,11 @@ const Landing = () => {
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Gerencie Documentos com Segurança e Eficiência
+              Fuzen - Gerencie Documentos com Segurança e Eficiência
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Plataforma completa para empresas que precisam solicitar, armazenar e gerenciar 
+              A Fuzen é a plataforma completa para empresas que precisam solicitar, armazenar e gerenciar 
               documentos de clientes de forma segura e organizada.
             </p>
             
@@ -201,10 +201,10 @@ const Landing = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-                Por que escolher o DocFlow?
+                Por que escolher a Fuzen?
               </h2>
               <p className="text-xl text-muted-foreground mb-8">
-                Mais de 1.000 empresas já confiam na nossa plataforma para gerenciar 
+                Mais de 1.000 empresas já confiam na Fuzen para gerenciar 
                 seus documentos com segurança e eficiência.
               </p>
               
@@ -334,7 +334,7 @@ const Landing = () => {
               Pronto para transformar sua gestão de documentos?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Junte-se a mais de 1.000 empresas que já confiam no DocFlow
+              Junte-se a mais de 1.000 empresas que já confiam na Fuzen
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

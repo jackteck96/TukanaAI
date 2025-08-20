@@ -14,7 +14,7 @@ const Header = () => {
             <div className="p-2 bg-gradient-to-r from-primary to-accent rounded-lg">
               <FileText className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground">DocFlow</span>
+            <span className="text-xl font-bold text-foreground">Fuzen</span>
           </Link>
 
           {/* Desktop Navigation */}
