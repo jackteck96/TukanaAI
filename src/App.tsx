@@ -9,6 +9,7 @@ import AreaCliente from "./pages/AreaCliente";
 import ModelosDocumentos from "./pages/ModelosDocumentos";
 import GerenciarProcessos from "./pages/GerenciarProcessos";
 import TreinarIA from "./pages/TreinarIA";
+import CadastroTiposDocumentos from "./pages/CadastroTiposDocumentos";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/modelos-documentos" element={<ModelosDocumentos />} />
           <Route path="/gerenciar-processos" element={<GerenciarProcessos />} />
           <Route path="/treinar-ia" element={<TreinarIA />} />
+          <Route path="/cadastro-tipos-documentos" element={<CadastroTiposDocumentos />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -416,6 +416,12 @@ const EmpresaDashboard = () => {
                       <span className="text-xs">Treinar IA</span>
                     </Button>
                   </Link>
+                  <Link to="/cadastro-tipos-documentos">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <FileText className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Tipos de Documentos</span>
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="h-20 flex-col" onClick={() => setIsConfigModalOpen(true)}>
                     <MoreHorizontal className="h-6 w-6 mb-2" />
                     <span className="text-xs">Configurações</span>
