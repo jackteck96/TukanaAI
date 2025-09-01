@@ -25,8 +25,10 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AreaCliente = () => {
+  const { profile, signOut } = useAuth();
   const clientInfo = {
     name: "TechCorp Ltda",
     email: "contato@techcorp.com",
@@ -243,8 +245,12 @@ const AreaCliente = () => {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Área do Cliente</h1>
-              <p className="text-muted-foreground">Acompanhe seus processos e documentos</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                Área do Cliente - {profile?.company?.name || 'Cliente'}
+              </h1>
+              <p className="text-muted-foreground">
+                Olá, {profile?.name} - Acompanhe seus processos e documentos
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
@@ -255,12 +261,14 @@ const AreaCliente = () => {
                   </Button>
                 </DialogTrigger>
               </Dialog>
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={signOut}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>
