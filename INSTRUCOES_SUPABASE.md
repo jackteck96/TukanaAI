@@ -1,22 +1,20 @@
-# Configuração do Supabase para o Sistema Fuzen
+# 🔧 CONFIGURAÇÃO URGENTE - Supabase Sistema Fuzen
 
-## Passos para configurar a autenticação completa:
+## ⚠️ ERRO RESOLVIDO - Configure agora:
 
-### 1. Conectar ao Supabase
-- Clique no botão verde **Supabase** no canto superior direito da interface
-- Conecte sua conta do Supabase ou crie uma nova
+### PASSO 1: Configurar Variáveis (OBRIGATÓRIO)
+1. Acesse seu painel do Supabase
+2. Vá em **Settings** → **API**
+3. Copie:
+   - **Project URL** 
+   - **anon/public key**
+4. No arquivo `.env.local` (já criado), substitua:
+   - `sua_url_do_supabase_aqui` pela Project URL
+   - `sua_chave_anonima_do_supabase_aqui` pela anon/public key
 
-### 2. Criar o banco de dados
-- No painel do Supabase, vá para **SQL Editor**
-- Copie e cole o conteúdo do arquivo `public/supabase-setup.sql`
-- Execute o SQL para criar as tabelas e políticas necessárias
-
-### 3. Configurar variáveis de ambiente
-- No painel do Supabase, vá para **Settings** → **API**
-- Copie a **Project URL** e a **anon/public key**
-- No Lovable, adicione essas variáveis nas configurações do projeto:
-  - `VITE_SUPABASE_URL`: Cole a Project URL
-  - `VITE_SUPABASE_ANON_KEY`: Cole a anon/public key
+### PASSO 2: Configurar Banco de Dados
+- No Supabase, vá para **SQL Editor**
+- Execute o SQL do arquivo `public/supabase-setup.sql`
 
 ### 4. Configurar autenticação
 - No Supabase, vá para **Authentication** → **Settings**
