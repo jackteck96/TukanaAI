@@ -1,58 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, User, ArrowLeft, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Building2, User, ArrowLeft } from "lucide-react";
 
 const Login = () => {
   const [userType, setUserType] = useState<"empresa" | "cliente" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, user, profile } = useAuth();
-  const { toast } = useToast();
 
-  useEffect(() => {
-    if (user && profile) {
-      // Redirect based on user role
-      if (profile.role === 'admin' || profile.role === 'employee') {
-        navigate("/empresa");
-      } else if (profile.role === 'client') {
-        navigate("/cliente");
-      }
-    }
-  }, [user, profile, navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { error } = await signIn(email, password);
-      
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro no login",
-          description: error.message === "Invalid login credentials" 
-            ? "Email ou senha incorretos"
-            : "Erro ao fazer login. Tente novamente.",
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro no login",
-        description: "Erro inesperado. Tente novamente.",
-      });
-    } finally {
-      setLoading(false);
+    // Simulate login and redirect to appropriate dashboard
+    if (userType === "empresa") {
+      navigate("/empresa");
+    } else if (userType === "cliente") {
+      navigate("/cliente");
     }
   };
 
@@ -157,30 +124,14 @@ const Login = () => {
                 required
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
-              variant="hero"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Entrando...
-                </>
-              ) : (
-                "Entrar"
-              )}
+            <Button type="submit" className="w-full" variant="hero">
+              Entrar
             </Button>
           </form>
           
           <div className="mt-4 text-center text-sm">
             <Link to="/" className="text-muted-foreground hover:text-foreground">
               Voltar ao início
-            </Link>
-            <span className="mx-2">•</span>
-            <Link to="/register" className="text-primary hover:text-primary/80">
-              Cadastrar empresa
             </Link>
           </div>
         </CardContent>

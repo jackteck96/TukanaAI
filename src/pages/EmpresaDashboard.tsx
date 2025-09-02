@@ -25,10 +25,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 
 const EmpresaDashboard = () => {
-  const { profile, signOut } = useAuth();
   const stats = [
     {
       title: "Total de Clientes",
@@ -199,12 +197,8 @@ const EmpresaDashboard = () => {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Dashboard - {profile?.company?.name || 'Empresa'}
-              </h1>
-              <p className="text-muted-foreground">
-                Bem-vindo, {profile?.name} - Visão geral dos processos e clientes
-              </p>
+              <h1 className="text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
+              <p className="text-muted-foreground">Visão geral dos processos e clientes</p>
             </div>
             <div className="flex items-center space-x-4">
               <Dialog open={isClientModalOpen} onOpenChange={setIsClientModalOpen}>
@@ -223,14 +217,12 @@ const EmpresaDashboard = () => {
                   </Button>
                 </DialogTrigger>
               </Dialog>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={signOut}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
+              <Link to="/">
+                <Button variant="ghost" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

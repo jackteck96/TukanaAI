@@ -134,15 +134,15 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/register">
+              <Link to="/login">
                 <Button size="lg" variant="hero" className="text-lg px-8">
-                  Cadastrar Empresa
+                  Começar Gratuitamente
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/demo">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Fazer Login
+                  Ver Demonstração
                 </Button>
               </Link>
             </div>
@@ -338,15 +338,15 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register">
+              <Link to="/cadastro">
                 <Button size="lg" variant="hero" className="text-lg px-8">
-                  Cadastrar Empresa
+                  Começar Teste Grátis
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/contato">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Fazer Login
+                  Falar com Especialista
                 </Button>
               </Link>
             </div>
