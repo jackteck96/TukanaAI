@@ -22,15 +22,12 @@ const Header = () => {
             <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
               Início
             </Link>
-            <Link to="/recursos" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="#recursos" className="text-muted-foreground hover:text-primary transition-colors">
               Recursos
-            </Link>
-            <Link to="/precos" className="text-muted-foreground hover:text-primary transition-colors">
+            </a>
+            <a href="#precos" className="text-muted-foreground hover:text-primary transition-colors">
               Preços
-            </Link>
-            <Link to="/contato" className="text-muted-foreground hover:text-primary transition-colors">
-              Contato
-            </Link>
+            </a>
           </nav>
 
           {/* Desktop CTA */}
@@ -59,15 +56,12 @@ const Header = () => {
               <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
                 Início
               </Link>
-              <Link to="/recursos" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="#recursos" className="text-muted-foreground hover:text-primary transition-colors">
                 Recursos
-              </Link>
-              <Link to="/precos" className="text-muted-foreground hover:text-primary transition-colors">
+              </a>
+              <a href="#precos" className="text-muted-foreground hover:text-primary transition-colors">
                 Preços
-              </Link>
-              <Link to="/contato" className="text-muted-foreground hover:text-primary transition-colors">
-                Contato
-              </Link>
+              </a>
               <div className="flex flex-col space-y-2 pt-4">
                 <Link to="/login">
                   <Button variant="outline" className="w-full">Login</Button>

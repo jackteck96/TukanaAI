@@ -166,7 +166,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      <section id="recursos" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
@@ -218,12 +218,12 @@ const Landing = () => {
               </div>
               
               <div className="mt-8">
-                <Link to="/recursos">
+                <a href="#recursos">
                   <Button variant="gradient" size="lg">
                     Conhecer Todos os Recursos
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                </Link>
+                </a>
               </div>
             </div>
             
@@ -269,7 +269,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-muted/30">
+      <section id="precos" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
@@ -344,7 +344,7 @@ const Landing = () => {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/contato">
+              <Link to="/login">
                 <Button size="lg" variant="outline" className="text-lg px-8">
                   Falar com Especialista
                 </Button>
