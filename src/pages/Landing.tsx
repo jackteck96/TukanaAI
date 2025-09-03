@@ -140,9 +140,10 @@ const Landing = () => {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/demo">
+              <Link to="/documentos">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Ver Demonstração
+                  Gerenciar Documentos
+                  <FileCheck className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>

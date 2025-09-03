@@ -14,13 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      document_reports: {
+        Row: {
+          approved_documents: number
+          generated_at: string
+          id: string
+          pending_documents: number
+          process_id: string
+          report_data: Json
+          total_documents: number
+        }
+        Insert: {
+          approved_documents?: number
+          generated_at?: string
+          id?: string
+          pending_documents?: number
+          process_id: string
+          report_data: Json
+          total_documents?: number
+        }
+        Update: {
+          approved_documents?: number
+          generated_at?: string
+          id?: string
+          pending_documents?: number
+          process_id?: string
+          report_data?: Json
+          total_documents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_reports_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          process_id: string
+          status: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          process_id: string
+          status?: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          process_id?: string
+          status?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      processes: {
+        Row: {
+          client_email: string
+          client_name: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          process_type: string
+          progress: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_email: string
+          client_name: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          process_type: string
+          progress?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string
+          client_name?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          process_type?: string
+          progress?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_document_report: {
+        Args: { process_uuid: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
