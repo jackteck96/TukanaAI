@@ -23,38 +23,44 @@ import {
   LogOut,
   Brain
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const EmpresaDashboard = () => {
+  const navigate = useNavigate();
+  
   const stats = [
     {
       title: "Total de Clientes",
       value: "156",
       change: "+12%",
       icon: Users,
-      color: "text-primary"
+      color: "text-primary",
+      route: "/cliente"
     },
     {
       title: "Documentos Ativos",
       value: "2.847",
       change: "+8%",
       icon: FileText,
-      color: "text-accent"
+      color: "text-accent",
+      route: "/documentos"
     },
     {
       title: "Pendentes",
       value: "23",
       change: "-15%",
       icon: Clock,
-      color: "text-orange-500"
+      color: "text-orange-500",
+      route: "/documentos?status=pendente"
     },
     {
       title: "Concluídos Hoje",
       value: "89",
       change: "+22%",
       icon: CheckCircle,
-      color: "text-green-500"
+      color: "text-green-500",
+      route: "/relatorios"
     }
   ];
 
@@ -232,7 +238,11 @@ const EmpresaDashboard = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-card transition-all duration-300">
+            <Card 
+              key={index} 
+              className="hover:shadow-card transition-all duration-300 cursor-pointer hover:scale-105" 
+              onClick={() => navigate(stat.route)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
