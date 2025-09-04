@@ -136,7 +136,7 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link to="/login">
                 <Button size="lg" variant="hero" className="text-lg px-8">
-                  Começar Gratuitamente
+                  Começar Agora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -150,16 +150,16 @@ const Landing = () => {
             
             <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <CheckCircle className="h-4 w-4 text-success" />
-                <span>Teste grátis por 14 dias</span>
-              </div>
-              <div className="flex items-center space-x-2">
                 <Lock className="h-4 w-4 text-success" />
                 <span>Dados 100% seguros</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Globe className="h-4 w-4 text-success" />
                 <span>Conforme LGPD</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-success" />
+                <span>Suporte especializado</span>
               </div>
             </div>
           </div>
@@ -341,7 +341,7 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/cadastro">
                 <Button size="lg" variant="hero" className="text-lg px-8">
-                  Começar Teste Grátis
+                  Começar Agora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -353,7 +353,7 @@ const Landing = () => {
             </div>
             
             <p className="text-sm text-muted-foreground mt-6">
-              Teste grátis por 14 dias • Sem cartão de crédito • Suporte incluso
+              Plataforma segura • Suporte incluso • Conforme LGPD
             </p>
           </div>
         </div>
