@@ -13,6 +13,7 @@ import CadastroTiposDocumentos from "./pages/CadastroTiposDocumentos";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import DocumentManagement from "./pages/DocumentManagement";
+import Relatorios from "./pages/Relatorios";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/treinar-ia" element={<TreinarIA />} />
           <Route path="/cadastro-tipos-documentos" element={<CadastroTiposDocumentos />} />
           <Route path="/documentos" element={<DocumentManagement />} />
+          <Route path="/relatorios" element={<Relatorios />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
