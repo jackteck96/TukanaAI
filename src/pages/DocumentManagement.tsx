@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Plus, Search, FileText, Users, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import DocumentUpload from '@/components/DocumentUpload';
 import DocumentList from '@/components/DocumentList';
@@ -26,6 +27,7 @@ interface Process {
 
 export default function DocumentManagement() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [processes, setProcesses] = useState<Process[]>([]);
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,11 @@ export default function DocumentManagement() {
     try {
       const { data, error } = await supabase
         .from('processes')
-        .insert([newProcess])
+        .insert([{
+          ...newProcess,
+          created_by: user?.id,
+          assigned_user_id: user?.id
+        }])
         .select()
         .single();
 

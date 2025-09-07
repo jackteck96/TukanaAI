@@ -25,9 +25,11 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   
   const stats = [
     {
@@ -63,6 +65,11 @@ const EmpresaDashboard = () => {
       route: "/relatorios"
     }
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   const recentClients = [
     {
@@ -223,12 +230,10 @@ const EmpresaDashboard = () => {
                   </Button>
                 </DialogTrigger>
               </Dialog>
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </Link>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>

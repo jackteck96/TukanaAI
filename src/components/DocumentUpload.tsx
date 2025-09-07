@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DocumentUploadProps {
   processId: string;
@@ -28,6 +29,7 @@ const documentTypes = [
 ];
 
 export default function DocumentUpload({ processId, onUploadComplete }: DocumentUploadProps) {
+  const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState('');
   const [uploaderName, setUploaderName] = useState('');

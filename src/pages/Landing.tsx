@@ -134,15 +134,15 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/login">
+              <Link to="/auth">
                 <Button size="lg" variant="hero" className="text-lg px-8">
                   Começar Agora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/documentos">
+              <Link to="/empresa">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Gerenciar Documentos
+                  Acessar Plataforma
                   <FileCheck className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -312,7 +312,7 @@ const Landing = () => {
                     ))}
                   </ul>
                   
-                  <Link to="/login">
+                  <Link to="/auth">
                     <Button 
                       className="w-full" 
                       variant={plan.highlighted ? "hero" : "outline"}
@@ -339,13 +339,13 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/cadastro">
+              <Link to="/auth">
                 <Button size="lg" variant="hero" className="text-lg px-8">
                   Começar Agora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/auth">
                 <Button size="lg" variant="outline" className="text-lg px-8">
                   Falar com Especialista
                 </Button>

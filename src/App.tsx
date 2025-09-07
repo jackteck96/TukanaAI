@@ -3,7 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
 import EmpresaDashboard from "./pages/EmpresaDashboard";
 import AreaCliente from "./pages/AreaCliente";
 import ModelosDocumentos from "./pages/ModelosDocumentos";
@@ -19,26 +22,65 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/empresa" element={<EmpresaDashboard />} />
-          <Route path="/cliente" element={<AreaCliente />} />
-          <Route path="/modelos-documentos" element={<ModelosDocumentos />} />
-          <Route path="/gerenciar-processos" element={<GerenciarProcessos />} />
-          <Route path="/treinar-ia" element={<TreinarIA />} />
-          <Route path="/cadastro-tipos-documentos" element={<CadastroTiposDocumentos />} />
-          <Route path="/documentos" element={<DocumentManagement />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/login" element={<Login />} />
+            
+            {/* Protected routes */}
+            <Route path="/empresa" element={
+              <ProtectedRoute>
+                <EmpresaDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/cliente" element={
+              <ProtectedRoute>
+                <AreaCliente />
+              </ProtectedRoute>
+            } />
+            <Route path="/modelos-documentos" element={
+              <ProtectedRoute>
+                <ModelosDocumentos />
+              </ProtectedRoute>
+            } />
+            <Route path="/gerenciar-processos" element={
+              <ProtectedRoute>
+                <GerenciarProcessos />
+              </ProtectedRoute>
+            } />
+            <Route path="/treinar-ia" element={
+              <ProtectedRoute>
+                <TreinarIA />
+              </ProtectedRoute>
+            } />
+            <Route path="/cadastro-tipos-documentos" element={
+              <ProtectedRoute>
+                <CadastroTiposDocumentos />
+              </ProtectedRoute>
+            } />
+            <Route path="/documentos" element={
+              <ProtectedRoute>
+                <DocumentManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/relatorios" element={
+              <ProtectedRoute>
+                <Relatorios />
+              </ProtectedRoute>
+            } />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
