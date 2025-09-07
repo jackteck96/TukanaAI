@@ -104,9 +104,11 @@ export type Database = {
       }
       processes: {
         Row: {
+          assigned_user_id: string | null
           client_email: string
           client_name: string
           created_at: string
+          created_by: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -117,9 +119,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_user_id?: string | null
           client_email: string
           client_name: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -130,9 +134,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_user_id?: string | null
           client_email?: string
           client_name?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -144,18 +150,56 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          firm_id: string | null
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          firm_id?: string | null
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          firm_id?: string | null
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_access_process: {
+        Args: { process_uuid: string }
+        Returns: boolean
+      }
       generate_document_report: {
         Args: { process_uuid: string }
         Returns: string
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "lawyer" | "staff" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -282,6 +326,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "lawyer", "staff", "client"],
+    },
   },
 } as const
