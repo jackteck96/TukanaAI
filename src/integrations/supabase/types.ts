@@ -197,6 +197,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      log_process_access: {
+        Args: { access_type: string; process_uuid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       user_role: "admin" | "lawyer" | "staff" | "client"
