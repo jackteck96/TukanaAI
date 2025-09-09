@@ -104,6 +104,7 @@ export default {
 				'gradient-hero': 'var(--gradient-hero)',
 				'gradient-card': 'var(--gradient-card)'
 			}
+		}
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
