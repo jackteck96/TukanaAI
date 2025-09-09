@@ -16,7 +16,13 @@ const Signup = () => {
   const [formData, setFormData] = useState({
     companyName: '',
     cnpj: '',
-    headquarters: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    zipCode: '',
     fullName: '',
     email: '',
     password: '',
@@ -40,8 +46,30 @@ const Signup = () => {
       newErrors.cnpj = 'CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX';
     }
 
-    if (!formData.headquarters.trim()) {
-      newErrors.headquarters = 'Sede é obrigatória';
+    if (!formData.street.trim()) {
+      newErrors.street = 'Rua é obrigatória';
+    }
+
+    if (!formData.number.trim()) {
+      newErrors.number = 'Número é obrigatório';
+    }
+
+    if (!formData.neighborhood.trim()) {
+      newErrors.neighborhood = 'Bairro é obrigatório';
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = 'Cidade é obrigatória';
+    }
+
+    if (!formData.state.trim()) {
+      newErrors.state = 'Estado é obrigatório';
+    }
+
+    if (!formData.zipCode.trim()) {
+      newErrors.zipCode = 'CEP é obrigatório';
+    } else if (!/^\d{5}-?\d{3}$/.test(formData.zipCode)) {
+      newErrors.zipCode = 'CEP deve estar no formato XXXXX-XXX';
     }
 
     if (!formData.fullName.trim()) {
@@ -245,26 +273,136 @@ const Signup = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="headquarters" className="text-sm font-medium">
-                  Sede
-                </Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="headquarters"
-                    name="headquarters"
-                    type="text"
-                    placeholder="Endereço da sede da empresa"
-                    value={formData.headquarters}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    required
-                  />
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground">Endereço da Sede</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="street" className="text-sm font-medium">
+                      Rua
+                    </Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        id="street"
+                        name="street"
+                        type="text"
+                        placeholder="Nome da rua"
+                        value={formData.street}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                    {errors.street && (
+                      <p className="text-sm text-destructive">{errors.street}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="number" className="text-sm font-medium">
+                      Número
+                    </Label>
+                    <Input
+                      id="number"
+                      name="number"
+                      type="text"
+                      placeholder="123"
+                      value={formData.number}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {errors.number && (
+                      <p className="text-sm text-destructive">{errors.number}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="complement" className="text-sm font-medium">
+                      Complemento (opcional)
+                    </Label>
+                    <Input
+                      id="complement"
+                      name="complement"
+                      type="text"
+                      placeholder="Sala 201"
+                      value={formData.complement}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="neighborhood" className="text-sm font-medium">
+                      Bairro
+                    </Label>
+                    <Input
+                      id="neighborhood"
+                      name="neighborhood"
+                      type="text"
+                      placeholder="Centro"
+                      value={formData.neighborhood}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {errors.neighborhood && (
+                      <p className="text-sm text-destructive">{errors.neighborhood}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-sm font-medium">
+                      Cidade
+                    </Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      type="text"
+                      placeholder="São Paulo"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {errors.city && (
+                      <p className="text-sm text-destructive">{errors.city}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="state" className="text-sm font-medium">
+                      Estado
+                    </Label>
+                    <Input
+                      id="state"
+                      name="state"
+                      type="text"
+                      placeholder="SP"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {errors.state && (
+                      <p className="text-sm text-destructive">{errors.state}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode" className="text-sm font-medium">
+                      CEP
+                    </Label>
+                    <Input
+                      id="zipCode"
+                      name="zipCode"
+                      type="text"
+                      placeholder="01234-567"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {errors.zipCode && (
+                      <p className="text-sm text-destructive">{errors.zipCode}</p>
+                    )}
+                  </div>
                 </div>
-                {errors.headquarters && (
-                  <p className="text-sm text-destructive">{errors.headquarters}</p>
-                )}
               </div>
 
               <div className="space-y-3">
