@@ -27,6 +27,7 @@ const GerenciarProcessos = () => {
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [messageForm, setMessageForm] = useState({
     message: "",
     requestDocs: [] as string[]
@@ -143,6 +144,7 @@ const GerenciarProcessos = () => {
     console.log("Solicitando documentos:", messageForm);
     setIsDocumentModalOpen(false);
     setMessageForm({ message: "", requestDocs: [] });
+    setSearchTerm("");
   };
 
   // Simulação dos tipos de documentos cadastrados pelo administrador
@@ -353,35 +355,47 @@ const GerenciarProcessos = () => {
           <form onSubmit={submitDocumentRequest} className="space-y-4">
             <div>
               <Label>Documentos Adicionais</Label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
-                {availableDocuments.map((doc) => (
-                  <div key={doc} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`req-${doc}`}
-                      checked={messageForm.requestDocs.includes(doc)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setMessageForm({
-                            ...messageForm,
-                            requestDocs: [...messageForm.requestDocs, doc]
-                          });
-                        } else {
-                          setMessageForm({
-                            ...messageForm,
-                            requestDocs: messageForm.requestDocs.filter(d => d !== doc)
-                          });
-                        }
-                      }}
-                      className="rounded border-border"
-                    />
-                    <Label htmlFor={`req-${doc}`} className="text-sm">{doc}</Label>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <div className="relative">
+                  <Input
+                    placeholder="Buscar documentos..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pr-8"
+                  />
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
+                  {availableDocuments
+                    .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map((doc) => (
+                    <div key={doc} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`req-${doc}`}
+                        checked={messageForm.requestDocs.includes(doc)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setMessageForm({
+                              ...messageForm,
+                              requestDocs: [...messageForm.requestDocs, doc]
+                            });
+                          } else {
+                            setMessageForm({
+                              ...messageForm,
+                              requestDocs: messageForm.requestDocs.filter(d => d !== doc)
+                            });
+                          }
+                        }}
+                        className="rounded border-border"
+                      />
+                      <Label htmlFor={`req-${doc}`} className="text-sm">{doc}</Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {messageForm.requestDocs.length} documento(s) selecionado(s)
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {messageForm.requestDocs.length} documento(s) selecionado(s)
-              </p>
             </div>
             <div>
               <Label htmlFor="requestMessage">Mensagem (opcional)</Label>
