@@ -38,9 +38,9 @@ const Header = () => {
             <Link to="/login">
               <Button variant="outline">Login</Button>
             </Link>
-            <Link to="/signup">
+            <a href="#precos">
               <Button variant="hero">Começar Agora</Button>
-            </Link>
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,9 +72,9 @@ const Header = () => {
                 <Link to="/login">
                   <Button variant="outline" className="w-full">Login</Button>
                 </Link>
-                <Link to="/signup">
+                <a href="#precos">
                   <Button variant="hero" className="w-full">Começar Agora</Button>
-                </Link>
+                </a>
               </div>
             </div>
           </nav>
