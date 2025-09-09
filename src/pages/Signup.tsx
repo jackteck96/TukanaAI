@@ -222,9 +222,9 @@ const Signup = () => {
 
         <Card className="shadow-lg border-border/50">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl font-semibold">Cadastro Empresarial</CardTitle>
+            <CardTitle className="text-xl font-semibold">Cadastro do Responsável</CardTitle>
             <CardDescription>
-              Preencha os dados para criar sua conta e empresa
+              Você será registrado como <strong>administrador</strong> da empresa e terá acesso completo ao sistema
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -274,6 +274,15 @@ const Signup = () => {
               </div>
 
               <div className="space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                    <User className="h-4 w-4" />
+                    <span className="font-semibold text-sm">Você será o Administrador</span>
+                  </div>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                    Como responsável pela empresa, você terá acesso total ao sistema, incluindo relatórios, gerenciamento de usuários e todas as funcionalidades administrativas.
+                  </p>
+                </div>
                 <h3 className="text-sm font-medium text-foreground">Endereço da Sede</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

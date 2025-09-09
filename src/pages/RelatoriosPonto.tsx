@@ -32,12 +32,19 @@ const RelatoriosPonto = () => {
   useEffect(() => {
     const checkAdminRole = async () => {
       if (user) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single();
         
+        if (error) {
+          console.error('Error fetching user role:', error);
+          setIsAdmin(false);
+          return;
+        }
+        
+        console.log('User role:', profile?.role); // Debug log
         setIsAdmin(profile?.role === 'admin');
       }
     };
@@ -168,14 +175,28 @@ const RelatoriosPonto = () => {
   if (!isAdmin) {
     return (
       <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/empresa')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
+          </Button>
+        </div>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">Acesso Restrito</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Apenas administradores podem acessar os relatórios de ponto.
               </p>
+              <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
+                <p><strong>Debugging:</strong> Role atual detectado: {user?.id ? 'carregando...' : 'não logado'}</p>
+                <p>Se você é administrador e não consegue acessar, entre em contato com o suporte.</p>
+              </div>
             </div>
           </CardContent>
         </Card>

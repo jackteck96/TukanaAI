@@ -139,13 +139,22 @@ const CadastroCliente = () => {
 
         <Card className="shadow-elegant border-border/50">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-semibold">Dados do Cliente</CardTitle>
+            <CardTitle className="text-2xl font-semibold">Cadastro de Cliente</CardTitle>
             <CardDescription className="text-base">
-              Preencha seus dados para criar sua conta
+              Você será registrado como <strong>cliente</strong> e poderá acompanhar seus processos
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
+              <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800 mb-4">
+                <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                  <User className="h-4 w-4" />
+                  <span className="font-semibold text-sm">Cadastro de Cliente</span>
+                </div>
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  Você terá acesso para acompanhar seus processos e documentos. Para funcionalidades administrativas, entre em contato com sua empresa.
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-sm font-medium">
                   Nome Completo
