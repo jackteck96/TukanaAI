@@ -17,6 +17,16 @@ export const useTimeRecords = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const getEntryTypeLabel = (type: TimeEntry['type']) => {
+    switch (type) {
+      case 'entrada': return 'Entrada';
+      case 'saida': return 'Saída';
+      case 'pausa': return 'Pausa';
+      case 'retorno': return 'Retorno';
+      default: return type;
+    }
+  };
+
   const fetchTodayEntries = async () => {
     try {
       const today = new Date();
@@ -116,15 +126,6 @@ export const useTimeRecords = () => {
     }
   };
 
-  const getEntryTypeLabel = (type: TimeEntry['type']) => {
-    switch (type) {
-      case 'entrada': return 'Entrada';
-      case 'saida': return 'Saída';
-      case 'pausa': return 'Pausa';
-      case 'retorno': return 'Retorno';
-      default: return type;
-    }
-  };
 
   const fetchAllEmployeeRecords = async (startDate: Date, endDate: Date) => {
     try {
