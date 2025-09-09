@@ -23,6 +23,8 @@ interface CreateProcessForm {
 const CreateProcessWithInvite = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [requiredDocuments, setRequiredDocuments] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -36,6 +38,23 @@ const CreateProcessWithInvite = () => {
     dueDate: "",
   });
 
+  const availableDocuments = [
+    "RG - Registro Geral",
+    "CPF - Cadastro de Pessoa Física", 
+    "Comprovante de Residência",
+    "CNPJ - Cadastro Nacional da Pessoa Jurídica",
+    "Carteira de Trabalho",
+    "Contrato Social", 
+    "Inscrição Estadual", 
+    "Alvará de Funcionamento",
+    "Declaração de Imposto de Renda", 
+    "Comprovante de Renda", 
+    "Certidão de Nascimento",
+    "Certidão de Casamento", 
+    "Procuração", 
+    "Contrato de Prestação de Serviços"
+  ];
+
   const resetForm = () => {
     setFormData({
       clientName: "",
@@ -45,6 +64,8 @@ const CreateProcessWithInvite = () => {
       priority: "Média",
       dueDate: "",
     });
+    setRequiredDocuments([]);
+    setSearchTerm("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,6 +83,8 @@ const CreateProcessWithInvite = () => {
     setLoading(true);
 
     try {
+      console.log('Creating process with company_id:', company?.id); // Debug log
+      
       // 1. Criar o processo
       const { data: processData, error: processError } = await supabase
         .from("processes")
@@ -69,16 +92,18 @@ const CreateProcessWithInvite = () => {
           client_name: formData.clientName,
           client_email: formData.clientEmail,
           cpf_cnpj: formData.cpfCnpj,
-          process_type: "Documental", // Todos os processos são documentais
+          process_type: requiredDocuments.length > 0 ? `Processo: ${requiredDocuments.slice(0,2).join(", ")}` : "Processo Documental",
           description: formData.description,
           priority: formData.priority,
           due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
-          company_id: company.id,
+          company_id: company?.id,
           created_by: user.id,
           assigned_user_id: user.id,
         })
         .select()
         .single();
+      
+      console.log('Process created:', processData); // Debug log
 
       if (processError) {
         throw processError;
@@ -128,10 +153,13 @@ const CreateProcessWithInvite = () => {
       } else {
         toast({
           title: "Processo criado com sucesso!",
-          description: `Processo criado e convite enviado para ${formData.clientEmail}.`,
+          description: `Processo criado com ${requiredDocuments.length} documento(s) necessário(s) e convite enviado para ${formData.clientEmail}.`,
         });
       }
 
+      // Refresh dashboard data if available
+      window.location.reload();
+      
       resetForm();
       setIsOpen(false);
     } catch (error: any) {
@@ -243,6 +271,50 @@ const CreateProcessWithInvite = () => {
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
               />
+            </div>
+          </div>
+
+          {/* Document Types Selection */}
+          <div>
+            <Label>Documentos Necessários</Label>
+            <div className="space-y-3">
+              <div className="relative">
+                <Input
+                  placeholder="Buscar documentos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pr-8"
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto border rounded-lg p-3 bg-muted/30">
+                {availableDocuments
+                  .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .map((doc) => (
+                  <div key={doc} className="flex items-center space-x-2 py-1">
+                    <input
+                      type="checkbox"
+                      id={`doc-${doc}`}
+                      checked={requiredDocuments.includes(doc)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setRequiredDocuments([...requiredDocuments, doc]);
+                        } else {
+                          setRequiredDocuments(requiredDocuments.filter(d => d !== doc));
+                        }
+                      }}
+                      className="rounded border-border"
+                    />
+                    <Label htmlFor={`doc-${doc}`} className="text-sm cursor-pointer flex-1">
+                      {doc}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {requiredDocuments.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  {requiredDocuments.length} documento(s) selecionado(s): {requiredDocuments.join(", ")}
+                </div>
+              )}
             </div>
           </div>
 
