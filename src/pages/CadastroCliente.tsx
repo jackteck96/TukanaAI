@@ -125,22 +125,23 @@ const CadastroCliente = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+      <div className="w-full max-w-lg space-y-8">
+        <div className="text-center space-y-4">
+          <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4">
             <ArrowLeft className="h-4 w-4" />
+            Voltar para home
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Fuzen</h1>
-            <p className="text-sm text-muted-foreground">Cadastro de Cliente</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Cadastro de Cliente</h1>
+            <p className="text-lg text-muted-foreground">Crie sua conta para acessar a plataforma Fuzen</p>
           </div>
         </div>
 
-        <Card className="shadow-lg border-border/50">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-xl font-semibold">Criar Conta de Cliente</CardTitle>
-            <CardDescription>
-              Preencha os dados para acessar a área do cliente
+        <Card className="shadow-elegant border-border/50">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-semibold">Dados do Cliente</CardTitle>
+            <CardDescription className="text-base">
+              Preencha seus dados para criar sua conta
             </CardDescription>
           </CardHeader>
           <CardContent>
