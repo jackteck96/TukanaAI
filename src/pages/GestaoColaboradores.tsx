@@ -30,7 +30,7 @@ interface TeamMember {
   id: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'lawyer' | 'staff' | 'client';
+  role: 'admin' | 'lawyer' | 'staff' | 'client'; // Keep temporarily to handle existing data
   created_at: string;
 }
 
@@ -38,7 +38,7 @@ interface UserInvite {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'lawyer' | 'staff' | 'client';
+  role: 'admin' | 'lawyer' | 'staff' | 'client'; // Keep temporarily to handle existing data
   status: string;
   created_at: string;
   expires_at: string;
@@ -134,7 +134,7 @@ const GestaoColaboradores = () => {
       case 'admin':
         return <Crown className="h-4 w-4" />;
       case 'lawyer':
-        return <Shield className="h-4 w-4" />;
+        return <Shield className="h-4 w-4" />; // Keep for existing data
       case 'staff':
         return <User className="h-4 w-4" />;
       case 'client':
@@ -149,7 +149,7 @@ const GestaoColaboradores = () => {
       case 'admin':
         return 'Administrador';
       case 'lawyer':
-        return 'Advogado';
+        return 'Advogado'; // Keep for existing data
       case 'staff':
         return 'Funcionário';
       case 'client':
@@ -164,7 +164,7 @@ const GestaoColaboradores = () => {
       case 'admin':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
       case 'lawyer':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'; // Keep for existing data
       case 'staff':
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'client':
@@ -297,14 +297,14 @@ const GestaoColaboradores = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Advogados</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Funcionários</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {teamMembers.filter(m => m.role === 'lawyer').length}
+              {teamMembers.filter(m => m.role === 'staff').length}
             </div>
-            <p className="text-xs text-muted-foreground">Profissionais jurídicos</p>
+            <p className="text-xs text-muted-foreground">Membros da equipe</p>
           </CardContent>
         </Card>
       </div>
@@ -328,7 +328,6 @@ const GestaoColaboradores = () => {
           >
             <option value="all">Todos os cargos</option>
             <option value="admin">Administrador</option>
-            <option value="lawyer">Advogado</option>
             <option value="staff">Funcionário</option>
             <option value="client">Cliente</option>
           </select>

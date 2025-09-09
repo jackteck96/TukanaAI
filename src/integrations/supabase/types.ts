@@ -128,6 +128,42 @@ export type Database = {
           },
         ]
       }
+      document_types: {
+        Row: {
+          company_id: string
+          created_at: string
+          has_expiration_date: boolean
+          has_validity_date: boolean
+          id: string
+          name: string
+          notes: string | null
+          requires_issuing_location: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          has_expiration_date?: boolean
+          has_validity_date?: boolean
+          id?: string
+          name: string
+          notes?: string | null
+          requires_issuing_location?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          has_expiration_date?: boolean
+          has_validity_date?: boolean
+          id?: string
+          name?: string
+          notes?: string | null
+          requires_issuing_location?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           company_id: string | null
@@ -194,6 +230,7 @@ export type Database = {
           client_email: string
           client_name: string
           company_id: string | null
+          cpf_cnpj: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -210,6 +247,7 @@ export type Database = {
           client_email: string
           client_name: string
           company_id?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -226,6 +264,7 @@ export type Database = {
           client_email?: string
           client_name?: string
           company_id?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null

@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 interface InviteFormData {
   email: string;
-  role: 'lawyer' | 'staff' | 'client';
+  role: 'staff' | 'client';
   full_name: string;
 }
 
@@ -146,8 +146,6 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'lawyer':
-        return 'Advogado';
       case 'staff':
         return 'Funcionário';
       case 'client':
@@ -202,7 +200,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
             <Label htmlFor="role">Função</Label>
             <Select 
               value={inviteData.role} 
-              onValueChange={(value: 'lawyer' | 'staff' | 'client') => 
+              onValueChange={(value: 'staff' | 'client') => 
                 setInviteData({ ...inviteData, role: value })
               }
             >
@@ -210,16 +208,6 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="lawyer">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                      Advogado
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Acesso total aos processos
-                    </span>
-                  </div>
-                </SelectItem>
                 <SelectItem value="staff">
                   <div className="flex items-center gap-2">
                     <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">

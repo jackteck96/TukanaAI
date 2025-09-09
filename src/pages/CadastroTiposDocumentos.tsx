@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,55 +9,63 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ArrowLeft, Plus, Edit, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCompany } from "@/contexts/CompanyContext";
 
 interface TipoDocumento {
-  id: number;
-  nome: string;
-  temDataValidade: boolean;
-  temDataExpiracao: boolean;
-  temLocalEmissao: boolean;
-  observacoes: string;
+  id: string;
+  name: string;
+  has_validity_date: boolean;
+  has_expiration_date: boolean;
+  requires_issuing_location: boolean;
+  notes: string;
 }
 
 const CadastroTiposDocumentos = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [tiposDocumentos, setTiposDocumentos] = useState<TipoDocumento[]>([
-    {
-      id: 1,
-      nome: "RG",
-      temDataValidade: false,
-      temDataExpiracao: false,
-      temLocalEmissao: true,
-      observacoes: "Documento de identidade obrigatório"
-    },
-    {
-      id: 2,
-      nome: "CPF",
-      temDataValidade: false,
-      temDataExpiracao: false,
-      temLocalEmissao: false,
-      observacoes: "Cadastro de Pessoa Física"
-    },
-    {
-      id: 3,
-      nome: "CNH",
-      temDataValidade: true,
-      temDataExpiracao: true,
-      temLocalEmissao: true,
-      observacoes: "Carteira Nacional de Habilitação"
-    }
-  ]);
-
+  const { user } = useAuth();
+  const { company } = useCompany();
+  const [tiposDocumentos, setTiposDocumentos] = useState<TipoDocumento[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTipo, setEditingTipo] = useState<TipoDocumento | null>(null);
   const [formData, setFormData] = useState({
-    nome: "",
-    temDataValidade: false,
-    temDataExpiracao: false,
-    temLocalEmissao: false,
-    observacoes: ""
+    name: "",
+    has_validity_date: false,
+    has_expiration_date: false,
+    requires_issuing_location: false,
+    notes: ""
   });
+
+  const fetchDocumentTypes = async () => {
+    if (!company?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('document_types')
+        .select('*')
+        .eq('company_id', company.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTiposDocumentos(data || []);
+    } catch (error) {
+      console.error('Error fetching document types:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar tipos de documentos",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocumentTypes();
+  }, [company?.id]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -66,10 +74,10 @@ const CadastroTiposDocumentos = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome.trim()) {
+    if (!formData.name.trim()) {
       toast({
         title: "Erro",
         description: "Nome do documento é obrigatório",
@@ -78,70 +86,135 @@ const CadastroTiposDocumentos = () => {
       return;
     }
 
-    if (editingTipo) {
-      setTiposDocumentos(prev => prev.map(tipo => 
-        tipo.id === editingTipo.id 
-          ? { ...tipo, ...formData }
-          : tipo
-      ));
+    if (!company?.id || !user?.id) {
       toast({
-        title: "Sucesso",
-        description: "Tipo de documento atualizado com sucesso"
+        title: "Erro",
+        description: "Usuário ou empresa não identificados",
+        variant: "destructive"
       });
-    } else {
-      const novoTipo: TipoDocumento = {
-        id: Date.now(),
-        ...formData
-      };
-      setTiposDocumentos(prev => [...prev, novoTipo]);
-      toast({
-        title: "Sucesso", 
-        description: "Tipo de documento cadastrado com sucesso"
-      });
+      return;
     }
 
-    setFormData({
-      nome: "",
-      temDataValidade: false,
-      temDataExpiracao: false,
-      temLocalEmissao: false,
-      observacoes: ""
-    });
-    setEditingTipo(null);
-    setIsModalOpen(false);
+    try {
+      if (editingTipo) {
+        const { error } = await supabase
+          .from('document_types')
+          .update({
+            name: formData.name,
+            has_validity_date: formData.has_validity_date,
+            has_expiration_date: formData.has_expiration_date,
+            requires_issuing_location: formData.requires_issuing_location,
+            notes: formData.notes
+          })
+          .eq('id', editingTipo.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso",
+          description: "Tipo de documento atualizado com sucesso"
+        });
+      } else {
+        const { error } = await supabase
+          .from('document_types')
+          .insert({
+            name: formData.name,
+            has_validity_date: formData.has_validity_date,
+            has_expiration_date: formData.has_expiration_date,
+            requires_issuing_location: formData.requires_issuing_location,
+            notes: formData.notes,
+            company_id: company.id
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso", 
+          description: "Tipo de documento cadastrado com sucesso"
+        });
+      }
+
+      setFormData({
+        name: "",
+        has_validity_date: false,
+        has_expiration_date: false,
+        requires_issuing_location: false,
+        notes: ""
+      });
+      setEditingTipo(null);
+      setIsModalOpen(false);
+      fetchDocumentTypes();
+    } catch (error: any) {
+      console.error('Error saving document type:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao salvar tipo de documento",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEdit = (tipo: TipoDocumento) => {
     setEditingTipo(tipo);
     setFormData({
-      nome: tipo.nome,
-      temDataValidade: tipo.temDataValidade,
-      temDataExpiracao: tipo.temDataExpiracao,
-      temLocalEmissao: tipo.temLocalEmissao,
-      observacoes: tipo.observacoes
+      name: tipo.name,
+      has_validity_date: tipo.has_validity_date,
+      has_expiration_date: tipo.has_expiration_date,
+      requires_issuing_location: tipo.requires_issuing_location,
+      notes: tipo.notes
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setTiposDocumentos(prev => prev.filter(tipo => tipo.id !== id));
-    toast({
-      title: "Sucesso",
-      description: "Tipo de documento removido com sucesso"
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('document_types')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Tipo de documento removido com sucesso"
+      });
+      fetchDocumentTypes();
+    } catch (error: any) {
+      console.error('Error deleting document type:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao remover tipo de documento",
+        variant: "destructive"
+      });
+    }
   };
 
   const openNewModal = () => {
     setEditingTipo(null);
     setFormData({
-      nome: "",
-      temDataValidade: false,
-      temDataExpiracao: false,
-      temLocalEmissao: false,
-      observacoes: ""
+      name: "",
+      has_validity_date: false,
+      has_expiration_date: false,
+      requires_issuing_location: false,
+      notes: ""
     });
     setIsModalOpen(true);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-64"></div>
+            <div className="h-32 bg-muted rounded"></div>
+            <div className="h-64 bg-muted rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
@@ -184,11 +257,11 @@ const CadastroTiposDocumentos = () => {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="nome">Nome do Documento</Label>
+                  <Label htmlFor="name">Nome do Documento</Label>
                   <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => handleInputChange('nome', e.target.value)}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
                     placeholder="Ex: RG, CPF, CNH..."
                     required
                   />
@@ -197,44 +270,44 @@ const CadastroTiposDocumentos = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="temDataValidade"
-                      checked={formData.temDataValidade}
+                      id="has_validity_date"
+                      checked={formData.has_validity_date}
                       onCheckedChange={(checked) => 
-                        handleInputChange('temDataValidade', checked as boolean)
+                        handleInputChange('has_validity_date', checked as boolean)
                       }
                     />
-                    <Label htmlFor="temDataValidade">Possui data de validade</Label>
+                    <Label htmlFor="has_validity_date">Possui data de validade</Label>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="temDataExpiracao"
-                      checked={formData.temDataExpiracao}
+                      id="has_expiration_date"
+                      checked={formData.has_expiration_date}
                       onCheckedChange={(checked) => 
-                        handleInputChange('temDataExpiracao', checked as boolean)
+                        handleInputChange('has_expiration_date', checked as boolean)
                       }
                     />
-                    <Label htmlFor="temDataExpiracao">Possui data de expiração</Label>
+                    <Label htmlFor="has_expiration_date">Possui data de expiração</Label>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="temLocalEmissao"
-                      checked={formData.temLocalEmissao}
+                      id="requires_issuing_location"
+                      checked={formData.requires_issuing_location}
                       onCheckedChange={(checked) => 
-                        handleInputChange('temLocalEmissao', checked as boolean)
+                        handleInputChange('requires_issuing_location', checked as boolean)
                       }
                     />
-                    <Label htmlFor="temLocalEmissao">Requer local de emissão</Label>
+                    <Label htmlFor="requires_issuing_location">Requer local de emissão</Label>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="observacoes">Observações</Label>
+                  <Label htmlFor="notes">Observações</Label>
                   <Textarea
-                    id="observacoes"
-                    value={formData.observacoes}
-                    onChange={(e) => handleInputChange('observacoes', e.target.value)}
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
                     placeholder="Informações adicionais sobre o documento..."
                     rows={3}
                   />
@@ -262,7 +335,7 @@ const CadastroTiposDocumentos = () => {
             <Card key={tipo.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{tipo.nome}</CardTitle>
+                  <CardTitle className="text-lg">{tipo.name}</CardTitle>
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"
@@ -286,25 +359,25 @@ const CadastroTiposDocumentos = () => {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {tipo.temDataValidade && (
+                    {tipo.has_validity_date && (
                       <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
                         Data de Validade
                       </span>
                     )}
-                    {tipo.temDataExpiracao && (
+                    {tipo.has_expiration_date && (
                       <span className="px-2 py-1 bg-accent/10 text-accent-foreground text-xs rounded-full">
                         Data de Expiração
                       </span>
                     )}
-                    {tipo.temLocalEmissao && (
+                    {tipo.requires_issuing_location && (
                       <span className="px-2 py-1 bg-secondary/50 text-secondary-foreground text-xs rounded-full">
                         Local de Emissão
                       </span>
                     )}
                   </div>
-                  {tipo.observacoes && (
+                  {tipo.notes && (
                     <p className="text-sm text-muted-foreground">
-                      {tipo.observacoes}
+                      {tipo.notes}
                     </p>
                   )}
                 </div>

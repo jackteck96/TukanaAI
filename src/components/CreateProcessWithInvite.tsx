@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import { Mail, Plus } from "lucide-react";
 interface CreateProcessForm {
   clientName: string;
   clientEmail: string;
+  cpfCnpj: string;
   processType: string;
   description: string;
   priority: string;
@@ -23,6 +24,14 @@ interface CreateProcessForm {
 const CreateProcessWithInvite = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [processTypes, setProcessTypes] = useState<string[]>([
+    "Contrato de Prestação de Serviços",
+    "Documentação Fiscal", 
+    "Consultoria Jurídica",
+    "Análise de Documentos",
+    "Procedimento Administrativo",
+    "Outro",
+  ]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -30,25 +39,57 @@ const CreateProcessWithInvite = () => {
   const [formData, setFormData] = useState<CreateProcessForm>({
     clientName: "",
     clientEmail: "",
+    cpfCnpj: "",
     processType: "",
     description: "",
     priority: "Média",
     dueDate: "",
   });
 
-  const processTypes = [
-    "Contrato de Prestação de Serviços",
-    "Documentação Fiscal",
-    "Consultoria Jurídica",
-    "Análise de Documentos",
-    "Procedimento Administrativo",
-    "Outro",
-  ];
+  // Fetch document types from database
+  const fetchDocumentTypes = async () => {
+    if (!company?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('document_types')
+        .select('name')
+        .eq('company_id', company.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Combine default types with custom ones
+      const customTypes = data?.map(doc => doc.name) || [];
+      const defaultTypes = [
+        "Contrato de Prestação de Serviços",
+        "Documentação Fiscal", 
+        "Consultoria Jurídica",
+        "Análise de Documentos",
+        "Procedimento Administrativo",
+        "Outro",
+      ];
+      
+      // Remove duplicates and combine
+      const allTypes = [...new Set([...defaultTypes, ...customTypes])];
+      setProcessTypes(allTypes);
+    } catch (error) {
+      console.error('Error fetching document types:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (company?.id) {
+      fetchDocumentTypes();
+    }
+  }, [company?.id]);
+
 
   const resetForm = () => {
     setFormData({
       clientName: "",
       clientEmail: "",
+      cpfCnpj: "",
       processType: "",
       description: "",
       priority: "Média",
@@ -77,6 +118,7 @@ const CreateProcessWithInvite = () => {
         .insert({
           client_name: formData.clientName,
           client_email: formData.clientEmail,
+          cpf_cnpj: formData.cpfCnpj,
           process_type: formData.processType,
           description: formData.description,
           priority: formData.priority,
@@ -194,6 +236,19 @@ const CreateProcessWithInvite = () => {
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
+            <Input
+              id="cpfCnpj"
+              value={formData.cpfCnpj}
+              onChange={(e) =>
+                setFormData({ ...formData, cpfCnpj: e.target.value })
+              }
+              placeholder="Digite o CPF ou CNPJ do cliente"
+              required
+            />
           </div>
 
           <div>
