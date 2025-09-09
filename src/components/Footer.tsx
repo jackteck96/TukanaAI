@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="p-2 bg-gradient-to-r from-primary to-accent rounded-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground">DocFlow</span>
+              <span className="text-xl font-bold text-foreground">Fuzen</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Plataforma completa para gestão de documentos empresariais com segurança e eficiência.
@@ -63,7 +63,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>contato@docflow.com</span>
+                <span>contato@fuzen.com</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
@@ -80,7 +80,7 @@ const Footer = () => {
         <div className="border-t border-border mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-muted-foreground text-sm">
-              © 2024 DocFlow. Todos os direitos reservados.
+              © 2024 Fuzen. Todos os direitos reservados.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link to="/privacidade" className="text-muted-foreground hover:text-primary transition-colors text-sm">
