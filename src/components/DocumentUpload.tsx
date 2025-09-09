@@ -8,6 +8,7 @@ import { Upload, FileText, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompany } from '@/contexts/CompanyContext';
 
 interface DocumentUploadProps {
   processId: string;
@@ -30,6 +31,7 @@ const documentTypes = [
 
 export default function DocumentUpload({ processId, onUploadComplete }: DocumentUploadProps) {
   const { user } = useAuth();
+  const { company } = useCompany();
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState('');
   const [uploaderName, setUploaderName] = useState('');
@@ -51,12 +53,16 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
     setIsUploading(true);
 
     try {
-      // Upload do arquivo para o storage
-      const fileName = `${processId}/${Date.now()}-${file.name}`;
+      // Gerar nome do arquivo baseado no tipo de documento
+      const fileExtension = file.name.split('.').pop();
+      const timestamp = Date.now();
+      const sanitizedDocumentType = documentType.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+      const newFileName = `${sanitizedDocumentType}_${timestamp}.${fileExtension}`;
+      const filePath = `${processId}/${newFileName}`;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(fileName, file);
+        .upload(filePath, file);
 
       if (uploadError) {
         throw uploadError;
@@ -67,7 +73,8 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
         .from('documents')
         .insert({
           process_id: processId,
-          file_name: file.name,
+          company_id: company?.id,
+          file_name: newFileName,
           file_path: uploadData.path,
           file_type: file.type,
           file_size: file.size,

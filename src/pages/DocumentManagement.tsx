@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import DocumentUpload from '@/components/DocumentUpload';
 import DocumentList from '@/components/DocumentList';
 import DocumentReport from '@/components/DocumentReport';
+import TaskManager from '@/components/TaskManager';
+import { useCompany } from '@/contexts/CompanyContext';
 
 interface Process {
   id: string;
@@ -28,6 +30,7 @@ interface Process {
 export default function DocumentManagement() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { company } = useCompany();
   const [processes, setProcesses] = useState<Process[]>([]);
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
   const [loading, setLoading] = useState(true);
@@ -284,12 +287,20 @@ export default function DocumentManagement() {
                 </Card>
 
                 {/* Tabs */}
-                <Tabs defaultValue="upload" className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-3">
+                <Tabs defaultValue="tasks" className="space-y-6">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="tasks">Tarefas</TabsTrigger>
                     <TabsTrigger value="upload">Upload</TabsTrigger>
                     <TabsTrigger value="documents">Documentos</TabsTrigger>
                     <TabsTrigger value="reports">Relatórios</TabsTrigger>
                   </TabsList>
+
+                  <TabsContent value="tasks" className="space-y-6">
+                    <TaskManager 
+                      processId={selectedProcess.id} 
+                      companyId={company?.id || ''}
+                    />
+                  </TabsContent>
 
                   <TabsContent value="upload" className="space-y-6">
                     <DocumentUpload 
