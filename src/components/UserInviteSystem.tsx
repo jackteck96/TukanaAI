@@ -50,10 +50,12 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
       // Criar convite na tabela
       const { error: inviteError } = await supabase
-        .from('client_invites')
+        .from('user_invites')
         .insert({
           token: tokenData,
           email: inviteData.email,
+          full_name: inviteData.full_name,
+          role: inviteData.role,
           company_id: userProfile.company_id,
           invited_by: user?.id,
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 dias
