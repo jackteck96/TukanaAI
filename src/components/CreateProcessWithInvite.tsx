@@ -1,0 +1,300 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCompany } from "@/contexts/CompanyContext";
+import { Mail, Plus } from "lucide-react";
+
+interface CreateProcessForm {
+  clientName: string;
+  clientEmail: string;
+  processType: string;
+  description: string;
+  priority: string;
+  dueDate: string;
+}
+
+const CreateProcessWithInvite = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { company } = useCompany();
+
+  const [formData, setFormData] = useState<CreateProcessForm>({
+    clientName: "",
+    clientEmail: "",
+    processType: "",
+    description: "",
+    priority: "Média",
+    dueDate: "",
+  });
+
+  const processTypes = [
+    "Contrato de Prestação de Serviços",
+    "Documentação Fiscal",
+    "Consultoria Jurídica",
+    "Análise de Documentos",
+    "Procedimento Administrativo",
+    "Outro",
+  ];
+
+  const resetForm = () => {
+    setFormData({
+      clientName: "",
+      clientEmail: "",
+      processType: "",
+      description: "",
+      priority: "Média",
+      dueDate: "",
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user || !company?.id) {
+      toast({
+        title: "Erro",
+        description: "Usuário ou empresa não identificados.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // 1. Criar o processo
+      const { data: processData, error: processError } = await supabase
+        .from("processes")
+        .insert({
+          client_name: formData.clientName,
+          client_email: formData.clientEmail,
+          process_type: formData.processType,
+          description: formData.description,
+          priority: formData.priority,
+          due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+          company_id: company.id,
+          created_by: user.id,
+          assigned_user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (processError) {
+        throw processError;
+      }
+
+      // 2. Gerar token de convite
+      const { data: tokenData, error: tokenError } = await supabase
+        .rpc("generate_invite_token");
+
+      if (tokenError) {
+        throw tokenError;
+      }
+
+      // 3. Criar convite
+      const { error: inviteError } = await supabase
+        .from("client_invites")
+        .insert({
+          email: formData.clientEmail,
+          token: tokenData,
+          company_id: company.id,
+          process_id: processData.id,
+          invited_by: user.id,
+        });
+
+      if (inviteError) {
+        throw inviteError;
+      }
+
+      // 4. Enviar email de convite
+      const { error: emailError } = await supabase.functions.invoke("send-invite-email", {
+        body: {
+          email: formData.clientEmail,
+          processId: processData.id,
+          clientName: formData.clientName,
+          companyName: company.name,
+          inviteToken: tokenData,
+        },
+      });
+
+      if (emailError) {
+        console.error("Erro ao enviar email:", emailError);
+        toast({
+          title: "Processo criado",
+          description: "Processo criado com sucesso, mas houve um erro ao enviar o email de convite. Você pode reenviar o convite posteriormente.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Processo criado com sucesso!",
+          description: `Processo criado e convite enviado para ${formData.clientEmail}.`,
+        });
+      }
+
+      resetForm();
+      setIsOpen(false);
+    } catch (error: any) {
+      console.error("Erro ao criar processo:", error);
+      toast({
+        title: "Erro ao criar processo",
+        description: error.message || "Erro interno do servidor.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="mb-6">
+          <Plus className="h-4 w-4 mr-2" />
+          Criar Novo Processo
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center">
+            <Mail className="h-5 w-5 mr-2" />
+            Criar Processo e Convidar Cliente
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="clientName">Nome do Cliente</Label>
+              <Input
+                id="clientName"
+                value={formData.clientName}
+                onChange={(e) =>
+                  setFormData({ ...formData, clientName: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="clientEmail">Email do Cliente</Label>
+              <Input
+                id="clientEmail"
+                type="email"
+                value={formData.clientEmail}
+                onChange={(e) =>
+                  setFormData({ ...formData, clientEmail: e.target.value })
+                }
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="processType">Tipo de Processo</Label>
+            <Select
+              value={formData.processType}
+              onValueChange={(value) =>
+                setFormData({ ...formData, processType: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de processo" />
+              </SelectTrigger>
+              <SelectContent>
+                {processTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Descrição</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Descreva o processo..."
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="priority">Prioridade</Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, priority: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Média">Média</SelectItem>
+                  <SelectItem value="Baixa">Baixa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="dueDate">Data de Vencimento</Label>
+              <Input
+                id="dueDate"
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, dueDate: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-blue-900 dark:text-blue-300">
+                  Convite por Email
+                </h4>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                  Após criar o processo, um email de convite será automaticamente 
+                  enviado para {formData.clientEmail || "o cliente"} com as instruções 
+                  para criar sua conta e acessar o processo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Criando..." : "Criar Processo e Enviar Convite"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default CreateProcessWithInvite;

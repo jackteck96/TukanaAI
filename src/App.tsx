@@ -22,6 +22,7 @@ import DocumentManagement from "./pages/DocumentManagement";
 import Relatorios from "./pages/Relatorios";
 import CompanyDashboard from "@/components/CompanyDashboard";
 import CadastroCliente from "./pages/CadastroCliente";
+import CadastroViaConvite from "./pages/CadastroViaConvite";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/cadastro-cliente" element={<CadastroCliente />} />
+              <Route path="/cadastro-via-convite" element={<CadastroViaConvite />} />
               
               {/* Protected routes */}
               <Route path="/onboarding" element={

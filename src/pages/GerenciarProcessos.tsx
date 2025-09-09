@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AIProcessAnalyzer from "@/components/AIProcessAnalyzer";
+import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
 
 const GerenciarProcessos = () => {
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -185,6 +186,9 @@ const GerenciarProcessos = () => {
       </header>
 
       <div className="p-6 space-y-6">
+        {/* Create Process Button */}
+        <CreateProcessWithInvite />
+        
         {/* Processes List */}
         <div className="space-y-6">
           {processes.map((process) => (
