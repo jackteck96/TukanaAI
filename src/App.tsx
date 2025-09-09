@@ -23,6 +23,7 @@ import Relatorios from "./pages/Relatorios";
 import CompanyDashboard from "@/components/CompanyDashboard";
 import CadastroCliente from "./pages/CadastroCliente";
 import CadastroViaConvite from "./pages/CadastroViaConvite";
+import GestaoColaboradores from "./pages/GestaoColaboradores";
 import GestaoUsuarios from "./pages/GestaoUsuarios";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,11 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/cadastro-cliente" element={<CadastroCliente />} />
+            <Route path="/gestao-colaboradores" element={
+              <ProtectedRoute>
+                <GestaoColaboradores />
+              </ProtectedRoute>
+            } />
             <Route path="/gestao-usuarios" element={<ProtectedRoute><GestaoUsuarios /></ProtectedRoute>} />
             <Route path="/cadastro-via-convite" element={<CadastroViaConvite />} />
               

@@ -21,45 +21,49 @@ import {
   MoreHorizontal,
   Eye,
   LogOut,
-  Brain
+  Brain,
+  UserPlus
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import UserInviteSystem from "@/components/UserInviteSystem";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
   
   const stats = [
     {
       title: "Total de Clientes",
-      value: "156",
-      change: "+12%",
+      value: dashboardStats.totalClients.toString(),
+      change: dashboardStats.totalClients > 0 ? "+100%" : "0%",
       icon: Users,
       color: "text-primary",
-      route: "/cliente"
+      route: "/gestao-colaboradores"
     },
     {
-      title: "Documentos Ativos",
-      value: "2.847",
-      change: "+8%",
+      title: "Processos Ativos",
+      value: dashboardStats.totalProcesses.toString(),
+      change: dashboardStats.totalProcesses > 0 ? "+100%" : "0%",
       icon: FileText,
       color: "text-accent",
-      route: "/documentos"
+      route: "/gerenciar-processos"
     },
     {
       title: "Pendentes",
-      value: "23",
-      change: "-15%",
+      value: dashboardStats.pendingProcesses.toString(),
+      change: dashboardStats.pendingProcesses > 0 ? "+100%" : "0%",
       icon: Clock,
       color: "text-orange-500",
-      route: "/documentos?status=pendente"
+      route: "/gerenciar-processos?status=pendente"
     },
     {
       title: "Concluídos Hoje",
-      value: "89",
-      change: "+22%",
+      value: dashboardStats.completedToday.toString(),
+      change: dashboardStats.completedToday > 0 ? "+100%" : "0%",
       icon: CheckCircle,
       color: "text-green-500",
       route: "/relatorios"
@@ -71,67 +75,20 @@ const EmpresaDashboard = () => {
     navigate('/');
   };
 
-  const recentClients = [
-    {
-      id: 1,
-      name: "TechCorp Ltda",
-      status: "Documentos Pendentes",
-      documents: 12,
-      lastUpdate: "2 horas atrás",
-      priority: "high"
-    },
-    {
-      id: 2,
-      name: "Inovação Digital",
-      status: "Em Análise",
-      documents: 8,
-      lastUpdate: "4 horas atrás",
-      priority: "medium"
-    },
-    {
-      id: 3,
-      name: "Consultoria Moderna",
-      status: "Aprovado",
-      documents: 15,
-      lastUpdate: "1 dia atrás",
-      priority: "low"
-    },
-    {
-      id: 4,
-      name: "StartupXYZ",
-      status: "Documentos Pendentes",
-      documents: 6,
-      lastUpdate: "2 dias atrás",
-      priority: "high"
-    }
-  ];
+  const formatLastUpdate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) return `${diffInMinutes} min atrás`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
+    return `${Math.floor(diffInMinutes / 1440)} dia(s) atrás`;
+  };
 
-  const recentProcesses = [
-    {
-      id: 1,
-      client: "TechCorp Ltda",
-      process: "Contrato de Prestação de Serviços",
-      status: "Em Análise",
-      progress: 75,
-      dueDate: "24/08/2024"
-    },
-    {
-      id: 2,
-      client: "Inovação Digital",
-      process: "Documentação Fiscal",
-      status: "Pendente",
-      progress: 30,
-      dueDate: "26/08/2024"
-    },
-    {
-      id: 3,
-      client: "Consultoria Moderna",
-      process: "Renovação de Licenças",
-      status: "Aprovado",
-      progress: 100,
-      dueDate: "20/08/2024"
-    }
-  ];
+  const formatDueDate = (dateString: string | null) => {
+    if (!dateString) return 'Sem prazo';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -213,28 +170,25 @@ const EmpresaDashboard = () => {
               <h1 className="text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
               <p className="text-muted-foreground">Visão geral dos processos e clientes</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Dialog open={isClientModalOpen} onOpenChange={setIsClientModalOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="hero">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Cliente
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-              <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Processo
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
-            </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="hero" onClick={refreshData} disabled={loading}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {loading ? 'Atualizando...' : 'Atualizar'}
+                </Button>
+                <UserInviteSystem onInviteSent={refreshData} />
+                <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Novo Processo
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </div>
           </div>
         </div>
       </header>
@@ -284,9 +238,10 @@ const EmpresaDashboard = () => {
                     <Filter className="h-4 w-4 mr-2" />
                     Filtrar
                   </Button>
-                  <Link to="/gestao-usuarios">
+                  <Link to="/gestao-colaboradores">
                     <Button variant="ghost" size="sm">
-                      Ver Todos
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Gerenciar Colaboradores
                     </Button>
                   </Link>
                 </div>
@@ -294,24 +249,38 @@ const EmpresaDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentClients.map((client) => (
+                {loading ? (
+                  Array.from({ length: 3 }, (_, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-muted/30 animate-pulse">
+                      <div className="h-4 bg-muted rounded w-32 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-24"></div>
+                    </div>
+                  ))
+                ) : recentClients.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum cliente ainda</p>
+                    <p className="text-sm">Crie seu primeiro processo para começar</p>
+                  </div>
+                ) : (
+                  recentClients.map((client) => (
                   <div
                     key={client.id}
                     className={`p-4 rounded-lg border-l-4 ${getPriorityColor(client.priority)} bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{client.name}</h3>
+                        <h3 className="font-semibold text-foreground">{client.client_name}</h3>
                         <div className="flex items-center space-x-2 mt-1">
                           <Badge className={getStatusColor(client.status)}>
                             {client.status}
                           </Badge>
                           <span className="text-sm text-muted-foreground">
-                            {client.documents} documentos
+                            {client.document_count} documentos
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Atualizado {client.lastUpdate}
+                          Atualizado {formatLastUpdate(client.last_update)}
                         </p>
                       </div>
                       <Button variant="ghost" size="sm">
@@ -319,7 +288,8 @@ const EmpresaDashboard = () => {
                       </Button>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -339,21 +309,36 @@ const EmpresaDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentProcesses.map((process) => (
+                {loading ? (
+                  Array.from({ length: 3 }, (_, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-muted/30 animate-pulse">
+                      <div className="h-4 bg-muted rounded w-40 mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-32 mb-2"></div>
+                      <div className="h-2 bg-muted rounded w-full"></div>
+                    </div>
+                  ))
+                ) : recentProcesses.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum processo ainda</p>
+                    <p className="text-sm">Crie seu primeiro processo</p>
+                  </div>
+                ) : (
+                  recentProcesses.map((process) => (
                   <div
                     key={process.id}
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-foreground text-sm">
-                        {process.process}
+                        {process.process_type}
                       </h3>
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">
-                      Cliente: {process.client}
+                      Cliente: {process.client_name}
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="flex-1 mr-4">
@@ -369,12 +354,13 @@ const EmpresaDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">
-                          Prazo: {process.dueDate}
+                          Prazo: {formatDueDate(process.due_date)}
                         </p>
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -415,10 +401,10 @@ const EmpresaDashboard = () => {
                       <span className="text-xs">Relatórios</span>
                     </Button>
                   </Link>
-                  <Link to="/todos-clientes">
+                  <Link to="/gestao-colaboradores">
                     <Button variant="outline" className="h-20 flex-col">
                       <Users className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Todos os Clientes</span>
+                      <span className="text-xs">Colaboradores</span>
                     </Button>
                   </Link>
                   <Link to="/modelos-documentos">
