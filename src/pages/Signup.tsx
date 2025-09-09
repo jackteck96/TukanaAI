@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Building2, Mail, Lock, User } from 'lucide-react';
+import { ArrowLeft, Building2, Mail, Lock, User, MapPin, FileText } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,10 +15,15 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: '',
+    cnpj: '',
+    headquarters: '',
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    hasLegalRepresentative: false,
+    legalRepresentativeName: '',
+    legalRepresentativeQualification: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -28,8 +34,27 @@ const Signup = () => {
       newErrors.companyName = 'Nome da empresa é obrigatório';
     }
 
+    if (!formData.cnpj.trim()) {
+      newErrors.cnpj = 'CNPJ é obrigatório';
+    } else if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(formData.cnpj)) {
+      newErrors.cnpj = 'CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX';
+    }
+
+    if (!formData.headquarters.trim()) {
+      newErrors.headquarters = 'Sede é obrigatória';
+    }
+
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Nome completo é obrigatório';
+    }
+
+    if (formData.hasLegalRepresentative) {
+      if (!formData.legalRepresentativeName.trim()) {
+        newErrors.legalRepresentativeName = 'Nome do representante legal é obrigatório';
+      }
+      if (!formData.legalRepresentativeQualification.trim()) {
+        newErrors.legalRepresentativeQualification = 'Qualificação do representante legal é obrigatória';
+      }
     }
 
     if (!formData.email.trim()) {
@@ -191,7 +216,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     className="pl-10"
                     required
-                  />
+                />
                 </div>
                 {errors.companyName && (
                   <p className="text-sm text-destructive">{errors.companyName}</p>
@@ -199,8 +224,118 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="cnpj" className="text-sm font-medium">
+                  CNPJ
+                </Label>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="cnpj"
+                    name="cnpj"
+                    type="text"
+                    placeholder="XX.XXX.XXX/XXXX-XX"
+                    value={formData.cnpj}
+                    onChange={handleInputChange}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+                {errors.cnpj && (
+                  <p className="text-sm text-destructive">{errors.cnpj}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="headquarters" className="text-sm font-medium">
+                  Sede
+                </Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="headquarters"
+                    name="headquarters"
+                    type="text"
+                    placeholder="Endereço da sede da empresa"
+                    value={formData.headquarters}
+                    onChange={handleInputChange}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+                {errors.headquarters && (
+                  <p className="text-sm text-destructive">{errors.headquarters}</p>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="hasLegalRepresentative"
+                    checked={formData.hasLegalRepresentative}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        hasLegalRepresentative: !!checked,
+                        legalRepresentativeName: checked ? prev.legalRepresentativeName : '',
+                        legalRepresentativeQualification: checked ? prev.legalRepresentativeQualification : ''
+                      }))
+                    }
+                  />
+                  <Label htmlFor="hasLegalRepresentative" className="text-sm font-medium">
+                    Possui representante legal diferente do cadastrante
+                  </Label>
+                </div>
+
+                {formData.hasLegalRepresentative && (
+                  <div className="space-y-4 pl-6 border-l-2 border-border">
+                    <div className="space-y-2">
+                      <Label htmlFor="legalRepresentativeName" className="text-sm font-medium">
+                        Nome do Representante Legal
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          id="legalRepresentativeName"
+                          name="legalRepresentativeName"
+                          type="text"
+                          placeholder="Nome completo do representante legal"
+                          value={formData.legalRepresentativeName}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                        />
+                      </div>
+                      {errors.legalRepresentativeName && (
+                        <p className="text-sm text-destructive">{errors.legalRepresentativeName}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="legalRepresentativeQualification" className="text-sm font-medium">
+                        Qualificação do Representante Legal
+                      </Label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          id="legalRepresentativeQualification"
+                          name="legalRepresentativeQualification"
+                          type="text"
+                          placeholder="Ex: Sócio-administrador, Procurador, etc."
+                          value={formData.legalRepresentativeQualification}
+                          onChange={handleInputChange}
+                          className="pl-10"
+                        />
+                      </div>
+                      {errors.legalRepresentativeQualification && (
+                        <p className="text-sm text-destructive">{errors.legalRepresentativeQualification}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-sm font-medium">
-                  Nome Completo
+                  Nome Completo do Cadastrante
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
