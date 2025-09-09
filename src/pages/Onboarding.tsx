@@ -81,7 +81,7 @@ const Onboarding = () => {
 
   const handleFinish = () => {
     toast({
-      title: 'Bem-vindo ao DocuMentor!',
+      title: 'Bem-vindo à Fuzen!',
       description: 'Sua configuração inicial foi concluída.',
     });
     navigate('/empresa');
@@ -174,7 +174,7 @@ const Onboarding = () => {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Bem-vindo ao DocuMentor!
+            Bem-vindo à Fuzen!
           </h1>
           <p className="text-muted-foreground">
             Vamos configurar sua conta em alguns passos simples

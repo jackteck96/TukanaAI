@@ -187,7 +187,7 @@ const Signup = () => {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">DocuMentor</h1>
+            <h1 className="text-2xl font-bold text-foreground">Fuzen</h1>
             <p className="text-sm text-muted-foreground">Crie sua conta empresarial</p>
           </div>
         </div>
