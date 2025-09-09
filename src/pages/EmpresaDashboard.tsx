@@ -380,55 +380,55 @@ const EmpresaDashboard = () => {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsClientModalOpen(true)}>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                  <Button variant="outline" className="h-24 flex-col w-full" onClick={() => setIsClientModalOpen(true)}>
                     <Plus className="h-6 w-6 mb-2" />
-                    <span className="text-xs">Novo Cliente</span>
+                    <span className="text-sm font-medium">Novo Cliente</span>
                   </Button>
-                  <Link to="/gerenciar-processos">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/gerenciar-processos" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <FileText className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Gerenciar Processos</span>
+                      <span className="text-sm font-medium">Gerenciar Processos</span>
                     </Button>
                   </Link>
-                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsSearchModalOpen(true)}>
+                  <Button variant="outline" className="h-24 flex-col w-full" onClick={() => setIsSearchModalOpen(true)}>
                     <Search className="h-6 w-6 mb-2" />
-                    <span className="text-xs">Buscar Documentos</span>
+                    <span className="text-sm font-medium">Buscar Documentos</span>
                   </Button>
-                  <Link to="/relatorios">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/relatorios" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <TrendingUp className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Relatórios</span>
+                      <span className="text-sm font-medium">Relatórios</span>
                     </Button>
                   </Link>
-                  <Link to="/relatorios-ponto">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/relatorios-ponto" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <Clock className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Rel. Ponto</span>
+                      <span className="text-sm font-medium">Rel. Ponto</span>
                     </Button>
                   </Link>
-                  <Link to="/gestao-colaboradores">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/gestao-colaboradores" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <Users className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Colaboradores</span>
+                      <span className="text-sm font-medium">Colaboradores</span>
                     </Button>
                   </Link>
-                  <Link to="/modelos-documentos">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/modelos-documentos" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <FileText className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Modelos de Documentos</span>
+                      <span className="text-sm font-medium">Modelos de Docs</span>
                     </Button>
                   </Link>
-                  <Link to="/treinar-ia">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/treinar-ia" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <Brain className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Treinar IA</span>
+                      <span className="text-sm font-medium">Treinar IA</span>
                     </Button>
                   </Link>
-                  <Link to="/cadastro-tipos-documentos">
-                    <Button variant="outline" className="h-20 flex-col">
+                  <Link to="/cadastro-tipos-documentos" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
                       <FileText className="h-6 w-6 mb-2" />
-                      <span className="text-xs">Tipos de Documentos</span>
+                      <span className="text-sm font-medium">Tipos de Docs</span>
                     </Button>
                   </Link>
                   <Button variant="outline" className="h-20 flex-col" onClick={() => setIsConfigModalOpen(true)}>
