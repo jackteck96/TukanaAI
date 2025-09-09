@@ -15,7 +15,6 @@ interface CreateProcessForm {
   clientName: string;
   clientEmail: string;
   cpfCnpj: string;
-  processType: string;
   description: string;
   priority: string;
   dueDate: string;
@@ -24,14 +23,6 @@ interface CreateProcessForm {
 const CreateProcessWithInvite = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [processTypes, setProcessTypes] = useState<string[]>([
-    "Contrato de Prestação de Serviços",
-    "Documentação Fiscal", 
-    "Consultoria Jurídica",
-    "Análise de Documentos",
-    "Procedimento Administrativo",
-    "Outro",
-  ]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -40,57 +31,16 @@ const CreateProcessWithInvite = () => {
     clientName: "",
     clientEmail: "",
     cpfCnpj: "",
-    processType: "",
     description: "",
     priority: "Média",
     dueDate: "",
   });
-
-  // Fetch document types from database
-  const fetchDocumentTypes = async () => {
-    if (!company?.id) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('document_types')
-        .select('name')
-        .eq('company_id', company.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Combine default types with custom ones
-      const customTypes = data?.map(doc => doc.name) || [];
-      const defaultTypes = [
-        "Contrato de Prestação de Serviços",
-        "Documentação Fiscal", 
-        "Consultoria Jurídica",
-        "Análise de Documentos",
-        "Procedimento Administrativo",
-        "Outro",
-      ];
-      
-      // Remove duplicates and combine
-      const allTypes = [...new Set([...defaultTypes, ...customTypes])];
-      setProcessTypes(allTypes);
-    } catch (error) {
-      console.error('Error fetching document types:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (company?.id) {
-      fetchDocumentTypes();
-    }
-  }, [company?.id]);
-
 
   const resetForm = () => {
     setFormData({
       clientName: "",
       clientEmail: "",
       cpfCnpj: "",
-      processType: "",
       description: "",
       priority: "Média",
       dueDate: "",
@@ -119,7 +69,7 @@ const CreateProcessWithInvite = () => {
           client_name: formData.clientName,
           client_email: formData.clientEmail,
           cpf_cnpj: formData.cpfCnpj,
-          process_type: formData.processType,
+          process_type: "Documental", // Todos os processos são documentais
           description: formData.description,
           priority: formData.priority,
           due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
@@ -249,27 +199,6 @@ const CreateProcessWithInvite = () => {
               placeholder="Digite o CPF ou CNPJ do cliente"
               required
             />
-          </div>
-
-          <div>
-            <Label htmlFor="processType">Tipo de Processo</Label>
-            <Select
-              value={formData.processType}
-              onValueChange={(value) =>
-                setFormData({ ...formData, processType: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de processo" />
-              </SelectTrigger>
-              <SelectContent>
-                {processTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div>
