@@ -276,9 +276,21 @@ const Landing = () => {
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">
               Planos para cada necessidade
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground mb-8">
               Escolha o plano ideal para sua empresa
             </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <Link to="/signup">
+                <Button size="lg" variant="hero" className="text-lg px-8">
+                  Cadastrar Empresa
+                </Button>
+              </Link>
+              <Link to="/cadastro-cliente">
+                <Button size="lg" variant="outline" className="text-lg px-8">
+                  Cadastrar como Cliente
+                </Button>
+              </Link>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
