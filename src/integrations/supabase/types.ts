@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_invites: {
+        Row: {
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          process_id: string
+          status: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          process_id: string
+          status?: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          process_id?: string
+          status?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           created_at: string
@@ -352,6 +391,10 @@ export type Database = {
       }
       generate_document_report: {
         Args: { process_uuid: string }
+        Returns: string
+      }
+      generate_invite_token: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_current_user_role: {
