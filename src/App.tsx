@@ -25,6 +25,7 @@ import CadastroCliente from "./pages/CadastroCliente";
 import CadastroViaConvite from "./pages/CadastroViaConvite";
 import GestaoColaboradores from "./pages/GestaoColaboradores";
 import GestaoUsuarios from "./pages/GestaoUsuarios";
+import RelatoriosPonto from "./pages/RelatoriosPonto";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,11 @@ const App = () => (
               <Route path="/relatorios" element={
                 <ProtectedRoute>
                   <Relatorios />
+                </ProtectedRoute>
+              } />
+              <Route path="/relatorios-ponto" element={
+                <ProtectedRoute>
+                  <RelatoriosPonto />
                 </ProtectedRoute>
               } />
               

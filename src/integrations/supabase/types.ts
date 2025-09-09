@@ -422,6 +422,39 @@ export type Database = {
         }
         Relationships: []
       }
+      time_records: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_id: string
+          employee_name: string
+          id: string
+          timestamp: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_id: string
+          employee_name: string
+          id?: string
+          timestamp?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          employee_name?: string
+          id?: string
+          timestamp?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       usage_metrics: {
         Row: {
           company_id: string

@@ -4,22 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, LogIn, LogOut as LogOutIcon, Coffee, User } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
-interface TimeEntry {
-  id: string;
-  type: 'entrada' | 'saida' | 'pausa' | 'retorno';
-  timestamp: Date;
-  employee: string;
-}
+import { useAuth } from "@/contexts/AuthContext";
+import { useTimeRecords, TimeEntry } from "@/hooks/useTimeRecords";
+import { supabase } from "@/integrations/supabase/client";
 
 const PontoClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [lastEntry, setLastEntry] = useState<TimeEntry | null>(null);
-  const [todayEntries, setTodayEntries] = useState<TimeEntry[]>([]);
-
-  // Simulando funcionário logado
-  const currentEmployee = "João Silva";
+  const [currentEmployee, setCurrentEmployee] = useState<string>("");
+  const { user } = useAuth();
+  const { 
+    todayEntries, 
+    lastEntry, 
+    loading, 
+    recordTimeEntry, 
+    getEntryTypeLabel 
+  } = useTimeRecords();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -28,6 +28,22 @@ const PontoClock = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const fetchCurrentEmployee = async () => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        setCurrentEmployee(profile?.full_name || user.email || 'Usuário');
+      }
+    };
+
+    fetchCurrentEmployee();
+  }, [user]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', {
@@ -46,20 +62,9 @@ const PontoClock = () => {
     });
   };
 
-  const handlePonto = (type: TimeEntry['type']) => {
-    const newEntry: TimeEntry = {
-      id: Date.now().toString(),
-      type,
-      timestamp: new Date(),
-      employee: currentEmployee
-    };
-
-    setLastEntry(newEntry);
-    setTodayEntries(prev => [...prev, newEntry]);
+  const handlePonto = async (type: 'entrada' | 'saida' | 'pausa' | 'retorno') => {
+    await recordTimeEntry(type);
     setIsDialogOpen(false);
-
-    // Aqui você salvaria no banco de dados
-    console.log('Ponto registrado:', newEntry);
   };
 
   const getNextAction = () => {
@@ -88,16 +93,6 @@ const PontoClock = () => {
       case 'pausa': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
       case 'retorno': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       default: return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getEntryTypeLabel = (type: TimeEntry['type']) => {
-    switch (type) {
-      case 'entrada': return 'Entrada';
-      case 'saida': return 'Saída';
-      case 'pausa': return 'Pausa';
-      case 'retorno': return 'Retorno';
-      default: return type;
     }
   };
 
@@ -146,9 +141,10 @@ const PontoClock = () => {
           <Button 
             onClick={() => handlePonto(nextAction.type)}
             className={`${nextAction.color} hover:opacity-90 text-white`}
+            disabled={loading}
           >
             <NextActionIcon className="h-4 w-4 mr-2" />
-            {nextAction.label}
+            {loading ? 'Registrando...' : nextAction.label}
           </Button>
           
           {(lastEntry?.type === 'entrada' || lastEntry?.type === 'retorno') && (

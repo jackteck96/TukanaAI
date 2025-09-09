@@ -401,6 +401,12 @@ const EmpresaDashboard = () => {
                       <span className="text-xs">Relatórios</span>
                     </Button>
                   </Link>
+                  <Link to="/relatorios-ponto">
+                    <Button variant="outline" className="h-20 flex-col">
+                      <Clock className="h-6 w-6 mb-2" />
+                      <span className="text-xs">Rel. Ponto</span>
+                    </Button>
+                  </Link>
                   <Link to="/gestao-colaboradores">
                     <Button variant="outline" className="h-20 flex-col">
                       <Users className="h-6 w-6 mb-2" />
