@@ -38,7 +38,7 @@ const Header = () => {
             <Link to="/login">
               <Button variant="outline">Login</Button>
             </Link>
-            <Link to="/cadastro">
+            <Link to="/signup">
               <Button variant="hero">Começar Agora</Button>
             </Link>
           </div>
@@ -72,7 +72,7 @@ const Header = () => {
                 <Link to="/login">
                   <Button variant="outline" className="w-full">Login</Button>
                 </Link>
-                <Link to="/cadastro">
+                <Link to="/signup">
                   <Button variant="hero" className="w-full">Começar Agora</Button>
                 </Link>
               </div>
