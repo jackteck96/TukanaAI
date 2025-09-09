@@ -339,15 +339,20 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="#precos">
+              <Link to="/signup">
                 <Button size="lg" variant="hero" className="text-lg px-8">
-                  Começar Agora
+                  Cadastrar Empresa
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-              </a>
-              <Link to="/auth">
+              </Link>
+              <Link to="/cadastro-cliente">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Falar com Especialista
+                  Cadastrar como Cliente
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button size="lg" variant="ghost" className="text-lg px-8">
+                  Já tem conta? Entrar
                 </Button>
               </Link>
             </div>

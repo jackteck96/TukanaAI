@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import DocumentManagement from "./pages/DocumentManagement";
 import Relatorios from "./pages/Relatorios";
 import CompanyDashboard from "@/components/CompanyDashboard";
+import CadastroCliente from "./pages/CadastroCliente";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/cadastro-cliente" element={<CadastroCliente />} />
               
               {/* Protected routes */}
               <Route path="/onboarding" element={
