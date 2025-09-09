@@ -127,6 +127,55 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
     toast.success('Relatório baixado com sucesso!');
   };
 
+  const downloadAllDocuments = async () => {
+    if (!report?.report_data || !Array.isArray(report.report_data) || report.report_data.length === 0) {
+      toast.error('Nenhum documento encontrado para download');
+      return;
+    }
+
+    try {
+      toast.info('Preparando download dos documentos...');
+      
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      
+      const processFolder = zip.folder(`${processData?.client_name || 'processo'}-documentos`);
+      
+      for (const doc of report.report_data) {
+        try {
+          const { data, error } = await supabase.storage
+            .from('documents')
+            .download(doc.file_path);
+          
+          if (error) {
+            console.error(`Erro ao baixar ${doc.file_name}:`, error);
+            continue;
+          }
+          
+          processFolder?.file(doc.file_name, data);
+        } catch (error) {
+          console.error(`Erro ao processar ${doc.file_name}:`, error);
+        }
+      }
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${processData?.client_name || 'processo'}-documentos-${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('Download concluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar arquivo ZIP:', error);
+      toast.error('Erro ao preparar download dos documentos');
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Aprovado':
@@ -191,7 +240,11 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
             </Button>
             <Button size="sm" onClick={downloadReport}>
               <Download className="h-4 w-4 mr-2" />
-              Baixar
+              Baixar Relatório
+            </Button>
+            <Button size="sm" variant="outline" onClick={downloadAllDocuments}>
+              <Download className="h-4 w-4 mr-2" />
+              Baixar Todos os Documentos
             </Button>
           </div>
         </CardTitle>
