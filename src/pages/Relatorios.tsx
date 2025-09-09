@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, TrendingUp, Users, Clock, Search, Download, Filter } from "lucide-react";
+import { FileText, TrendingUp, Users, Clock, Search, Download, Filter, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import DocumentReport from "@/components/DocumentReport";
 
@@ -44,6 +45,7 @@ const Relatorios = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadData();
@@ -154,6 +156,16 @@ const Relatorios = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/empresa')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar ao Dashboard
+            </Button>
+          </div>
           <h1 className="text-3xl font-bold mb-2">Relatórios</h1>
           <p className="text-muted-foreground">
             Visualize e gerencie relatórios de documentos por processo

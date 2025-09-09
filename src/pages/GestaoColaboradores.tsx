@@ -17,7 +17,8 @@ import {
   Crown,
   Shield,
   User,
-  Trash2
+  Trash2,
+  ArrowLeft
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +26,7 @@ import { useCompany } from '@/contexts/CompanyContext';
 import UserInviteSystem from '@/components/UserInviteSystem';
 import PlanLimitChecker from '@/components/PlanLimitChecker';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface TeamMember {
   id: string;
@@ -47,6 +49,7 @@ interface UserInvite {
 const GestaoColaboradores = () => {
   const { user } = useAuth();
   const { company, subscription, usageMetrics, refreshMetrics } = useCompany();
+  const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [invites, setInvites] = useState<UserInvite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,9 +247,19 @@ const GestaoColaboradores = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Gestão de Colaboradores</h1>
-          <p className="text-muted-foreground">Gerencie os membros da sua equipe e convites pendentes</p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/empresa')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Gestão de Colaboradores</h1>
+            <p className="text-muted-foreground">Gerencie os membros da sua equipe e convites pendentes</p>
+          </div>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={refreshData} disabled={loading}>

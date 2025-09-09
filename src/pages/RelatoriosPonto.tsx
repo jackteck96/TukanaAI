@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, Download, Clock, Users } from "lucide-react";
+import { Calendar, Download, Clock, Users, ArrowLeft } from "lucide-react";
 import { useTimeRecords, TimeEntry } from "@/hooks/useTimeRecords";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface EmployeeReport {
   employee_name: string;
@@ -26,6 +27,7 @@ const RelatoriosPonto = () => {
   const { user } = useAuth();
   const { fetchAllEmployeeRecords, getEntryTypeLabel } = useTimeRecords();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -184,11 +186,21 @@ const RelatoriosPonto = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Relatórios de Ponto</h1>
-          <p className="text-muted-foreground">
-            Visualize e exporte relatórios de ponto dos colaboradores
-          </p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/empresa')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Relatórios de Ponto</h1>
+            <p className="text-muted-foreground">
+              Visualize e exporte relatórios de ponto dos colaboradores
+            </p>
+          </div>
         </div>
       </div>
 
