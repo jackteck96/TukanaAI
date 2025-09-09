@@ -284,9 +284,11 @@ const EmpresaDashboard = () => {
                     <Filter className="h-4 w-4 mr-2" />
                     Filtrar
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    Ver Todos
-                  </Button>
+                  <Link to="/gestao-usuarios">
+                    <Button variant="ghost" size="sm">
+                      Ver Todos
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </CardHeader>
@@ -663,9 +665,11 @@ const EmpresaDashboard = () => {
                 <Button variant="outline" className="w-full justify-start">
                   Configurar Perfil da Empresa
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Gerenciar Usuários
-                </Button>
+                <Link to="/gestao-usuarios">
+                  <Button variant="outline" className="w-full justify-start">
+                    Gerenciar Usuários
+                  </Button>
+                </Link>
                 <Button variant="outline" className="w-full justify-start">
                   Configurações de Notificação
                 </Button>
