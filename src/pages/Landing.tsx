@@ -134,15 +134,15 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/auth">
+              <Link to="/signup">
                 <Button size="lg" variant="hero" className="text-lg px-8">
                   Começar Agora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/empresa">
+              <Link to="/auth">
                 <Button size="lg" variant="outline" className="text-lg px-8">
-                  Acessar Plataforma
+                  Já tem conta? Entrar
                   <FileCheck className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -312,7 +312,7 @@ const Landing = () => {
                     ))}
                   </ul>
                   
-                  <Link to="/auth">
+                  <Link to="/signup">
                     <Button 
                       className="w-full" 
                       variant={plan.highlighted ? "hero" : "outline"}
@@ -339,7 +339,7 @@ const Landing = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth">
+              <Link to="/signup">
                 <Button size="lg" variant="hero" className="text-lg px-8">
                   Começar Agora
                   <ArrowRight className="ml-2 h-5 w-5" />

@@ -14,9 +14,37 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       document_reports: {
         Row: {
           approved_documents: number
+          company_id: string | null
           generated_at: string
           id: string
           pending_documents: number
@@ -26,6 +54,7 @@ export type Database = {
         }
         Insert: {
           approved_documents?: number
+          company_id?: string | null
           generated_at?: string
           id?: string
           pending_documents?: number
@@ -35,6 +64,7 @@ export type Database = {
         }
         Update: {
           approved_documents?: number
+          company_id?: string | null
           generated_at?: string
           id?: string
           pending_documents?: number
@@ -43,6 +73,13 @@ export type Database = {
           total_documents?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "document_reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "document_reports_process_id_fkey"
             columns: ["process_id"]
@@ -54,6 +91,7 @@ export type Database = {
       }
       documents: {
         Row: {
+          company_id: string | null
           created_at: string
           document_type: string
           file_name: string
@@ -67,6 +105,7 @@ export type Database = {
           uploaded_by: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           document_type: string
           file_name: string
@@ -80,6 +119,7 @@ export type Database = {
           uploaded_by: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           document_type?: string
           file_name?: string
@@ -94,6 +134,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documents_process_id_fkey"
             columns: ["process_id"]
             isOneToOne: false
@@ -107,6 +154,7 @@ export type Database = {
           assigned_user_id: string | null
           client_email: string
           client_name: string
+          company_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -122,6 +170,7 @@ export type Database = {
           assigned_user_id?: string | null
           client_email: string
           client_name: string
+          company_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -137,6 +186,7 @@ export type Database = {
           assigned_user_id?: string | null
           client_email?: string
           client_name?: string
+          company_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -148,10 +198,19 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "processes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
+          company_id: string | null
           created_at: string
           email: string
           firm_id: string | null
@@ -161,6 +220,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           email: string
           firm_id?: string | null
@@ -170,6 +230,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           email?: string
           firm_id?: string | null
@@ -178,7 +239,103 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          company_id: string
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_subscription_id: string | null
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_metrics: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_count: number
+          id: string
+          last_calculated_at: string
+          storage_used_bytes: number
+          updated_at: string
+          user_count: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_count?: number
+          id?: string
+          last_calculated_at?: string
+          storage_used_bytes?: number
+          updated_at?: string
+          user_count?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_count?: number
+          id?: string
+          last_calculated_at?: string
+          storage_used_bytes?: number
+          updated_at?: string
+          user_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_metrics_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -189,6 +346,10 @@ export type Database = {
         Args: { process_uuid: string }
         Returns: boolean
       }
+      check_plan_limits: {
+        Args: { company_uuid: string; limit_type: string }
+        Returns: Json
+      }
       generate_document_report: {
         Args: { process_uuid: string }
         Returns: string
@@ -197,12 +358,22 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_user_company_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       log_process_access: {
         Args: { access_type: string; process_uuid: string }
         Returns: undefined
       }
+      update_usage_metrics: {
+        Args: { company_uuid: string }
+        Returns: undefined
+      }
     }
     Enums: {
+      subscription_plan: "starter" | "professional" | "enterprise"
+      subscription_status: "active" | "trial" | "expired" | "canceled"
       user_role: "admin" | "lawyer" | "staff" | "client"
     }
     CompositeTypes: {
@@ -331,6 +502,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      subscription_plan: ["starter", "professional", "enterprise"],
+      subscription_status: ["active", "trial", "expired", "canceled"],
       user_role: ["admin", "lawyer", "staff", "client"],
     },
   },

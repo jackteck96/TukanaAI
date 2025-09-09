@@ -125,153 +125,69 @@ const Auth = () => {
           <Card className="shadow-xl border-border/50">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold">
-                {activeTab === 'login' ? 'Entrar na Plataforma' : 'Criar Conta'}
+                Entrar na Plataforma
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                {activeTab === 'login' 
-                  ? 'Acesse sua conta para gerenciar processos jurídicos'
-                  : 'Crie sua conta para começar a usar a plataforma'
-                }
+                Acesse sua conta para gerenciar processos jurídicos
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Entrar</TabsTrigger>
-                  <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="login" className="space-y-4 mt-6">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="login-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={loginForm.email}
-                          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                          className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
-                          required
-                        />
-                      </div>
-                      {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+              <div className="space-y-4 mt-6">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                        className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
+                        required
+                      />
                     </div>
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="login-password"
-                          type="password"
-                          placeholder="Digite sua senha"
-                          value={loginForm.password}
-                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                          className={`pl-10 ${errors.password ? 'border-destructive' : ''}`}
-                          required
-                        />
-                      </div>
-                      {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Senha</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="login-password"
+                        type="password"
+                        placeholder="Digite sua senha"
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                        className={`pl-10 ${errors.password ? 'border-destructive' : ''}`}
+                        required
+                      />
                     </div>
+                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                  </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? 'Entrando...' : 'Entrar'}
-                    </Button>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="signup" className="space-y-4 mt-6">
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Nome Completo</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Seu nome completo"
-                          value={signupForm.fullName}
-                          onChange={(e) => setSignupForm({ ...signupForm, fullName: e.target.value })}
-                          className={`pl-10 ${errors.fullName ? 'border-destructive' : ''}`}
-                          required
-                        />
-                      </div>
-                      {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="seu@email.com"
-                          value={signupForm.email}
-                          onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                          className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
-                          required
-                        />
-                      </div>
-                      {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="Mínimo 6 caracteres"
-                          value={signupForm.password}
-                          onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                          className={`pl-10 ${errors.password ? 'border-destructive' : ''}`}
-                          required
-                        />
-                      </div>
-                      {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-confirm">Confirmar Senha</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-confirm"
-                          type="password"
-                          placeholder="Confirme sua senha"
-                          value={signupForm.confirmPassword}
-                          onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
-                          className={`pl-10 ${errors.confirmPassword ? 'border-destructive' : ''}`}
-                          required
-                        />
-                      </div>
-                      {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? 'Criando conta...' : 'Criar Conta'}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Entrando...' : 'Entrar'}
+                  </Button>
+                </form>
+              </div>
 
               <Separator className="my-6" />
               
-              <div className="text-center text-sm text-muted-foreground">
-                <p>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Não tem uma conta?{' '}
+                  <Link to="/signup" className="text-primary hover:underline">
+                    Criar conta empresarial
+                  </Link>
+                </p>
+                <p className="text-xs text-muted-foreground">
                   Ao fazer login, você concorda com nossos{' '}
                   <a href="#" className="text-primary hover:underline">
                     Termos de Uso
