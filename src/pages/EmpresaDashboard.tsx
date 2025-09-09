@@ -29,6 +29,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import UserInviteSystem from "@/components/UserInviteSystem";
+import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -119,9 +120,7 @@ const EmpresaDashboard = () => {
   };
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [clientForm, setClientForm] = useState({
     name: "",
@@ -130,34 +129,12 @@ const EmpresaDashboard = () => {
     company: "",
     status: ""
   });
-  const [processForm, setProcessForm] = useState({
-    client: "",
-    processType: "",
-    description: "",
-    dueDate: "",
-    priority: "",
-    requiredDocuments: [] as string[]
-  });
-
-  const availableDocuments = [
-    "RG", "CPF", "Comprovante de Residência", "Carteira de Trabalho",
-    "Contrato Social", "CNPJ", "Inscrição Estadual", "Alvará de Funcionamento",
-    "Declaração de Imposto de Renda", "Comprovante de Renda", "Certidão de Nascimento",
-    "Certidão de Casamento", "Procuração", "Contrato de Prestação de Serviços"
-  ];
 
   const handleClientSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Novo cliente:", clientForm);
     setIsClientModalOpen(false);
     setClientForm({ name: "", email: "", phone: "", company: "", status: "" });
-  };
-
-  const handleProcessSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Novo processo:", processForm);
-    setIsProcessModalOpen(false);
-    setProcessForm({ client: "", processType: "", description: "", dueDate: "", priority: "", requiredDocuments: [] });
   };
 
   return (
@@ -176,14 +153,7 @@ const EmpresaDashboard = () => {
                   {loading ? 'Atualizando...' : 'Atualizar'}
                 </Button>
                 <UserInviteSystem onInviteSent={refreshData} />
-                <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Novo Processo
-                    </Button>
-                  </DialogTrigger>
-                </Dialog>
+                <CreateProcessWithInvite />
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
@@ -431,10 +401,6 @@ const EmpresaDashboard = () => {
                       <span className="text-sm font-medium">Tipos de Docs</span>
                     </Button>
                   </Link>
-                  <Button variant="outline" className="h-20 flex-col" onClick={() => setIsConfigModalOpen(true)}>
-                    <MoreHorizontal className="h-6 w-6 mb-2" />
-                    <span className="text-xs">Configurações</span>
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -442,7 +408,7 @@ const EmpresaDashboard = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Client Modal */}
       <Dialog open={isClientModalOpen} onOpenChange={setIsClientModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -450,21 +416,23 @@ const EmpresaDashboard = () => {
           </DialogHeader>
           <form onSubmit={handleClientSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="clientName">Nome do Cliente</Label>
+              <Label htmlFor="clientName">Nome</Label>
               <Input
                 id="clientName"
                 value={clientForm.name}
                 onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
+                placeholder="Nome do cliente"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="clientEmail">E-mail</Label>
+              <Label htmlFor="clientEmail">Email</Label>
               <Input
                 id="clientEmail"
                 type="email"
                 value={clientForm.email}
                 onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                placeholder="email@cliente.com"
                 required
               />
             </div>
@@ -474,6 +442,8 @@ const EmpresaDashboard = () => {
                 id="clientPhone"
                 value={clientForm.phone}
                 onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+                placeholder="(11) 99999-9999"
+                required
               />
             </div>
             <div>
@@ -482,6 +452,7 @@ const EmpresaDashboard = () => {
                 id="clientCompany"
                 value={clientForm.company}
                 onChange={(e) => setClientForm({ ...clientForm, company: e.target.value })}
+                placeholder="Empresa do cliente"
               />
             </div>
             <div>
@@ -502,110 +473,6 @@ const EmpresaDashboard = () => {
                 Cancelar
               </Button>
               <Button type="submit">Cadastrar Cliente</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isProcessModalOpen} onOpenChange={setIsProcessModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Novo Processo</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleProcessSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="processClient">Cliente</Label>
-              <Select value={processForm.client} onValueChange={(value) => setProcessForm({ ...processForm, client: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="techcorp">TechCorp Ltda</SelectItem>
-                  <SelectItem value="inovacao">Inovação Digital</SelectItem>
-                  <SelectItem value="consultoria">Consultoria Moderna</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="processType">Tipo de Processo</Label>
-              <Select value={processForm.processType} onValueChange={(value) => setProcessForm({ ...processForm, processType: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contrato">Contrato</SelectItem>
-                  <SelectItem value="documentacao">Documentação</SelectItem>
-                  <SelectItem value="licenca">Licença</SelectItem>
-                  <SelectItem value="fiscal">Fiscal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="processDescription">Descrição</Label>
-              <Textarea
-                id="processDescription"
-                value={processForm.description}
-                onChange={(e) => setProcessForm({ ...processForm, description: e.target.value })}
-                placeholder="Descreva o processo..."
-              />
-            </div>
-            <div>
-              <Label htmlFor="processDueDate">Data de Prazo</Label>
-              <Input
-                id="processDueDate"
-                type="date"
-                value={processForm.dueDate}
-                onChange={(e) => setProcessForm({ ...processForm, dueDate: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="processPriority">Prioridade</Label>
-              <Select value={processForm.priority} onValueChange={(value) => setProcessForm({ ...processForm, priority: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a prioridade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="low">Baixa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Documentos Necessários</Label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
-                {availableDocuments.map((doc) => (
-                  <div key={doc} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={doc}
-                      checked={processForm.requiredDocuments.includes(doc)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setProcessForm({
-                            ...processForm,
-                            requiredDocuments: [...processForm.requiredDocuments, doc]
-                          });
-                        } else {
-                          setProcessForm({
-                            ...processForm,
-                            requiredDocuments: processForm.requiredDocuments.filter(d => d !== doc)
-                          });
-                        }
-                      }}
-                    />
-                    <Label htmlFor={doc} className="text-sm">{doc}</Label>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {processForm.requiredDocuments.length} documento(s) selecionado(s)
-              </p>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsProcessModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">Criar Processo</Button>
             </div>
           </form>
         </DialogContent>
@@ -638,41 +505,6 @@ const EmpresaDashboard = () => {
                 setSearchTerm("");
               }}>
                 Buscar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Config Modal */}
-      <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Configurações</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="font-medium">Configurações Gerais</h3>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  Configurar Perfil da Empresa
-                </Button>
-                <Link to="/gestao-usuarios">
-                  <Button variant="outline" className="w-full justify-start">
-                    Gerenciar Usuários
-                  </Button>
-                </Link>
-                <Button variant="outline" className="w-full justify-start">
-                  Configurações de Notificação
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Backup e Segurança
-                </Button>
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button type="button" variant="outline" onClick={() => setIsConfigModalOpen(false)}>
-                Fechar
               </Button>
             </div>
           </div>
