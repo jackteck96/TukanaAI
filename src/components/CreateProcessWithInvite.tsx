@@ -20,7 +20,11 @@ interface CreateProcessForm {
   dueDate: string;
 }
 
-const CreateProcessWithInvite = () => {
+interface CreateProcessWithInviteProps {
+  onProcessCreated?: () => void;
+}
+
+const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInviteProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,8 +161,10 @@ const CreateProcessWithInvite = () => {
         });
       }
 
-      // Refresh dashboard data if available
-      window.location.reload();
+      // Refresh data if callback provided
+      if (onProcessCreated) {
+        onProcessCreated();
+      }
       
       resetForm();
       setIsOpen(false);

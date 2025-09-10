@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,8 @@ import {
 import { Link } from "react-router-dom";
 import AIProcessAnalyzer from "@/components/AIProcessAnalyzer";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const GerenciarProcessos = () => {
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -32,69 +34,70 @@ const GerenciarProcessos = () => {
     message: "",
     requestDocs: [] as string[]
   });
+  const [processes, setProcesses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const processes = [
-    {
-      id: 1,
-      client: "TechCorp Ltda",
-      processType: "Contrato de Prestação de Serviços",
-      description: "Elaboração de contrato para prestação de serviços de TI",
-      dueDate: "24/08/2024",
-      priority: "high",
-      status: "Aguardando Documentos",
-      progress: 60,
-      requiredDocuments: ["RG", "CPF", "Comprovante de Residência", "CNPJ"],
-      receivedDocuments: [
-        {
-          name: "RG",
-          status: "recebido",
-          dateReceived: "20/08/2024",
-          url: "#"
-        },
-        {
-          name: "CPF",
-          status: "recebido",
-          dateReceived: "20/08/2024",
-          url: "#"
-        }
-      ],
-      pendingDocuments: ["Comprovante de Residência", "CNPJ"],
-      lastContact: "18/08/2024"
-    },
-    {
-      id: 2,
-      client: "Inovação Digital",
-      processType: "Documentação Fiscal",
-      description: "Preparação de documentação fiscal para auditoria",
-      dueDate: "26/08/2024",
-      priority: "medium",
-      status: "Em Análise",
-      progress: 85,
-      requiredDocuments: ["Contrato Social", "Inscrição Estadual", "Declaração de IR"],
-      receivedDocuments: [
-        {
-          name: "Contrato Social",
-          status: "recebido",
-          dateReceived: "19/08/2024",
-          url: "#"
-        },
-        {
-          name: "Inscrição Estadual",
-          status: "recebido",
-          dateReceived: "19/08/2024",
-          url: "#"
-        },
-        {
-          name: "Declaração de IR",
-          status: "recebido",
-          dateReceived: "21/08/2024",
-          url: "#"
-        }
-      ],
-      pendingDocuments: [],
-      lastContact: "21/08/2024"
+  useEffect(() => {
+    fetchProcesses();
+  }, []);
+
+  const fetchProcesses = async () => {
+    try {
+      setLoading(true);
+      const { data: processesData, error } = await supabase
+        .from('processes')
+        .select(`
+          *,
+          documents (
+            id,
+            file_name,
+            document_type,
+            status,
+            created_at
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform data to match the expected format
+      const transformedProcesses = processesData?.map(process => {
+        const receivedDocuments = process.documents?.filter(doc => doc.status === 'Aprovado') || [];
+        const pendingDocuments = process.documents?.filter(doc => doc.status === 'Pendente') || [];
+        
+        return {
+          id: process.id,
+          client: process.client_name,
+          processType: process.process_type,
+          description: process.description,
+          dueDate: process.due_date ? new Date(process.due_date).toLocaleDateString('pt-BR') : 'Sem prazo',
+          priority: process.priority?.toLowerCase() || 'medium',
+          status: process.status,
+          progress: process.progress || 0,
+          receivedDocuments: receivedDocuments.map(doc => ({
+            name: doc.document_type,
+            status: "recebido",
+            dateReceived: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            url: "#"
+          })),
+          pendingDocuments: pendingDocuments.map(doc => doc.document_type),
+          lastContact: new Date(process.updated_at).toLocaleDateString('pt-BR')
+        };
+      }) || [];
+
+      setProcesses(transformedProcesses);
+    } catch (error) {
+      console.error('Error fetching processes:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar processos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -189,11 +192,20 @@ const GerenciarProcessos = () => {
 
       <div className="p-6 space-y-6">
         {/* Create Process Button */}
-        <CreateProcessWithInvite />
+        <CreateProcessWithInvite onProcessCreated={fetchProcesses} />
         
         {/* Processes List */}
         <div className="space-y-6">
-          {processes.map((process) => (
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Carregando processos...</p>
+            </div>
+          ) : processes.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Nenhum processo encontrado. Crie seu primeiro processo acima.</p>
+            </div>
+          ) : (
+            processes.map((process) => (
             <Card key={process.id} className={`border-l-4 ${getPriorityColor(process.priority)}`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -311,7 +323,8 @@ const GerenciarProcessos = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
