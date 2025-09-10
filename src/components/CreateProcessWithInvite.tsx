@@ -75,7 +75,12 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('User:', user);
+    console.log('Company:', company);
+    console.log('Company ID:', company?.id);
+    
     if (!user || !company?.id) {
+      console.error('Missing user or company:', { user: !!user, company: !!company, companyId: company?.id });
       toast({
         title: "Erro",
         description: "Usuário ou empresa não identificados.",
