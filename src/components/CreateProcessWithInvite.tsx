@@ -12,6 +12,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { Mail, Plus } from "lucide-react";
 
 interface CreateProcessForm {
+  projectName: string;
   clientName: string;
   clientEmail: string;
   cpfCnpj: string;
@@ -34,6 +35,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const { company } = useCompany();
 
   const [formData, setFormData] = useState<CreateProcessForm>({
+    projectName: "",
     clientName: "",
     clientEmail: "",
     cpfCnpj: "",
@@ -61,6 +63,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
   const resetForm = () => {
     setFormData({
+      projectName: "",
       clientName: "",
       clientEmail: "",
       cpfCnpj: "",
@@ -93,10 +96,11 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       const { data: processData, error: processError } = await supabase
         .from("processes")
         .insert({
+          project_name: formData.projectName || `Processo - ${formData.clientName}`,
           client_name: formData.clientName,
           client_email: formData.clientEmail,
           cpf_cnpj: formData.cpfCnpj,
-          process_type: requiredDocuments.length > 0 ? `Processo: ${requiredDocuments.slice(0,2).join(", ")}` : "Processo Documental",
+          process_type: requiredDocuments.length > 0 ? `Documentação: ${requiredDocuments.slice(0,2).join(", ")}` : "Processo Documental",
           description: formData.description,
           priority: formData.priority,
           due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
@@ -196,6 +200,17 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="projectName">Nome do Projeto/Processo</Label>
+            <Input
+              id="projectName"
+              value={formData.projectName}
+              onChange={(e) =>
+                setFormData({ ...formData, projectName: e.target.value })
+              }
+              placeholder="Ex: Processo de documentação para Maria Silva"
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="clientName">Nome do Cliente</Label>

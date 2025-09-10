@@ -239,6 +239,7 @@ export type Database = {
           priority: string
           process_type: string
           progress: number
+          project_name: string | null
           status: string
           updated_at: string
         }
@@ -256,6 +257,7 @@ export type Database = {
           priority?: string
           process_type: string
           progress?: number
+          project_name?: string | null
           status?: string
           updated_at?: string
         }
@@ -273,6 +275,7 @@ export type Database = {
           priority?: string
           process_type?: string
           progress?: number
+          project_name?: string | null
           status?: string
           updated_at?: string
         }
