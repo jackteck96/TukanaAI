@@ -237,6 +237,7 @@ const EmpresaDashboard = () => {
                   <div
                     key={client.id}
                     className={`p-4 rounded-lg border-l-4 ${getPriorityColor(client.priority)} bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer`}
+                    onClick={() => navigate(`/cliente/${encodeURIComponent(client.client_email)}`)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -253,9 +254,6 @@ const EmpresaDashboard = () => {
                           Atualizado {formatLastUpdate(client.last_update)}
                         </p>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                   ))
