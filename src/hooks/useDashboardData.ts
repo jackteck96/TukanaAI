@@ -108,10 +108,12 @@ export const useDashboardData = () => {
 
       if (!profile?.company_id) return;
 
+      // Get processes that are "Em andamento" specifically
       const { data, error } = await supabase
         .from('processes')
         .select('*')
         .eq('company_id', profile.company_id)
+        .in('status', ['Em andamento', 'Pendente'])
         .order('updated_at', { ascending: false })
         .limit(5);
 
@@ -142,39 +144,51 @@ export const useDashboardData = () => {
 
       if (!profile?.company_id) return;
 
-      // Get recent processes grouped by client with document counts
-      const { data, error } = await supabase
+      // Get recent processes - remove the inner join so we get all processes
+      const { data: processes, error: processesError } = await supabase
         .from('processes')
         .select(`
+          id,
           client_name,
           client_email,
           status,
           updated_at,
-          priority,
-          documents!inner(id)
+          priority
         `)
         .eq('company_id', profile.company_id)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (processesError) throw processesError;
 
       // Group by client and get most recent info
       const clientMap = new Map<string, RecentClient>();
       
-      data?.forEach(process => {
+      for (const process of processes || []) {
         const existing = clientMap.get(process.client_email);
         if (!existing || new Date(process.updated_at) > new Date(existing.last_update)) {
+          // Get process IDs for this client
+          const clientProcessIds = processes
+            .filter(p => p.client_email === process.client_email)
+            .map(p => p.id);
+
+          // Count documents for this client's processes
+          const { count: documentCount } = await supabase
+            .from('documents')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', profile.company_id)
+            .in('process_id', clientProcessIds);
+
           clientMap.set(process.client_email, {
             id: process.client_email,
             client_name: process.client_name,
             client_email: process.client_email,
             status: process.status,
-            document_count: process.documents?.length || 0,
+            document_count: documentCount || 0,
             last_update: process.updated_at,
             priority: process.priority || 'medium'
           });
         }
-      });
+      }
 
       setRecentClients(Array.from(clientMap.values()).slice(0, 4));
     } catch (error) {

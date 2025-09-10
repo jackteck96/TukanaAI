@@ -272,8 +272,10 @@ const EmpresaDashboard = () => {
                   <FileText className="h-5 w-5" />
                   <span>Processos em Andamento</span>
                 </CardTitle>
-                <Button variant="ghost" size="sm">
-                  Ver Todos
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/gerenciar-processos">
+                    Ver Todos
+                  </Link>
                 </Button>
               </div>
             </CardHeader>
@@ -298,6 +300,7 @@ const EmpresaDashboard = () => {
                   <div
                     key={process.id}
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-foreground text-sm">
