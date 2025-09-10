@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, 
@@ -14,18 +14,23 @@ import {
   CheckCircle, 
   AlertTriangle,
   Send,
-  Download,
-  Eye,
   MessageSquare,
-  Plus
+  Plus,
+  User,
+  Mail,
+  Calendar,
+  FileIcon,
+  Edit
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import AIProcessAnalyzer from "@/components/AIProcessAnalyzer";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
+import DocumentList from "@/components/DocumentList";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 const GerenciarProcessos = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState<any>(null);
@@ -35,12 +40,104 @@ const GerenciarProcessos = () => {
     requestDocs: [] as string[]
   });
   const [processes, setProcesses] = useState<any[]>([]);
+  const [currentProcess, setCurrentProcess] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState<string>("");
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const { toast } = useToast();
 
+  // Check if we have a specific process ID in the URL
+  const urlParams = new URLSearchParams(location.search);
+  const processId = urlParams.get('id');
+
   useEffect(() => {
-    fetchProcesses();
-  }, []);
+    if (processId) {
+      fetchProcessDetails(processId);
+    } else {
+      fetchProcesses();
+    }
+  }, [processId]);
+
+  const fetchProcessDetails = async (id: string) => {
+    try {
+      setLoading(true);
+      const { data: processData, error } = await supabase
+        .from('processes')
+        .select(`
+          *,
+          documents (
+            id,
+            file_name,
+            file_path,
+            file_type,
+            file_size,
+            document_type,
+            status,
+            uploaded_by,
+            created_at
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      setCurrentProcess({
+        id: processData.id,
+        project_name: processData.project_name,
+        client_name: processData.client_name,
+        client_email: processData.client_email,
+        cpf_cnpj: processData.cpf_cnpj,
+        process_type: processData.process_type,
+        description: processData.description,
+        status: processData.status,
+        priority: processData.priority,
+        progress: processData.progress,
+        due_date: processData.due_date,
+        created_at: processData.created_at,
+        updated_at: processData.updated_at,
+        documents: processData.documents || []
+      });
+      
+      setNotes(processData.description || "");
+    } catch (error) {
+      console.error('Error fetching process details:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar detalhes do processo",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProcessNotes = async () => {
+    if (!currentProcess) return;
+    
+    try {
+      const { error } = await supabase
+        .from('processes')
+        .update({ description: notes })
+        .eq('id', currentProcess.id);
+
+      if (error) throw error;
+
+      setCurrentProcess({...currentProcess, description: notes});
+      setIsNotesModalOpen(false);
+      toast({
+        title: "Sucesso",
+        description: "Anotações atualizadas com sucesso",
+      });
+    } catch (error) {
+      console.error('Error updating notes:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar anotações",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchProcesses = async () => {
     try {
@@ -61,7 +158,6 @@ const GerenciarProcessos = () => {
 
       if (error) throw error;
 
-      // Transform data to match the expected format
       const transformedProcesses = processesData?.map(process => {
         const receivedDocuments = process.documents?.filter(doc => doc.status === 'Aprovado') || [];
         const pendingDocuments = process.documents?.filter(doc => doc.status === 'Pendente') || [];
@@ -103,9 +199,9 @@ const GerenciarProcessos = () => {
     switch (status) {
       case "Concluído":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
-      case "Em Análise":
+      case "Em andamento":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
-      case "Aguardando Documentos":
+      case "Pendente":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400";
       default:
         return "bg-muted text-muted-foreground";
@@ -113,60 +209,197 @@ const GerenciarProcessos = () => {
   };
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
+    switch (priority?.toLowerCase()) {
+      case "alta":
         return "border-l-red-500";
-      case "medium":
+      case "média":
         return "border-l-yellow-500";
-      case "low":
+      case "baixa":
         return "border-l-green-500";
       default:
         return "border-l-muted";
     }
   };
 
-  const handleSendMessage = (processId: number) => {
-    setSelectedProcess(processes.find(p => p.id === processId));
-    setIsMessageModalOpen(true);
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Não definido';
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const handleRequestDocuments = (processId: number) => {
-    setSelectedProcess(processes.find(p => p.id === processId));
-    setIsDocumentModalOpen(true);
-  };
+  // If we're viewing a specific process, show the detailed view
+  if (processId && currentProcess && !loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="bg-card border-b border-border sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/gerenciar-processos')}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Voltar para Processos
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {currentProcess.project_name || currentProcess.process_type}
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Cliente: {currentProcess.client_name}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge className={getStatusColor(currentProcess.status)}>
+                  {currentProcess.status}
+                </Badge>
+                <Button variant="outline" onClick={() => setIsNotesModalOpen(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar Anotações
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
 
-  const submitMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Enviando mensagem:", messageForm);
-    setIsMessageModalOpen(false);
-    setMessageForm({ message: "", requestDocs: [] });
-  };
+        <div className="p-6 space-y-6">
+          {/* Process Information */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Client Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Informações do Cliente
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Nome</Label>
+                  <p className="text-sm">{currentProcess.client_name}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm">{currentProcess.client_email}</p>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">CPF/CNPJ</Label>
+                  <p className="text-sm">{currentProcess.cpf_cnpj || 'Não informado'}</p>
+                </div>
+              </CardContent>
+            </Card>
 
-  const submitDocumentRequest = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Solicitando documentos:", messageForm);
-    setIsDocumentModalOpen(false);
-    setMessageForm({ message: "", requestDocs: [] });
-    setSearchTerm("");
-  };
+            {/* Process Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileIcon className="h-5 w-5" />
+                  Detalhes do Processo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Tipo</Label>
+                  <p className="text-sm">{currentProcess.process_type}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Prioridade</Label>
+                  <Badge variant={currentProcess.priority === 'Alta' ? 'destructive' : 
+                              currentProcess.priority === 'Média' ? 'default' : 'secondary'}>
+                    {currentProcess.priority}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Progresso</Label>
+                  <div className="space-y-2">
+                    <Progress value={currentProcess.progress} />
+                    <p className="text-sm text-muted-foreground">{currentProcess.progress}% concluído</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-  // Simulação dos tipos de documentos cadastrados pelo administrador
-  const availableDocuments = [
-    "RG - Registro Geral",
-    "CPF - Cadastro de Pessoa Física", 
-    "Comprovante de Residência",
-    "CNPJ - Cadastro Nacional da Pessoa Jurídica",
-    "Carteira de Trabalho",
-    "Contrato Social", 
-    "Inscrição Estadual", 
-    "Alvará de Funcionamento",
-    "Declaração de Imposto de Renda", 
-    "Comprovante de Renda", 
-    "Certidão de Nascimento",
-    "Certidão de Casamento", 
-    "Procuração", 
-    "Contrato de Prestação de Serviços"
-  ];
+            {/* Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Timeline
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Criado em</Label>
+                  <p className="text-sm">{formatDate(currentProcess.created_at)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Última atualização</Label>
+                  <p className="text-sm">{formatDate(currentProcess.updated_at)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Prazo</Label>
+                  <p className="text-sm">{formatDate(currentProcess.due_date)}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Process Description/Notes */}
+          {currentProcess.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Anotações do Processo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap">{currentProcess.description}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Documents Section */}
+          <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
+        </div>
+
+        {/* Notes Edit Modal */}
+        <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar Anotações do Processo</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="notes">Anotações</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Adicione suas anotações sobre o processo..."
+                  rows={6}
+                  className="min-h-[150px]"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsNotesModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={updateProcessNotes}>
+                  Salvar Anotações
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -206,7 +439,8 @@ const GerenciarProcessos = () => {
             </div>
           ) : (
             processes.map((process) => (
-            <Card key={process.id} className={`border-l-4 ${getPriorityColor(process.priority)}`}>
+            <Card key={process.id} className={`border-l-4 ${getPriorityColor(process.priority)} cursor-pointer hover:shadow-md transition-shadow`}
+                  onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -220,34 +454,10 @@ const GerenciarProcessos = () => {
                       Cliente: {process.client} • Prazo: {process.dueDate}
                     </p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleSendMessage(process.id)}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Mensagem
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleRequestDocuments(process.id)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Solicitar Docs
-                    </Button>
-                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {/* IA Analysis */}
-                  <AIProcessAnalyzer 
-                    process={process} 
-                    availableDocuments={availableDocuments}
-                  />
-
                   {/* Progress */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -265,7 +475,7 @@ const GerenciarProcessos = () => {
                         Documentos Recebidos ({process.receivedDocuments.length})
                       </h3>
                       <div className="space-y-2">
-                        {process.receivedDocuments.map((doc, index) => (
+                        {process.receivedDocuments.slice(0, 3).map((doc: any, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                             <div className="flex items-center space-x-2">
                               <FileText className="h-4 w-4 text-green-600" />
@@ -276,16 +486,13 @@ const GerenciarProcessos = () => {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center space-x-1">
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
                           </div>
                         ))}
+                        {process.receivedDocuments.length > 3 && (
+                          <p className="text-xs text-muted-foreground text-center">
+                            +{process.receivedDocuments.length - 3} documentos...
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -296,7 +503,7 @@ const GerenciarProcessos = () => {
                         Documentos Pendentes ({process.pendingDocuments.length})
                       </h3>
                       <div className="space-y-2">
-                        {process.pendingDocuments.map((doc, index) => (
+                        {process.pendingDocuments.slice(0, 3).map((doc: any, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
                             <div className="flex items-center space-x-2">
                               <AlertTriangle className="h-4 w-4 text-orange-600" />
@@ -307,16 +514,13 @@ const GerenciarProcessos = () => {
                                 </p>
                               </div>
                             </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleSendMessage(process.id)}
-                            >
-                              <Send className="h-4 w-4 mr-2" />
-                              Cobrar
-                            </Button>
                           </div>
                         ))}
+                        {process.pendingDocuments.length > 3 && (
+                          <p className="text-xs text-muted-foreground text-center">
+                            +{process.pendingDocuments.length - 3} documentos...
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -327,111 +531,6 @@ const GerenciarProcessos = () => {
           )}
         </div>
       </div>
-
-      {/* Message Modal */}
-      <Dialog open={isMessageModalOpen} onOpenChange={setIsMessageModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Enviar Mensagem para {selectedProcess?.client}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={submitMessage} className="space-y-4">
-            <div>
-              <Label htmlFor="message">Mensagem</Label>
-              <Textarea
-                id="message"
-                value={messageForm.message}
-                onChange={(e) => setMessageForm({ ...messageForm, message: e.target.value })}
-                placeholder="Digite sua mensagem para o cliente..."
-                rows={4}
-                required
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsMessageModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">
-                <Send className="h-4 w-4 mr-2" />
-                Enviar Mensagem
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Document Request Modal */}
-      <Dialog open={isDocumentModalOpen} onOpenChange={setIsDocumentModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Solicitar Documentos Adicionais</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={submitDocumentRequest} className="space-y-4">
-            <div>
-              <Label>Documentos Adicionais</Label>
-              <div className="space-y-3">
-                <div className="relative">
-                  <Input
-                    placeholder="Buscar documentos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pr-8"
-                  />
-                </div>
-                <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
-                  {availableDocuments
-                    .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
-                    .map((doc) => (
-                    <div key={doc} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`req-${doc}`}
-                        checked={messageForm.requestDocs.includes(doc)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setMessageForm({
-                              ...messageForm,
-                              requestDocs: [...messageForm.requestDocs, doc]
-                            });
-                          } else {
-                            setMessageForm({
-                              ...messageForm,
-                              requestDocs: messageForm.requestDocs.filter(d => d !== doc)
-                            });
-                          }
-                        }}
-                        className="rounded border-border"
-                      />
-                      <Label htmlFor={`req-${doc}`} className="text-sm">{doc}</Label>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {messageForm.requestDocs.length} documento(s) selecionado(s)
-                </p>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="requestMessage">Mensagem (opcional)</Label>
-              <Textarea
-                id="requestMessage"
-                value={messageForm.message}
-                onChange={(e) => setMessageForm({ ...messageForm, message: e.target.value })}
-                placeholder="Mensagem adicional para o cliente..."
-                rows={3}
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsDocumentModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">
-                <Send className="h-4 w-4 mr-2" />
-                Solicitar Documentos
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
