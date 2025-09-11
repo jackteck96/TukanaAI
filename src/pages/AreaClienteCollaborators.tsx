@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,6 +78,9 @@ export function CollaboratorsModal({
             <Users className="h-5 w-5" />
             <span>Gerenciar Colaboradores</span>
           </DialogTitle>
+          <DialogDescription>
+            Convide e gerencie colaboradores da sua empresa, respeitando os limites do seu plano.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

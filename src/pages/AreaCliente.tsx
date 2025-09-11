@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -650,26 +650,32 @@ const AreaCliente = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsUploadModalOpen(true)}>
-                <Upload className="h-6 w-6 mb-2" />
-                <span className="text-xs">Enviar Documento</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col" 
+                onClick={() => handleViewDocuments("Documentos Enviados")}
+              >
                 <FileText className="h-6 w-6 mb-2" />
                 <span className="text-xs">Meus Documentos</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsCollaboratorsModalOpen(true)}>
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col" 
+                onClick={() => setIsCollaboratorsModalOpen(true)}
+              >
                 <User className="h-6 w-6 mb-2" />
                 <span className="text-xs">Gerenciar Colaboradores</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col">
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col"
+                onClick={() => {
+                  toast.success("Entre em contato pelo email: suporte@empresa.com ou telefone (11) 9999-9999");
+                }}
+              >
                 <MessageSquare className="h-6 w-6 mb-2" />
                 <span className="text-xs">Suporte</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
-                <User className="h-6 w-6 mb-2" />
-                <span className="text-xs">Meu Perfil</span>
               </Button>
             </div>
           </CardContent>
@@ -681,6 +687,9 @@ const AreaCliente = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Enviar Documento</DialogTitle>
+            <DialogDescription>
+              Selecione um arquivo para enviar. Formatos aceitos: PDF, DOC, DOCX, JPG, PNG.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUploadSubmit} className="space-y-4">
             <div>
@@ -749,6 +758,9 @@ const AreaCliente = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Detalhes do Documento</DialogTitle>
+            <DialogDescription>
+              Informações completas sobre o documento selecionado.
+            </DialogDescription>
           </DialogHeader>
           {selectedDocument && (
             <div className="space-y-4">
@@ -795,6 +807,9 @@ const AreaCliente = () => {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Processo</DialogTitle>
+            <DialogDescription>
+              Informações completas sobre o processo, documentos e comunicações.
+            </DialogDescription>
           </DialogHeader>
           {selectedProcess && (
             <div className="space-y-4">
@@ -959,6 +974,9 @@ const AreaCliente = () => {
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{selectedDocumentCategory}</DialogTitle>
+            <DialogDescription>
+              Lista de documentos na categoria selecionada.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-3">
@@ -1021,6 +1039,9 @@ const AreaCliente = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Enviar Documento Solicitado</DialogTitle>
+            <DialogDescription>
+              Envie o documento solicitado para o processo correspondente.
+            </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
             <form onSubmit={handleUploadSubmit} className="space-y-4">
@@ -1080,6 +1101,9 @@ const AreaCliente = () => {
               <Printer className="h-5 w-5" />
               <span>Relatório do Processo</span>
             </DialogTitle>
+            <DialogDescription>
+              Relatório detalhado com todas as informações do processo.
+            </DialogDescription>
           </DialogHeader>
           {selectedProcess && (
             <div className="space-y-6">
