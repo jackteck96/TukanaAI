@@ -70,7 +70,9 @@ const AreaCliente = () => {
       progress: 75,
       dueDate: "2024-08-24",
       documents: 12,
-      pending: 2
+      pending: 2,
+      company: "Silva & Associados Advocacia",
+      responsibleLawyer: "Dr. Carlos Silva"
     },
     {
       id: 2,
@@ -80,7 +82,9 @@ const AreaCliente = () => {
       progress: 30,
       dueDate: "2024-08-26",
       documents: 8,
-      pending: 5
+      pending: 5,
+      company: "Santos Consultoria Jurídica",
+      responsibleLawyer: "Dra. Ana Santos"
     },
     {
       id: 3,
@@ -90,7 +94,9 @@ const AreaCliente = () => {
       progress: 20,
       dueDate: "2024-08-30",
       documents: 4,
-      pending: 8
+      pending: 8,
+      company: "Lima & Partners",
+      responsibleLawyer: "Dr. Roberto Lima"
     }
   ];
 
@@ -196,6 +202,10 @@ const AreaCliente = () => {
   const [isDocumentDetailsModalOpen, setIsDocumentDetailsModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
   const [isProcessDetailsModalOpen, setIsProcessDetailsModalOpen] = useState(false);
+  const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
+  const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("");
+  const [isRequestUploadModalOpen, setIsRequestUploadModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [uploadForm, setUploadForm] = useState({
     title: "",
     type: "",
@@ -241,17 +251,39 @@ const AreaCliente = () => {
 
   const handleDownloadReport = () => {
     if (selectedProcess) {
-      console.log("Gerando relatório para:", selectedProcess.title);
-      // Aqui você implementaria a geração real do PDF
-      alert(`Relatório do processo "${selectedProcess.title}" foi gerado e baixado!`);
+      // Simular geração e download de PDF
+      const reportContent = `
+        RELATÓRIO DO PROCESSO
+        
+        Título: ${selectedProcess.title}
+        Status: ${selectedProcess.status}
+        Progresso: ${selectedProcess.progress}%
+        Prazo: ${new Date(selectedProcess.dueDate).toLocaleDateString('pt-BR')}
+        Empresa Responsável: ${selectedProcess.company}
+        Advogado Responsável: ${selectedProcess.responsibleLawyer}
+        
+        Descrição: ${selectedProcess.description}
+        
+        Documentos: ${selectedProcess.documents} enviados, ${selectedProcess.pending} pendentes
+        
+        Data de Geração: ${new Date().toLocaleString('pt-BR')}
+      `;
+      
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `relatorio-${selectedProcess.title.replace(/\s+/g, '-').toLowerCase()}.txt`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      
       setIsReportModalOpen(false);
     }
   };
 
   const handleViewDocuments = (category: string) => {
-    console.log("Visualizando documentos da categoria:", category);
-    // Aqui você abriria uma modal ou página com os documentos filtrados
-    alert(`Mostrando documentos da categoria: ${category}`);
+    setSelectedDocumentCategory(category);
+    setIsDocumentsModalOpen(true);
   };
 
   const handleViewProcess = (processId: number) => {
@@ -265,6 +297,26 @@ const AreaCliente = () => {
   const handleViewDocumentDetails = (document: any) => {
     setSelectedDocument(document);
     setIsDocumentDetailsModalOpen(true);
+  };
+
+  const handleRequestUpload = (request: any) => {
+    setSelectedRequest(request);
+    setIsRequestUploadModalOpen(true);
+  };
+
+  const getDocumentsByCategory = (category: string) => {
+    switch (category) {
+      case "Documentos Enviados":
+        return recentDocuments;
+      case "Pendentes de Envio":
+        return recentDocuments.filter(doc => doc.status === "Pendente Correção");
+      case "Aprovados":
+        return recentDocuments.filter(doc => doc.status === "Aprovado");
+      case "Em Análise":
+        return recentDocuments.filter(doc => doc.status === "Em Análise");
+      default:
+        return [];
+    }
   };
 
   return (
@@ -480,7 +532,7 @@ const AreaCliente = () => {
                           variant="outline" 
                           onClick={(e) => {
                             e.stopPropagation();
-                            setIsUploadModalOpen(true);
+                            handleRequestUpload(request);
                           }}
                         >
                           <Upload className="h-3 w-3 mr-1" />
@@ -719,6 +771,17 @@ const AreaCliente = () => {
                 <Label className="text-sm font-medium">Descrição</Label>
                 <p className="text-sm text-muted-foreground">{selectedProcess.description}</p>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Empresa Responsável</Label>
+                  <p className="text-sm text-muted-foreground">{selectedProcess.company}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Advogado Responsável</Label>
+                  <p className="text-sm text-muted-foreground">{selectedProcess.responsibleLawyer}</p>
+                </div>
+              </div>
               
               <div>
                 <Label className="text-sm font-medium">Progresso</Label>
@@ -761,6 +824,124 @@ const AreaCliente = () => {
                 </Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Documents by Category Modal */}
+      <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedDocumentCategory}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3">
+              {getDocumentsByCategory(selectedDocumentCategory).map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => handleViewDocumentDetails(doc)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">{doc.name}</h4>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>{doc.type}</span>
+                        <span>•</span>
+                        <span>{doc.size}</span>
+                        <span>•</span>
+                        <span>{new Date(doc.uploadDate).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getStatusColor(doc.status)}>
+                      {doc.status}
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("Baixando documento:", doc.name);
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {getDocumentsByCategory(selectedDocumentCategory).length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Nenhum documento encontrado nesta categoria</p>
+              </div>
+            )}
+            <div className="flex justify-end pt-4">
+              <Button variant="outline" onClick={() => setIsDocumentsModalOpen(false)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Upload Modal */}
+      <Dialog open={isRequestUploadModalOpen} onOpenChange={setIsRequestUploadModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enviar Documento Solicitado</DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <form onSubmit={handleUploadSubmit} className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Documento Solicitado</Label>
+                <p className="text-sm text-muted-foreground">{selectedRequest.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">{selectedRequest.description}</p>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Solicitado por</Label>
+                <p className="text-sm text-muted-foreground">{selectedRequest.requestedBy}</p>
+                <p className="text-xs text-muted-foreground">Processo: {selectedRequest.processTitle}</p>
+              </div>
+
+              <div>
+                <Label htmlFor="request-file">Arquivo *</Label>
+                <Input
+                  id="request-file"
+                  type="file"
+                  onChange={handleFileChange}
+                  required
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="request-description">Observações</Label>
+                <Textarea
+                  id="request-description"
+                  placeholder="Adicione observações sobre o documento (opcional)"
+                  value={uploadForm.description}
+                  onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsRequestUploadModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Enviar Documento
+                </Button>
+              </div>
+            </form>
           )}
         </DialogContent>
       </Dialog>
