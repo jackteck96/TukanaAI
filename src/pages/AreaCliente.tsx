@@ -542,7 +542,7 @@ const AreaCliente = () => {
                           }}
                         >
                           <Upload className="h-3 w-3 mr-1" />
-                          Enviar
+                          Enviar Documento
                         </Button>
                       </div>
                     </div>
@@ -820,6 +820,16 @@ const AreaCliente = () => {
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setIsProcessDetailsModalOpen(false)}>
                   Fechar
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsProcessDetailsModalOpen(false);
+                    setIsUploadModalOpen(true);
+                  }}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Enviar Documento
                 </Button>
                 <Button onClick={() => {
                   setIsProcessDetailsModalOpen(false);
