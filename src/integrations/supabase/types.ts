@@ -224,6 +224,39 @@ export type Database = {
           },
         ]
       }
+      process_notes: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          id: string
+          process_id: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string
+          id?: string
+          process_id: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          process_id?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       processes: {
         Row: {
           assigned_user_id: string | null

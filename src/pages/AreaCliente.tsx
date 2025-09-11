@@ -816,6 +816,78 @@ const AreaCliente = () => {
                   ))}
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Process Notes Section */}
+              <div>
+                <Label className="text-sm font-medium flex items-center space-x-2">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Observações e Comunicação</span>
+                </Label>
+                
+                {/* Add new note */}
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <Textarea
+                      placeholder="Adicione uma observação ou pergunta sobre o processo..."
+                      value={uploadForm.description}
+                      onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                      className="min-h-[80px]"
+                    />
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      if (uploadForm.description.trim()) {
+                        console.log("Nova observação:", uploadForm.description);
+                        setUploadForm({ ...uploadForm, description: "" });
+                      }
+                    }}
+                    disabled={!uploadForm.description.trim()}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Adicionar Observação
+                  </Button>
+                </div>
+
+                {/* Existing notes */}
+                <div className="mt-4 space-y-3">
+                  <div className="text-sm font-medium text-muted-foreground">Histórico de Comunicação</div>
+                  <div className="space-y-3 max-h-48 overflow-y-auto">
+                    {/* Sample notes - will be replaced with real data */}
+                    <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-l-blue-500">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-foreground">Dr. Carlos Silva</span>
+                        <span className="text-xs text-muted-foreground">15/08/2024 - 14:30</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Documento de comprovante de endereço foi aprovado. Aguardamos apenas a declaração de faturamento para finalizar o processo.
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-l-green-500">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-foreground">TechCorp Ltda (Você)</span>
+                        <span className="text-xs text-muted-foreground">14/08/2024 - 16:45</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Enviei o comprovante de endereço atualizado. A declaração de faturamento está sendo preparada pelo contador e será enviada até amanhã.
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-l-orange-500">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-foreground">Dr. Carlos Silva</span>
+                        <span className="text-xs text-muted-foreground">13/08/2024 - 10:15</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Processo iniciado. Preciso do comprovante de endereço atualizado (últimos 90 dias) e da declaração de faturamento assinada pelo contador.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <div className="flex justify-end space-x-2 pt-4">
                 <Button variant="outline" onClick={() => setIsProcessDetailsModalOpen(false)}>
