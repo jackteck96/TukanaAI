@@ -8,10 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { 
-  FileText, 
-  Clock, 
-  CheckCircle, 
+import {
+  FileText,
+  Clock,
+  CheckCircle,
   Download,
   Upload,
   AlertCircle,
@@ -24,7 +24,13 @@ import {
   Printer
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import DocumentUpload from "@/components/DocumentUpload";
+import { toast } from "sonner";
+import DocumentList from "@/components/DocumentList";
+import DocumentReport from "@/components/DocumentReport";
 
 const AreaCliente = () => {
   const clientInfo = {
