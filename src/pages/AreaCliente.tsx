@@ -754,142 +754,142 @@ const AreaCliente = () => {
 
       {/* Process Details Modal */}
       <Dialog open={isProcessDetailsModalOpen} onOpenChange={setIsProcessDetailsModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Processo</DialogTitle>
           </DialogHeader>
           {selectedProcess && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              {/* Basic Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <Label className="text-sm font-medium">Título</Label>
-                  <p className="text-sm text-muted-foreground">{selectedProcess.title}</p>
+                  <Label className="text-xs font-medium text-muted-foreground">Título</Label>
+                  <p className="text-sm font-medium">{selectedProcess.title}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Status</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Status</Label>
                   <Badge className={getStatusColor(selectedProcess.status)}>
                     {selectedProcess.status}
                   </Badge>
                 </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm font-medium">Descrição</Label>
-                <p className="text-sm text-muted-foreground">{selectedProcess.description}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium">Empresa Responsável</Label>
-                  <p className="text-sm text-muted-foreground">{selectedProcess.company}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Advogado Responsável</Label>
-                  <p className="text-sm text-muted-foreground">{selectedProcess.responsibleLawyer}</p>
+                  <Label className="text-xs font-medium text-muted-foreground">Progresso</Label>
+                  <div className="flex items-center space-x-2">
+                    <Progress value={selectedProcess.progress} className="h-2 flex-1" />
+                    <span className="text-sm font-medium">{selectedProcess.progress}%</span>
+                  </div>
                 </div>
               </div>
               
-              <div>
-                <Label className="text-sm font-medium">Progresso</Label>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{selectedProcess.progress}% concluído</span>
-                    <span>{selectedProcess.documents} docs • {selectedProcess.pending} pendentes</span>
-                  </div>
-                  <Progress value={selectedProcess.progress} className="h-2" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Empresa Responsável</Label>
+                  <p className="text-sm">{selectedProcess.company}</p>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Advogado</Label>
+                  <p className="text-sm">{selectedProcess.responsibleLawyer}</p>
                 </div>
               </div>
 
-              <div>
-                <Label className="text-sm font-medium">Documentos do Processo</Label>
-                <div className="mt-2 space-y-2">
-                  {processDocuments[selectedProcess.id]?.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-2 border rounded">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{doc.name}</span>
-                      </div>
-                      <Badge className={getStatusColor(doc.status)}>
-                        {doc.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Process Notes Section */}
-              <div>
-                <Label className="text-sm font-medium flex items-center space-x-2">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Observações e Comunicação</span>
-                </Label>
-                
-                {/* Add new note */}
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <Textarea
-                      placeholder="Adicione uma observação ou pergunta sobre o processo..."
-                      value={uploadForm.description}
-                      onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                      className="min-h-[80px]"
-                    />
-                  </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => {
-                      if (uploadForm.description.trim()) {
-                        console.log("Nova observação:", uploadForm.description);
-                        setUploadForm({ ...uploadForm, description: "" });
-                      }
-                    }}
-                    disabled={!uploadForm.description.trim()}
+              {/* Tabs for Documents and Communication */}
+              <div className="border-b">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setSelectedDocumentCategory("documents")}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      selectedDocumentCategory === "documents" || !selectedDocumentCategory
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                    }`}
                   >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Adicionar Observação
-                  </Button>
-                </div>
+                    Documentos ({processDocuments[selectedProcess.id]?.length || 0})
+                  </button>
+                  <button
+                    onClick={() => setSelectedDocumentCategory("notes")}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      selectedDocumentCategory === "notes"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    Comunicação
+                  </button>
+                </nav>
+              </div>
 
-                {/* Existing notes */}
-                <div className="mt-4 space-y-3">
-                  <div className="text-sm font-medium text-muted-foreground">Histórico de Comunicação</div>
-                  <div className="space-y-3 max-h-48 overflow-y-auto">
-                    {/* Sample notes - will be replaced with real data */}
-                    <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-l-blue-500">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-foreground">Dr. Carlos Silva</span>
-                        <span className="text-xs text-muted-foreground">15/08/2024 - 14:30</span>
+              {/* Tab Content */}
+              <div className="min-h-[200px] max-h-[300px] overflow-y-auto">
+                {(!selectedDocumentCategory || selectedDocumentCategory === "documents") && (
+                  <div className="space-y-2">
+                    {processDocuments[selectedProcess.id]?.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{doc.name}</span>
+                        </div>
+                        <Badge className={getStatusColor(doc.status)}>
+                          {doc.status}
+                        </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Documento de comprovante de endereço foi aprovado. Aguardamos apenas a declaração de faturamento para finalizar o processo.
-                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {selectedDocumentCategory === "notes" && (
+                  <div className="space-y-4">
+                    {/* Add new note */}
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Adicione uma observação..."
+                        value={uploadForm.description}
+                        onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                        className="min-h-[60px]"
+                      />
+                      <Button 
+                        size="sm" 
+                        onClick={() => {
+                          if (uploadForm.description.trim()) {
+                            console.log("Nova observação:", uploadForm.description);
+                            setUploadForm({ ...uploadForm, description: "" });
+                          }
+                        }}
+                        disabled={!uploadForm.description.trim()}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Adicionar
+                      </Button>
                     </div>
-                    
-                    <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-l-green-500">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-foreground">TechCorp Ltda (Você)</span>
-                        <span className="text-xs text-muted-foreground">14/08/2024 - 16:45</span>
+
+                    <Separator />
+
+                    {/* Notes history */}
+                    <div className="space-y-3">
+                      <div className="p-3 bg-muted/30 rounded border-l-4 border-l-blue-500">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-sm font-medium">Dr. Carlos Silva</span>
+                          <span className="text-xs text-muted-foreground">15/08 14:30</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Documento aprovado. Aguardamos declaração de faturamento.
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Enviei o comprovante de endereço atualizado. A declaração de faturamento está sendo preparada pelo contador e será enviada até amanhã.
-                      </p>
-                    </div>
-                    
-                    <div className="p-3 bg-muted/30 rounded-lg border-l-4 border-l-orange-500">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-foreground">Dr. Carlos Silva</span>
-                        <span className="text-xs text-muted-foreground">13/08/2024 - 10:15</span>
+                      
+                      <div className="p-3 bg-muted/30 rounded border-l-4 border-l-green-500">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-sm font-medium">Você</span>
+                          <span className="text-xs text-muted-foreground">14/08 16:45</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Comprovante enviado. Declaração será enviada amanhã.
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Processo iniciado. Preciso do comprovante de endereço atualizado (últimos 90 dias) e da declaração de faturamento assinada pelo contador.
-                      </p>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
               
-              <div className="flex justify-end space-x-2 pt-4">
+              <div className="flex justify-end space-x-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => setIsProcessDetailsModalOpen(false)}>
                   Fechar
                 </Button>
