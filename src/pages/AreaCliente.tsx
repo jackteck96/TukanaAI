@@ -31,6 +31,7 @@ import DocumentUpload from "@/components/DocumentUpload";
 import { toast } from "sonner";
 import DocumentList from "@/components/DocumentList";
 import DocumentReport from "@/components/DocumentReport";
+import { CollaboratorsModal } from "./AreaClienteCollaborators";
 
 const AreaCliente = () => {
   const clientInfo = {
@@ -212,12 +213,42 @@ const AreaCliente = () => {
   const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("");
   const [isRequestUploadModalOpen, setIsRequestUploadModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [isCollaboratorsModalOpen, setIsCollaboratorsModalOpen] = useState(false);
+  const [newCollaborator, setNewCollaborator] = useState({
+    name: "",
+    email: "",
+    role: ""
+  });
+  const [companyPlan, setCompanyPlan] = useState({
+    plan: "starter",
+    currentUsers: 2,
+    userLimit: 3
+  });
   const [uploadForm, setUploadForm] = useState({
     title: "",
     type: "",
     description: "",
     file: null as File | null
   });
+
+  const collaborators = [
+    {
+      id: 1,
+      name: "João Silva",
+      email: "joao@techcorp.com",
+      role: "Administrador",
+      status: "Ativo",
+      joinedAt: "2024-07-15"
+    },
+    {
+      id: 2,
+      name: "Maria Santos",
+      email: "maria@techcorp.com", 
+      role: "Colaborador",
+      status: "Ativo",
+      joinedAt: "2024-08-01"
+    }
+  ];
 
   const processDocuments = {
     1: [
@@ -248,6 +279,17 @@ const AreaCliente = () => {
     console.log("Documento enviado:", uploadForm);
     setIsUploadModalOpen(false);
     setUploadForm({ title: "", type: "", description: "", file: null });
+  };
+
+  const handleInviteCollaborator = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (companyPlan.currentUsers >= companyPlan.userLimit) {
+      toast.error("Limite de colaboradores atingido para o seu plano");
+      return;
+    }
+    console.log("Convidando colaborador:", newCollaborator);
+    toast.success("Convite enviado com sucesso!");
+    setNewCollaborator({ name: "", email: "", role: "" });
   };
 
   const handleGenerateReport = (process: any) => {
@@ -336,14 +378,6 @@ const AreaCliente = () => {
               <p className="text-muted-foreground">Acompanhe seus processos e documentos</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="hero">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Enviar Documento
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
               <Link to="/">
                 <Button variant="ghost" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
@@ -616,7 +650,7 @@ const AreaCliente = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <Button variant="outline" className="h-20 flex-col" onClick={() => setIsUploadModalOpen(true)}>
                 <Upload className="h-6 w-6 mb-2" />
                 <span className="text-xs">Enviar Documento</span>
@@ -624,6 +658,10 @@ const AreaCliente = () => {
               <Button variant="outline" className="h-20 flex-col">
                 <FileText className="h-6 w-6 mb-2" />
                 <span className="text-xs">Meus Documentos</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col" onClick={() => setIsCollaboratorsModalOpen(true)}>
+                <User className="h-6 w-6 mb-2" />
+                <span className="text-xs">Gerenciar Colaboradores</span>
               </Button>
               <Button variant="outline" className="h-20 flex-col">
                 <MessageSquare className="h-6 w-6 mb-2" />
@@ -1148,6 +1186,17 @@ const AreaCliente = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Collaborators Modal */}
+      <CollaboratorsModal
+        isOpen={isCollaboratorsModalOpen}
+        onClose={() => setIsCollaboratorsModalOpen(false)}
+        collaborators={collaborators}
+        companyPlan={companyPlan}
+        newCollaborator={newCollaborator}
+        setNewCollaborator={setNewCollaborator}
+        onInvite={handleInviteCollaborator}
+      />
     </div>
   );
 };
