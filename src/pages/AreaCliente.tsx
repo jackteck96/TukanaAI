@@ -135,21 +135,30 @@ const AreaCliente = () => {
       title: "Comprovante de Endereço Atualizado",
       description: "Documento com data dos últimos 90 dias",
       dueDate: "2024-08-20",
-      priority: "Alta"
+      priority: "Alta",
+      requestedBy: "Dr. Carlos Silva",
+      processId: 1,
+      processTitle: "Contrato de Prestação de Serviços"
     },
     {
       id: 2,
       title: "Declaração de Faturamento",
       description: "Declaração assinada pelo contador",
       dueDate: "2024-08-22",
-      priority: "Média"
+      priority: "Média",
+      requestedBy: "Dra. Ana Santos",
+      processId: 2,
+      processTitle: "Documentação Fiscal 2024"
     },
     {
       id: 3,
       title: "Ata da Última Assembleia",
       description: "Documento autenticado em cartório",
       dueDate: "2024-08-25",
-      priority: "Baixa"
+      priority: "Baixa",
+      requestedBy: "Dr. Roberto Lima",
+      processId: 3,
+      processTitle: "Certificações de Qualidade"
     }
   ];
 
@@ -184,6 +193,9 @@ const AreaCliente = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedProcess, setSelectedProcess] = useState<any>(null);
+  const [isDocumentDetailsModalOpen, setIsDocumentDetailsModalOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [isProcessDetailsModalOpen, setIsProcessDetailsModalOpen] = useState(false);
   const [uploadForm, setUploadForm] = useState({
     title: "",
     type: "",
@@ -234,6 +246,25 @@ const AreaCliente = () => {
       alert(`Relatório do processo "${selectedProcess.title}" foi gerado e baixado!`);
       setIsReportModalOpen(false);
     }
+  };
+
+  const handleViewDocuments = (category: string) => {
+    console.log("Visualizando documentos da categoria:", category);
+    // Aqui você abriria uma modal ou página com os documentos filtrados
+    alert(`Mostrando documentos da categoria: ${category}`);
+  };
+
+  const handleViewProcess = (processId: number) => {
+    const process = activeProcesses.find(p => p.id === processId);
+    if (process) {
+      setSelectedProcess(process);
+      setIsProcessDetailsModalOpen(true);
+    }
+  };
+
+  const handleViewDocumentDetails = (document: any) => {
+    setSelectedDocument(document);
+    setIsDocumentDetailsModalOpen(true);
   };
 
   return (
@@ -291,7 +322,11 @@ const AreaCliente = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-card transition-all duration-300">
+            <Card 
+              key={index} 
+              className="hover:shadow-card transition-all duration-300 cursor-pointer"
+              onClick={() => handleViewDocuments(stat.title)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -326,6 +361,7 @@ const AreaCliente = () => {
                   <div
                     key={process.id}
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => handleViewProcess(process.id)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-foreground">
@@ -351,11 +387,25 @@ const AreaCliente = () => {
                           <span>{new Date(process.dueDate).toLocaleDateString('pt-BR')}</span>
                         </span>
                       </div>
-                      <div className="flex justify-end pt-2">
+                      <div className="flex justify-between pt-2">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewProcess(process.id);
+                          }}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Ver Detalhes
+                        </Button>
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => handleGenerateReport(process)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGenerateReport(process);
+                          }}
                         >
                           <FileDown className="h-3 w-3 mr-1" />
                           Gerar Relatório
@@ -381,7 +431,8 @@ const AreaCliente = () => {
                 {pendingRequests.map((request) => (
                   <div
                     key={request.id}
-                    className={`p-4 rounded-lg border-l-4 ${getPriorityColor(request.priority)}`}
+                    className={`p-4 rounded-lg border-l-4 cursor-pointer hover:bg-muted/30 transition-colors ${getPriorityColor(request.priority)}`}
+                    onClick={() => handleViewProcess(request.processId)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-foreground text-sm">
@@ -398,18 +449,44 @@ const AreaCliente = () => {
                         {request.priority}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className="text-sm text-muted-foreground mb-2">
                       {request.description}
                     </p>
+                    <div className="flex items-center space-x-2 text-xs text-muted-foreground mb-3">
+                      <User className="h-3 w-3" />
+                      <span>Solicitado por: <strong>{request.requestedBy}</strong></span>
+                      <span>•</span>
+                      <span>Processo: {request.processTitle}</span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground flex items-center space-x-1">
                         <Calendar className="h-3 w-3" />
                         <span>Prazo: {new Date(request.dueDate).toLocaleDateString('pt-BR')}</span>
                       </span>
-                      <Button size="sm" variant="outline" onClick={() => setIsUploadModalOpen(true)}>
-                        <Upload className="h-3 w-3 mr-1" />
-                        Enviar
-                      </Button>
+                      <div className="flex space-x-2">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewProcess(request.processId);
+                          }}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Ver Processo
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsUploadModalOpen(true);
+                          }}
+                        >
+                          <Upload className="h-3 w-3 mr-1" />
+                          Enviar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -436,7 +513,8 @@ const AreaCliente = () => {
               {recentDocuments.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => handleViewDocumentDetails(doc)}
                 >
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -457,7 +535,14 @@ const AreaCliente = () => {
                     <Badge className={getStatusColor(doc.status)}>
                       {doc.status}
                     </Badge>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("Baixando documento:", doc.name);
+                      }}
+                    >
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>
@@ -560,6 +645,123 @@ const AreaCliente = () => {
               <Button type="submit">Enviar Documento</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Details Modal */}
+      <Dialog open={isDocumentDetailsModalOpen} onOpenChange={setIsDocumentDetailsModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Documento</DialogTitle>
+          </DialogHeader>
+          {selectedDocument && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Nome do Arquivo</Label>
+                <p className="text-sm text-muted-foreground">{selectedDocument.name}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Tipo</Label>
+                <p className="text-sm text-muted-foreground">{selectedDocument.type}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <Badge className={getStatusColor(selectedDocument.status)}>
+                  {selectedDocument.status}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Tamanho</Label>
+                <p className="text-sm text-muted-foreground">{selectedDocument.size}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Data de Upload</Label>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedDocument.uploadDate).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setIsDocumentDetailsModalOpen(false)}>
+                  Fechar
+                </Button>
+                <Button onClick={() => console.log("Baixando documento:", selectedDocument.name)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Process Details Modal */}
+      <Dialog open={isProcessDetailsModalOpen} onOpenChange={setIsProcessDetailsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Processo</DialogTitle>
+          </DialogHeader>
+          {selectedProcess && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Título</Label>
+                  <p className="text-sm text-muted-foreground">{selectedProcess.title}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <Badge className={getStatusColor(selectedProcess.status)}>
+                    {selectedProcess.status}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium">Descrição</Label>
+                <p className="text-sm text-muted-foreground">{selectedProcess.description}</p>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium">Progresso</Label>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{selectedProcess.progress}% concluído</span>
+                    <span>{selectedProcess.documents} docs • {selectedProcess.pending} pendentes</span>
+                  </div>
+                  <Progress value={selectedProcess.progress} className="h-2" />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Documentos do Processo</Label>
+                <div className="mt-2 space-y-2">
+                  {processDocuments[selectedProcess.id]?.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-2 border rounded">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{doc.name}</span>
+                      </div>
+                      <Badge className={getStatusColor(doc.status)}>
+                        {doc.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setIsProcessDetailsModalOpen(false)}>
+                  Fechar
+                </Button>
+                <Button onClick={() => {
+                  setIsProcessDetailsModalOpen(false);
+                  handleGenerateReport(selectedProcess);
+                }}>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Gerar Relatório
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
