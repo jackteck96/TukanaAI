@@ -199,139 +199,84 @@ const AreaCliente = () => {
       case "Baixa":
         return "border-l-green-500 bg-green-50 dark:bg-green-950/50";
       default:
-        return "border-l-muted bg-muted/50";
+        return "border-l-muted bg-muted/30";
     }
   };
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [selectedProcess, setSelectedProcess] = useState<any>(null);
   const [isDocumentDetailsModalOpen, setIsDocumentDetailsModalOpen] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<any>(null);
   const [isProcessDetailsModalOpen, setIsProcessDetailsModalOpen] = useState(false);
-  const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
-  const [selectedDocumentCategory, setSelectedDocumentCategory] = useState<string>("");
-  const [isRequestUploadModalOpen, setIsRequestUploadModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [isCollaboratorsModalOpen, setIsCollaboratorsModalOpen] = useState(false);
-  const [newCollaborator, setNewCollaborator] = useState({
-    name: "",
-    email: "",
-    role: ""
-  });
-  const [companyPlan, setCompanyPlan] = useState({
-    plan: "starter",
-    currentUsers: 2,
-    userLimit: 3
-  });
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [selectedProcess, setSelectedProcess] = useState<any>(null);
   const [uploadForm, setUploadForm] = useState({
     title: "",
     type: "",
     description: "",
     file: null as File | null
   });
-
-  const collaborators = [
-    {
-      id: 1,
-      name: "João Silva",
-      email: "joao@techcorp.com",
-      role: "Administrador",
-      status: "Ativo",
-      joinedAt: "2024-07-15"
-    },
-    {
-      id: 2,
-      name: "Maria Santos",
-      email: "maria@techcorp.com", 
-      role: "Colaborador",
-      status: "Ativo",
-      joinedAt: "2024-08-01"
-    }
-  ];
-
-  const processDocuments = {
+  const [selectedDocumentCategory, setSelectedDocumentCategory] = useState("");
+  const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
+  const [processDocuments, setProcessDocuments] = useState<any>({
     1: [
-      { id: 1, name: "Contrato Original.pdf", link: "/docs/contrato-original.pdf", status: "Aprovado" },
-      { id: 2, name: "Proposta Comercial.pdf", link: "/docs/proposta-comercial.pdf", status: "Aprovado" },
-      { id: 3, name: "Termo Aditivo.pdf", link: "/docs/termo-aditivo.pdf", status: "Em Análise" },
-      { id: 4, name: "Comprovante de Pagamento.pdf", link: "/docs/comprovante-pagamento.pdf", status: "Pendente" }
+      { id: 1, name: "Contrato Social.pdf", status: "Aprovado" },
+      { id: 2, name: "Balanço Q1.pdf", status: "Em Análise" }
     ],
     2: [
-      { id: 5, name: "Balanço Patrimonial.pdf", link: "/docs/balanco-patrimonial.pdf", status: "Aprovado" },
-      { id: 6, name: "DRE 2024.pdf", link: "/docs/dre-2024.pdf", status: "Em Análise" },
-      { id: 7, name: "Certidões Negativas.pdf", link: "/docs/certidoes-negativas.pdf", status: "Pendente" }
+      { id: 3, name: "Certidão Federal.pdf", status: "Aprovado" },
+      { id: 4, name: "RG Sócio.pdf", status: "Pendente Correção" }
     ],
     3: [
-      { id: 8, name: "ISO 9001 Atual.pdf", link: "/docs/iso-9001.pdf", status: "Aprovado" },
-      { id: 9, name: "Auditoria Interna.pdf", link: "/docs/auditoria-interna.pdf", status: "Pendente" }
+      { id: 5, name: "ISO 9001.pdf", status: "Em Análise" }
     ]
-  };
+  });
+  const [isCollaboratorsModalOpen, setIsCollaboratorsModalOpen] = useState(false);
+  const [collaborators, setCollaborators] = useState([
+    { id: 1, name: "João Silva", email: "joao@empresa.com", role: "Admin", status: "Ativo", joinedAt: "2024-01-15" },
+    { id: 2, name: "Maria Santos", email: "maria@empresa.com", role: "Usuário", status: "Ativo", joinedAt: "2024-02-01" },
+  ]);
+  const [companyPlan, setCompanyPlan] = useState({ currentUsers: 2, userLimit: 5, plan: "professional" });
+  const [newCollaborator, setNewCollaborator] = useState({ name: "", email: "", role: "staff" });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploadForm({ ...uploadForm, file: e.target.files[0] });
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Arquivo muito grande. Máximo de 10MB.");
+        return;
+      }
+      setUploadForm({ ...uploadForm, file });
     }
   };
 
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Documento enviado:", uploadForm);
+    console.log("Enviando documento:", uploadForm);
+    toast.success("Documento enviado com sucesso!");
     setIsUploadModalOpen(false);
     setUploadForm({ title: "", type: "", description: "", file: null });
   };
 
-  const handleInviteCollaborator = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (companyPlan.currentUsers >= companyPlan.userLimit) {
-      toast.error("Limite de colaboradores atingido para o seu plano");
-      return;
+  const handleViewDocumentDetails = (doc: any) => {
+    setSelectedDocument(doc);
+    setIsDocumentDetailsModalOpen(true);
+  };
+
+  const handleViewProcess = (processId: number) => {
+    const process = activeProcesses.find(p => p.id === processId);
+    if (process) {
+      setSelectedProcess(process);
+      setSelectedDocumentCategory("documents"); // Garantir que a aba de documentos seja aberta por padrão
+      setIsProcessDetailsModalOpen(true);
     }
-    console.log("Convidando colaborador:", newCollaborator);
-    toast.success("Convite enviado com sucesso!");
-    setNewCollaborator({ name: "", email: "", role: "" });
   };
 
   const handleGenerateReport = (process: any) => {
-    setSelectedProcess(process);
-    setIsReportModalOpen(true);
-  };
-
-  const handleDownloadReport = () => {
-    if (selectedProcess) {
-      // Simular geração e download de PDF
-      const reportContent = `
-        RELATÓRIO DO PROCESSO
-        
-        Título: ${selectedProcess.title}
-        Status: ${selectedProcess.status}
-        Progresso: ${selectedProcess.progress}%
-        Prazo: ${new Date(selectedProcess.dueDate).toLocaleDateString('pt-BR')}
-        Empresa Responsável: ${selectedProcess.company}
-        Advogado Responsável: ${selectedProcess.responsibleLawyer}
-        
-        Descrição: ${selectedProcess.description}
-        
-        Documentos: ${selectedProcess.documents} enviados, ${selectedProcess.pending} pendentes
-        
-        Data de Geração: ${new Date().toLocaleString('pt-BR')}
-      `;
-      
-      const blob = new Blob([reportContent], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `relatorio-${selectedProcess.title.replace(/\s+/g, '-').toLowerCase()}.txt`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-      
-      setIsReportModalOpen(false);
-    }
+    console.log("Gerando relatório para:", process.title);
+    toast.success("Relatório gerado com sucesso!");
   };
 
   const handleViewDocuments = (category: string) => {
     if (category === "Pendentes de Envio") {
-      // Para documentos pendentes, mostrar com opção de abrir processo
       setSelectedDocumentCategory(category);
       setIsDocumentsModalOpen(true);
     } else {
@@ -340,106 +285,96 @@ const AreaCliente = () => {
     }
   };
 
-  const handleViewProcess = (processId: number) => {
-    const process = activeProcesses.find(p => p.id === processId);
-    if (process) {
-      setSelectedProcess(process);
-      setIsProcessDetailsModalOpen(true);
-    }
-  };
-
-  const handleViewDocumentDetails = (document: any) => {
-    setSelectedDocument(document);
-    setIsDocumentDetailsModalOpen(true);
-  };
-
-  const handleRequestUpload = (request: any) => {
-    setSelectedRequest(request);
-    setIsRequestUploadModalOpen(true);
-  };
-
   const getDocumentsByCategory = (category: string) => {
     switch (category) {
       case "Documentos Enviados":
-        return recentDocuments;
+        return recentDocuments.filter(doc => doc.status === "Aprovado");
       case "Pendentes de Envio":
         return pendingRequests.map(req => ({
           id: req.id,
           name: req.title,
-          type: "Solicitação",
+          type: "Pendente",
           uploadDate: req.dueDate,
           status: "Pendente",
           size: "-",
-          description: req.description,
-          requestedBy: req.requestedBy,
           processId: req.processId,
           processTitle: req.processTitle,
-          priority: req.priority
+          priority: req.priority,
+          requestedBy: req.requestedBy,
+          description: req.description
         }));
       case "Aprovados":
         return recentDocuments.filter(doc => doc.status === "Aprovado");
       case "Em Análise":
         return recentDocuments.filter(doc => doc.status === "Em Análise");
       default:
-        return [];
+        return recentDocuments;
     }
+  };
+
+  const handleInviteCollaborator = () => {
+    if (collaborators.length >= companyPlan.userLimit) {
+      toast.error(`Limite do plano atingido (${companyPlan.userLimit} usuários)`);
+      return;
+    }
+    
+    const newCollab = {
+      id: Date.now(),
+      name: newCollaborator.name,
+      email: newCollaborator.email,
+      role: newCollaborator.role === "admin" ? "Admin" : "Usuário",
+      status: "Pendente",
+      joinedAt: new Date().toISOString().split('T')[0]
+    };
+    
+    setCollaborators([...collaborators, newCollab]);
+    setNewCollaborator({ name: "", email: "", role: "staff" });
+    toast.success("Convite enviado com sucesso!");
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Área do Cliente</h1>
-              <p className="text-muted-foreground">Acompanhe seus processos e documentos</p>
+      <header className="bg-card border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <span className="text-xl font-bold text-foreground">DocFlow</span>
+              </div>
+              <div className="hidden md:block">
+                <span className="text-sm text-muted-foreground">
+                  Área do Cliente - {clientInfo.name}
+                </span>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm">
+                <User className="h-4 w-4 mr-2" />
+                Perfil
+              </Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="p-6 space-y-6">
-        {/* Client Info Card */}
-        <Card className="bg-gradient-card border-0">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">{clientInfo.name}</h2>
-                  <p className="text-muted-foreground">{clientInfo.email}</p>
-                  <p className="text-sm text-muted-foreground">{clientInfo.phone}</p>
-                </div>
-              </div>
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                {clientInfo.status}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <Card 
-              key={index} 
-              className="hover:shadow-card transition-all duration-300 cursor-pointer"
-              onClick={() => handleViewDocuments(stat.title)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
+            <Card key={index} className="hover:shadow-md transition-shadow">
+              <CardContent className="flex items-center p-6">
+                <div className="flex items-center">
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                  <div className="ml-4">
                     <p className="text-sm font-medium text-muted-foreground">
                       {stat.title}
                     </p>
@@ -447,23 +382,81 @@ const AreaCliente = () => {
                       {stat.value}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
-                    <stat.icon className="h-6 w-6" />
-                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Quick Actions */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button
+                className="h-12 justify-start"
+                variant="outline"
+                onClick={() => handleViewDocuments("Pendentes de Envio")}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Meus Documentos
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="h-12 justify-start" variant="outline">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Suporte
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Suporte ao Cliente</DialogTitle>
+                    <DialogDescription>
+                      Entre em contato conosco para qualquer dúvida ou suporte técnico.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Email de Suporte</Label>
+                      <p className="text-sm text-muted-foreground">suporte@docflow.com</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Telefone</Label>
+                      <p className="text-sm text-muted-foreground">+55 (11) 3333-4444</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Horário de Atendimento</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Segunda a Sexta: 9h às 18h<br />
+                        Sábado: 9h às 12h
+                      </p>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button
+                className="h-12 justify-start"
+                variant="outline"
+                onClick={() => setIsCollaboratorsModalOpen(true)}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Gerenciar Colaboradores
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Active Processes */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="h-5 w-5" />
-                <span>Processos Ativos</span>
-              </CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Processos Ativos</CardTitle>
+              <Badge variant="outline">
+                {activeProcesses.length} processos
+              </Badge>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -484,43 +477,44 @@ const AreaCliente = () => {
                     <p className="text-sm text-muted-foreground mb-3">
                       {process.description}
                     </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Progresso</span>
-                        <span className="font-medium">{process.progress}%</span>
-                      </div>
-                      <Progress value={process.progress} className="h-2" />
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{process.documents} docs enviados • {process.pending} pendentes</span>
-                        <span className="flex items-center space-x-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{new Date(process.dueDate).toLocaleDateString('pt-BR')}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                        <span className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {new Date(process.dueDate).toLocaleDateString('pt-BR')}
+                        </span>
+                        <span className="flex items-center">
+                          <FileText className="h-3 w-3 mr-1" />
+                          {process.documents} docs
                         </span>
                       </div>
-                      <div className="flex justify-between pt-2">
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewProcess(process.id);
-                          }}
-                        >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Ver Detalhes
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleGenerateReport(process);
-                          }}
-                        >
-                          <FileDown className="h-3 w-3 mr-1" />
-                          Gerar Relatório
-                        </Button>
-                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Progress value={process.progress} className="h-2 flex-1" />
+                      <span className="text-xs font-medium">{process.progress}%</span>
+                    </div>
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProcess(process.id);
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Ver Detalhes
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsUploadModalOpen(true);
+                        }}
+                      >
+                        <Upload className="h-3 w-3 mr-1" />
+                        Enviar Doc
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -528,13 +522,13 @@ const AreaCliente = () => {
             </CardContent>
           </Card>
 
-          {/* Pending Document Requests */}
+          {/* Pending Requests */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-orange-600" />
-                <span>Documentos Solicitados</span>
-              </CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Pendentes de Envio</CardTitle>
+              <Badge variant="outline" className="bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                {pendingRequests.length} pendentes
+              </Badge>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -551,52 +545,46 @@ const AreaCliente = () => {
                       <Badge 
                         variant="outline" 
                         className={
-                          request.priority === "Alta" ? "border-red-500 text-red-600" :
-                          request.priority === "Média" ? "border-yellow-500 text-yellow-600" :
-                          "border-green-500 text-green-600"
+                          request.priority === "Alta" ? "border-red-500 text-red-700 dark:text-red-400" :
+                          request.priority === "Média" ? "border-yellow-500 text-yellow-700 dark:text-yellow-400" :
+                          "border-green-500 text-green-700 dark:text-green-400"
                         }
                       >
                         {request.priority}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-xs text-muted-foreground mb-2">
                       {request.description}
                     </p>
-                    <div className="flex items-center space-x-2 text-xs text-muted-foreground mb-3">
-                      <User className="h-3 w-3" />
-                      <span>Solicitado por: <strong>{request.requestedBy}</strong></span>
-                      <span>•</span>
-                      <span>Processo: {request.processTitle}</span>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                      <span>Solicitado por: {request.requestedBy}</span>
+                      <span>Prazo: {new Date(request.dueDate).toLocaleDateString('pt-BR')}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>Prazo: {new Date(request.dueDate).toLocaleDateString('pt-BR')}</span>
-                      </span>
-                      <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewProcess(request.processId);
-                          }}
-                        >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Ver Processo
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRequestUpload(request);
-                          }}
-                        >
-                          <Upload className="h-3 w-3 mr-1" />
-                          Enviar Documento
-                        </Button>
-                      </div>
+                    <div className="text-xs text-muted-foreground mb-3">
+                      Processo: {request.processTitle}
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProcess(request.processId);
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Ver Processo
+                      </Button>
+                      <Button 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsUploadModalOpen(true);
+                        }}
+                      >
+                        <Upload className="h-3 w-3 mr-1" />
+                        Enviar
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -606,219 +594,50 @@ const AreaCliente = () => {
         </div>
 
         {/* Recent Documents */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="h-5 w-5" />
-                <span>Documentos Recentes</span>
-              </CardTitle>
-              <Button variant="ghost" size="sm">
-                Ver Todos
-              </Button>
+        <Card className="mt-8">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Documentos Recentes</CardTitle>
+            <div className="flex space-x-2">
+              {["Enviados", "Aprovados", "Em Análise"].map((category) => (
+                <Button
+                  key={category}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewDocuments(`Documentos ${category}`)}
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentDocuments.map((doc) => (
+              {recentDocuments.slice(0, 4).map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => handleViewDocumentDetails(doc)}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <FileText className="h-4 w-4 text-primary" />
-                    </div>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <h4 className="font-medium text-foreground text-sm">{doc.name}</h4>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <span>{doc.type}</span>
-                        <span>•</span>
-                        <span>{doc.size}</span>
-                        <span>•</span>
-                        <span>{new Date(doc.uploadDate).toLocaleDateString('pt-BR')}</span>
-                      </div>
+                      <p className="text-sm font-medium text-foreground">
+                        {doc.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.type} • {doc.size} • {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge className={getStatusColor(doc.status)}>
-                      {doc.status}
-                    </Badge>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("Baixando documento:", doc.name);
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Badge className={getStatusColor(doc.status)}>
+                    {doc.status}
+                  </Badge>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-               <Button 
-                 variant="outline" 
-                 className="h-20 flex-col" 
-                 onClick={() => handleViewDocuments("Pendentes de Envio")}
-               >
-                 <FileText className="h-6 w-6 mb-2" />
-                 <span className="text-xs">Meus Documentos</span>
-               </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 flex-col" 
-                onClick={() => setIsCollaboratorsModalOpen(true)}
-              >
-                <User className="h-6 w-6 mb-2" />
-                <span className="text-xs">Gerenciar Colaboradores</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-20 flex-col"
-                onClick={() => {
-                  toast.success("Entre em contato pelo email: suporte@empresa.com ou telefone (11) 9999-9999");
-                }}
-              >
-                <MessageSquare className="h-6 w-6 mb-2" />
-                <span className="text-xs">Suporte</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Upload Modal */}
-      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Enviar Documento</DialogTitle>
-            <DialogDescription>
-              Selecione um arquivo para enviar. Formatos aceitos: PDF, DOC, DOCX, JPG, PNG.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUploadSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="documentTitle">Título do Documento</Label>
-              <Input
-                id="documentTitle"
-                value={uploadForm.title}
-                onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
-                placeholder="Ex: Contrato Social Atualizado"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="documentType">Tipo de Documento</Label>
-              <Select value={uploadForm.type} onValueChange={(value) => setUploadForm({ ...uploadForm, type: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contrato">Contrato</SelectItem>
-                  <SelectItem value="financeiro">Financeiro</SelectItem>
-                  <SelectItem value="certidao">Certidão</SelectItem>
-                  <SelectItem value="identificacao">Identificação</SelectItem>
-                  <SelectItem value="comprovante">Comprovante</SelectItem>
-                  <SelectItem value="declaracao">Declaração</SelectItem>
-                  <SelectItem value="ata">Ata</SelectItem>
-                  <SelectItem value="outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="documentFile">Arquivo</Label>
-              <Input
-                id="documentFile"
-                type="file"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                required
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Formatos aceitos: PDF, DOC, DOCX, JPG, PNG (máx. 10MB)
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="documentDescription">Observações</Label>
-              <Textarea
-                id="documentDescription"
-                value={uploadForm.description}
-                onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                placeholder="Observações adicionais sobre o documento..."
-                rows={3}
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">Enviar Documento</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Document Details Modal */}
-      <Dialog open={isDocumentDetailsModalOpen} onOpenChange={setIsDocumentDetailsModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Documento</DialogTitle>
-            <DialogDescription>
-              Informações completas sobre o documento selecionado.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedDocument && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Nome do Arquivo</Label>
-                <p className="text-sm text-muted-foreground">{selectedDocument.name}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Tipo</Label>
-                <p className="text-sm text-muted-foreground">{selectedDocument.type}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Status</Label>
-                <Badge className={getStatusColor(selectedDocument.status)}>
-                  {selectedDocument.status}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Tamanho</Label>
-                <p className="text-sm text-muted-foreground">{selectedDocument.size}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Data de Upload</Label>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(selectedDocument.uploadDate).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setIsDocumentDetailsModalOpen(false)}>
-                  Fechar
-                </Button>
-                <Button onClick={() => console.log("Baixando documento:", selectedDocument.name)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      </main>
 
       {/* Process Details Modal */}
       <Dialog open={isProcessDetailsModalOpen} onOpenChange={setIsProcessDetailsModalOpen}>
@@ -863,39 +682,58 @@ const AreaCliente = () => {
                 </div>
               </div>
 
-              {/* Documentos do Processo */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Documentos do Processo</h3>
-                  <Badge variant="outline">
-                    {processDocuments[selectedProcess.id]?.length || 0} documentos
-                  </Badge>
-                </div>
-                
-                <div className="max-h-[300px] overflow-y-auto space-y-2">
-                  {processDocuments[selectedProcess.id]?.length ? (
-                    processDocuments[selectedProcess.id].map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{doc.name}</span>
+              {/* Tabs for Documents and Communication */}
+              <div className="border-b">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setSelectedDocumentCategory("documents")}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      selectedDocumentCategory === "documents" || !selectedDocumentCategory
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    Documentos ({processDocuments[selectedProcess.id]?.length || 0})
+                  </button>
+                  <button
+                    onClick={() => setSelectedDocumentCategory("notes")}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      selectedDocumentCategory === "notes"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    Comunicação
+                  </button>
+                </nav>
+              </div>
+
+              {/* Tab Content */}
+              <div className="min-h-[200px] max-h-[300px] overflow-y-auto">
+                {(!selectedDocumentCategory || selectedDocumentCategory === "documents") && (
+                  <div className="space-y-2">
+                    {processDocuments[selectedProcess.id]?.length ? (
+                      processDocuments[selectedProcess.id].map((doc: any) => (
+                        <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
+                          <div className="flex items-center space-x-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{doc.name}</span>
+                          </div>
+                          <Badge className={getStatusColor(doc.status)}>
+                            {doc.status}
+                          </Badge>
                         </div>
-                        <Badge className={getStatusColor(doc.status)}>
-                          {doc.status}
-                        </Badge>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Nenhum documento enviado ainda</p>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>Nenhum documento enviado ainda</p>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Comunicação Section */}
-                <div className="border-t pt-4">
-                  <h3 className="text-lg font-semibold mb-4">Comunicação</h3>
+                    )}
+                  </div>
+                )}
+
+                {selectedDocumentCategory === "notes" && (
                   <div className="space-y-4">
                     {/* Add new note */}
                     <div className="space-y-2">
@@ -945,7 +783,7 @@ const AreaCliente = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
               
               <div className="flex justify-end space-x-2 pt-4 border-t">
@@ -968,288 +806,6 @@ const AreaCliente = () => {
                 }}>
                   <FileDown className="h-4 w-4 mr-2" />
                   Gerar Relatório
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Documents by Category Modal */}
-      <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{selectedDocumentCategory}</DialogTitle>
-            <DialogDescription>
-              Lista de documentos na categoria selecionada.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-3">
-              {getDocumentsByCategory(selectedDocumentCategory).map((doc) => (
-                 <div
-                   key={doc.id}
-                   className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
-                   onClick={() => {
-                     if (selectedDocumentCategory === "Pendentes de Envio" && (doc as any).processId) {
-                       // Para documentos pendentes, abrir o processo correspondente
-                       handleViewProcess((doc as any).processId);
-                       setIsDocumentsModalOpen(false);
-                     } else {
-                       handleViewDocumentDetails(doc);
-                     }
-                   }}
-                 >
-                   <div className="flex items-center space-x-3">
-                     <div className="p-2 bg-primary/10 rounded-lg">
-                       <FileText className="h-5 w-5 text-primary" />
-                     </div>
-                     <div>
-                       <h4 className="font-medium text-foreground">{doc.name}</h4>
-                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                         <span>{doc.type}</span>
-                         <span>•</span>
-                         <span>{doc.size}</span>
-                         <span>•</span>
-                         <span>{new Date(doc.uploadDate).toLocaleDateString('pt-BR')}</span>
-                       </div>
-                       {selectedDocumentCategory === "Pendentes de Envio" && (
-                         <div className="mt-1">
-                           <p className="text-xs text-muted-foreground">{(doc as any).description}</p>
-                           <p className="text-xs text-primary">Processo: {(doc as any).processTitle}</p>
-                           {(doc as any).priority && (
-                             <Badge 
-                               variant="outline" 
-                               className={`text-xs mt-1 ${
-                                 (doc as any).priority === "Alta" ? "border-red-500 text-red-600" :
-                                 (doc as any).priority === "Média" ? "border-yellow-500 text-yellow-600" :
-                                 "border-green-500 text-green-600"
-                               }`}
-                             >
-                               {(doc as any).priority}
-                             </Badge>
-                           )}
-                         </div>
-                       )}
-                     </div>
-                   </div>
-                   <div className="flex items-center space-x-2">
-                     <Badge className={getStatusColor(doc.status)}>
-                       {doc.status}
-                     </Badge>
-                     {selectedDocumentCategory === "Pendentes de Envio" ? (
-                       <Button 
-                         variant="ghost" 
-                         size="sm"
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           handleViewProcess((doc as any).processId);
-                           setIsDocumentsModalOpen(false);
-                         }}
-                       >
-                         <ExternalLink className="h-4 w-4" />
-                       </Button>
-                     ) : (
-                       <Button 
-                         variant="ghost" 
-                         size="sm"
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           console.log("Baixando documento:", doc.name);
-                         }}
-                       >
-                         <Download className="h-4 w-4" />
-                       </Button>
-                     )}
-                   </div>
-                 </div>
-              ))}
-            </div>
-            {getDocumentsByCategory(selectedDocumentCategory).length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum documento encontrado nesta categoria</p>
-              </div>
-            )}
-            <div className="flex justify-end pt-4">
-              <Button variant="outline" onClick={() => setIsDocumentsModalOpen(false)}>
-                Fechar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Request Upload Modal */}
-      <Dialog open={isRequestUploadModalOpen} onOpenChange={setIsRequestUploadModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Enviar Documento Solicitado</DialogTitle>
-            <DialogDescription>
-              Envie o documento solicitado para o processo correspondente.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedRequest && (
-            <form onSubmit={handleUploadSubmit} className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Documento Solicitado</Label>
-                <p className="text-sm text-muted-foreground">{selectedRequest.title}</p>
-                <p className="text-xs text-muted-foreground mt-1">{selectedRequest.description}</p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">Solicitado por</Label>
-                <p className="text-sm text-muted-foreground">{selectedRequest.requestedBy}</p>
-                <p className="text-xs text-muted-foreground">Processo: {selectedRequest.processTitle}</p>
-              </div>
-
-              <div>
-                <Label htmlFor="request-file">Arquivo *</Label>
-                <Input
-                  id="request-file"
-                  type="file"
-                  onChange={handleFileChange}
-                  required
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="request-description">Observações</Label>
-                <Textarea
-                  id="request-description"
-                  placeholder="Adicione observações sobre o documento (opcional)"
-                  value={uploadForm.description}
-                  onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsRequestUploadModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Enviar Documento
-                </Button>
-              </div>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Report Modal */}
-      <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Printer className="h-5 w-5" />
-              <span>Relatório do Processo</span>
-            </DialogTitle>
-            <DialogDescription>
-              Relatório detalhado com todas as informações do processo.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedProcess && (
-            <div className="space-y-6">
-              {/* Process Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">
-                  {selectedProcess.title}
-                </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Status:</span>
-                    <Badge className={`ml-2 ${getStatusColor(selectedProcess.status)}`}>
-                      {selectedProcess.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Progresso:</span>
-                    <span className="ml-2 font-medium">{selectedProcess.progress}%</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Prazo:</span>
-                    <span className="ml-2">{new Date(selectedProcess.dueDate).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Documentos:</span>
-                    <span className="ml-2">{selectedProcess.documents} enviados, {selectedProcess.pending} pendentes</span>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Descrição:</span>
-                  <p className="mt-1">{selectedProcess.description}</p>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Documents List */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-foreground">Documentos Relacionados</h4>
-                <div className="space-y-3">
-                  {(processDocuments[selectedProcess.id as keyof typeof processDocuments] || []).map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <FileText className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h5 className="font-medium text-foreground text-sm">{doc.name}</h5>
-                          <Badge className={`${getStatusColor(doc.status)} text-xs`}>
-                            {doc.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(doc.link, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            // Simula download do documento
-                            const link = document.createElement('a');
-                            link.href = doc.link;
-                            link.download = doc.name;
-                            link.click();
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Report Actions */}
-              <div className="flex justify-end space-x-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsReportModalOpen(false)}
-                >
-                  Fechar
-                </Button>
-                <Button 
-                  onClick={handleDownloadReport}
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
-                >
-                  <FileDown className="h-4 w-4 mr-2" />
-                  Baixar Relatório PDF
                 </Button>
               </div>
             </div>
