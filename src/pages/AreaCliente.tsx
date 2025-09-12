@@ -863,37 +863,18 @@ const AreaCliente = () => {
                 </div>
               </div>
 
-              {/* Tabs for Documents and Communication */}
-              <div className="border-b">
-                <nav className="-mb-px flex space-x-8">
-                  <button
-                    onClick={() => setSelectedDocumentCategory("documents")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      selectedDocumentCategory === "documents" || !selectedDocumentCategory
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
-                    }`}
-                  >
-                    Documentos ({processDocuments[selectedProcess.id]?.length || 0})
-                  </button>
-                  <button
-                    onClick={() => setSelectedDocumentCategory("notes")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      selectedDocumentCategory === "notes"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
-                    }`}
-                  >
-                    Comunicação
-                  </button>
-                </nav>
-              </div>
-
-              {/* Tab Content */}
-              <div className="min-h-[200px] max-h-[300px] overflow-y-auto">
-                {(!selectedDocumentCategory || selectedDocumentCategory === "documents") && (
-                  <div className="space-y-2">
-                    {processDocuments[selectedProcess.id]?.map((doc) => (
+              {/* Documentos do Processo */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Documentos do Processo</h3>
+                  <Badge variant="outline">
+                    {processDocuments[selectedProcess.id]?.length || 0} documentos
+                  </Badge>
+                </div>
+                
+                <div className="max-h-[300px] overflow-y-auto space-y-2">
+                  {processDocuments[selectedProcess.id]?.length ? (
+                    processDocuments[selectedProcess.id].map((doc) => (
                       <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
                         <div className="flex items-center space-x-2">
                           <FileText className="h-4 w-4 text-muted-foreground" />
@@ -903,11 +884,18 @@ const AreaCliente = () => {
                           {doc.status}
                         </Badge>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {selectedDocumentCategory === "notes" && (
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Nenhum documento enviado ainda</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Comunicação Section */}
+                <div className="border-t pt-4">
+                  <h3 className="text-lg font-semibold mb-4">Comunicação</h3>
                   <div className="space-y-4">
                     {/* Add new note */}
                     <div className="space-y-2">
@@ -957,7 +945,7 @@ const AreaCliente = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
               
               <div className="flex justify-end space-x-2 pt-4 border-t">
