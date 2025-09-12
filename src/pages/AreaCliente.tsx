@@ -330,8 +330,14 @@ const AreaCliente = () => {
   };
 
   const handleViewDocuments = (category: string) => {
-    setSelectedDocumentCategory(category);
-    setIsDocumentsModalOpen(true);
+    if (category === "Pendentes de Envio") {
+      // Para documentos pendentes, mostrar com opção de abrir processo
+      setSelectedDocumentCategory(category);
+      setIsDocumentsModalOpen(true);
+    } else {
+      setSelectedDocumentCategory(category);
+      setIsDocumentsModalOpen(true);
+    }
   };
 
   const handleViewProcess = (processId: number) => {
@@ -357,7 +363,19 @@ const AreaCliente = () => {
       case "Documentos Enviados":
         return recentDocuments;
       case "Pendentes de Envio":
-        return recentDocuments.filter(doc => doc.status === "Pendente Correção");
+        return pendingRequests.map(req => ({
+          id: req.id,
+          name: req.title,
+          type: "Solicitação",
+          uploadDate: req.dueDate,
+          status: "Pendente",
+          size: "-",
+          description: req.description,
+          requestedBy: req.requestedBy,
+          processId: req.processId,
+          processTitle: req.processTitle,
+          priority: req.priority
+        }));
       case "Aprovados":
         return recentDocuments.filter(doc => doc.status === "Aprovado");
       case "Em Análise":
@@ -651,14 +669,14 @@ const AreaCliente = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-20 flex-col" 
-                onClick={() => handleViewDocuments("Documentos Enviados")}
-              >
-                <FileText className="h-6 w-6 mb-2" />
-                <span className="text-xs">Meus Documentos</span>
-              </Button>
+               <Button 
+                 variant="outline" 
+                 className="h-20 flex-col" 
+                 onClick={() => handleViewDocuments("Pendentes de Envio")}
+               >
+                 <FileText className="h-6 w-6 mb-2" />
+                 <span className="text-xs">Meus Documentos</span>
+               </Button>
               <Button 
                 variant="outline" 
                 className="h-20 flex-col" 
@@ -981,42 +999,82 @@ const AreaCliente = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-3">
               {getDocumentsByCategory(selectedDocumentCategory).map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => handleViewDocumentDetails(doc)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-foreground">{doc.name}</h4>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>{doc.type}</span>
-                        <span>•</span>
-                        <span>{doc.size}</span>
-                        <span>•</span>
-                        <span>{new Date(doc.uploadDate).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge className={getStatusColor(doc.status)}>
-                      {doc.status}
-                    </Badge>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log("Baixando documento:", doc.name);
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                 <div
+                   key={doc.id}
+                   className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                   onClick={() => {
+                     if (selectedDocumentCategory === "Pendentes de Envio" && (doc as any).processId) {
+                       // Para documentos pendentes, abrir o processo correspondente
+                       handleViewProcess((doc as any).processId);
+                       setIsDocumentsModalOpen(false);
+                     } else {
+                       handleViewDocumentDetails(doc);
+                     }
+                   }}
+                 >
+                   <div className="flex items-center space-x-3">
+                     <div className="p-2 bg-primary/10 rounded-lg">
+                       <FileText className="h-5 w-5 text-primary" />
+                     </div>
+                     <div>
+                       <h4 className="font-medium text-foreground">{doc.name}</h4>
+                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                         <span>{doc.type}</span>
+                         <span>•</span>
+                         <span>{doc.size}</span>
+                         <span>•</span>
+                         <span>{new Date(doc.uploadDate).toLocaleDateString('pt-BR')}</span>
+                       </div>
+                       {selectedDocumentCategory === "Pendentes de Envio" && (
+                         <div className="mt-1">
+                           <p className="text-xs text-muted-foreground">{(doc as any).description}</p>
+                           <p className="text-xs text-primary">Processo: {(doc as any).processTitle}</p>
+                           {(doc as any).priority && (
+                             <Badge 
+                               variant="outline" 
+                               className={`text-xs mt-1 ${
+                                 (doc as any).priority === "Alta" ? "border-red-500 text-red-600" :
+                                 (doc as any).priority === "Média" ? "border-yellow-500 text-yellow-600" :
+                                 "border-green-500 text-green-600"
+                               }`}
+                             >
+                               {(doc as any).priority}
+                             </Badge>
+                           )}
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                   <div className="flex items-center space-x-2">
+                     <Badge className={getStatusColor(doc.status)}>
+                       {doc.status}
+                     </Badge>
+                     {selectedDocumentCategory === "Pendentes de Envio" ? (
+                       <Button 
+                         variant="ghost" 
+                         size="sm"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleViewProcess((doc as any).processId);
+                           setIsDocumentsModalOpen(false);
+                         }}
+                       >
+                         <ExternalLink className="h-4 w-4" />
+                       </Button>
+                     ) : (
+                       <Button 
+                         variant="ghost" 
+                         size="sm"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           console.log("Baixando documento:", doc.name);
+                         }}
+                       >
+                         <Download className="h-4 w-4" />
+                       </Button>
+                     )}
+                   </div>
+                 </div>
               ))}
             </div>
             {getDocumentsByCategory(selectedDocumentCategory).length === 0 && (
