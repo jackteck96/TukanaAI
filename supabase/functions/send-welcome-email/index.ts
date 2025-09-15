@@ -23,13 +23,16 @@ interface WelcomeEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Store parsed request for error logging
+  let requestData: WelcomeEmailRequest | null = null;
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { processId, clientName, clientEmail, processName, companyId }: WelcomeEmailRequest = await req.json();
+    requestData = await req.json();
+    const { processId, clientName, clientEmail, processName, companyId } = requestData;
 
     console.log("Sending welcome email to:", clientEmail, "for process:", processId);
 
@@ -46,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     const companyName = companyData?.name || 'Nossa Empresa';
 
     const emailResponse = await resend.emails.send({
-      from: `${companyName} <onboarding@resend.dev>`,
+      from: `${companyName} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`,
       to: [clientEmail],
       subject: `Bem-vindo(a) ao seu processo de documentação - ${processName || 'Novo Processo'}`,
       html: `
@@ -159,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Log do erro
     try {
-      const { processId, companyId, clientEmail } = await req.json();
+      const { processId, companyId, clientEmail } = requestData || { processId: 'unknown', companyId: 'unknown', clientEmail: 'unknown' } as any;
       
       await supabase
         .from('document_reports')
