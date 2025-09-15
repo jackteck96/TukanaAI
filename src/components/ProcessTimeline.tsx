@@ -93,20 +93,20 @@ const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, classN
     switch (status) {
       case 'completed':
         return {
-          circle: 'bg-green-500 text-white border-green-500',
-          line: 'bg-green-500',
+          circle: 'bg-gradient-to-br from-green-400 to-green-500 text-white border-green-300 shadow-md shadow-green-200',
+          line: 'bg-gradient-to-b from-green-400 to-green-300',
           content: 'text-foreground'
         };
       case 'current':
         return {
-          circle: 'bg-primary text-primary-foreground border-primary animate-pulse',
-          line: 'bg-muted',
+          circle: 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary/50 animate-pulse shadow-md shadow-primary/30',
+          line: 'bg-gradient-to-b from-muted to-muted/50',
           content: 'text-foreground font-medium'
         };
       case 'pending':
         return {
-          circle: 'bg-muted text-muted-foreground border-muted',
-          line: 'bg-muted',
+          circle: 'bg-muted text-muted-foreground border-border shadow-sm',
+          line: 'bg-muted/50',
           content: 'text-muted-foreground'
         };
     }
@@ -114,25 +114,28 @@ const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, classN
 
   return (
     <div className={cn('space-y-4', className)}>
-      <h3 className="font-semibold text-foreground mb-4">Timeline do Processo</h3>
+      <div className="flex items-center space-x-2 mb-6">
+        <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+        <h3 className="font-semibold text-foreground">Timeline do Processo</h3>
+      </div>
       
-      <div className="relative">
+      <div className="relative pl-2">
         {steps.map((step, index) => {
           const styles = getStepStyles(step.status);
           const isLast = index === steps.length - 1;
           
           return (
-            <div key={step.id} className="relative flex items-start space-x-4 pb-6">
+            <div key={step.id} className="relative flex items-start space-x-4 pb-8">
               {/* Timeline Line */}
               {!isLast && (
-                <div className="absolute left-4 top-8 w-0.5 h-full">
-                  <div className={cn('w-full h-full', styles.line)} />
+                <div className="absolute left-4 top-10 w-0.5 h-full">
+                  <div className={cn('w-full h-full rounded-full', styles.line)} />
                 </div>
               )}
               
               {/* Step Circle */}
               <div className={cn(
-                'relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200',
+                'relative z-10 flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all duration-300',
                 styles.circle
               )}>
                 {step.status === 'completed' ? (
@@ -145,16 +148,17 @@ const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, classN
               </div>
               
               {/* Step Content */}
-              <div className="flex-1 min-w-0">
-                <div className={cn('font-medium', styles.content)}>
+              <div className="flex-1 min-w-0 pb-2">
+                <div className={cn('font-semibold text-sm', styles.content)}>
                   {step.title}
                 </div>
-                <div className={cn('text-sm mt-1', styles.content)}>
+                <div className={cn('text-sm mt-1 leading-relaxed', styles.content)}>
                   {step.description}
                 </div>
                 {step.date && step.status === 'completed' && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {step.date}
+                  <div className="text-xs text-muted-foreground mt-2 flex items-center space-x-1">
+                    <div className="w-1 h-1 bg-current rounded-full opacity-50" />
+                    <span>{step.date}</span>
                   </div>
                 )}
               </div>
