@@ -287,6 +287,102 @@ export type Database = {
           },
         ]
       }
+      internal_signatures: {
+        Row: {
+          authentication_contact: string
+          authentication_method: string
+          company_id: string
+          created_at: string
+          document_hash: string
+          document_id: string
+          id: string
+          process_id: string
+          signature_hash: string
+          signature_ip: unknown | null
+          signature_metadata: Json
+          signature_order: number
+          signer_email: string
+          signer_id: string
+          signer_name: string
+          updated_at: string
+        }
+        Insert: {
+          authentication_contact: string
+          authentication_method: string
+          company_id: string
+          created_at?: string
+          document_hash: string
+          document_id: string
+          id?: string
+          process_id: string
+          signature_hash: string
+          signature_ip?: unknown | null
+          signature_metadata?: Json
+          signature_order?: number
+          signer_email: string
+          signer_id: string
+          signer_name: string
+          updated_at?: string
+        }
+        Update: {
+          authentication_contact?: string
+          authentication_method?: string
+          company_id?: string
+          created_at?: string
+          document_hash?: string
+          document_id?: string
+          id?: string
+          process_id?: string
+          signature_hash?: string
+          signature_ip?: unknown | null
+          signature_metadata?: Json
+          signature_order?: number
+          signer_email?: string
+          signer_id?: string
+          signer_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      otp_verifications: {
+        Row: {
+          attempts: number
+          contact: string
+          created_at: string
+          document_id: string
+          expires_at: string
+          id: string
+          is_verified: boolean
+          user_id: string
+          verification_code: string
+          verification_method: string
+        }
+        Insert: {
+          attempts?: number
+          contact: string
+          created_at?: string
+          document_id: string
+          expires_at: string
+          id?: string
+          is_verified?: boolean
+          user_id: string
+          verification_code: string
+          verification_method: string
+        }
+        Update: {
+          attempts?: number
+          contact?: string
+          created_at?: string
+          document_id?: string
+          expires_at?: string
+          id?: string
+          is_verified?: boolean
+          user_id?: string
+          verification_code?: string
+          verification_method?: string
+        }
+        Relationships: []
+      }
       process_notes: {
         Row: {
           company_id: string
@@ -732,12 +828,24 @@ export type Database = {
         Args: { company_uuid: string; limit_type: string }
         Returns: Json
       }
+      generate_document_hash: {
+        Args: { document_uuid: string; file_path_val: string }
+        Returns: string
+      }
       generate_document_report: {
         Args: { process_uuid: string }
         Returns: string
       }
       generate_invite_token: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_signature_hash: {
+        Args: {
+          document_uuid: string
+          signer_uuid: string
+          timestamp_val: string
+        }
         Returns: string
       }
       get_current_user_role: {
