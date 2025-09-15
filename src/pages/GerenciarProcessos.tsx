@@ -25,6 +25,10 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
 import DocumentList from "@/components/DocumentList";
+import DocumentProgressBattery from "@/components/DocumentProgressBattery";
+import DocumentProgressBar from "@/components/DocumentProgressBar";
+import ProcessTimeline from "@/components/ProcessTimeline";
+import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -364,8 +368,11 @@ const GerenciarProcessos = () => {
             </Card>
           )}
 
-          {/* Documents Section */}
-          <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
+          {/* Timeline and Documents Section */}
+          <div className="space-y-6">
+            <ProcessTimeline currentStatus={currentProcess.status} />
+            <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
+          </div>
         </div>
 
         {/* Notes Edit Modal */}
@@ -446,6 +453,10 @@ const GerenciarProcessos = () => {
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
                       <CardTitle className="text-lg">{process.processType}</CardTitle>
+                      <DocumentProgressBattery 
+                        progress={calculateProgressFromStatus(process.status)} 
+                        size="md" 
+                      />
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}
                       </Badge>
@@ -462,9 +473,13 @@ const GerenciarProcessos = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Progresso do Processo</span>
-                      <span className="text-sm text-muted-foreground">{process.progress}%</span>
+                      <span className="text-sm text-muted-foreground">{calculateProgressFromStatus(process.status)}%</span>
                     </div>
-                    <Progress value={process.progress} className="h-2" />
+                    <DocumentProgressBar 
+                      progress={calculateProgressFromStatus(process.status)} 
+                      height="medium" 
+                      showPercentage={false}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

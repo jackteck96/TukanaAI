@@ -32,6 +32,9 @@ import { toast } from "sonner";
 import DocumentList from "@/components/DocumentList";
 import DocumentReport from "@/components/DocumentReport";
 import { CollaboratorsModal } from "./AreaClienteCollaborators";
+import DocumentProgressBattery from "@/components/DocumentProgressBattery";
+import ProcessTimeline from "@/components/ProcessTimeline";
+import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 
 const AreaCliente = () => {
   const clientInfo = {
@@ -467,9 +470,15 @@ const AreaCliente = () => {
                     onClick={() => handleViewProcess(process.id)}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-foreground">
-                        {process.title}
-                      </h3>
+                      <div className="flex items-center space-x-3">
+                        <h3 className="font-semibold text-foreground">
+                          {process.title}
+                        </h3>
+                        <DocumentProgressBattery 
+                          progress={calculateProgressFromStatus(process.status)} 
+                          size="md" 
+                        />
+                      </div>
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}
                       </Badge>
@@ -711,25 +720,32 @@ const AreaCliente = () => {
               {/* Tab Content */}
               <div className="min-h-[200px] max-h-[300px] overflow-y-auto">
                 {(!selectedDocumentCategory || selectedDocumentCategory === "documents") && (
-                  <div className="space-y-2">
-                    {processDocuments[selectedProcess.id]?.length ? (
-                      processDocuments[selectedProcess.id].map((doc: any) => (
-                        <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
-                          <div className="flex items-center space-x-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{doc.name}</span>
+                  <div className="space-y-6">
+                    <ProcessTimeline currentStatus={selectedProcess.status} />
+                    <div className="space-y-2">
+                      {processDocuments[selectedProcess.id]?.length ? (
+                        processDocuments[selectedProcess.id].map((doc: any) => (
+                          <div key={doc.id} className="flex items-center justify-between p-3 border rounded">
+                            <div className="flex items-center space-x-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{doc.name}</span>
+                              <DocumentProgressBattery 
+                                progress={calculateProgressFromStatus(doc.status)} 
+                                size="sm" 
+                              />
+                            </div>
+                            <Badge className={getStatusColor(doc.status)}>
+                              {doc.status}
+                            </Badge>
                           </div>
-                          <Badge className={getStatusColor(doc.status)}>
-                            {doc.status}
-                          </Badge>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Nenhum documento enviado ainda</p>
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Nenhum documento enviado ainda</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 )}
 
