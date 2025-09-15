@@ -175,6 +175,12 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           emailErrorMessage += " (boas-vindas)";
         }
         emailErrorMessage += ". Você pode reenviar os emails posteriormente.";
+
+        // Ajuda: Resend em modo de teste
+        const errStr = `${inviteEmailError || ''} ${welcomeEmailError || ''}`;
+        if (errStr.includes('You can only send testing emails')) {
+          emailErrorMessage += " Dica: verifique seu domínio no Resend (resend.com/domains) ou use o botão 'Copiar link' para compartilhar o convite.";
+        }
         
         toast({
           title: "Processo criado",

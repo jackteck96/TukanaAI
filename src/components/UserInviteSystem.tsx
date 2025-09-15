@@ -73,9 +73,20 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
   const sendInviteEmail = async (token: string) => {
     try {
+      // Para colaboradores usamos o mailer nativo do Supabase (sem Resend)
+      if (inviteData.role === 'staff') {
+        const { error } = await supabase.functions.invoke('invite-collaborator', {
+          body: {
+            email: inviteData.email,
+            full_name: inviteData.full_name,
+          }
+        });
+        if (error) throw error;
+        return;
+      }
+
+      // Para clientes continuamos usando o email de convite customizado
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
-      
-      // Chamar a função edge para enviar email
       const { error } = await supabase.functions.invoke('send-invite-email', {
         body: {
           to: inviteData.email,
