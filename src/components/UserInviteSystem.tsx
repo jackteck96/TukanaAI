@@ -79,6 +79,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
           body: {
             email: inviteData.email,
             full_name: inviteData.full_name,
+            redirectTo: `${window.location.origin}/`,
           }
         });
         if (error) throw error;

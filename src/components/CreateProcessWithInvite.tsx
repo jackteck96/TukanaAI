@@ -134,6 +134,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           company_id: company.id,
           process_id: processData.id,
           invited_by: user.id,
+          status: 'pending',
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         });
 
       if (inviteError) {
@@ -141,6 +143,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       }
 
       // 4. Enviar email de convite (cadastro na plataforma)
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
       const { error: inviteEmailError } = await supabase.functions.invoke("send-invite-email", {
         body: {
           email: formData.clientEmail,
@@ -148,6 +151,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           clientName: formData.clientName,
           companyName: company.name,
           inviteToken: tokenData,
+          inviteLink,
         },
       });
 
