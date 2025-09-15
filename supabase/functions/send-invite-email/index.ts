@@ -37,18 +37,14 @@ const handler = async (req: Request): Promise<Response> => {
     const companyName: string = raw.companyName || 'Nossa Empresa';
     const inviteToken: string | undefined = raw.inviteToken;
 
-    // Verificar se o usuário está autenticado
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header");
-    }
-
-    const { data: user, error: authError } = await supabase.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-
-    if (authError || !user) {
-      throw new Error("Unauthorized");
+    // Tentar obter usuário (opcional). Não bloquear envio se faltar header.
+    try {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader) {
+        await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+      }
+    } catch (_) {
+      // prosseguir mesmo sem auth
     }
 
     console.log("Sending invite email to:", email);
