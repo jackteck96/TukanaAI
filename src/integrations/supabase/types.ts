@@ -80,6 +80,69 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_signatures: {
+        Row: {
+          certificate_issuer: string
+          certificate_serial: string
+          certificate_subject: string
+          company_id: string
+          created_at: string
+          document_id: string
+          gov_br_access_token: string | null
+          id: string
+          process_id: string
+          signature_hash: string
+          signature_metadata: Json
+          signature_order: number
+          signature_status: string
+          signature_timestamp: string
+          signer_cpf: string
+          signer_email: string
+          signer_name: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_issuer: string
+          certificate_serial: string
+          certificate_subject: string
+          company_id: string
+          created_at?: string
+          document_id: string
+          gov_br_access_token?: string | null
+          id?: string
+          process_id: string
+          signature_hash: string
+          signature_metadata?: Json
+          signature_order?: number
+          signature_status?: string
+          signature_timestamp?: string
+          signer_cpf: string
+          signer_email: string
+          signer_name: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_issuer?: string
+          certificate_serial?: string
+          certificate_subject?: string
+          company_id?: string
+          created_at?: string
+          document_id?: string
+          gov_br_access_token?: string | null
+          id?: string
+          process_id?: string
+          signature_hash?: string
+          signature_metadata?: Json
+          signature_order?: number
+          signature_status?: string
+          signature_timestamp?: string
+          signer_cpf?: string
+          signer_email?: string
+          signer_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       document_reports: {
         Row: {
           approved_documents: number
@@ -363,6 +426,81 @@ export type Database = {
           },
         ]
       }
+      signature_flows: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          current_step: number
+          document_id: string
+          flow_status: string
+          flow_type: string
+          id: string
+          process_id: string
+          total_steps: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          current_step?: number
+          document_id: string
+          flow_status?: string
+          flow_type?: string
+          id?: string
+          process_id: string
+          total_steps?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          current_step?: number
+          document_id?: string
+          flow_status?: string
+          flow_type?: string
+          id?: string
+          process_id?: string
+          total_steps?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      signature_requirements: {
+        Row: {
+          created_at: string
+          id: string
+          is_required: boolean
+          notification_sent: boolean
+          signature_flow_id: string
+          signature_order: number
+          signer_email: string
+          signer_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          notification_sent?: boolean
+          signature_flow_id: string
+          signature_order: number
+          signer_email: string
+          signer_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          notification_sent?: boolean
+          signature_flow_id?: string
+          signature_order?: number
+          signer_email?: string
+          signer_name?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           company_id: string
@@ -584,6 +722,10 @@ export type Database = {
     Functions: {
       can_access_process: {
         Args: { process_uuid: string }
+        Returns: boolean
+      }
+      can_sign_document: {
+        Args: { document_uuid: string; signer_email_param: string }
         Returns: boolean
       }
       check_plan_limits: {
