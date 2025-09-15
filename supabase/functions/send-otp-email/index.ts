@@ -27,11 +27,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending OTP email to:", email);
 
-    const emailResponse = await resend.emails.send({
-      from: `Sistema de Assinatura <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`,
-      to: [email],
-      subject: `Código de verificação para assinatura - ${documentName}`,
-      html: `
+    const fromPrimary = `Sistema de Assinatura <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
+    const htmlContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -73,8 +70,40 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </body>
         </html>
-      `,
+      `;
+
+    let emailResponse = await resend.emails.send({
+      from: fromPrimary,
+      to: [email],
+      subject: `Código de verificação para assinatura - ${documentName}`,
+      html: htmlContent,
     });
+
+    if (emailResponse.error || !emailResponse.data?.id) {
+      const errMsg = emailResponse.error?.error || '';
+      const statusCode = (emailResponse as any).error?.statusCode;
+      const domainIssue = errMsg.includes('domain is not verified') || statusCode === 403;
+      if (domainIssue && !fromPrimary.includes('onboarding@resend.dev')) {
+        console.warn("Resend domain not verified, retrying with onboarding@resend.dev");
+        emailResponse = await resend.emails.send({
+          from: `Sistema de Assinatura <onboarding@resend.dev>`,
+          to: [email],
+          subject: `Código de verificação para assinatura - ${documentName}`,
+          html: htmlContent,
+        });
+      }
+    }
+
+    if (emailResponse.error || !emailResponse.data?.id) {
+      console.error("Resend send-otp-email error:", emailResponse.error);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: emailResponse.error?.error || 'Falha ao enviar email com código' 
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
 
     console.log("Email sent successfully:", emailResponse);
 

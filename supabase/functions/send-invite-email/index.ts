@@ -50,11 +50,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || 'https://app.exemplo.com'}/cadastro-via-convite?token=${inviteToken}`;
 
-    const emailResponse = await resend.emails.send({
-      from: `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`,
-      to: [email],
-      subject: `Convite para acessar o processo - ${companyName}`,
-      html: `
+    const fromPrimary = `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
+    const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #1f2937; text-align: center;">Convite para Acesso ao Processo</h1>
           
@@ -88,8 +85,29 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
           </div>
         </div>
-      `,
+      `;
+
+    let emailResponse = await resend.emails.send({
+      from: fromPrimary,
+      to: [email],
+      subject: `Convite para acessar o processo - ${companyName}`,
+      html: htmlContent,
     });
+
+    if (emailResponse.error || !emailResponse.data?.id) {
+      const errMsg = emailResponse.error?.error || '';
+      const statusCode = (emailResponse as any).error?.statusCode;
+      const domainIssue = errMsg.includes('domain is not verified') || statusCode === 403;
+      if (domainIssue && !fromPrimary.includes('onboarding@resend.dev')) {
+        console.warn("Resend domain not verified, retrying with onboarding@resend.dev");
+        emailResponse = await resend.emails.send({
+          from: `${companyName || 'Nossa Empresa'} <onboarding@resend.dev>`,
+          to: [email],
+          subject: `Convite para acessar o processo - ${companyName}`,
+          html: htmlContent,
+        });
+      }
+    }
 
     if (emailResponse.error || !emailResponse.data?.id) {
       console.error("Resend send-invite-email error:", emailResponse.error);

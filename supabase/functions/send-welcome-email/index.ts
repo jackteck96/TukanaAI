@@ -48,11 +48,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const companyName = companyData?.name || 'Nossa Empresa';
 
-    const emailResponse = await resend.emails.send({
-      from: `${companyName} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`,
-      to: [clientEmail],
-      subject: `Bem-vindo(a) ao seu processo de documentação - ${processName || 'Novo Processo'}`,
-      html: `
+    const fromPrimary = `${companyName} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
+    const htmlContent = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -121,8 +118,29 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </body>
         </html>
-      `,
+      `;
+
+    let emailResponse = await resend.emails.send({
+      from: fromPrimary,
+      to: [clientEmail],
+      subject: `Bem-vindo(a) ao seu processo de documentação - ${processName || 'Novo Processo'}`,
+      html: htmlContent,
     });
+
+    if (emailResponse.error || !emailResponse.data?.id) {
+      const errMsg = emailResponse.error?.error || '';
+      const statusCode = (emailResponse as any).error?.statusCode;
+      const domainIssue = errMsg.includes('domain is not verified') || statusCode === 403;
+      if (domainIssue && !fromPrimary.includes('onboarding@resend.dev')) {
+        console.warn("Resend domain not verified, retrying with onboarding@resend.dev");
+        emailResponse = await resend.emails.send({
+          from: `${companyName} <onboarding@resend.dev>`,
+          to: [clientEmail],
+          subject: `Bem-vindo(a) ao seu processo de documentação - ${processName || 'Novo Processo'}`,
+          html: htmlContent,
+        });
+      }
+    }
 
     if (emailResponse.error || !emailResponse.data?.id) {
       console.error("Resend send-welcome-email error:", emailResponse.error);
