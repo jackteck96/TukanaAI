@@ -30,7 +30,12 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, processId, clientName, companyName, inviteToken }: InviteEmailRequest = await req.json();
+    const raw: any = await req.json();
+    const email: string = raw.email || raw.to;
+    const processId: string | undefined = raw.processId;
+    const clientName: string = raw.clientName || raw.inviterName || 'Convidado';
+    const companyName: string = raw.companyName || 'Nossa Empresa';
+    const inviteToken: string | undefined = raw.inviteToken;
 
     // Verificar se o usuário está autenticado
     const authHeader = req.headers.get("authorization");
@@ -48,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending invite email to:", email);
 
-    const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || 'https://app.exemplo.com'}/cadastro-via-convite?token=${inviteToken}`;
+    const inviteUrl = raw.inviteLink || `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || 'https://app.exemplo.com'}/cadastro-via-convite?token=${inviteToken}`;
 
     const fromPrimary = `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
     const htmlContent = `
