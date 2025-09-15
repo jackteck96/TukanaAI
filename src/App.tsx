@@ -12,6 +12,7 @@ import EmpresaDashboard from "./pages/EmpresaDashboard";
 import AreaCliente from "./pages/AreaCliente";
 import ModelosDocumentos from "./pages/ModelosDocumentos";
 import GerenciarProcessos from "./pages/GerenciarProcessos";
+import SignatureCallback from "./pages/SignatureCallback";
 import TreinarIA from "./pages/TreinarIA";
 import CadastroTiposDocumentos from "./pages/CadastroTiposDocumentos";
 import Login from "./pages/Login";
@@ -83,11 +84,12 @@ const App = () => (
                 <ProtectedRoute>
                   <GerenciarProcessos />
                 </ProtectedRoute>
-              } />
-              <Route path="/treinar-ia" element={
-                <ProtectedRoute>
-                  <TreinarIA />
-                </ProtectedRoute>
+               } />
+               <Route path="/assinatura-callback" element={<SignatureCallback />} />
+               <Route path="/treinar-ia" element={
+                 <ProtectedRoute>
+                   <TreinarIA />
+                 </ProtectedRoute>
               } />
               <Route path="/cadastro-tipos-documentos" element={
                 <ProtectedRoute>
