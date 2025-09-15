@@ -140,8 +140,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         throw inviteError;
       }
 
-      // 4. Enviar email de convite
-      const { error: emailError } = await supabase.functions.invoke("send-invite-email", {
+      // 4. Enviar email de convite (cadastro na plataforma)
+      const { error: inviteEmailError } = await supabase.functions.invoke("send-invite-email", {
         body: {
           email: formData.clientEmail,
           processId: processData.id,
@@ -151,17 +151,40 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         },
       });
 
-      if (emailError) {
-        console.error("Erro ao enviar email:", emailError);
+      // 5. Enviar email de boas-vindas (acesso ao processo)
+      const { error: welcomeEmailError } = await supabase.functions.invoke("send-welcome-email", {
+        body: {
+          processId: processData.id,
+          clientName: formData.clientName,
+          clientEmail: formData.clientEmail,
+          processName: formData.projectName || `Processo - ${formData.clientName}`,
+          companyId: company.id,
+        },
+      });
+
+      // Tratar erros de email
+      if (inviteEmailError || welcomeEmailError) {
+        console.error("Erro ao enviar emails:", { inviteEmailError, welcomeEmailError });
+        
+        let emailErrorMessage = "Processo criado com sucesso, mas houve problemas no envio de email";
+        if (inviteEmailError && welcomeEmailError) {
+          emailErrorMessage += " (convite e boas-vindas)";
+        } else if (inviteEmailError) {
+          emailErrorMessage += " (convite de cadastro)";
+        } else if (welcomeEmailError) {
+          emailErrorMessage += " (boas-vindas)";
+        }
+        emailErrorMessage += ". Você pode reenviar os emails posteriormente.";
+        
         toast({
           title: "Processo criado",
-          description: "Processo criado com sucesso, mas houve um erro ao enviar o email de convite. Você pode reenviar o convite posteriormente.",
+          description: emailErrorMessage,
           variant: "default",
         });
       } else {
         toast({
           title: "Processo criado com sucesso!",
-          description: `Processo criado com ${requiredDocuments.length} documento(s) necessário(s) e convite enviado para ${formData.clientEmail}.`,
+          description: `Processo criado com ${requiredDocuments.length} documento(s) necessário(s). Emails de convite e boas-vindas enviados para ${formData.clientEmail}.`,
         });
       }
 

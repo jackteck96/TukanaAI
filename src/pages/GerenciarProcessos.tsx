@@ -28,6 +28,8 @@ import DocumentList from "@/components/DocumentList";
 import DocumentProgressBattery from "@/components/DocumentProgressBattery";
 import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
+import EmailResendButton from "@/components/EmailResendButton";
+import EmailLogViewer from "@/components/EmailLogViewer";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -289,9 +291,17 @@ const GerenciarProcessos = () => {
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">{currentProcess.client_email}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <p className="text-sm">{currentProcess.client_email}</p>
+                    </div>
+                    <EmailResendButton
+                      processId={currentProcess.id}
+                      clientName={currentProcess.client_name}
+                      clientEmail={currentProcess.client_email}
+                      processName={currentProcess.project_name || currentProcess.process_type}
+                    />
                   </div>
                 </div>
                 <div>
@@ -371,6 +381,7 @@ const GerenciarProcessos = () => {
           {/* Timeline and Documents Section */}
           <div className="space-y-6">
             <ProcessTimeline currentStatus={currentProcess.status} />
+            <EmailLogViewer processId={currentProcess.id} />
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
           </div>
         </div>
