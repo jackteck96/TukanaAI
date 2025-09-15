@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending OTP email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Sistema de Assinatura <onboarding@resend.dev>",
+      from: `Sistema de Assinatura <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`,
       to: [email],
       subject: `Código de verificação para assinatura - ${documentName}`,
       html: `

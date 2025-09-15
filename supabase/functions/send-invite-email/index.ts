@@ -48,10 +48,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending invite email to:", email);
 
-    const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '')}.supabase.co/cadastro-via-convite?token=${inviteToken}`;
+    const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || 'https://app.exemplo.com'}/cadastro-via-convite?token=${inviteToken}`;
 
     const emailResponse = await resend.emails.send({
-      from: "LegalTech Platform <onboarding@resend.dev>",
+      from: `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`,
       to: [email],
       subject: `Convite para acessar o processo - ${companyName}`,
       html: `
@@ -91,7 +91,14 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    if (emailResponse.error || !emailResponse.data?.id) {
+      console.error("Resend send-invite-email error:", emailResponse.error);
+      return new Response(JSON.stringify({ success: false, error: emailResponse.error?.error || "Falha ao enviar o email de convite" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    console.log("Invite email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify({ success: true, messageId: emailResponse.data?.id }), {
       status: 200,

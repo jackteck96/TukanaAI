@@ -124,6 +124,10 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    if (emailResponse.error || !emailResponse.data?.id) {
+      console.error("Resend send-welcome-email error:", emailResponse.error);
+      throw new Error(emailResponse.error?.error || "Falha ao enviar o email de boas-vindas");
+    }
     console.log("Welcome email sent successfully:", emailResponse);
 
     // Log do envio bem-sucedido
