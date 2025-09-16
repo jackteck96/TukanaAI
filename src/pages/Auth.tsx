@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,10 @@ const Auth = () => {
     : authError
     ? 'Não foi possível concluir o login. Tente novamente.'
     : null;
+
+  useEffect(() => {
+    try { sessionStorage.removeItem('last_auth_error'); } catch {}
+  }, []);
 
   // Redirect if already authenticated
   if (user) {
