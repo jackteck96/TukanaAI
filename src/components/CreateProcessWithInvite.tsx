@@ -184,19 +184,28 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         } else if (welcomeEmailError) {
           emailErrorMessage += " (boas-vindas)";
         }
-        emailErrorMessage += ". Você pode reenviar os emails posteriormente.";
+
+        // Adicionar link de convite como fallback
+        const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+        emailErrorMessage += `. Link de convite: ${inviteLink}`;
 
         // Ajuda: Resend em modo de teste
         const errStr = `${inviteEmailError || ''} ${welcomeEmailError || ''}`;
-        if (errStr.includes('You can only send testing emails')) {
-          emailErrorMessage += " Dica: verifique seu domínio no Resend (resend.com/domains) ou use o botão 'Copiar link' para compartilhar o convite.";
+        if (errStr.includes('You can only send testing emails') || errStr.includes('domain is not verified')) {
+          emailErrorMessage += " Dica: verifique seu domínio no Resend (resend.com/domains).";
         }
         
+        // Criar toast com botão de copiar link
         toast({
-          title: "Processo criado",
+          title: "Processo criado - Email com problema",
           description: emailErrorMessage,
           variant: "default",
         });
+
+        // Copiar link automaticamente para facilitar
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(inviteLink).catch(console.error);
+        }
       } else {
         toast({
           title: "Processo criado com sucesso!",

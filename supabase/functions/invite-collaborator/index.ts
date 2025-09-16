@@ -87,7 +87,8 @@ serve(async (req: Request) => {
 
     console.log("[invite-collaborator] Supabase invite result:", { data: data?.user?.id, error });
 
-    if (error) {
+    // Tratar "email_exists" como sucesso - usuário já existe, apenas continuar o fluxo
+    if (error && error.message !== "A user with this email address has already been registered") {
       console.error("[invite-collaborator] invite error:", error);
       return new Response(
         JSON.stringify({ success: false, error: error.message }),
@@ -95,9 +96,19 @@ serve(async (req: Request) => {
       );
     }
 
-    console.log("[invite-collaborator] Invite sent successfully to:", body.email);
+    const userExists = error?.message === "A user with this email address has already been registered";
+    if (userExists) {
+      console.log("[invite-collaborator] User already exists, skipping Supabase invite but continuing with email");
+    }
+
+    console.log("[invite-collaborator] Invite processed successfully for:", body.email);
     return new Response(
-      JSON.stringify({ success: true, user: data?.user ?? null }),
+      JSON.stringify({ 
+        success: true, 
+        user: data?.user ?? null, 
+        userExists: userExists,
+        message: userExists ? "Usuário já existe - continuando fluxo" : "Convite enviado com sucesso"
+      }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (err: any) {
