@@ -126,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     console.log("Invite email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify({ success: true, messageId: emailResponse.data?.id }), {
+    return new Response(JSON.stringify({ success: true, emailed: true, messageId: emailResponse.data?.id, inviteUrl }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

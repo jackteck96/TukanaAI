@@ -144,7 +144,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
       // 4. Enviar email de convite (cadastro na plataforma)
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-      const { error: inviteEmailError } = await supabase.functions.invoke("send-invite-email", {
+      const { data: inviteEmailData, error: inviteEmailError } = await supabase.functions.invoke("send-invite-email", {
         body: {
           email: formData.clientEmail,
           processId: processData.id,
@@ -154,6 +154,10 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           inviteLink,
         },
       });
+      if (!inviteEmailError && (inviteEmailData as any)?.emailed === false && (inviteEmailData as any)?.inviteUrl) {
+        await navigator.clipboard.writeText((inviteEmailData as any).inviteUrl);
+        toast({ title: 'Link de convite copiado', description: 'O provedor bloqueou o envio do email. O link foi copiado para você compartilhar.' });
+      }
 
       // 5. Enviar email de boas-vindas (acesso ao processo)
       const { error: welcomeEmailError } = await supabase.functions.invoke("send-welcome-email", {

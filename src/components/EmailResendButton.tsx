@@ -77,7 +77,7 @@ const EmailResendButton: React.FC<EmailResendButtonProps> = ({
         return;
       }
 
-      const { error } = await supabase.functions.invoke('send-invite-email', {
+      const { data, error } = await supabase.functions.invoke('send-invite-email', {
         body: {
           email: clientEmail,
           processId,
@@ -90,7 +90,12 @@ const EmailResendButton: React.FC<EmailResendButtonProps> = ({
 
       if (error) throw error;
 
-      toast.success('Email de convite reenviado com sucesso!');
+      if ((data as any)?.emailed === false && (data as any)?.inviteUrl) {
+        await navigator.clipboard.writeText((data as any).inviteUrl);
+        toast.success('Não foi possível enviar email. Link de convite copiado!');
+      } else {
+        toast.success('Email de convite reenviado com sucesso!');
+      }
     } catch (error: any) {
       console.error('Erro ao reenviar email de convite:', error);
       toast.error('Erro ao reenviar email de convite');

@@ -76,7 +76,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
       // Enviar email de convite customizado para qualquer função (staff ou client)
-      const { error } = await supabase.functions.invoke('send-invite-email', {
+      const { data, error } = await supabase.functions.invoke('send-invite-email', {
         body: {
           to: inviteData.email,
           inviterName: user?.user_metadata?.full_name || user?.email,
@@ -86,6 +86,10 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       });
 
       if (error) throw error;
+      if (data && (data as any).emailed === false && (data as any).inviteUrl) {
+        await navigator.clipboard.writeText((data as any).inviteUrl);
+        toast.success('Não foi possível enviar o email. Link de convite copiado!');
+      }
     } catch (error) {
       console.error('Erro ao enviar email:', error);
       throw error;
