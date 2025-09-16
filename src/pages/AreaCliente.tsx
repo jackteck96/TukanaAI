@@ -37,6 +37,7 @@ import ProcessTimeline from "@/components/ProcessTimeline";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 
 const AreaCliente = () => {
+  const { user } = useAuth();
   const clientInfo = {
     name: "TechCorp Ltda",
     email: "contato@techcorp.com",
@@ -71,7 +72,7 @@ const AreaCliente = () => {
     }
   ];
 
-  const activeProcesses = [
+  let activeProcesses: any[] = [
     {
       id: 1,
       title: "Contrato de Prestação de Serviços",
@@ -219,19 +220,76 @@ const AreaCliente = () => {
   });
   const [selectedDocumentCategory, setSelectedDocumentCategory] = useState("");
   const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
-  const [processDocuments, setProcessDocuments] = useState<any>({
-    1: [
-      { id: 1, name: "Contrato Social.pdf", status: "Aprovado" },
-      { id: 2, name: "Balanço Q1.pdf", status: "Em Análise" }
-    ],
-    2: [
-      { id: 3, name: "Certidão Federal.pdf", status: "Aprovado" },
-      { id: 4, name: "RG Sócio.pdf", status: "Pendente Correção" }
-    ],
-    3: [
-      { id: 5, name: "ISO 9001.pdf", status: "Em Análise" }
-    ]
-  });
+  const [processDocuments, setProcessDocuments] = useState<any>({});
+  // Carregar processos reais do cliente logado
+  const [loadedProcesses, setLoadedProcesses] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user?.email) return;
+      const { data: procs, error } = await supabase
+        .from('processes')
+        .select('id, project_name, description, status, progress, due_date')
+        .eq('client_email', user.email);
+      if (error) {
+        console.error('[AreaCliente] fetch processes error', error);
+        return;
+      }
+      const mapped = (procs || []).map((p: any) => ({
+        id: p.id,
+        title: p.project_name || 'Processo',
+        description: p.description || '',
+        status: p.status,
+        progress: Number(p.progress || 0),
+        dueDate: p.due_date,
+        documents: 0,
+        pending: 0,
+        company: '',
+        responsibleLawyer: ''
+      }));
+      setLoadedProcesses(mapped);
+      if (mapped.length) {
+        setSelectedProcess((prev: any) => prev ?? mapped[0]);
+      }
+      const ids = (procs || []).map((p: any) => p.id);
+      if (ids.length) {
+        const { data: docs } = await supabase
+          .from('documents')
+          .select('id, file_name, document_type, status, created_at, process_id')
+          .in('process_id', ids);
+        const docsByProcess: Record<string, any[]> = {};
+        (docs || []).forEach((d: any) => {
+          const item = {
+            id: d.id,
+            name: d.file_name,
+            type: d.document_type,
+            uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
+            status: d.status,
+            size: ''
+          };
+          const key = d.process_id;
+          if (!docsByProcess[key]) docsByProcess[key] = [];
+          docsByProcess[key].push(item);
+        });
+        setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
+        setLoadedProcesses((prev) =>
+          prev.map((p) => {
+            const docsArr = docsByProcess[p.id] || [];
+            const pendingCount = docsArr.filter((x: any) =>
+              String(x.status || '').toLowerCase().includes('pend')
+            ).length;
+            return { ...p, documents: docsArr.length, pending: pendingCount };
+          })
+        );
+      }
+    };
+    load();
+  }, [user]);
+
+  // Substituir mocks pelos processos reais quando disponíveis
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  activeProcesses = loadedProcesses.length ? loadedProcesses : activeProcesses;
+
   const [isCollaboratorsModalOpen, setIsCollaboratorsModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([
     { id: 1, name: "João Silva", email: "joao@empresa.com", role: "Admin", status: "Ativo", joinedAt: "2024-01-15" },
@@ -264,8 +322,8 @@ const AreaCliente = () => {
     setIsDocumentDetailsModalOpen(true);
   };
 
-  const handleViewProcess = (processId: number) => {
-    const process = activeProcesses.find(p => p.id === processId);
+  const handleViewProcess = (processId: string | number) => {
+    const process = activeProcesses.find(p => String(p.id) === String(processId));
     if (process) {
       setSelectedProcess(process);
       setSelectedDocumentCategory("documents"); // Garantir que a aba de documentos seja aberta por padrão
