@@ -66,9 +66,11 @@ serve(async (req: Request) => {
     }
 
     // Criar usuário já confirmado usando Admin API
-    const { data: userData, error: createError } = await supabase.auth.admin.createUser({
+    let createdUser: { id: string; email: string } | null = null;
+
+    const { data: userData, error: createError }: any = await supabase.auth.admin.createUser({
       email: invite.email,
-      password: password,
+      password,
       email_confirm: true, // Confirma o e-mail automaticamente
       user_metadata: {
         full_name: fullName,
@@ -77,22 +79,62 @@ serve(async (req: Request) => {
     });
 
     if (createError) {
-      console.error('[create-client-from-invite] Error creating user:', createError);
+      // Se já existe, confirmar e atualizar senha do usuário existente
+      const code = (createError as any).code || (createError as any).status || '';
+      if (code === 'email_exists' || (createError as any).status === 422) {
+        console.warn('[create-client-from-invite] User already exists, upgrading existing account');
+        const { data: existingUser, error: existingLookupError } = await (supabase as any)
+          .from('auth.users')
+          .select('id, email, email_confirmed_at')
+          .eq('email', invite.email)
+          .maybeSingle();
+
+        if (existingLookupError || !existingUser) {
+          console.error('[create-client-from-invite] Could not find existing user by email', existingLookupError);
+          return new Response(
+            JSON.stringify({ error: 'Usuário já existe mas não foi possível localizá-lo.' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+
+        const { data: updatedUser, error: updateErr } = await supabase.auth.admin.updateUserById(existingUser.id, {
+          password,
+          email_confirm: true,
+          user_metadata: {
+            full_name: fullName,
+            role: 'client',
+          },
+        });
+
+        if (updateErr) {
+          console.error('[create-client-from-invite] Error updating existing user:', updateErr);
+          return new Response(
+            JSON.stringify({ error: updateErr.message || 'Falha ao atualizar usuário existente' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+
+        createdUser = { id: updatedUser.user.id, email: updatedUser.user.email! };
+      } else {
+        console.error('[create-client-from-invite] Error creating user:', createError);
+        return new Response(
+          JSON.stringify({ error: createError.message }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+    } else if (userData?.user) {
+      createdUser = { id: userData.user.id, email: userData.user.email! };
+    }
+
+    if (!createdUser) {
+      console.error('[create-client-from-invite] No user data resolved');
       return new Response(
-        JSON.stringify({ error: createError.message }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ error: 'Falha ao criar/atualizar usuário' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    if (!userData.user) {
-      console.error('[create-client-from-invite] No user data returned');
-      return new Response(
-        JSON.stringify({ error: 'Falha ao criar usuário' }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    console.log('[create-client-from-invite] User created:', userData.user.id);
+    console.log('[create-client-from-invite] User ready:', createdUser.id);
 
     // Atualizar perfil do usuário
     const { error: profileError } = await supabase
@@ -102,7 +144,7 @@ serve(async (req: Request) => {
         role: 'client',
         company_id: invite.company_id,
       })
-      .eq('id', userData.user.id);
+      .eq('id', createdUser.id);
 
     if (profileError) {
       console.error('[create-client-from-invite] Profile update error:', profileError);
@@ -121,14 +163,14 @@ serve(async (req: Request) => {
       console.error('[create-client-from-invite] Error updating invite:', updateError);
     }
 
-    console.log('[create-client-from-invite] Client created successfully:', userData.user.email);
+    console.log('[create-client-from-invite] Client created successfully:', createdUser.email);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         user: {
-          id: userData.user.id,
-          email: userData.user.email,
+          id: createdUser.id,
+          email: createdUser.email,
           role: 'client'
         }
       }),
