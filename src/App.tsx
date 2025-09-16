@@ -30,6 +30,7 @@ import RelatoriosPonto from "./pages/RelatoriosPonto";
 import ClientInfo from "./pages/ClientInfo";
 import AuthHashHandler from "./components/AuthHashHandler";
 import ErrorBoundary from "./components/ErrorBoundary";
+import GlobalErrorLogger from "./components/GlobalErrorLogger";
 
 const queryClient = new QueryClient();
 
@@ -38,11 +39,12 @@ const App = () => (
     <AuthProvider>
       <CompanyProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          {/* Processa hash de autenticação do Supabase e limpa a URL */}
-          <AuthHashHandler />
           <ErrorBoundary>
+            <GlobalErrorLogger />
+            <Toaster />
+            <Sonner />
+            {/* Processa hash de autenticação do Supabase e limpa a URL */}
+            <AuthHashHandler />
             <BrowserRouter>
               <Routes>
                 {/* Public routes */}
