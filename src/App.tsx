@@ -28,6 +28,7 @@ import GestaoColaboradores from "./pages/GestaoColaboradores";
 import GestaoUsuarios from "./pages/GestaoUsuarios";
 import RelatoriosPonto from "./pages/RelatoriosPonto";
 import ClientInfo from "./pages/ClientInfo";
+import AuthHashHandler from "./components/AuthHashHandler";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,8 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          {/* Processa hash de autenticação do Supabase e limpa a URL */}
+          <AuthHashHandler />
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
