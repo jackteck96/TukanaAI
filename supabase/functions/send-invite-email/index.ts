@@ -49,8 +49,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending invite email to:", email);
 
-    const origin = req.headers.get("origin") || Deno.env.get("APP_BASE_URL") || "http://localhost:3000";
-    const inviteUrl = raw.inviteLink || `${origin}/cadastro-via-convite?token=${inviteToken}`;
+    // Usar domínio fixo para produção
+    const baseUrl = "https://fuzen.online";
+    const inviteUrl = raw.inviteLink || `${baseUrl}/cadastro-via-convite?token=${inviteToken}`;
 
     const fromPrimary = `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
     const htmlContent = `

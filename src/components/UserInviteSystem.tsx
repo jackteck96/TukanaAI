@@ -73,8 +73,9 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
   const sendInviteEmail = async (token: string) => {
     try {
-      // Todos os convites agora usam o mesmo fluxo de cadastro via convite
-      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+      // Usar domínio fixo para produção
+      const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
+      const inviteLink = `${baseUrl}/cadastro-via-convite?token=${token}`;
       
       if (inviteData.role === 'staff') {
         // Para colaboradores usamos o mailer nativo do Supabase
@@ -149,7 +150,8 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
   const copyInviteLink = async () => {
     try {
       const token = await generateInviteLink();
-      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+      const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
+      const inviteLink = `${baseUrl}/cadastro-via-convite?token=${token}`;
       
       await navigator.clipboard.writeText(inviteLink);
       toast.success('Link de convite copiado para a área de transferência!');

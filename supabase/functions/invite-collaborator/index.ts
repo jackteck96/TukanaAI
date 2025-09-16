@@ -41,9 +41,14 @@ serve(async (req: Request) => {
       );
     }
 
-    // Envia convite via mailer nativo do Supabase
+    // Envia convite via mailer nativo do Supabase com domínio correto
+    const baseUrl = "https://fuzen.online";
+    const redirectUrl = body.inviteLink.includes('localhost') ? 
+      body.inviteLink.replace(/http:\/\/localhost:\d+/, baseUrl) : 
+      body.inviteLink;
+    
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(body.email, {
-      redirectTo: body.inviteLink,
+      redirectTo: redirectUrl,
       data: {
         full_name: body.full_name,
         role: 'staff',
