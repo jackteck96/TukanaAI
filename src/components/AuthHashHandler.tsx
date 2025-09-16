@@ -47,16 +47,18 @@ export const AuthHashHandler = () => {
         });
       }
 
-      // Limpa o hash e redireciona
+      // Limpa o hash e registra o erro sem recarregar a página
       if (window.location.pathname.startsWith("/cadastro-via-convite")) {
         const url = new URL(window.location.href);
         url.hash = "";
         url.searchParams.set("invite_error", code);
         window.history.replaceState(null, "", url.pathname + url.search);
       } else {
-        const target = new URL(window.location.origin + "/auth");
-        target.searchParams.set("auth_error", code);
-        window.location.replace(target.toString());
+        try { sessionStorage.setItem("last_auth_error", code); } catch {}
+        const url = new URL(window.location.href);
+        url.hash = "";
+        url.searchParams.set("auth_error", code);
+        window.history.replaceState(null, "", url.pathname + url.search);
       }
       return;
     }
