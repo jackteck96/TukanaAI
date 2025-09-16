@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +30,9 @@ const Auth = () => {
 
   // Redirect if already authenticated
   if (user) {
-    return <Navigate to="/empresa" replace />;
+    const userRole = user.user_metadata?.role;
+    const redirectPath = userRole === 'client' ? '/cliente' : '/empresa';
+    return <Navigate to={redirectPath} replace />;
   }
 
   const [loginForm, setLoginForm] = useState({
@@ -72,7 +75,15 @@ const Auth = () => {
     const { error } = await signIn(loginForm.email, loginForm.password);
     
     if (!error) {
-      navigate('/empresa');
+      // Check user role to redirect appropriately
+      const { data: { user } } = await supabase.auth.getUser();
+      const userRole = user?.user_metadata?.role;
+      
+      if (userRole === 'client') {
+        navigate('/cliente');
+      } else {
+        navigate('/empresa');
+      }
     }
   };
 
