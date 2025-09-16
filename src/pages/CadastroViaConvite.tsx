@@ -37,6 +37,7 @@ export default function CadastroViaConvite() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const token = searchParams.get("token");
+  const [hashParams, setHashParams] = useState<Record<string, string> | null>(null);
 
 useEffect(() => {
   if (!token) {
@@ -46,6 +47,21 @@ useEffect(() => {
   setErrorMsg(null);
   checkInviteToken();
 }, [token]);
+
+useEffect(() => {
+  if (window.location.hash) {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    if (params.get('type') === 'invite') {
+      const entries: Record<string, string> = {};
+      params.forEach((v, k) => (entries[k] = v));
+      setHashParams(entries);
+    } else {
+      setHashParams(null);
+    }
+  } else {
+    setHashParams(null);
+  }
+}, []);
 
 
 const checkInviteToken = async () => {
@@ -94,12 +110,16 @@ const handleSignOut = async () => {
 
 useEffect(() => {
   if (!inviteData) return;
-  if (user) {
-    setSessionConflict(true);
+  if (hashParams?.type === 'invite') {
+    if (user && (user as any).email && (user as any).email !== inviteData.email) {
+      setSessionConflict(true);
+    } else {
+      setSessionConflict(false);
+    }
   } else {
-    setSessionConflict(false);
+    setSessionConflict(!!user);
   }
-}, [inviteData, user]);
+}, [inviteData, user, hashParams]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,6 +148,64 @@ useEffect(() => {
     setLoading(true);
 
     try {
+      if (hashParams?.type === 'invite') {
+        // Usuário chegou via link de convite do Supabase (#type=invite) e já está (ou ficará) logado
+        // Garantir que a sessão esteja carregada
+        await supabase.auth.getSession();
+
+        // Define a senha do usuário convidado e salva metadados
+        const { error: updateErr } = await supabase.auth.updateUser({
+          password: formData.password,
+          data: {
+            full_name: formData.fullName,
+            role: inviteData.source === 'user' ? 'staff' : 'client',
+          },
+        });
+        if (updateErr) throw updateErr;
+
+        // Atualiza o perfil
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData.user?.id;
+        if (userId) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              company_id: inviteData.company_id,
+              full_name: formData.fullName,
+              role: inviteData.source === 'user' ? 'staff' : 'client',
+            })
+            .eq('id', userId);
+          if (profileError) throw profileError;
+        }
+
+        // Marca o convite como utilizado
+        if (inviteData.source === 'user') {
+          await supabase
+            .from('user_invites')
+            .update({ status: 'used', used_at: new Date().toISOString() })
+            .eq('token', token);
+        } else {
+          await supabase
+            .from('client_invites')
+            .update({ status: 'used', used_at: new Date().toISOString() })
+            .eq('token', token);
+        }
+
+        toast({
+          title: 'Cadastro concluído!',
+          description: 'Senha definida com sucesso.',
+        });
+
+        // Remove o fragmento da URL para evitar confusão futura
+        if (window.location.hash) {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+
+        navigate(inviteData.source === 'user' ? '/empresa' : '/cliente');
+        return;
+      }
+
+      // Fluxo antigo (sem hash do Supabase): criar conta normalmente
       if (inviteData.source === 'user') {
         // Cadastro de colaborador
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -196,16 +274,13 @@ useEffect(() => {
           .eq('id', authData.user.id);
       }
 
-      const { error: updateError } = await supabase
+      await supabase
         .from('client_invites')
         .update({
           status: 'used',
           used_at: new Date().toISOString(),
         })
         .eq('token', token);
-      if (updateError) {
-        console.error('Erro ao atualizar convite:', updateError);
-      }
 
       toast({
         title: 'Conta criada com sucesso!',
