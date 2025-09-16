@@ -77,21 +77,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
       const inviteLink = `${baseUrl}/cadastro-via-convite?token=${token}`;
       
-      if (inviteData.role === 'staff') {
-        // Para colaboradores usamos o mailer nativo do Supabase
-        const { error } = await supabase.functions.invoke('invite-collaborator', {
-          body: {
-            email: inviteData.email,
-            full_name: inviteData.full_name,
-            inviteLink: inviteLink,
-            inviterName: user?.user_metadata?.full_name || user?.email
-          }
-        });
-        if (error) throw error;
-        return;
-      }
-
-      // Para clientes continuamos usando o email de convite customizado
+      // Enviar email de convite customizado para qualquer função (staff ou client)
       const { error } = await supabase.functions.invoke('send-invite-email', {
         body: {
           to: inviteData.email,
