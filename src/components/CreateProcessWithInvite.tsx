@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import { Mail, Plus } from "lucide-react";
+import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
 
 interface CreateProcessForm {
   projectName: string;
@@ -30,6 +30,9 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [requiredDocuments, setRequiredDocuments] = useState<string[]>([]);
+  const [showInviteLink, setShowInviteLink] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
+  const [clientName, setClientName] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -73,6 +76,26 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     });
     setRequiredDocuments([]);
     setSearchTerm("");
+    setShowInviteLink(false);
+    setInviteLink("");
+    setClientName("");
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Link copiado!",
+        description: "O link de convite foi copiado para a área de transferência.",
+      });
+    } catch (error) {
+      console.error("Erro ao copiar:", error);
+      toast({
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o link automaticamente. Copie manualmente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,36 +199,16 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       if (inviteEmailError || welcomeEmailError) {
         console.error("Erro ao enviar emails:", { inviteEmailError, welcomeEmailError });
         
-        let emailErrorMessage = "Processo criado com sucesso, mas houve problemas no envio de email";
-        if (inviteEmailError && welcomeEmailError) {
-          emailErrorMessage += " (convite e boas-vindas)";
-        } else if (inviteEmailError) {
-          emailErrorMessage += " (convite de cadastro)";
-        } else if (welcomeEmailError) {
-          emailErrorMessage += " (boas-vindas)";
-        }
+        // Mostrar modal com link de convite
+        const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+        setInviteLink(generatedInviteLink);
+        setClientName(formData.clientName);
+        setShowInviteLink(true);
 
-        // Adicionar link de convite como fallback
-        const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-        emailErrorMessage += `. Link de convite: ${inviteLink}`;
-
-        // Ajuda: Resend em modo de teste
-        const errStr = `${inviteEmailError || ''} ${welcomeEmailError || ''}`;
-        if (errStr.includes('You can only send testing emails') || errStr.includes('domain is not verified')) {
-          emailErrorMessage += " Dica: verifique seu domínio no Resend (resend.com/domains).";
-        }
-        
-        // Criar toast com botão de copiar link
         toast({
-          title: "Processo criado - Email com problema",
-          description: emailErrorMessage,
-          variant: "default",
+          title: "Processo criado com sucesso!",
+          description: "O email não pôde ser enviado, mas o link de convite está disponível para compartilhar.",
         });
-
-        // Copiar link automaticamente para facilitar
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(inviteLink).catch(console.error);
-        }
       } else {
         toast({
           title: "Processo criado com sucesso!",
@@ -233,13 +236,14 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="mb-6">
-          <Plus className="h-4 w-4 mr-2" />
-          Criar Novo Processo
-        </Button>
-      </DialogTrigger>
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button className="mb-6">
+            <Plus className="h-4 w-4 mr-2" />
+            Criar Novo Processo
+          </Button>
+        </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center">
@@ -419,6 +423,82 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Modal para mostrar link de convite */}
+    <Dialog open={showInviteLink} onOpenChange={setShowInviteLink}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center text-green-600">
+            <CheckCircle className="h-5 w-5 mr-2" />
+            Processo Criado com Sucesso!
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <div className="flex items-start space-x-2">
+              <Mail className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-300">
+                  Email não enviado
+                </h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                  Houve um problema com o envio automático do email. Use o link abaixo para convidar <strong>{clientName}</strong> manualmente.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="invite-link">Link de Convite para {clientName}</Label>
+            <div className="flex space-x-2">
+              <Input
+                id="invite-link"
+                value={inviteLink}
+                readOnly
+                className="flex-1 font-mono text-sm bg-muted"
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(inviteLink)}
+                className="px-3"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
+              Como usar este link:
+            </h4>
+            <ol className="text-sm text-blue-700 dark:text-blue-400 space-y-1 list-decimal list-inside">
+              <li>Copie o link acima (clique no botão de copiar)</li>
+              <li>Envie por WhatsApp, email ou outro meio para {clientName}</li>
+              <li>O cliente usará este link para criar sua conta e acessar o processo</li>
+            </ol>
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => copyToClipboard(inviteLink)}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar Link
+            </Button>
+            <Button onClick={() => setShowInviteLink(false)}>
+              Entendi
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
