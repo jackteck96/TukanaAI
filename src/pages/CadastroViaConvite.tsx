@@ -261,7 +261,7 @@ useEffect(() => {
           title: 'Conta de colaborador criada com sucesso!',
           description: 'Verifique seu e-mail e faça login para acessar a empresa.',
         });
-        navigate('/login');
+        navigate('/auth');
         return;
       }
 
@@ -303,7 +303,7 @@ useEffect(() => {
         title: 'Conta criada com sucesso!',
         description: 'Sua conta foi criada. Você pode fazer login agora.',
       });
-      navigate('/login');
+      navigate('/auth');
     } catch (error: any) {
       console.error('Erro ao criar conta:', error);
       toast({

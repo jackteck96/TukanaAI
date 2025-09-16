@@ -48,6 +48,7 @@ const Auth = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -70,20 +71,31 @@ const Auth = () => {
     }
 
     setErrors(newErrors);
+    setLoginError(null);
     if (Object.keys(newErrors).length > 0) return;
 
     const { error } = await signIn(loginForm.email, loginForm.password);
     
-    if (!error) {
-      // Check user role to redirect appropriately
-      const { data: { user } } = await supabase.auth.getUser();
-      const userRole = user?.user_metadata?.role;
-      
-      if (userRole === 'client') {
-        navigate('/cliente');
+    if (error) {
+      const message = error.message?.toLowerCase() || '';
+      if (message.includes('invalid login credentials')) {
+        setLoginError('Email ou senha incorretos. Caso tenha acabado de criar a conta, confirme seu e-mail pelo link enviado.');
+      } else if (message.includes('email not confirmed')) {
+        setLoginError('Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada e spam para confirmar.');
       } else {
-        navigate('/empresa');
+        setLoginError('Não foi possível entrar. Tente novamente.');
       }
+      return;
+    }
+
+    // Check user role to redirect appropriately
+    const { data: { user } } = await supabase.auth.getUser();
+    const userRole = user?.user_metadata?.role;
+    
+    if (userRole === 'client') {
+      navigate('/cliente');
+    } else {
+      navigate('/empresa');
     }
   };
 
@@ -150,6 +162,14 @@ const Auth = () => {
             <Alert variant="destructive">
               <AlertTitle>Não foi possível autenticar</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        {loginError && (
+          <div className="max-w-md mx-auto mb-4">
+            <Alert variant="destructive">
+              <AlertTitle>Erro no login</AlertTitle>
+              <AlertDescription>{loginError}</AlertDescription>
             </Alert>
           </div>
         )}
