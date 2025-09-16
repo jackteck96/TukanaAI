@@ -15,8 +15,23 @@ const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('login');
-
   const [searchParams] = useSearchParams();
+  
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: '',
+  });
+
+  const [signupForm, setSignupForm] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    fullName: '',
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loginError, setLoginError] = useState<string | null>(null);
+
   const authError = searchParams.get('auth_error') || sessionStorage.getItem('last_auth_error');
   const errorMessage = authError === 'otp_expired'
     ? 'O link de acesso expirou. Solicite um novo e-mail e tente novamente.'
@@ -34,21 +49,6 @@ const Auth = () => {
     const redirectPath = userRole === 'client' ? '/cliente' : '/empresa';
     return <Navigate to={redirectPath} replace />;
   }
-
-  const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: '',
-  });
-
-  const [signupForm, setSignupForm] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    fullName: '',
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loginError, setLoginError] = useState<string | null>(null);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
