@@ -41,6 +41,7 @@ export default function CadastroViaConvite() {
   const isInvitedSession = !!inviteData && ((hashParams?.type === 'invite') || (!!user && (user as any).email === inviteData.email));
 
 useEffect(() => {
+  console.info('[CadastroViaConvite] mount', { token, hash: window.location.hash.slice(0, 60) + '...' });
   if (!token) {
     setErrorMsg('Link de convite inválido ou sem token. Peça um novo convite.');
     return;
@@ -56,6 +57,7 @@ useEffect(() => {
       const entries: Record<string, string> = {};
       params.forEach((v, k) => (entries[k] = v));
       setHashParams(entries);
+      console.info('[CadastroViaConvite] hash params detected', entries);
     } else {
       setHashParams(null);
     }

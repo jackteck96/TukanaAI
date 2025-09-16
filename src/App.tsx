@@ -42,89 +42,91 @@ const App = () => (
           <Sonner />
           {/* Processa hash de autenticação do Supabase e limpa a URL */}
           <AuthHashHandler />
-          <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/cadastro-cliente" element={<CadastroCliente />} />
-            <Route path="/gestao-colaboradores" element={
-              <ProtectedRoute>
-                <GestaoColaboradores />
-              </ProtectedRoute>
-            } />
-            <Route path="/gestao-usuarios" element={<ProtectedRoute><GestaoUsuarios /></ProtectedRoute>} />
-            <Route path="/cadastro-via-convite" element={<ErrorBoundary><CadastroViaConvite /></ErrorBoundary>} />
-              
-              {/* Protected routes */}
-              <Route path="/onboarding" element={
+          <ErrorBoundary>
+            <BrowserRouter>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/cadastro-cliente" element={<CadastroCliente />} />
+              <Route path="/gestao-colaboradores" element={
                 <ProtectedRoute>
-                  <Onboarding />
+                  <GestaoColaboradores />
                 </ProtectedRoute>
               } />
-              <Route path="/empresa" element={
-                <ProtectedRoute>
-                  <EmpresaDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <CompanyDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/cliente" element={
-                <ProtectedRoute>
-                  <AreaCliente />
-                </ProtectedRoute>
-              } />
-              <Route path="/modelos-documentos" element={
-                <ProtectedRoute>
-                  <ModelosDocumentos />
-                </ProtectedRoute>
-              } />
-              <Route path="/gerenciar-processos" element={
-                <ProtectedRoute>
-                  <GerenciarProcessos />
-                </ProtectedRoute>
-               } />
-               <Route path="/assinatura-callback" element={<SignatureCallback />} />
-               <Route path="/treinar-ia" element={
-                 <ProtectedRoute>
-                   <TreinarIA />
-                 </ProtectedRoute>
-              } />
-              <Route path="/cadastro-tipos-documentos" element={
-                <ProtectedRoute>
-                  <CadastroTiposDocumentos />
-                </ProtectedRoute>
-              } />
-              <Route path="/documentos" element={
-                <ProtectedRoute>
-                  <DocumentManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/relatorios" element={
-                <ProtectedRoute>
-                  <Relatorios />
-                </ProtectedRoute>
-              } />
-              <Route path="/relatorios-ponto" element={
-                <ProtectedRoute>
-                  <RelatoriosPonto />
-                </ProtectedRoute>
-              } />
-              <Route path="/cliente/:email" element={
-                <ProtectedRoute>
-                  <ClientInfo />
-                </ProtectedRoute>
-              } />
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+              <Route path="/gestao-usuarios" element={<ProtectedRoute><GestaoUsuarios /></ProtectedRoute>} />
+              <Route path="/cadastro-via-convite" element={<ErrorBoundary><CadastroViaConvite /></ErrorBoundary>} />
+                
+                {/* Protected routes */}
+                <Route path="/onboarding" element={
+                  <ProtectedRoute>
+                    <Onboarding />
+                  </ProtectedRoute>
+                } />
+                <Route path="/empresa" element={
+                  <ProtectedRoute>
+                    <EmpresaDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <CompanyDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/cliente" element={
+                  <ProtectedRoute>
+                    <AreaCliente />
+                  </ProtectedRoute>
+                } />
+                <Route path="/modelos-documentos" element={
+                  <ProtectedRoute>
+                    <ModelosDocumentos />
+                  </ProtectedRoute>
+                } />
+                <Route path="/gerenciar-processos" element={
+                  <ProtectedRoute>
+                    <GerenciarProcessos />
+                  </ProtectedRoute>
+                 } />
+                 <Route path="/assinatura-callback" element={<SignatureCallback />} />
+                 <Route path="/treinar-ia" element={
+                   <ProtectedRoute>
+                     <TreinarIA />
+                   </ProtectedRoute>
+                } />
+                <Route path="/cadastro-tipos-documentos" element={
+                  <ProtectedRoute>
+                    <CadastroTiposDocumentos />
+                  </ProtectedRoute>
+                } />
+                <Route path="/documentos" element={
+                  <ProtectedRoute>
+                    <DocumentManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/relatorios" element={
+                  <ProtectedRoute>
+                    <Relatorios />
+                  </ProtectedRoute>
+                } />
+                <Route path="/relatorios-ponto" element={
+                  <ProtectedRoute>
+                    <RelatoriosPonto />
+                  </ProtectedRoute>
+                } />
+                <Route path="/cliente/:email" element={
+                  <ProtectedRoute>
+                    <ClientInfo />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </ErrorBoundary>
         </TooltipProvider>
       </CompanyProvider>
     </AuthProvider>
