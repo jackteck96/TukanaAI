@@ -1,5 +1,8 @@
 project_id = "devnkdyfzlgspdlfuyam"
 
+[functions.invite-collaborator]
+verify_jwt = false
+
 [functions.send-invite-email]
 verify_jwt = false
 

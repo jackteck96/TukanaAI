@@ -20,11 +20,14 @@ serve(async (req: Request) => {
   }
 
   try {
+    const body: InviteCollaboratorRequest = await req.json();
+    console.log("[invite-collaborator] Starting function with body:", body);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !serviceRoleKey) {
-      console.error("Missing Supabase env vars");
+      console.error("[invite-collaborator] Missing Supabase env vars");
       return new Response(
         JSON.stringify({ error: "Configuração do servidor ausente" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -32,14 +35,16 @@ serve(async (req: Request) => {
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const body: InviteCollaboratorRequest = await req.json();
 
     if (!body?.email) {
+      console.error("[invite-collaborator] Missing email in request");
       return new Response(
         JSON.stringify({ error: "Email é obrigatório" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
+    console.log("[invite-collaborator] Processing invite for:", body.email);
 
     // Envia convite via mailer nativo do Supabase normalizando o domínio do redirect
     const baseUrl = "https://fuzen.online";
@@ -80,14 +85,17 @@ serve(async (req: Request) => {
       }
     });
 
+    console.log("[invite-collaborator] Supabase invite result:", { data: data?.user?.id, error });
+
     if (error) {
-      console.error("invite-collaborator error:", error);
+      console.error("[invite-collaborator] invite error:", error);
       return new Response(
         JSON.stringify({ success: false, error: error.message }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
+    console.log("[invite-collaborator] Invite sent successfully to:", body.email);
     return new Response(
       JSON.stringify({ success: true, user: data?.user ?? null }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

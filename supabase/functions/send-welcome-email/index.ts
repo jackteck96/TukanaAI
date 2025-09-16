@@ -34,7 +34,13 @@ const handler = async (req: Request): Promise<Response> => {
     requestData = await req.json();
     const { processId, clientName, clientEmail, processName, companyId } = requestData;
 
-    console.log("Sending welcome email to:", clientEmail, "for process:", processId);
+    console.log("[send-welcome-email] Starting function with data:", {
+      processId,
+      clientName,
+      clientEmail,
+      processName,
+      companyId
+    });
 
     // Gerar link de acesso direto ao processo
     const processAccessLink = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com') || 'https://app.exemplo.com'}/processo/${processId}`;
@@ -127,26 +133,38 @@ const handler = async (req: Request): Promise<Response> => {
       html: htmlContent,
     });
 
+    console.log("[send-welcome-email] First email attempt result:", {
+      success: !!emailResponse.data?.id,
+      error: emailResponse.error
+    });
+
     if (emailResponse.error || !emailResponse.data?.id) {
       const errMsg = emailResponse.error?.error || '';
       const statusCode = (emailResponse as any).error?.statusCode;
       const domainIssue = errMsg.includes('domain is not verified') || statusCode === 403;
       if (domainIssue && !fromPrimary.includes('onboarding@resend.dev')) {
-        console.warn("Resend domain not verified, retrying with onboarding@resend.dev");
+        console.warn("[send-welcome-email] Resend domain not verified, retrying with onboarding@resend.dev");
         emailResponse = await resend.emails.send({
           from: `${companyName} <onboarding@resend.dev>`,
           to: [clientEmail],
           subject: `Bem-vindo(a) ao seu processo de documentação - ${processName || 'Novo Processo'}`,
           html: htmlContent,
         });
+        console.log("[send-welcome-email] Retry attempt result:", {
+          success: !!emailResponse.data?.id,
+          error: emailResponse.error
+        });
       }
     }
 
     if (emailResponse.error || !emailResponse.data?.id) {
-      console.error("Resend send-welcome-email error:", emailResponse.error);
+      console.error("[send-welcome-email] Final error after retry:", emailResponse.error);
       throw new Error(emailResponse.error?.error || "Falha ao enviar o email de boas-vindas");
     }
-    console.log("Welcome email sent successfully:", emailResponse);
+    console.log("[send-welcome-email] Email sent successfully:", {
+      messageId: emailResponse.data?.id,
+      recipient: clientEmail
+    });
 
     // Log do envio bem-sucedido
     await supabase

@@ -144,7 +144,9 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
       // 4. Enviar email de convite (cadastro na plataforma)
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-      const { error: inviteEmailError } = await supabase.functions.invoke("invite-collaborator", {
+      console.log('Sending invite email to:', formData.clientEmail, 'with link:', inviteLink);
+      
+      const { data: inviteResponse, error: inviteEmailError } = await supabase.functions.invoke("invite-collaborator", {
         body: {
           email: formData.clientEmail,
           full_name: formData.clientName,
@@ -153,8 +155,12 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         },
       });
 
-      // 5. Enviar email de boas-vindas (acesso ao processo)
-      const { error: welcomeEmailError } = await supabase.functions.invoke("send-welcome-email", {
+      console.log('Invite email response:', inviteResponse, 'error:', inviteEmailError);
+
+      // 5. Enviar email de boas-vindas (acesso ao processo) 
+      console.log('Sending welcome email to:', formData.clientEmail, 'for process:', processData.id);
+      
+      const { data: welcomeResponse, error: welcomeEmailError } = await supabase.functions.invoke("send-welcome-email", {
         body: {
           processId: processData.id,
           clientName: formData.clientName,
@@ -163,6 +169,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           companyId: company.id,
         },
       });
+
+      console.log('Welcome email response:', welcomeResponse, 'error:', welcomeEmailError);
 
       // Tratar erros de email
       if (inviteEmailError || welcomeEmailError) {
