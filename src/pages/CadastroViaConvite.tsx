@@ -34,22 +34,19 @@ export default function CadastroViaConvite() {
     confirmPassword: "",
   });
   const [sessionConflict, setSessionConflict] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const token = searchParams.get("token");
 
 useEffect(() => {
   if (!token) {
-    toast({
-      title: "Token inválido",
-      description: "Link de convite inválido ou expirado.",
-      variant: "destructive",
-    });
-    navigate("/");
+    setErrorMsg('Link de convite inválido ou sem token. Peça um novo convite.');
     return;
   }
-
+  setErrorMsg(null);
   checkInviteToken();
 }, [token]);
+
 
 const checkInviteToken = async () => {
   try {
@@ -82,12 +79,7 @@ const checkInviteToken = async () => {
     }
   } catch (error) {
     console.error('Erro ao verificar convite:', error);
-    toast({
-      title: 'Convite inválido',
-      description: 'Este convite não existe, já foi usado ou expirou.',
-      variant: 'destructive',
-    });
-    navigate('/');
+    setErrorMsg('Convite inválido, já usado ou expirado.');
   }
 };
 // Conflito de sessão: usuário logado com e-mail diferente do convite
@@ -231,6 +223,22 @@ useEffect(() => {
       setLoading(false);
     }
   };
+
+  if (errorMsg) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-gray-900">Convite inválido</CardTitle>
+            <CardDescription>{errorMsg}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={() => navigate('/')}>Voltar para o início</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!inviteData) {
     return (
