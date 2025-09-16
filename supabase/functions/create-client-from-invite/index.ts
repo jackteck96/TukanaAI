@@ -83,21 +83,34 @@ serve(async (req: Request) => {
       const code = (createError as any).code || (createError as any).status || '';
       if (code === 'email_exists' || (createError as any).status === 422) {
         console.warn('[create-client-from-invite] User already exists, upgrading existing account');
-        const { data: existingUser, error: existingLookupError } = await (supabase as any)
-          .from('auth.users')
-          .select('id, email, email_confirmed_at')
+        // Encontrar ID do usuário existente via tabela de perfis
+        const { data: profileRow, error: profileLookupError } = await supabase
+          .from('profiles')
+          .select('id')
           .eq('email', invite.email)
           .maybeSingle();
 
-        if (existingLookupError || !existingUser) {
-          console.error('[create-client-from-invite] Could not find existing user by email', existingLookupError);
+        let existingUserId: string | null = profileRow?.id || null;
+
+        if (!existingUserId) {
+          // Fallback: varrer usuários via Admin API (último recurso)
+          const { data: usersPage, error: listErr } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+          if (listErr) {
+            console.error('[create-client-from-invite] listUsers error:', listErr);
+          }
+          const match = (usersPage as any)?.users?.find((u: any) => (u.email || '').toLowerCase() === invite.email.toLowerCase());
+          existingUserId = match?.id || null;
+        }
+
+        if (!existingUserId) {
+          console.error('[create-client-from-invite] Could not resolve existing user id by email');
           return new Response(
             JSON.stringify({ error: 'Usuário já existe mas não foi possível localizá-lo.' }),
             { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
           );
         }
 
-        const { data: updatedUser, error: updateErr } = await supabase.auth.admin.updateUserById(existingUser.id, {
+        const { data: updatedUser, error: updateErr } = await supabase.auth.admin.updateUserById(existingUserId, {
           password,
           email_confirm: true,
           user_metadata: {
