@@ -52,49 +52,41 @@ useEffect(() => {
 
 const checkInviteToken = async () => {
   try {
-    // 1) Tenta convite de cliente
-    const { data: clientInvite } = await supabase
-      .from("client_invites")
-      .select("*")
-      .eq("token", token)
-      .eq("status", "pending")
-      .gt("expires_at", new Date().toISOString())
-      .maybeSingle();
-
-    if (clientInvite) {
-      setInviteData({ ...clientInvite, source: "client" });
-      return;
-    }
-
-    // 2) Tenta convite de colaborador (requer usuário autenticado para passar no RLS)
-    const { data: userInvite } = await supabase
-      .from("user_invites")
-      .select("*")
-      .eq("token", token)
-      .eq("status", "pending")
-      .gt("expires_at", new Date().toISOString())
-      .maybeSingle();
-
-    if (userInvite) {
-      setInviteData({ ...userInvite, source: "user" });
-      return;
-    }
-
-    // Nenhum convite encontrado
-    toast({
-      title: "Convite inválido",
-      description: "Este convite não existe, já foi usado ou expirou.",
-      variant: "destructive",
+    const { data, error } = await supabase.functions.invoke('verify-invite', {
+      body: { token }
     });
-    navigate("/");
+
+    if (error) throw error;
+    if (!data) throw new Error('Sem dados de convite');
+
+    if (data.type === 'client') {
+      setInviteData({
+        email: data.email,
+        company_id: data.company_id,
+        process_id: data.process_id,
+        status: 'pending',
+        expires_at: data.expires_at,
+        source: 'client'
+      });
+    } else {
+      setInviteData({
+        email: data.email,
+        company_id: data.company_id,
+        full_name: data.full_name,
+        role: data.role,
+        status: 'pending',
+        expires_at: data.expires_at,
+        source: 'user'
+      });
+    }
   } catch (error) {
-    console.error("Erro ao verificar convite:", error);
+    console.error('Erro ao verificar convite:', error);
     toast({
-      title: "Erro",
-      description: "Erro ao verificar convite.",
-      variant: "destructive",
+      title: 'Convite inválido',
+      description: 'Este convite não existe, já foi usado ou expirou.',
+      variant: 'destructive',
     });
-    navigate("/");
+    navigate('/');
   }
 };
 // Finaliza o vínculo do colaborador à empresa usando o token
