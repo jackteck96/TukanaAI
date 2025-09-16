@@ -41,6 +41,8 @@ serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const { token }: VerifyInviteRequest = await req.json();
 
+    console.log('[verify-invite] Checking token:', token);
+
     if (!token) {
       return new Response(
         JSON.stringify({ error: "Token é obrigatório" }),
@@ -55,8 +57,17 @@ serve(async (req: Request) => {
       .eq('token', token)
       .maybeSingle();
 
+    console.log('[verify-invite] User invite result:', { userInvite, userErr });
+
     if (userErr) {
       console.error('verify-invite user_invites error:', userErr);
+    }
+
+    if (userInvite) {
+      console.log('[verify-invite] Found user invite, status:', userInvite.status, 'expires_at:', userInvite.expires_at);
+      const now = new Date();
+      const expiresAt = new Date(userInvite.expires_at);
+      console.log('[verify-invite] Current time:', now.toISOString(), 'Expires at:', expiresAt.toISOString(), 'Is expired:', expiresAt <= now);
     }
 
     if (userInvite && userInvite.status === 'pending' && new Date(userInvite.expires_at) > new Date()) {
@@ -81,8 +92,17 @@ serve(async (req: Request) => {
       .eq('token', token)
       .maybeSingle();
 
+    console.log('[verify-invite] Client invite result:', { clientInvite, clientErr });
+
     if (clientErr) {
       console.error('verify-invite client_invites error:', clientErr);
+    }
+
+    if (clientInvite) {
+      console.log('[verify-invite] Found client invite, status:', clientInvite.status, 'expires_at:', clientInvite.expires_at);
+      const now = new Date();
+      const expiresAt = new Date(clientInvite.expires_at);
+      console.log('[verify-invite] Current time:', now.toISOString(), 'Expires at:', expiresAt.toISOString(), 'Is expired:', expiresAt <= now);
     }
 
     if (clientInvite && clientInvite.status === 'pending' && new Date(clientInvite.expires_at) > new Date()) {
@@ -99,6 +119,7 @@ serve(async (req: Request) => {
       });
     }
 
+    console.log('[verify-invite] No valid invite found for token:', token);
     return new Response(JSON.stringify({ error: 'Convite inválido ou expirado' }), {
       status: 404,
       headers: { "Content-Type": "application/json", ...corsHeaders },

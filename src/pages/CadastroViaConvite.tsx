@@ -86,13 +86,24 @@ useEffect(() => {
 
 
 const checkInviteToken = async () => {
+  console.log('[CadastroViaConvite] Checking token:', token);
   try {
     const { data, error } = await supabase.functions.invoke('verify-invite', {
       body: { token }
     });
 
-    if (error) throw error;
-    if (!data) throw new Error('Sem dados de convite');
+    console.log('[CadastroViaConvite] verify-invite response:', { data, error });
+
+    if (error) {
+      console.error('[CadastroViaConvite] Error from verify-invite:', error);
+      throw error;
+    }
+    if (!data) {
+      console.error('[CadastroViaConvite] No data returned from verify-invite');
+      throw new Error('Sem dados de convite');
+    }
+
+    console.log('[CadastroViaConvite] Invite data received:', data);
 
     if (data.type === 'client') {
       setInviteData({
@@ -115,8 +126,10 @@ const checkInviteToken = async () => {
       });
     }
   } catch (error) {
-    console.error('Erro ao verificar convite:', error);
+    console.error('[CadastroViaConvite] checkInviteToken error:', error);
     setErrorMsg('Convite inválido, já usado ou expirado.');
+  } finally {
+    setLoading(false);
   }
 };
 // Conflito de sessão: usuário logado com e-mail diferente do convite
