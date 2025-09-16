@@ -21,9 +21,14 @@ export const AuthHashHandler = () => {
 
     console.log("[AuthHashHandler] Hash de auth detectado, inicializando sessão...");
 
-    // Força o Supabase a consolidar a sessão do hash
+    // Em /cadastro-via-convite, deixamos a página tratar o hash (não removemos aqui)
+    if (window.location.pathname.startsWith('/cadastro-via-convite')) {
+      supabase.auth.getSession();
+      return;
+    }
+
+    // Força o Supabase a consolidar a sessão do hash e limpa a URL nas demais rotas
     supabase.auth.getSession().finally(() => {
-      // Remove o hash mantendo path e query
       const url = window.location.pathname + window.location.search;
       window.history.replaceState(null, "", url);
       console.log("[AuthHashHandler] Hash limpo da URL.");

@@ -58,6 +58,15 @@ useEffect(() => {
       params.forEach((v, k) => (entries[k] = v));
       setHashParams(entries);
       console.info('[CadastroViaConvite] hash params detected', entries);
+
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token && refresh_token) {
+        // Garante sessão mesmo se o handler global não processou ainda
+        supabase.auth.setSession({ access_token, refresh_token })
+          .then(() => console.info('[CadastroViaConvite] setSession ok'))
+          .catch((e) => console.error('[CadastroViaConvite] setSession error', e));
+      }
     } else {
       setHashParams(null);
     }
