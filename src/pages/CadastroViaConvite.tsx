@@ -42,6 +42,15 @@ export default function CadastroViaConvite() {
 
 useEffect(() => {
   console.info('[CadastroViaConvite] mount', { token, hash: window.location.hash.slice(0, 60) + '...' });
+
+  const inviteError = searchParams.get('invite_error');
+  if (inviteError) {
+    setErrorMsg(inviteError === 'otp_expired'
+      ? 'O link de convite expirou. Peça um novo convite.'
+      : 'Não foi possível validar seu convite. Peça um novo link.');
+    return;
+  }
+
   if (!token) {
     setErrorMsg('Link de convite inválido ou sem token. Peça um novo convite.');
     return;

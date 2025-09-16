@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate, useNavigate, Link } from 'react-router-dom';
+import { Navigate, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,11 +8,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Mail, Lock, User, Building2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('login');
+
+  const [searchParams] = useSearchParams();
+  const authError = searchParams.get('auth_error') || sessionStorage.getItem('last_auth_error');
+  const errorMessage = authError === 'otp_expired'
+    ? 'O link de acesso expirou. Solicite um novo e-mail e tente novamente.'
+    : authError
+    ? 'Não foi possível concluir o login. Tente novamente.'
+    : null;
 
   // Redirect if already authenticated
   if (user) {
@@ -120,6 +129,15 @@ const Auth = () => {
           </div>
         </div>
 
+        {/* Mensagens de erro de autenticação */}
+        {errorMessage && (
+          <div className="max-w-md mx-auto mb-4">
+            <Alert variant="destructive">
+              <AlertTitle>Não foi possível autenticar</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         {/* Auth Card */}
         <div className="max-w-md mx-auto">
           <Card className="shadow-xl border-border/50">
