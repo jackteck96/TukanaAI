@@ -43,6 +43,14 @@ const Auth = () => {
     try { sessionStorage.removeItem('last_auth_error'); } catch {}
   }, []);
 
+  // Prefill email from invite
+  useEffect(() => {
+    const prefill = searchParams.get('prefill');
+    if (prefill) {
+      setLoginForm((prev) => ({ ...prev, email: prefill }));
+    }
+  }, [searchParams]);
+
   // Redirect if already authenticated
   if (user) {
     const userRole = user.user_metadata?.role;
