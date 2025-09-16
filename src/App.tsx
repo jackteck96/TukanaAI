@@ -29,6 +29,7 @@ import GestaoUsuarios from "./pages/GestaoUsuarios";
 import RelatoriosPonto from "./pages/RelatoriosPonto";
 import ClientInfo from "./pages/ClientInfo";
 import AuthHashHandler from "./components/AuthHashHandler";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -55,7 +56,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/gestao-usuarios" element={<ProtectedRoute><GestaoUsuarios /></ProtectedRoute>} />
-            <Route path="/cadastro-via-convite" element={<CadastroViaConvite />} />
+            <Route path="/cadastro-via-convite" element={<ErrorBoundary><CadastroViaConvite /></ErrorBoundary>} />
               
               {/* Protected routes */}
               <Route path="/onboarding" element={
