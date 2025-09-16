@@ -25,7 +25,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import UserInviteSystem from "@/components/UserInviteSystem";
@@ -36,6 +36,9 @@ const EmpresaDashboard = () => {
   const { user, signOut } = useAuth();
   const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
   
+  useEffect(() => {
+    console.log('[EmpresaDashboard] mounted', { user: user?.email });
+  }, [user]);
   const stats = [
     {
       title: "Total de Clientes",

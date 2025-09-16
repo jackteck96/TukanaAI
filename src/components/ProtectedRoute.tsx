@@ -11,6 +11,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // Show loading spinner while checking auth status
   if (loading) {
+    console.log('[ProtectedRoute] loading auth...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/5">
         <div className="flex flex-col items-center gap-4">
@@ -23,9 +24,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // Redirect to auth page if not authenticated
   if (!user) {
+    console.log('[ProtectedRoute] not authenticated, redirecting to /auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  console.log('[ProtectedRoute] authenticated, rendering child route');
   return <>{children}</>;
 };
 
