@@ -121,19 +121,14 @@ export default function GestaoUsuarios() {
         .single();
       if (companyError) throw companyError;
  
-      const { data: mailData, error: mailError } = await supabase.functions.invoke('send-invite-email', {
+      const { error: mailError } = await supabase.functions.invoke('invite-collaborator', {
         body: {
           email: inviteData.email,
-          clientName: inviteData.full_name,
-          companyName: company?.name || 'Nossa Empresa',
-          inviteToken: tokenData,
+          full_name: inviteData.full_name,
+          inviterName: user?.user_metadata?.full_name || user?.email,
           inviteLink,
         }
       });
-      if (!mailError && (mailData as any)?.emailed === false && (mailData as any)?.inviteUrl) {
-        await navigator.clipboard.writeText((mailData as any).inviteUrl);
-        toast.success('Não foi possível enviar email. Link de convite copiado!');
-      }
       if (mailError) throw mailError;
 
       toast.success('Convite enviado com sucesso!');
