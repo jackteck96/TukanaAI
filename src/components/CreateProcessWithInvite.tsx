@@ -76,9 +76,6 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     });
     setRequiredDocuments([]);
     setSearchTerm("");
-    setShowInviteLink(false);
-    setInviteLink("");
-    setClientName("");
   };
 
   const copyToClipboard = async (text: string) => {
