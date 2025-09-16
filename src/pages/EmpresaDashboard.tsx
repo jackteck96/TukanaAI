@@ -30,6 +30,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import UserInviteSystem from "@/components/UserInviteSystem";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
+import { supabase } from "@/integrations/supabase/client";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -39,6 +40,23 @@ const EmpresaDashboard = () => {
   useEffect(() => {
     console.log('[EmpresaDashboard] mounted', { user: user?.email });
   }, [user]);
+
+  // Redirect clients to their area if they land here accidentally
+  useEffect(() => {
+    const checkRoleAndRedirect = async () => {
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile?.role === 'client') {
+        navigate('/cliente', { replace: true });
+      }
+    };
+    checkRoleAndRedirect();
+  }, [user, navigate]);
   const stats = [
     {
       title: "Total de Clientes",
