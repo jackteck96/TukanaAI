@@ -38,6 +38,7 @@ export default function CadastroViaConvite() {
 
   const token = searchParams.get("token");
   const [hashParams, setHashParams] = useState<Record<string, string> | null>(null);
+  const isInvitedSession = !!inviteData && ((hashParams?.type === 'invite') || (!!user && (user as any).email === inviteData.email));
 
 useEffect(() => {
   if (!token) {
@@ -110,16 +111,12 @@ const handleSignOut = async () => {
 
 useEffect(() => {
   if (!inviteData) return;
-  if (hashParams?.type === 'invite') {
-    if (user && (user as any).email && (user as any).email !== inviteData.email) {
-      setSessionConflict(true);
-    } else {
-      setSessionConflict(false);
-    }
+  if (user && (user as any).email && (user as any).email !== inviteData.email) {
+    setSessionConflict(true);
   } else {
-    setSessionConflict(!!user);
+    setSessionConflict(false);
   }
-}, [inviteData, user, hashParams]);
+}, [inviteData, user]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,7 +145,7 @@ useEffect(() => {
     setLoading(true);
 
     try {
-      if (hashParams?.type === 'invite') {
+      if (isInvitedSession) {
         // Usuário chegou via link de convite do Supabase (#type=invite) e já está (ou ficará) logado
         // Garantir que a sessão esteja carregada
         await supabase.auth.getSession();
