@@ -49,7 +49,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending invite email to:", email);
 
-    const inviteUrl = raw.inviteLink || `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovableproject.com') || 'https://app.exemplo.com'}/cadastro-via-convite?token=${inviteToken}`;
+    const origin = req.headers.get("origin") || Deno.env.get("APP_BASE_URL") || "http://localhost:3000";
+    const inviteUrl = raw.inviteLink || `${origin}/cadastro-via-convite?token=${inviteToken}`;
 
     const fromPrimary = `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
     const htmlContent = `

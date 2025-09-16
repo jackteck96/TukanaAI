@@ -84,6 +84,7 @@ const EmailResendButton: React.FC<EmailResendButtonProps> = ({
           clientName,
           companyName: company.name,
           inviteToken: inviteData.token,
+          inviteLink: `${window.location.origin}/cadastro-via-convite?token=${inviteData.token}`,
         },
       });
 

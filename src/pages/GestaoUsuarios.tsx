@@ -85,7 +85,34 @@ export default function GestaoUsuarios() {
         return;
       }
 
-      // Criar convite no sistema de autenticação do Supabase
+      // Gerar token de convite e registrar na tabela user_invites
+      const { data: tokenData, error: tokenError } = await supabase.rpc('generate_invite_token');
+      if (tokenError) throw tokenError;
+
+      const { data: userProfile, error: profileFetchError } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('id', user?.id)
+        .single();
+      if (profileFetchError) throw profileFetchError;
+
+      const { error: inviteError } = await supabase
+        .from('user_invites')
+        .insert({
+          token: tokenData,
+          email: inviteData.email,
+          full_name: inviteData.full_name,
+          role: inviteData.role,
+          company_id: userProfile.company_id,
+          invited_by: user?.id,
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'pending'
+        });
+      if (inviteError) throw inviteError;
+
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+
+      // Enviar convite usando o mailer do Supabase com redirect para nossa página contendo o token
       const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(
         inviteData.email,
         {
@@ -93,24 +120,22 @@ export default function GestaoUsuarios() {
             full_name: inviteData.full_name,
             role: inviteData.role
           },
-          redirectTo: `${window.location.origin}/cadastro-via-convite`
+          redirectTo: inviteLink
         }
       );
-
       if (authError) throw authError;
 
       // Criar perfil inicial (será atualizado quando o usuário aceitar o convite)
-      const { error: profileError } = await supabase
+      const { error: profileInsertError } = await supabase
         .from('profiles')
         .insert({
           id: authData.user.id,
           email: inviteData.email,
           full_name: inviteData.full_name,
           role: inviteData.role,
-          company_id: user?.user_metadata?.company_id
+          company_id: userProfile.company_id
         });
-
-      if (profileError) throw profileError;
+      if (profileInsertError) throw profileInsertError;
 
       toast.success('Convite enviado com sucesso!');
       setIsInviteDialogOpen(false);
