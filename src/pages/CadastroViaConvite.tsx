@@ -166,48 +166,96 @@ useEffect(() => {
     setLoading(true);
 
     try {
-      // Criar conta do usuário
-      const { error: signUpError } = await supabase.auth.signUp({
+      if (inviteData.source === 'user') {
+        // Cadastro de colaborador
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email: inviteData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/empresa`,
+            data: {
+              full_name: formData.fullName,
+              role: 'staff',
+            },
+          },
+        });
+
+        if (signUpError) throw signUpError;
+
+        if (authData?.user?.id) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              company_id: inviteData.company_id,
+              full_name: formData.fullName,
+              role: 'staff',
+            })
+            .eq('id', authData.user.id);
+          if (profileError) throw profileError;
+        }
+
+        const { error: inviteUpdateErr } = await supabase
+          .from('user_invites')
+          .update({ status: 'used', used_at: new Date().toISOString() })
+          .eq('token', token);
+        if (inviteUpdateErr) throw inviteUpdateErr;
+
+        toast({
+          title: 'Conta de colaborador criada com sucesso!',
+          description: 'Verifique seu e-mail e faça login para acessar a empresa.',
+        });
+        navigate('/login');
+        return;
+      }
+
+      // Cadastro de cliente
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: inviteData.email,
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/cliente`,
           data: {
             full_name: formData.fullName,
-            role: "client",
+            role: 'client',
           },
         },
       });
 
-      if (signUpError) {
-        throw signUpError;
+      if (signUpError) throw signUpError;
+
+      if (authData?.user?.id) {
+        await supabase
+          .from('profiles')
+          .update({
+            full_name: formData.fullName,
+            role: 'client',
+            company_id: inviteData.company_id,
+          })
+          .eq('id', authData.user.id);
       }
 
-      // Marcar convite como usado
       const { error: updateError } = await supabase
-        .from("client_invites")
+        .from('client_invites')
         .update({
-          status: "used",
+          status: 'used',
           used_at: new Date().toISOString(),
         })
-        .eq("token", token);
-
+        .eq('token', token);
       if (updateError) {
-        console.error("Erro ao atualizar convite:", updateError);
+        console.error('Erro ao atualizar convite:', updateError);
       }
 
       toast({
-        title: "Conta criada com sucesso!",
-        description: "Sua conta foi criada. Você pode fazer login agora.",
+        title: 'Conta criada com sucesso!',
+        description: 'Sua conta foi criada. Você pode fazer login agora.',
       });
-
-      navigate("/login");
+      navigate('/login');
     } catch (error: any) {
-      console.error("Erro ao criar conta:", error);
+      console.error('Erro ao criar conta:', error);
       toast({
-        title: "Erro ao criar conta",
-        description: error.message || "Erro interno do servidor.",
-        variant: "destructive",
+        title: 'Erro ao criar conta',
+        description: error.message || 'Erro interno do servidor.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -230,10 +278,12 @@ useEffect(() => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Criar Conta
+            {inviteData.source === 'user' ? 'Cadastro de Colaborador' : 'Criar Conta'}
           </CardTitle>
           <CardDescription>
-            Complete seu cadastro para acessar seu processo
+            {inviteData.source === 'user'
+              ? 'Crie sua conta de colaborador para acessar a empresa'
+              : 'Complete seu cadastro para acessar seu processo'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -271,7 +321,7 @@ useEffect(() => {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                required
+                required={inviteData.source === 'client'}
               />
             </div>
 
