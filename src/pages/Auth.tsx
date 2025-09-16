@@ -107,6 +107,22 @@ const Auth = () => {
     }
   };
 
+  const handleResendConfirmation = async () => {
+    const email = loginForm.email.trim();
+    if (!validateEmail(email)) {
+      setLoginError('Informe um e-mail válido para reenviar a confirmação.');
+      return;
+    }
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
+    if (error) {
+      setLoginError('Não foi possível reenviar o e-mail de confirmação. Tente novamente.');
+    } else {
+      setLoginError('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
+    }
+  };
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
@@ -179,6 +195,13 @@ const Auth = () => {
               <AlertTitle>Erro no login</AlertTitle>
               <AlertDescription>{loginError}</AlertDescription>
             </Alert>
+          </div>
+        )}
+        {loginError && /confirm/i.test(loginError) && (
+          <div className="max-w-md mx-auto -mt-2 mb-4 flex justify-end">
+            <Button variant="outline" size="sm" onClick={handleResendConfirmation}>
+              Reenviar e-mail de confirmação
+            </Button>
           </div>
         )}
         {/* Auth Card */}
