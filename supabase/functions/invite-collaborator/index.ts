@@ -9,9 +9,9 @@ const corsHeaders = {
 
 interface InviteCollaboratorRequest {
   email: string;
-  full_name?: string;
-  role?: string;
-  redirectTo?: string;
+  full_name: string;
+  inviteLink: string;
+  inviterName: string;
 }
 
 serve(async (req: Request) => {
@@ -43,7 +43,12 @@ serve(async (req: Request) => {
 
     // Envia convite via mailer nativo do Supabase
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(body.email, {
-      redirectTo: body.redirectTo,
+      redirectTo: body.inviteLink,
+      data: {
+        full_name: body.full_name,
+        role: 'staff',
+        inviter_name: body.inviterName
+      }
     });
 
     if (error) {

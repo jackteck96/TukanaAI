@@ -73,13 +73,17 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
   const sendInviteEmail = async (token: string) => {
     try {
-      // Para colaboradores usamos o mailer nativo do Supabase (sem Resend)
+      // Todos os convites agora usam o mesmo fluxo de cadastro via convite
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+      
       if (inviteData.role === 'staff') {
+        // Para colaboradores usamos o mailer nativo do Supabase
         const { error } = await supabase.functions.invoke('invite-collaborator', {
           body: {
             email: inviteData.email,
             full_name: inviteData.full_name,
-            redirectTo: `${window.location.origin}/`,
+            inviteLink: inviteLink,
+            inviterName: user?.user_metadata?.full_name || user?.email
           }
         });
         if (error) throw error;
@@ -87,7 +91,6 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       }
 
       // Para clientes continuamos usando o email de convite customizado
-      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       const { error } = await supabase.functions.invoke('send-invite-email', {
         body: {
           to: inviteData.email,
