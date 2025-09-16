@@ -75,12 +75,19 @@ export const AuthHashHandler = () => {
       return;
     }
 
-    // Força o Supabase a consolidar a sessão do hash e limpa a URL nas demais rotas
-    supabase.auth.getSession().finally(() => {
-      const url = window.location.pathname + window.location.search;
-      window.history.replaceState(null, "", url);
-      console.log("[AuthHashHandler] Hash limpo da URL.");
+    // Força o Supabase a consolidar a sessão do hash e limpa a URL imediatamente
+    console.log("[AuthHashHandler] Processando hash de auth válido, limpando URL...");
+    
+    // Limpa o hash imediatamente para evitar problemas de navegação
+    const cleanUrl = window.location.pathname + window.location.search;
+    window.history.replaceState(null, "", cleanUrl);
+    
+    // Depois processa a sessão
+    supabase.auth.getSession().catch(err => {
+      console.warn("[AuthHashHandler] Erro ao processar sessão:", err);
     });
+    
+    console.log("[AuthHashHandler] Hash limpo da URL.");
   }, []);
 
   return null;
