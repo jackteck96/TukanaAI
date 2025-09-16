@@ -19,11 +19,14 @@ export const AuthHashHandler = () => {
 
     if (!hasSupabaseAuthHash) return;
 
+    console.log("[AuthHashHandler] Hash de auth detectado, inicializando sessão...");
+
     // Força o Supabase a consolidar a sessão do hash
     supabase.auth.getSession().finally(() => {
       // Remove o hash mantendo path e query
       const url = window.location.pathname + window.location.search;
       window.history.replaceState(null, "", url);
+      console.log("[AuthHashHandler] Hash limpo da URL.");
     });
   }, []);
 

@@ -195,7 +195,7 @@ useEffect(() => {
 
         // Remove o fragmento da URL para evitar confusão futura
         if (window.location.hash) {
-          history.replaceState(null, '', window.location.pathname + window.location.search);
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
 
         navigate(inviteData.source === 'user' ? '/empresa' : '/cliente');
