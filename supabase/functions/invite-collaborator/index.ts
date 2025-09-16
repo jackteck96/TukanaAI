@@ -46,11 +46,26 @@ serve(async (req: Request) => {
     let redirectUrl = body.inviteLink;
     try {
       const provided = new URL(body.inviteLink);
+      const host = provided.host;
       const base = new URL(baseUrl);
-      // Força o domínio permitido, preservando path e query (?token=...)
-      provided.protocol = base.protocol;
-      provided.host = base.host;
-      redirectUrl = provided.toString();
+      const isPreview = host.endsWith('.lovableproject.com');
+      const isLocal = host.includes('localhost');
+      const isProd = host === base.host;
+
+      if (isPreview || isProd) {
+        // Mantém o domínio fornecido (preview ou produção já válidos)
+        redirectUrl = provided.toString();
+      } else if (isLocal) {
+        // Força domínio de produção quando vier de localhost
+        provided.protocol = base.protocol;
+        provided.host = base.host;
+        redirectUrl = provided.toString();
+      } else {
+        // Fallback seguro para produção
+        provided.protocol = base.protocol;
+        provided.host = base.host;
+        redirectUrl = provided.toString();
+      }
     } catch (_) {
       // Fallback seguro
       redirectUrl = `${baseUrl}/cadastro-via-convite`;
