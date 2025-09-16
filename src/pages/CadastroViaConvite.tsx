@@ -33,6 +33,7 @@ export default function CadastroViaConvite() {
     password: "",
     confirmPassword: "",
   });
+  const [sessionConflict, setSessionConflict] = useState(false);
 
   const token = searchParams.get("token");
 
@@ -89,56 +90,25 @@ const checkInviteToken = async () => {
     navigate('/');
   }
 };
-// Finaliza o vínculo do colaborador à empresa usando o token
-const finalizeCollaboratorLink = async () => {
-  if (!inviteData || inviteData.source !== 'user' || !user) return;
-  setLoading(true);
-  try {
-    // 1) Vincula perfil à empresa e atualiza dados
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        company_id: inviteData.company_id,
-        full_name: inviteData.full_name || undefined,
-        role: inviteData.role || 'staff',
-      })
-      .eq('id', user.id);
-
-    if (profileError) throw profileError;
-
-    // 2) Marca convite como usado (agora RLS passa pois o perfil já tem company_id)
-    const { error: inviteError } = await supabase
-      .from('user_invites')
-      .update({ status: 'used', used_at: new Date().toISOString() })
-      .eq('token', token as string);
-
-    if (inviteError) throw inviteError;
-
-    toast({
-      title: 'Convite aceito com sucesso',
-      description: 'Sua conta foi vinculada à empresa.',
-    });
-
-    navigate('/empresa');
-  } catch (err: any) {
-    console.error('Erro ao finalizar convite de colaborador:', err);
-    toast({
-      title: 'Erro ao concluir convite',
-      description: err.message || 'Tente novamente mais tarde.',
-      variant: 'destructive',
-    });
-    navigate('/');
-  } finally {
-    setLoading(false);
-  }
+// Conflito de sessão: usuário logado com e-mail diferente do convite
+const handleSignOut = async () => {
+  await supabase.auth.signOut();
+  setSessionConflict(false);
+  toast({
+    title: 'Sessão encerrada',
+    description: 'Agora você pode concluir o cadastro com o e-mail do convite.',
+  });
 };
 
-// Executa a finalização automática quando usuário já está autenticado e é convite de colaborador
 useEffect(() => {
-  if (inviteData?.source === 'user' && user) {
-    finalizeCollaboratorLink();
+  if (!inviteData) return;
+  if (user) {
+    setSessionConflict(true);
+  } else {
+    setSessionConflict(false);
   }
 }, [inviteData, user]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,6 +239,26 @@ useEffect(() => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Verificando convite...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (sessionConflict) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-gray-900">Trocar de conta para continuar</CardTitle>
+            <CardDescription>
+              Você está logado com um e-mail diferente do convite ({(user as any)?.email}). Encerre a sessão para criar a conta com {inviteData.email}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={handleSignOut} disabled={loading}>
+              {loading ? 'Saindo...' : 'Sair e continuar cadastro'}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

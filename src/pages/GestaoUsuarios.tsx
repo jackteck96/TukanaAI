@@ -112,30 +112,25 @@ export default function GestaoUsuarios() {
 
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
 
-      // Enviar convite usando o mailer do Supabase com redirect para nossa página contendo o token
-      const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(
-        inviteData.email,
-        {
-          data: {
-            full_name: inviteData.full_name,
-            role: inviteData.role
-          },
-          redirectTo: inviteLink
-        }
-      );
-      if (authError) throw authError;
+      // Enviar e-mail de convite personalizado com nosso token (sem auto login do Supabase)
+      // Buscar nome da empresa para o e-mail
+      const { data: company, error: companyError } = await supabase
+        .from('companies')
+        .select('name')
+        .eq('id', userProfile.company_id)
+        .single();
+      if (companyError) throw companyError;
 
-      // Criar perfil inicial (será atualizado quando o usuário aceitar o convite)
-      const { error: profileInsertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
+      const { error: mailError } = await supabase.functions.invoke('send-invite-email', {
+        body: {
           email: inviteData.email,
-          full_name: inviteData.full_name,
-          role: inviteData.role,
-          company_id: userProfile.company_id
-        });
-      if (profileInsertError) throw profileInsertError;
+          clientName: inviteData.full_name,
+          companyName: company?.name || 'Nossa Empresa',
+          inviteToken: tokenData,
+          inviteLink,
+        }
+      });
+      if (mailError) throw mailError;
 
       toast.success('Convite enviado com sucesso!');
       setIsInviteDialogOpen(false);
