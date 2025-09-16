@@ -11,9 +11,13 @@ import { useAuth } from "@/contexts/AuthContext";
 interface InviteData {
   email: string;
   company_id: string;
-  process_id: string;
   status: string;
   expires_at: string;
+  // Optional fields depending on source table
+  process_id?: string | null;
+  full_name?: string | null;
+  role?: 'staff' | 'client' | 'admin' | 'lawyer';
+  source: 'client' | 'user';
 }
 
 export default function CadastroViaConvite() {
@@ -32,56 +36,117 @@ export default function CadastroViaConvite() {
 
   const token = searchParams.get("token");
 
-  useEffect(() => {
-    if (user) {
-      navigate("/cliente");
+useEffect(() => {
+  if (!token) {
+    toast({
+      title: "Token inválido",
+      description: "Link de convite inválido ou expirado.",
+      variant: "destructive",
+    });
+    navigate("/");
+    return;
+  }
+
+  checkInviteToken();
+}, [token]);
+
+const checkInviteToken = async () => {
+  try {
+    // 1) Tenta convite de cliente
+    const { data: clientInvite } = await supabase
+      .from("client_invites")
+      .select("*")
+      .eq("token", token)
+      .eq("status", "pending")
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (clientInvite) {
+      setInviteData({ ...clientInvite, source: "client" });
       return;
     }
 
-    if (!token) {
-      toast({
-        title: "Token inválido",
-        description: "Link de convite inválido ou expirado.",
-        variant: "destructive",
-      });
-      navigate("/");
+    // 2) Tenta convite de colaborador (requer usuário autenticado para passar no RLS)
+    const { data: userInvite } = await supabase
+      .from("user_invites")
+      .select("*")
+      .eq("token", token)
+      .eq("status", "pending")
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (userInvite) {
+      setInviteData({ ...userInvite, source: "user" });
       return;
     }
 
-    checkInviteToken();
-  }, [token, user]);
+    // Nenhum convite encontrado
+    toast({
+      title: "Convite inválido",
+      description: "Este convite não existe, já foi usado ou expirou.",
+      variant: "destructive",
+    });
+    navigate("/");
+  } catch (error) {
+    console.error("Erro ao verificar convite:", error);
+    toast({
+      title: "Erro",
+      description: "Erro ao verificar convite.",
+      variant: "destructive",
+    });
+    navigate("/");
+  }
+};
+// Finaliza o vínculo do colaborador à empresa usando o token
+const finalizeCollaboratorLink = async () => {
+  if (!inviteData || inviteData.source !== 'user' || !user) return;
+  setLoading(true);
+  try {
+    // 1) Vincula perfil à empresa e atualiza dados
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        company_id: inviteData.company_id,
+        full_name: inviteData.full_name || undefined,
+        role: inviteData.role || 'staff',
+      })
+      .eq('id', user.id);
 
-  const checkInviteToken = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("client_invites")
-        .select("*")
-        .eq("token", token)
-        .eq("status", "pending")
-        .gt("expires_at", new Date().toISOString())
-        .single();
+    if (profileError) throw profileError;
 
-      if (error || !data) {
-        toast({
-          title: "Convite inválido",
-          description: "Este convite não existe, já foi usado ou expirou.",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
+    // 2) Marca convite como usado (agora RLS passa pois o perfil já tem company_id)
+    const { error: inviteError } = await supabase
+      .from('user_invites')
+      .update({ status: 'used', used_at: new Date().toISOString() })
+      .eq('token', token as string);
 
-      setInviteData(data);
-    } catch (error) {
-      console.error("Erro ao verificar convite:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao verificar convite.",
-        variant: "destructive",
-      });
-      navigate("/");
-    }
-  };
+    if (inviteError) throw inviteError;
+
+    toast({
+      title: 'Convite aceito com sucesso',
+      description: 'Sua conta foi vinculada à empresa.',
+    });
+
+    navigate('/empresa');
+  } catch (err: any) {
+    console.error('Erro ao finalizar convite de colaborador:', err);
+    toast({
+      title: 'Erro ao concluir convite',
+      description: err.message || 'Tente novamente mais tarde.',
+      variant: 'destructive',
+    });
+    navigate('/');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Executa a finalização automática quando usuário já está autenticado e é convite de colaborador
+useEffect(() => {
+  if (inviteData?.source === 'user' && user) {
+    finalizeCollaboratorLink();
+  }
+}, [inviteData, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
