@@ -278,43 +278,30 @@ useEffect(() => {
         return;
       }
 
-      // Cadastro de cliente
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: inviteData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/cliente`,
-          data: {
-            full_name: formData.fullName,
-            role: 'client',
-          },
-        },
+      // Cadastro de cliente - usar função que já confirma automaticamente
+      console.log('[CadastroViaConvite] Creating client with auto-confirm');
+      const { data: clientData, error: clientError } = await supabase.functions.invoke('create-client-from-invite', {
+        body: {
+          token,
+          password: formData.password,
+          fullName: formData.fullName,
+        }
       });
 
-      if (signUpError) throw signUpError;
-
-      if (authData?.user?.id) {
-        await supabase
-          .from('profiles')
-          .update({
-            full_name: formData.fullName,
-            role: 'client',
-            company_id: inviteData.company_id,
-          })
-          .eq('id', authData.user.id);
+      if (clientError) {
+        console.error('[CadastroViaConvite] Client creation error:', clientError);
+        throw new Error(clientError.message || 'Erro ao criar conta do cliente');
       }
 
-      await supabase
-        .from('client_invites')
-        .update({
-          status: 'used',
-          used_at: new Date().toISOString(),
-        })
-        .eq('token', token);
+      if (!clientData?.success) {
+        throw new Error('Falha ao criar conta do cliente');
+      }
+
+      console.log('[CadastroViaConvite] Client created successfully:', clientData);
 
       toast({
         title: 'Conta criada com sucesso!',
-        description: 'Sua conta foi criada. Você pode fazer login agora.',
+        description: 'Sua conta foi criada e confirmada. Você já pode fazer login.',
       });
       navigate(`/auth?prefill=${encodeURIComponent(inviteData.email)}`);
     } catch (error: any) {
