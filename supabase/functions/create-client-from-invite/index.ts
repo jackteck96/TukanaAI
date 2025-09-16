@@ -163,6 +163,29 @@ serve(async (req: Request) => {
       console.error('[create-client-from-invite] Profile update error:', profileError);
     }
 
+    // Garantir que o processo do convite esteja vinculado a este cliente
+    const { data: updatedProcess, error: processUpdateError } = await supabase
+      .from('processes')
+      .update({
+        client_email: invite.email,
+        client_name: fullName,
+      })
+      .eq('id', invite.process_id)
+      .eq('company_id', invite.company_id)
+      .select('id, client_email')
+      .maybeSingle();
+
+    if (processUpdateError) {
+      console.error('[create-client-from-invite] Process update error:', processUpdateError);
+    } else if (!updatedProcess) {
+      console.warn('[create-client-from-invite] Process not found to update with invited client email', {
+        process_id: invite.process_id,
+        company_id: invite.company_id,
+      });
+    } else {
+      console.log('[create-client-from-invite] Process client linked:', updatedProcess);
+    }
+
     // Marcar convite como usado
     const { error: updateError } = await supabase
       .from('client_invites')
