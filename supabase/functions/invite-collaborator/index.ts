@@ -41,11 +41,20 @@ serve(async (req: Request) => {
       );
     }
 
-    // Envia convite via mailer nativo do Supabase com domínio correto
+    // Envia convite via mailer nativo do Supabase normalizando o domínio do redirect
     const baseUrl = "https://fuzen.online";
-    const redirectUrl = body.inviteLink.includes('localhost') ? 
-      body.inviteLink.replace(/http:\/\/localhost:\d+/, baseUrl) : 
-      body.inviteLink;
+    let redirectUrl = body.inviteLink;
+    try {
+      const provided = new URL(body.inviteLink);
+      const base = new URL(baseUrl);
+      // Força o domínio permitido, preservando path e query (?token=...)
+      provided.protocol = base.protocol;
+      provided.host = base.host;
+      redirectUrl = provided.toString();
+    } catch (_) {
+      // Fallback seguro
+      redirectUrl = `${baseUrl}/cadastro-via-convite`;
+    }
     
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(body.email, {
       redirectTo: redirectUrl,
