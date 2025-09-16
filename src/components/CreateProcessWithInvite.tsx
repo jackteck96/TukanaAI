@@ -143,8 +143,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       }
 
       // 4. Enviar email de convite (cadastro na plataforma)
-      const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
-      const inviteLink = `${baseUrl}/cadastro-via-convite?token=${tokenData}`;
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
       const { error: inviteEmailError } = await supabase.functions.invoke("send-invite-email", {
         body: {
           email: formData.clientEmail,

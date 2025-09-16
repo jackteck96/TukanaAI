@@ -110,8 +110,7 @@ export default function GestaoUsuarios() {
         });
       if (inviteError) throw inviteError;
 
-      const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
-      const inviteLink = `${baseUrl}/cadastro-via-convite?token=${tokenData}`;
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
  
       // Enviar e-mail de convite personalizado com nosso token (sem auto login do Supabase)
       // Buscar nome da empresa para o e-mail

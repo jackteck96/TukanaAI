@@ -49,9 +49,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending invite email to:", email);
 
-    // Usar domínio fixo para produção
-    const baseUrl = "https://fuzen.online";
-    const inviteUrl = raw.inviteLink || `${baseUrl}/cadastro-via-convite?token=${inviteToken}`;
+    // Compose invite URL from caller or fallback to APP_BASE_URL/local
+    const appBase = (raw.inviteLink && typeof raw.inviteLink === 'string' && raw.inviteLink.startsWith('http'))
+      ? null
+      : (Deno.env.get('APP_BASE_URL') || 'http://localhost:3000');
+    const inviteUrl = raw.inviteLink || `${appBase}/cadastro-via-convite?token=${inviteToken}`;
 
     const fromPrimary = `${companyName || 'Nossa Empresa'} <${Deno.env.get('RESEND_FROM') || 'onboarding@resend.dev'}>`;
     const htmlContent = `
@@ -113,11 +115,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (emailResponse.error || !emailResponse.data?.id) {
-      console.error("Resend send-invite-email error:", emailResponse.error);
-      return new Response(JSON.stringify({ success: false, error: emailResponse.error?.error || "Falha ao enviar o email de convite" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      console.error("Resend send-invite-email error (after retry):", emailResponse.error);
+      return new Response(
+        JSON.stringify({ success: true, emailed: false, inviteUrl, warning: emailResponse.error?.error || 'Falha ao enviar email. Compartilhe o link manualmente.' }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
     console.log("Invite email sent successfully:", emailResponse);
 

@@ -84,7 +84,7 @@ const EmailResendButton: React.FC<EmailResendButtonProps> = ({
           clientName,
           companyName: company.name,
           inviteToken: inviteData.token,
-          inviteLink: `${(window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online')}/cadastro-via-convite?token=${inviteData.token}`,
+          inviteLink: `${window.location.origin}/cadastro-via-convite?token=${inviteData.token}`,
         },
       });
 

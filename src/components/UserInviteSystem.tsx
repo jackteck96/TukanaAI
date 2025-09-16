@@ -73,9 +73,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
   const sendInviteEmail = async (token: string) => {
     try {
-      // Usar domínio fixo para produção
-      const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
-      const inviteLink = `${baseUrl}/cadastro-via-convite?token=${token}`;
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
       // Enviar email de convite customizado para qualquer função (staff ou client)
       const { error } = await supabase.functions.invoke('send-invite-email', {
@@ -136,8 +134,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
   const copyInviteLink = async () => {
     try {
       const token = await generateInviteLink();
-      const baseUrl = window.location.hostname === 'localhost' ? window.location.origin : 'https://fuzen.online';
-      const inviteLink = `${baseUrl}/cadastro-via-convite?token=${token}`;
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
       await navigator.clipboard.writeText(inviteLink);
       toast.success('Link de convite copiado para a área de transferência!');
