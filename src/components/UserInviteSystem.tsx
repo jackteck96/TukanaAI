@@ -25,6 +25,8 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showInviteLink, setShowInviteLink] = useState(false);
+  const [generatedInviteLink, setGeneratedInviteLink] = useState('');
   const [inviteData, setInviteData] = useState<InviteFormData>({
     email: '',
     role: 'staff',
@@ -116,16 +118,25 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       // Gerar token e link de convite
       const token = await generateInviteLink();
       
-      // Enviar email de convite
-      await sendInviteEmail(token);
-
-      toast.success('Convite enviado com sucesso!');
-      setIsOpen(false);
-      setInviteData({ email: '', role: 'staff', full_name: '' });
-      onInviteSent?.();
+      // Tentar enviar email de convite
+      try {
+        await sendInviteEmail(token);
+        toast.success('Convite enviado com sucesso!');
+        setIsOpen(false);
+        setInviteData({ email: '', role: 'staff', full_name: '' });
+        onInviteSent?.();
+      } catch (emailError) {
+        // Se falhar no envio do email, mostrar tela com link
+        console.error('Erro ao enviar email:', emailError);
+        const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+        setGeneratedInviteLink(inviteLink);
+        setShowInviteLink(true);
+        
+        toast.success('Convite criado! Email não pôde ser enviado, mas o link está disponível.');
+      }
     } catch (error: any) {
-      console.error('Erro ao enviar convite:', error);
-      toast.error(error.message || 'Erro ao enviar convite');
+      console.error('Erro ao criar convite:', error);
+      toast.error(error.message || 'Erro ao criar convite');
     } finally {
       setSending(false);
     }
@@ -138,9 +149,22 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       
       await navigator.clipboard.writeText(inviteLink);
       toast.success('Link de convite copiado para a área de transferência!');
+      setIsOpen(false);
+      setInviteData({ email: '', role: 'staff', full_name: '' });
+      onInviteSent?.();
     } catch (error) {
       console.error('Erro ao copiar link:', error);
       toast.error('Erro ao gerar link de convite');
+    }
+  };
+
+  const copyGeneratedLink = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedInviteLink);
+      toast.success('Link copiado para a área de transferência!');
+    } catch (error) {
+      console.error('Erro ao copiar:', error);
+      toast.error('Erro ao copiar link');
     }
   };
 
@@ -156,13 +180,14 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Convidar Colaborador
-        </Button>
-      </DialogTrigger>
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Convidar Colaborador
+          </Button>
+        </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -263,5 +288,91 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Modal para mostrar link de convite quando email falhar */}
+    <Dialog open={showInviteLink} onOpenChange={setShowInviteLink}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center text-green-600">
+            <Mail className="h-5 w-5 mr-2" />
+            Convite Criado!
+          </DialogTitle>
+          <DialogDescription>
+            O convite foi criado, mas não foi possível enviar por email. Use o link abaixo.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <div className="flex items-start space-x-2">
+              <Mail className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-300">
+                  Email não enviado
+                </h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                  Houve um problema com o envio automático. Use o link abaixo para convidar <strong>{inviteData.full_name}</strong> manualmente.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="generated-invite-link">Link de Convite</Label>
+            <div className="flex space-x-2">
+              <Input
+                id="generated-invite-link"
+                value={generatedInviteLink}
+                readOnly
+                className="flex-1 font-mono text-sm bg-muted"
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={copyGeneratedLink}
+                className="px-3"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
+              Como usar este link:
+            </h4>
+            <ol className="text-sm text-blue-700 dark:text-blue-400 space-y-1 list-decimal list-inside">
+              <li>Copie o link acima (clique no botão de copiar)</li>
+              <li>Envie por WhatsApp, email ou outro meio para {inviteData.full_name}</li>
+              <li>O colaborador usará este link para criar sua conta e ficar vinculado à empresa</li>
+            </ol>
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={copyGeneratedLink}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar Link
+            </Button>
+            <Button
+              onClick={() => {
+                setShowInviteLink(false);
+                setIsOpen(false);
+                setInviteData({ email: '', role: 'staff', full_name: '' });
+                onInviteSent?.();
+              }}
+            >
+              Concluir
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
