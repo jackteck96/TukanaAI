@@ -31,6 +31,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import UserInviteSystem from "@/components/UserInviteSystem";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
+import CompletedTodayModal from "@/components/CompletedTodayModal";
+import DocumentSearchModal from "@/components/DocumentSearchModal";
 import { supabase } from "@/integrations/supabase/client";
 
 const EmpresaDashboard = () => {
@@ -87,7 +89,7 @@ const EmpresaDashboard = () => {
       change: dashboardStats.totalClients > 0 ? "+100%" : "0%",
       icon: Users,
       color: "text-primary",
-      route: "/cliente" // Redirecionar para área do cliente
+      route: "/cliente"
     },
     {
       title: "Processos Ativos",
@@ -111,7 +113,8 @@ const EmpresaDashboard = () => {
       change: dashboardStats.completedToday > 0 ? "+100%" : "0%",
       icon: CheckCircle,
       color: "text-green-500",
-      route: "/relatorios"
+      route: "/relatorios",
+      onClick: () => setIsCompletedTodayModalOpen(true)
     }
   ];
 
@@ -165,6 +168,7 @@ const EmpresaDashboard = () => {
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [clientForm, setClientForm] = useState({
     name: "",
@@ -220,7 +224,7 @@ const EmpresaDashboard = () => {
             <Card 
               key={index} 
               className="hover:shadow-card transition-all duration-300 cursor-pointer hover:scale-105" 
-              onClick={() => navigate(stat.route)}
+              onClick={() => stat.onClick ? stat.onClick() : navigate(stat.route)}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -419,7 +423,7 @@ const EmpresaDashboard = () => {
                   <Link to="/relatorios" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">
                       <TrendingUp className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Relatórios</span>
+                      <span className="text-sm font-medium">Gerar Relatórios</span>
                     </Button>
                   </Link>
                   <Link to="/relatorios-ponto" className="w-full">
@@ -530,37 +534,27 @@ const EmpresaDashboard = () => {
       </Dialog>
 
       {/* Search Modal */}
-      <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Buscar Documentos</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="searchTerm">Termo de Busca</Label>
-              <Input
-                id="searchTerm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Digite o nome do documento, cliente ou tipo..."
-                className="w-full"
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsSearchModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="button" onClick={() => {
-                console.log("Buscando:", searchTerm);
-                setIsSearchModalOpen(false);
-                setSearchTerm("");
-              }}>
-                Buscar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DocumentSearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={() => setIsSearchModalOpen(false)} 
+      />
+
+      {/* Completed Today Modal */}
+      <CompletedTodayModal 
+        isOpen={isCompletedTodayModalOpen} 
+        onClose={() => setIsCompletedTodayModalOpen(false)} 
+      />
+      {/* Search Modal */}
+      <DocumentSearchModal 
+        isOpen={isSearchModalOpen} 
+        onClose={() => setIsSearchModalOpen(false)} 
+      />
+
+      {/* Completed Today Modal */}
+      <CompletedTodayModal 
+        isOpen={isCompletedTodayModalOpen} 
+        onClose={() => setIsCompletedTodayModalOpen(false)} 
+      />
     </div>
   );
 };
