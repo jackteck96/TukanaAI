@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Eye, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Document {
   id: string;
@@ -26,10 +27,30 @@ interface DocumentListProps {
 export default function DocumentList({ processId, refreshKey = 0 }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     loadDocuments();
-  }, [processId, refreshKey]);
+    loadUserRole();
+  }, [processId, refreshKey, user]);
+
+  const loadUserRole = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      setUserRole(data.role);
+    } catch (error) {
+      console.error('Erro ao carregar role do usuário:', error);
+    }
+  };
 
   const loadDocuments = async () => {
     try {
@@ -67,8 +88,10 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
         return 'bg-success/10 text-success border-success/20';
       case 'Rejeitado':
         return 'bg-destructive/10 text-destructive border-destructive/20';
-      default:
+      case 'Ajustes Solicitados':
         return 'bg-warning/10 text-warning border-warning/20';
+      default:
+        return 'bg-muted/10 text-muted-foreground border-muted/20';
     }
   };
 
@@ -111,6 +134,38 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
       toast.error('Erro ao visualizar arquivo');
     }
   };
+
+  const updateDocumentStatus = async (documentId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('documents')
+        .update({ status: newStatus })
+        .eq('id', documentId);
+
+      if (error) throw error;
+
+      toast.success(`Documento ${newStatus.toLowerCase()} com sucesso`);
+      loadDocuments(); // Recarregar lista
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status do documento');
+    }
+  };
+
+  const handleApprove = (documentId: string) => {
+    updateDocumentStatus(documentId, 'Aprovado');
+  };
+
+  const handleReject = (documentId: string) => {
+    updateDocumentStatus(documentId, 'Rejeitado');
+  };
+
+  const handleRequestAdjustment = (documentId: string) => {
+    updateDocumentStatus(documentId, 'Ajustes Solicitados');
+  };
+
+  // Verificar se o usuário pode gerenciar documentos (não é cliente)
+  const canManageDocuments = userRole && userRole !== 'client';
 
   if (loading) {
     return (
@@ -181,6 +236,36 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                 >
                   <Download className="h-4 w-4" />
                 </Button>
+                
+                {/* Botões de aprovação/rejeição apenas para funcionários da empresa */}
+                {canManageDocuments && doc.status === 'Pendente' && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleApprove(doc.id)}
+                      className="text-success hover:bg-success/10"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleReject(doc.id)}
+                      className="text-destructive hover:bg-destructive/10"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRequestAdjustment(doc.id)}
+                      className="text-warning hover:bg-warning/10"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ))
