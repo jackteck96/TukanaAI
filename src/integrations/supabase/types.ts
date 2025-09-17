@@ -128,6 +128,48 @@ export type Database = {
         }
         Relationships: []
       }
+      client_notifications: {
+        Row: {
+          client_email: string
+          company_id: string
+          created_at: string
+          document_id: string
+          id: string
+          is_read: boolean
+          message: string
+          notification_type: string
+          process_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_email: string
+          company_id: string
+          created_at?: string
+          document_id: string
+          id?: string
+          is_read?: boolean
+          message: string
+          notification_type: string
+          process_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string
+          company_id?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          process_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           created_at: string

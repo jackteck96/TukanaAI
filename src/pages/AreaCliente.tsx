@@ -35,6 +35,7 @@ import { CollaboratorsModal } from "./AreaClienteCollaborators";
 import DocumentProgressBattery from "@/components/DocumentProgressBattery";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
+import ClientNotifications from "@/components/ClientNotifications";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -524,6 +525,9 @@ const AreaCliente = () => {
             </Card>
           ))}
         </div>
+
+        {/* Client Notifications */}
+        <ClientNotifications className="mb-8" />
 
         {/* Quick Actions */}
         <Card className="mb-8">

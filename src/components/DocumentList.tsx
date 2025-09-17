@@ -6,6 +6,7 @@ import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, Message
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import DocumentActionDialog from './DocumentActionDialog';
 
 interface Document {
   id: string;
@@ -28,12 +29,41 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [processData, setProcessData] = useState<any>(null);
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean;
+    action: 'reject' | 'request_adjustment';
+    documentId: string;
+    documentName: string;
+  }>({
+    isOpen: false,
+    action: 'reject',
+    documentId: '',
+    documentName: ''
+  });
   const { user } = useAuth();
 
   useEffect(() => {
     loadDocuments();
     loadUserRole();
+    loadProcessData();
   }, [processId, refreshKey, user]);
+
+  const loadProcessData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('processes')
+        .select('client_email, company_id')
+        .eq('id', processId)
+        .single();
+      
+      if (error) throw error;
+      setProcessData(data);
+    } catch (error) {
+      console.error('Erro ao carregar dados do processo:', error);
+    }
+  };
 
   const loadUserRole = async () => {
     if (!user) return;
@@ -41,12 +71,13 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, company_id')
         .eq('id', user.id)
         .single();
       
       if (error) throw error;
       setUserRole(data.role);
+      setCompanyId(data.company_id);
     } catch (error) {
       console.error('Erro ao carregar role do usuário:', error);
     }
@@ -156,12 +187,35 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     updateDocumentStatus(documentId, 'Aprovado');
   };
 
-  const handleReject = (documentId: string) => {
-    updateDocumentStatus(documentId, 'Rejeitado');
+  const handleReject = (documentId: string, documentName: string) => {
+    setDialogState({
+      isOpen: true,
+      action: 'reject',
+      documentId,
+      documentName
+    });
   };
 
-  const handleRequestAdjustment = (documentId: string) => {
-    updateDocumentStatus(documentId, 'Ajustes Solicitados');
+  const handleRequestAdjustment = (documentId: string, documentName: string) => {
+    setDialogState({
+      isOpen: true,
+      action: 'request_adjustment',
+      documentId,
+      documentName
+    });
+  };
+
+  const closeDialog = () => {
+    setDialogState({
+      isOpen: false,
+      action: 'reject',
+      documentId: '',
+      documentName: ''
+    });
+  };
+
+  const handleDialogConfirm = () => {
+    loadDocuments(); // Recarregar lista após ação
   };
 
   // Verificar se o usuário pode gerenciar documentos (não é cliente)
@@ -251,7 +305,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleReject(doc.id)}
+                      onClick={() => handleReject(doc.id, doc.file_name)}
                       className="text-destructive hover:bg-destructive/10"
                     >
                       <X className="h-4 w-4" />
@@ -259,7 +313,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleRequestAdjustment(doc.id)}
+                      onClick={() => handleRequestAdjustment(doc.id, doc.file_name)}
                       className="text-warning hover:bg-warning/10"
                     >
                       <MessageSquare className="h-4 w-4" />
@@ -271,6 +325,21 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
           ))
         )}
       </CardContent>
+      
+      {/* Dialog para rejeição/ajustes */}
+      {processData && companyId && (
+        <DocumentActionDialog
+          isOpen={dialogState.isOpen}
+          onClose={closeDialog}
+          onConfirm={handleDialogConfirm}
+          documentId={dialogState.documentId}
+          processId={processId}
+          clientEmail={processData.client_email}
+          companyId={companyId}
+          action={dialogState.action}
+          documentName={dialogState.documentName}
+        />
+      )}
     </Card>
   );
 }
