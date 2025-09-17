@@ -52,10 +52,29 @@ const Auth = () => {
   }, [searchParams]);
 
   // Redirect if already authenticated
+  useEffect(() => {
+    const checkUserAndRedirect = async () => {
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        const redirectPath = profile?.role === 'client' ? '/cliente' : '/empresa';
+        navigate(redirectPath, { replace: true });
+      }
+    };
+    
+    checkUserAndRedirect();
+  }, [user, navigate]);
+
   if (user) {
-    const userRole = user.user_metadata?.role;
-    const redirectPath = userRole === 'client' ? '/cliente' : '/empresa';
-    return <Navigate to={redirectPath} replace />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/5">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   const validateEmail = (email: string) => {
@@ -98,12 +117,18 @@ const Auth = () => {
 
     // Check user role to redirect appropriately
     const { data: { user } } = await supabase.auth.getUser();
-    const userRole = user?.user_metadata?.role;
-    
-    if (userRole === 'client') {
-      navigate('/cliente');
-    } else {
-      navigate('/empresa');
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile?.role === 'client') {
+        navigate('/cliente');
+      } else {
+        navigate('/empresa');
+      }
     }
   };
 

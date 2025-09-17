@@ -243,64 +243,82 @@ const AreaCliente = () => {
   const [processDocuments, setProcessDocuments] = useState<any>({});
   // Carregar processos reais do cliente logado
   const [loadedProcesses, setLoadedProcesses] = useState<any[]>([]);
+  const [loadingProcesses, setLoadingProcesses] = useState(false);
+  const [processError, setProcessError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       if (!user?.email) return;
-      const { data: procs, error } = await supabase
-        .from('processes')
-        .select('id, project_name, description, status, progress, due_date')
-        .eq('client_email', user.email);
-      if (error) {
-        console.error('[AreaCliente] fetch processes error', error);
-        return;
-      }
-      const mapped = (procs || []).map((p: any) => ({
-        id: p.id,
-        title: p.project_name || 'Processo',
-        description: p.description || '',
-        status: p.status,
-        progress: Number(p.progress || 0),
-        dueDate: p.due_date,
-        documents: 0,
-        pending: 0,
-        company: '',
-        responsibleLawyer: ''
-      }));
-      setLoadedProcesses(mapped);
-      if (mapped.length) {
-        setSelectedProcess((prev: any) => prev ?? mapped[0]);
-      }
-      const ids = (procs || []).map((p: any) => p.id);
-      if (ids.length) {
-        const { data: docs } = await supabase
-          .from('documents')
-          .select('id, file_name, document_type, status, created_at, process_id')
-          .in('process_id', ids);
-        const docsByProcess: Record<string, any[]> = {};
-        (docs || []).forEach((d: any) => {
-          const item = {
-            id: d.id,
-            name: d.file_name,
-            type: d.document_type,
-            uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
-            status: d.status,
-            size: ''
-          };
-          const key = d.process_id;
-          if (!docsByProcess[key]) docsByProcess[key] = [];
-          docsByProcess[key].push(item);
-        });
-        setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
-        setLoadedProcesses((prev) =>
-          prev.map((p) => {
-            const docsArr = docsByProcess[p.id] || [];
-            const pendingCount = docsArr.filter((x: any) =>
-              String(x.status || '').toLowerCase().includes('pend')
-            ).length;
-            return { ...p, documents: docsArr.length, pending: pendingCount };
-          })
-        );
+      
+      setLoadingProcesses(true);
+      setProcessError(null);
+      
+      try {
+        const { data: procs, error } = await supabase
+          .from('processes')
+          .select('id, project_name, description, status, progress, due_date')
+          .eq('client_email', user.email);
+          
+        if (error) {
+          console.error('[AreaCliente] fetch processes error', error);
+          setProcessError('Não foi possível carregar seus processos. Tente fazer login novamente.');
+          return;
+        }
+        
+        const mapped = (procs || []).map((p: any) => ({
+          id: p.id,
+          title: p.project_name || 'Processo',
+          description: p.description || '',
+          status: p.status,
+          progress: Number(p.progress || 0),
+          dueDate: p.due_date,
+          documents: 0,
+          pending: 0,
+          company: '',
+          responsibleLawyer: ''
+        }));
+        
+        setLoadedProcesses(mapped);
+        if (mapped.length) {
+          setSelectedProcess((prev: any) => prev ?? mapped[0]);
+        }
+        
+        const ids = (procs || []).map((p: any) => p.id);
+        if (ids.length) {
+          const { data: docs } = await supabase
+            .from('documents')
+            .select('id, file_name, document_type, status, created_at, process_id')
+            .in('process_id', ids);
+          const docsByProcess: Record<string, any[]> = {};
+          (docs || []).forEach((d: any) => {
+            const item = {
+              id: d.id,
+              name: d.file_name,
+              type: d.document_type,
+              uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
+              status: d.status,
+              size: ''
+            };
+            const key = d.process_id;
+            if (!docsByProcess[key]) docsByProcess[key] = [];
+            docsByProcess[key].push(item);
+          });
+          setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
+          setLoadedProcesses((prev) =>
+            prev.map((p) => {
+              const docsArr = docsByProcess[p.id] || [];
+              const pendingCount = docsArr.filter((x: any) =>
+                String(x.status || '').toLowerCase().includes('pend')
+              ).length;
+              return { ...p, documents: docsArr.length, pending: pendingCount };
+            })
+          );
+        }
+      } catch (error) {
+        console.error('[AreaCliente] Error loading processes:', error);
+        setProcessError('Erro inesperado ao carregar dados. Tente novamente.');
+      } finally {
+        setLoadingProcesses(false);
       }
     };
     load();
@@ -449,6 +467,44 @@ const AreaCliente = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Erro de carregamento */}
+        {processError && (
+          <Card className="mb-8 border-destructive">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <div>
+                    <h3 className="font-medium text-foreground">Problema de Acesso</h3>
+                    <p className="text-sm text-muted-foreground">{processError}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    supabase.auth.signOut();
+                    window.location.href = '/auth';
+                  }}
+                >
+                  Fazer Login Novamente
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading state */}
+        {loadingProcesses && (
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center space-x-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                <p className="text-muted-foreground">Carregando seus processos...</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
             <Card key={index} className="hover:shadow-md transition-shadow">
