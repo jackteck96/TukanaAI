@@ -38,9 +38,29 @@ import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 
 const AreaCliente = () => {
   const { user } = useAuth();
+  const [userProfile, setUserProfile] = useState<any>(null);
+  
+  // Carregar perfil real do cliente
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user?.id) return;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (error) {
+        console.error('[AreaCliente] fetch profile error', error);
+        return;
+      }
+      setUserProfile(data);
+    };
+    loadProfile();
+  }, [user]);
+
   const clientInfo = {
-    name: "TechCorp Ltda",
-    email: "contato@techcorp.com",
+    name: userProfile?.full_name || user?.email || "Cliente",
+    email: userProfile?.email || user?.email || "",
     phone: "+55 (11) 9999-9999",
     status: "Ativo"
   };
@@ -576,6 +596,7 @@ const AreaCliente = () => {
                         size="sm" 
                         onClick={(e) => {
                           e.stopPropagation();
+                          setSelectedProcess(process);
                           setIsUploadModalOpen(true);
                         }}
                       >
@@ -646,6 +667,9 @@ const AreaCliente = () => {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
+                          // Encontrar processo pelo processId da solicitação
+                          const process = activeProcesses.find(p => String(p.id) === String(request.processId));
+                          if (process) setSelectedProcess(process);
                           setIsUploadModalOpen(true);
                         }}
                       >
@@ -883,6 +907,57 @@ const AreaCliente = () => {
                 </Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Modal */}
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Enviar Documento</DialogTitle>
+            <DialogDescription>
+              Envie um documento para o processo selecionado
+            </DialogDescription>
+          </DialogHeader>
+          {selectedProcess && (
+            <DocumentUpload
+              processId={String(selectedProcess.id)}
+              onUploadComplete={() => {
+                setIsUploadModalOpen(false);
+                // Recarregar documentos
+                const load = async () => {
+                  if (!user?.email) return;
+                  const { data: procs } = await supabase
+                    .from('processes')
+                    .select('id')
+                    .eq('client_email', user.email);
+                  const ids = (procs || []).map((p: any) => p.id);
+                  if (ids.length) {
+                    const { data: docs } = await supabase
+                      .from('documents')
+                      .select('id, file_name, document_type, status, created_at, process_id')
+                      .in('process_id', ids);
+                    const docsByProcess: Record<string, any[]> = {};
+                    (docs || []).forEach((d: any) => {
+                      const item = {
+                        id: d.id,
+                        name: d.file_name,
+                        type: d.document_type,
+                        uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
+                        status: d.status,
+                        size: ''
+                      };
+                      const key = d.process_id;
+                      if (!docsByProcess[key]) docsByProcess[key] = [];
+                      docsByProcess[key].push(item);
+                    });
+                    setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
+                  }
+                };
+                load();
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
