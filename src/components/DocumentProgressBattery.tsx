@@ -54,10 +54,10 @@ const DocumentProgressBattery: React.FC<DocumentProgressBatteryProps> = ({
   };
 
   return (
-    <div className={cn('flex items-center space-x-2', className)}>
+    <div className={cn('flex items-center space-x-2 w-full', className)}>
       {/* Battery Body */}
       <div className={cn(
-        'relative border-2 rounded-md flex items-center bg-background shadow-sm',
+        'relative border-2 rounded-md flex items-center bg-background shadow-sm flex-shrink-0',
         config.container,
         getBorderColor()
       )}>
@@ -79,7 +79,7 @@ const DocumentProgressBattery: React.FC<DocumentProgressBatteryProps> = ({
       
       {/* Battery Tip */}
       <div className={cn(
-        'rounded-r-md border-l-0 border-2',
+        'rounded-r-md border-l-0 border-2 flex-shrink-0',
         config.tip,
         getBorderColor(),
         progressClamped > 80 ? getProgressColor() : 'bg-muted'
@@ -88,7 +88,7 @@ const DocumentProgressBattery: React.FC<DocumentProgressBatteryProps> = ({
       {/* Progress Text - only for larger sizes */}
       {size !== 'sm' && (
         <span className={cn(
-          'font-medium text-muted-foreground',
+          'font-medium text-muted-foreground whitespace-nowrap flex-shrink-0',
           config.text
         )}>
           {progressClamped}%

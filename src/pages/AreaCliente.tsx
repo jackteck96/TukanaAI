@@ -36,6 +36,7 @@ import DocumentProgressBattery from "@/components/DocumentProgressBattery";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import ClientNotifications from "@/components/ClientNotifications";
+import ProcessNotes from "@/components/ProcessNotes";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -47,7 +48,7 @@ const AreaCliente = () => {
       if (!user?.id) return;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, company_id')
         .eq('id', user.id)
         .single();
       if (error) {
@@ -55,6 +56,7 @@ const AreaCliente = () => {
         return;
       }
       setUserProfile(data);
+      setCompanyId(data.company_id);
     };
     loadProfile();
   }, [user]);
@@ -334,6 +336,7 @@ const AreaCliente = () => {
     { id: 1, name: "João Silva", email: "joao@empresa.com", role: "Admin", status: "Ativo", joinedAt: "2024-01-15" },
     { id: 2, name: "Maria Santos", email: "maria@empresa.com", role: "Usuário", status: "Ativo", joinedAt: "2024-02-01" },
   ]);
+  const [companyId, setCompanyId] = useState<string | null>(null);
   const [companyPlan, setCompanyPlan] = useState({ currentUsers: 2, userLimit: 5, plan: "professional" });
   const [newCollaborator, setNewCollaborator] = useState({ name: "", email: "", role: "staff" });
 
@@ -892,55 +895,10 @@ const AreaCliente = () => {
                 )}
 
                 {selectedDocumentCategory === "notes" && (
-                  <div className="space-y-4">
-                    {/* Add new note */}
-                    <div className="space-y-2">
-                      <Textarea
-                        placeholder="Adicione uma observação..."
-                        value={uploadForm.description}
-                        onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                        className="min-h-[60px]"
-                      />
-                      <Button 
-                        size="sm" 
-                        onClick={() => {
-                          if (uploadForm.description.trim()) {
-                            console.log("Nova observação:", uploadForm.description);
-                            setUploadForm({ ...uploadForm, description: "" });
-                          }
-                        }}
-                        disabled={!uploadForm.description.trim()}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Adicionar
-                      </Button>
-                    </div>
-
-                    <Separator />
-
-                    {/* Notes history */}
-                    <div className="space-y-3">
-                      <div className="p-3 bg-muted/30 rounded border-l-4 border-l-blue-500">
-                        <div className="flex justify-between items-start mb-1">
-                          <span className="text-sm font-medium">Dr. Carlos Silva</span>
-                          <span className="text-xs text-muted-foreground">15/08 14:30</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Documento aprovado. Aguardamos declaração de faturamento.
-                        </p>
-                      </div>
-                      
-                      <div className="p-3 bg-muted/30 rounded border-l-4 border-l-green-500">
-                        <div className="flex justify-between items-start mb-1">
-                          <span className="text-sm font-medium">Você</span>
-                          <span className="text-xs text-muted-foreground">14/08 16:45</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Comprovante enviado. Declaração será enviada amanhã.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <ProcessNotes 
+                    processId={selectedProcess.id} 
+                    companyId={companyId || ''}
+                  />
                 )}
               </div>
               

@@ -87,7 +87,7 @@ const EmpresaDashboard = () => {
       change: dashboardStats.totalClients > 0 ? "+100%" : "0%",
       icon: Users,
       color: "text-primary",
-      route: "/gestao-colaboradores"
+      route: "/cliente" // Redirecionar para área do cliente
     },
     {
       title: "Processos Ativos",

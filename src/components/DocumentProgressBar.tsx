@@ -39,10 +39,10 @@ const DocumentProgressBar: React.FC<DocumentProgressBarProps> = ({
   };
 
   return (
-    <div className={cn('flex items-center space-x-3', className)}>
+    <div className={cn('flex items-center space-x-3 w-full', className)}>
       {/* Progress Bar */}
       <div className={cn(
-        'flex-1 bg-muted rounded-full overflow-hidden border border-border/50 shadow-inner',
+        'flex-1 bg-muted rounded-full overflow-hidden border border-border/50 shadow-inner min-w-0',
         heightConfig[height]
       )}>
         <div 
