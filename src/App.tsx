@@ -31,6 +31,8 @@ import ClientInfo from "./pages/ClientInfo";
 import AuthHashHandler from "./components/AuthHashHandler";
 import ErrorBoundary from "./components/ErrorBoundary";
 import GlobalErrorLogger from "./components/GlobalErrorLogger";
+import AdminRoute from "./components/AdminRoute";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +124,11 @@ const App = () => (
                   <ProtectedRoute>
                     <ClientInfo />
                   </ProtectedRoute>
+                } />
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
                 } />
                 
                 {/* Catch-all route */}

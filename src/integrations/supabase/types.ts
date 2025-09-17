@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_training_cases: {
+        Row: {
+          correct_documents: string[]
+          created_at: string
+          description: string
+          documents_received: string[]
+          feedback: string | null
+          id: string
+          process_type: string
+          result: string
+          updated_at: string
+        }
+        Insert: {
+          correct_documents?: string[]
+          created_at?: string
+          description: string
+          documents_received?: string[]
+          feedback?: string | null
+          id?: string
+          process_type: string
+          result: string
+          updated_at?: string
+        }
+        Update: {
+          correct_documents?: string[]
+          created_at?: string
+          description?: string
+          documents_received?: string[]
+          feedback?: string | null
+          id?: string
+          process_type?: string
+          result?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_training_data: {
+        Row: {
+          conditions: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          keywords: string[]
+          priority: number
+          process_type: string
+          required_documents: string[]
+          suggested_documents: string[]
+          updated_at: string
+        }
+        Insert: {
+          conditions?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          priority?: number
+          process_type: string
+          required_documents?: string[]
+          suggested_documents?: string[]
+          updated_at?: string
+        }
+        Update: {
+          conditions?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          keywords?: string[]
+          priority?: number
+          process_type?: string
+          required_documents?: string[]
+          suggested_documents?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       client_invites: {
         Row: {
           company_id: string
@@ -286,6 +361,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      global_document_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+          variables: string[]
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+          variables?: string[]
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+          variables?: string[]
+        }
+        Relationships: []
+      }
+      global_document_types: {
+        Row: {
+          created_at: string
+          has_expiration_date: boolean
+          has_validity_date: boolean
+          id: string
+          name: string
+          notes: string | null
+          requires_issuing_location: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          has_expiration_date?: boolean
+          has_validity_date?: boolean
+          id?: string
+          name: string
+          notes?: string | null
+          requires_issuing_location?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          has_expiration_date?: boolean
+          has_validity_date?: boolean
+          id?: string
+          name?: string
+          notes?: string | null
+          requires_issuing_location?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       internal_signatures: {
         Row: {

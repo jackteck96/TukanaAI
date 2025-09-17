@@ -22,7 +22,8 @@ import {
   Eye,
   LogOut,
   Brain,
-  UserPlus
+  UserPlus,
+  Shield
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -36,9 +37,31 @@ const EmpresaDashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
+  const [isAdmin, setIsAdmin] = useState(false);
   
   useEffect(() => {
     console.log('[EmpresaDashboard] mounted', { user: user?.email });
+  }, [user]);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        setIsAdmin(profile?.role === 'admin');
+      } catch (error) {
+        console.error('Error checking admin role:', error);
+      }
+    };
+
+    checkAdminRole();
   }, [user]);
 
   // Redirect clients to their area if they land here accidentally
@@ -169,6 +192,12 @@ const EmpresaDashboard = () => {
               <p className="text-muted-foreground">Visão geral dos processos e clientes</p>
             </div>
               <div className="flex items-center space-x-4">
+                {isAdmin && (
+                  <Button variant="outline" onClick={() => navigate('/admin')}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Painel Admin
+                  </Button>
+                )}
                 <Button variant="hero" onClick={refreshData} disabled={loading}>
                   <Plus className="h-4 w-4 mr-2" />
                   {loading ? 'Atualizando...' : 'Atualizar'}
