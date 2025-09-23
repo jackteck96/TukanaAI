@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, BarChart3, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileText, Download, BarChart3, CheckCircle, Clock, XCircle, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -91,40 +92,110 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
     }
   };
 
-  const downloadReport = () => {
+  const downloadReportPDF = async () => {
     if (!report || !processData) return;
 
-    const reportContent = {
-      processo: {
-        id: processData.id,
-        cliente: processData.client_name,
-        tipo: processData.process_type,
-        status: processData.status,
-        criado_em: new Date(processData.created_at).toLocaleDateString('pt-BR')
-      },
-      relatorio: {
-        gerado_em: new Date(report.generated_at).toLocaleDateString('pt-BR'),
-        total_documentos: report.total_documents,
-        documentos_pendentes: report.pending_documents,
-        documentos_aprovados: report.approved_documents
-      },
-      documentos: report.report_data
-    };
+    try {
+      const jsPDF = (await import('jspdf')).default;
+      const pdf = new jsPDF();
+      
+      // Título
+      pdf.setFontSize(20);
+      pdf.text('Relatório de Documentos', 20, 30);
+      
+      // Informações do processo
+      pdf.setFontSize(14);
+      pdf.text('Dados do Processo', 20, 50);
+      pdf.setFontSize(10);
+      pdf.text(`Cliente: ${processData.client_name}`, 20, 65);
+      pdf.text(`Tipo: ${processData.process_type}`, 20, 75);
+      pdf.text(`Status: ${processData.status}`, 20, 85);
+      pdf.text(`Criado em: ${new Date(processData.created_at).toLocaleDateString('pt-BR')}`, 20, 95);
+      
+      // Estatísticas
+      pdf.setFontSize(14);
+      pdf.text('Estatísticas', 20, 115);
+      pdf.setFontSize(10);
+      pdf.text(`Total de Documentos: ${report.total_documents}`, 20, 130);
+      pdf.text(`Documentos Pendentes: ${report.pending_documents}`, 20, 140);
+      pdf.text(`Documentos Aprovados: ${report.approved_documents}`, 20, 150);
+      
+      // Lista de documentos
+      if (Array.isArray(report.report_data) && report.report_data.length > 0) {
+        pdf.setFontSize(14);
+        pdf.text('Documentos', 20, 170);
+        
+        let yPos = 185;
+        report.report_data.forEach((doc: any, index: number) => {
+          if (yPos > 270) {
+            pdf.addPage();
+            yPos = 30;
+          }
+          
+          pdf.setFontSize(10);
+          pdf.text(`${index + 1}. ${doc.file_name}`, 20, yPos);
+          pdf.text(`   Tipo: ${doc.document_type} | Status: ${doc.status}`, 20, yPos + 8);
+          pdf.text(`   Enviado por: ${doc.uploaded_by}`, 20, yPos + 16);
+          yPos += 25;
+        });
+      }
+      
+      pdf.save(`relatorio_${processData.client_name}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
+      toast.success('Relatório PDF baixado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast.error('Erro ao gerar PDF');
+    }
+  };
 
-    const blob = new Blob([JSON.stringify(reportContent, null, 2)], {
-      type: 'application/json'
-    });
-    
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `relatorio_processo_${processData.client_name}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const downloadReportExcel = async () => {
+    if (!report || !processData) return;
 
-    toast.success('Relatório baixado com sucesso!');
+    try {
+      const XLSX = (await import('xlsx')).default;
+      
+      // Dados do processo
+      const processInfo = [
+        ['RELATÓRIO DE DOCUMENTOS'],
+        [''],
+        ['Dados do Processo'],
+        ['Cliente', processData.client_name],
+        ['Tipo', processData.process_type],
+        ['Status', processData.status],
+        ['Criado em', new Date(processData.created_at).toLocaleDateString('pt-BR')],
+        [''],
+        ['Estatísticas'],
+        ['Total de Documentos', report.total_documents],
+        ['Documentos Pendentes', report.pending_documents],
+        ['Documentos Aprovados', report.approved_documents],
+        [''],
+        ['Lista de Documentos'],
+        ['Nome do Arquivo', 'Tipo', 'Status', 'Enviado por', 'Data de Criação']
+      ];
+      
+      // Adicionar documentos
+      if (Array.isArray(report.report_data)) {
+        report.report_data.forEach((doc: any) => {
+          processInfo.push([
+            doc.file_name,
+            doc.document_type,
+            doc.status,
+            doc.uploaded_by,
+            new Date(doc.created_at).toLocaleDateString('pt-BR')
+          ]);
+        });
+      }
+      
+      const ws = XLSX.utils.aoa_to_sheet(processInfo);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+      
+      XLSX.writeFile(wb, `relatorio_${processData.client_name}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`);
+      toast.success('Relatório Excel baixado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar Excel:', error);
+      toast.error('Erro ao gerar Excel');
+    }
   };
 
   const downloadAllDocuments = async () => {
@@ -238,10 +309,25 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
             <Button size="sm" variant="outline" onClick={generateNewReport}>
               Atualizar
             </Button>
-            <Button size="sm" onClick={downloadReport}>
-              <Download className="h-4 w-4 mr-2" />
-              Baixar Relatório
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar Relatório
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={downloadReportPDF}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Baixar como PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadReportExcel}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Baixar como Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button size="sm" variant="outline" onClick={downloadAllDocuments}>
               <Download className="h-4 w-4 mr-2" />
               Baixar Todos os Documentos
