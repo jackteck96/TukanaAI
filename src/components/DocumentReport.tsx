@@ -136,7 +136,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         
         let yPos = 185;
         report.report_data.forEach((doc: any, index: number) => {
-          if (yPos > 270) {
+          if (yPos > 260) {
             pdf.addPage();
             yPos = 30;
           }
@@ -144,8 +144,24 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
           pdf.setFontSize(10);
           pdf.text(`${index + 1}. ${doc.file_name}`, 20, yPos);
           pdf.text(`   Tipo: ${doc.document_type} | Status: ${doc.status}`, 20, yPos + 8);
-          pdf.text(`   Enviado por: ${doc.uploaded_by}`, 20, yPos + 16);
-          yPos += 25;
+          pdf.text(`   Enviado por: ${doc.uploaded_by} em ${new Date(doc.created_at).toLocaleDateString('pt-BR')}`, 20, yPos + 16);
+          
+          let extraLines = 0;
+          if (doc.validity_date) {
+            pdf.text(`   Data de Validade: ${new Date(doc.validity_date).toLocaleDateString('pt-BR')}`, 20, yPos + 24);
+            extraLines += 8;
+          }
+          if (doc.expiration_date) {
+            pdf.text(`   Data de Expiração: ${new Date(doc.expiration_date).toLocaleDateString('pt-BR')}`, 20, yPos + 24 + extraLines);
+            extraLines += 8;
+          }
+          if (doc.issuing_location) {
+            pdf.text(`   Local de Emissão: ${doc.issuing_location}`, 20, yPos + 24 + extraLines);
+            extraLines += 8;
+          }
+          pdf.text(`   Tamanho: ${(doc.file_size / 1024).toFixed(1)} KB | Tipo: ${doc.file_type}`, 20, yPos + 24 + extraLines);
+          
+          yPos += 40 + extraLines;
         });
       }
       
@@ -179,7 +195,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         ['Documentos Aprovados', report.approved_documents],
         [''],
         ['Lista de Documentos'],
-        ['Nome do Arquivo', 'Tipo', 'Status', 'Enviado por', 'Data de Criação']
+        ['Nome do Arquivo', 'Tipo', 'Status', 'Enviado por', 'Data de Criação', 'Data de Validade', 'Data de Expiração', 'Local de Emissão', 'Tamanho (KB)']
       ];
       
       // Adicionar documentos
@@ -190,7 +206,11 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
             doc.document_type,
             doc.status,
             doc.uploaded_by,
-            new Date(doc.created_at).toLocaleDateString('pt-BR')
+            new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            doc.validity_date ? new Date(doc.validity_date).toLocaleDateString('pt-BR') : 'N/A',
+            doc.expiration_date ? new Date(doc.expiration_date).toLocaleDateString('pt-BR') : 'N/A',
+            doc.issuing_location || 'N/A',
+            doc.file_size ? (doc.file_size / 1024).toFixed(1) : 'N/A'
           ]);
         });
       }
@@ -403,10 +423,29 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-4 w-4 text-primary" />
-                    <div>
+                    <div className="flex-1">
                       <div className="font-medium">{doc.file_name}</div>
                       <div className="text-sm text-muted-foreground">
                         {doc.document_type} • Enviado por {doc.uploaded_by}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Adicionado em {new Date(doc.created_at).toLocaleDateString('pt-BR')} às {new Date(doc.created_at).toLocaleTimeString('pt-BR')}
+                      </div>
+                      {(doc.validity_date || doc.expiration_date || doc.issuing_location) && (
+                        <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                          {doc.validity_date && (
+                            <div>📅 Válido até: {new Date(doc.validity_date).toLocaleDateString('pt-BR')}</div>
+                          )}
+                          {doc.expiration_date && (
+                            <div>⏰ Expira em: {new Date(doc.expiration_date).toLocaleDateString('pt-BR')}</div>
+                          )}
+                          {doc.issuing_location && (
+                            <div>📍 Local: {doc.issuing_location}</div>
+                          )}
+                        </div>
+                      )}
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {(doc.file_size / 1024).toFixed(1)} KB • {doc.file_type}
                       </div>
                     </div>
                   </div>

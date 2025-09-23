@@ -349,43 +349,52 @@ export type Database = {
           company_id: string | null
           created_at: string
           document_type: string
+          expiration_date: string | null
           file_name: string
           file_path: string
           file_size: number
           file_type: string
           id: string
+          issuing_location: string | null
           process_id: string
           status: string
           updated_at: string
           uploaded_by: string
+          validity_date: string | null
         }
         Insert: {
           company_id?: string | null
           created_at?: string
           document_type: string
+          expiration_date?: string | null
           file_name: string
           file_path: string
           file_size: number
           file_type: string
           id?: string
+          issuing_location?: string | null
           process_id: string
           status?: string
           updated_at?: string
           uploaded_by: string
+          validity_date?: string | null
         }
         Update: {
           company_id?: string | null
           created_at?: string
           document_type?: string
+          expiration_date?: string | null
           file_name?: string
           file_path?: string
           file_size?: number
           file_type?: string
           id?: string
+          issuing_location?: string | null
           process_id?: string
           status?: string
           updated_at?: string
           uploaded_by?: string
+          validity_date?: string | null
         }
         Relationships: [
           {
