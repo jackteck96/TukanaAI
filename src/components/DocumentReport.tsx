@@ -35,6 +35,8 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
   const [processData, setProcessData] = useState<ProcessData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('DocumentReport rendered with processId:', processId);
+
   useEffect(() => {
     loadReportData();
   }, [processId, refreshKey]);
@@ -46,9 +48,16 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         .from('processes')
         .select('*')
         .eq('id', processId)
-        .single();
+        .maybeSingle();
 
       if (processError) throw processError;
+      
+      if (!process) {
+        toast.error('Processo não encontrado');
+        setLoading(false);
+        return;
+      }
+      
       setProcessData(process);
 
       // Carregar último relatório
