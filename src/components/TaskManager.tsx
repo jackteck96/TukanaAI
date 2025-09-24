@@ -50,6 +50,7 @@ export default function TaskManager({ processId, companyId }: TaskManagerProps) 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [availableDocumentTypes, setAvailableDocumentTypes] = useState<string[]>([]);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -189,7 +190,7 @@ export default function TaskManager({ processId, companyId }: TaskManagerProps) 
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DOCUMENT_TYPES.map((type) => (
+                    {availableDocumentTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
                       </SelectItem>

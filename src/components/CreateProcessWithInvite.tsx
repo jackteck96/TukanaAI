@@ -33,6 +33,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const [showInviteLink, setShowInviteLink] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [clientName, setClientName] = useState("");
+  const [availableDocuments, setAvailableDocuments] = useState<string[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -47,22 +49,75 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     dueDate: "",
   });
 
-  const availableDocuments = [
-    "RG - Registro Geral",
-    "CPF - Cadastro de Pessoa Física", 
-    "Comprovante de Residência",
-    "CNPJ - Cadastro Nacional da Pessoa Jurídica",
-    "Carteira de Trabalho",
-    "Contrato Social", 
-    "Inscrição Estadual", 
-    "Alvará de Funcionamento",
-    "Declaração de Imposto de Renda", 
-    "Comprovante de Renda", 
-    "Certidão de Nascimento",
-    "Certidão de Casamento", 
-    "Procuração", 
-    "Contrato de Prestação de Serviços"
-  ];
+  // Carregar tipos de documentos da empresa e globais
+  useEffect(() => {
+    const fetchDocumentTypes = async () => {
+      if (!company?.id) return;
+      
+      setLoadingDocuments(true);
+      try {
+        // Buscar tipos de documentos da empresa
+        const { data: companyTypes, error: companyError } = await supabase
+          .from('document_types')
+          .select('name')
+          .eq('company_id', company.id)
+          .order('name');
+
+        // Buscar tipos globais
+        const { data: globalTypes, error: globalError } = await supabase
+          .from('global_document_types')
+          .select('name')
+          .order('name');
+
+        if (companyError) {
+          console.error('Erro ao buscar tipos da empresa:', companyError);
+        }
+
+        if (globalError) {
+          console.error('Erro ao buscar tipos globais:', globalError);
+        }
+
+        // Combinar e remover duplicatas
+        const companyTypeNames = companyTypes?.map(t => t.name) || [];
+        const globalTypeNames = globalTypes?.map(t => t.name) || [];
+        const allTypes = [...new Set([...companyTypeNames, ...globalTypeNames])];
+
+        // Fallback para lista padrão se não houver tipos cadastrados
+        if (allTypes.length === 0) {
+          setAvailableDocuments([
+            "RG - Registro Geral",
+            "CPF - Cadastro de Pessoa Física", 
+            "Comprovante de Residência",
+            "CNPJ - Cadastro Nacional da Pessoa Jurídica",
+            "Carteira de Trabalho",
+            "Contrato Social", 
+            "Inscrição Estadual", 
+            "Alvará de Funcionamento",
+            "Declaração de Imposto de Renda", 
+            "Comprovante de Renda", 
+            "Certidão de Nascimento",
+            "Certidão de Casamento", 
+            "Procuração", 
+            "Contrato de Prestação de Serviços"
+          ]);
+        } else {
+          setAvailableDocuments(allTypes.sort());
+        }
+      } catch (error) {
+        console.error('Erro ao carregar tipos de documentos:', error);
+        // Usar lista padrão em caso de erro
+        setAvailableDocuments([
+          "RG - Registro Geral",
+          "CPF - Cadastro de Pessoa Física", 
+          "Comprovante de Residência"
+        ]);
+      } finally {
+        setLoadingDocuments(false);
+      }
+    };
+
+    fetchDocumentTypes();
+  }, [company?.id]);
 
   const resetForm = () => {
     setFormData({
@@ -345,28 +400,42 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
                 />
               </div>
               <div className="max-h-40 overflow-y-auto border rounded-lg p-3 bg-muted/30">
-                {availableDocuments
-                  .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
-                  .map((doc) => (
-                  <div key={doc} className="flex items-center space-x-2 py-1">
-                    <input
-                      type="checkbox"
-                      id={`doc-${doc}`}
-                      checked={requiredDocuments.includes(doc)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setRequiredDocuments([...requiredDocuments, doc]);
-                        } else {
-                          setRequiredDocuments(requiredDocuments.filter(d => d !== doc));
-                        }
-                      }}
-                      className="rounded border-border"
-                    />
-                    <Label htmlFor={`doc-${doc}`} className="text-sm cursor-pointer flex-1">
-                      {doc}
-                    </Label>
+                {loadingDocuments ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    <span className="ml-2 text-sm text-muted-foreground">Carregando tipos de documentos...</span>
                   </div>
-                ))}
+                ) : availableDocuments.length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground">Nenhum tipo de documento encontrado.</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Cadastre tipos de documentos em <strong>Configurações → Tipos de Documentos</strong>
+                    </p>
+                  </div>
+                ) : (
+                  availableDocuments
+                    .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map((doc) => (
+                    <div key={doc} className="flex items-center space-x-2 py-1">
+                      <input
+                        type="checkbox"
+                        id={`doc-${doc}`}
+                        checked={requiredDocuments.includes(doc)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setRequiredDocuments([...requiredDocuments, doc]);
+                          } else {
+                            setRequiredDocuments(requiredDocuments.filter(d => d !== doc));
+                          }
+                        }}
+                        className="rounded border-border"
+                      />
+                      <Label htmlFor={`doc-${doc}`} className="text-sm cursor-pointer flex-1">
+                        {doc}
+                      </Label>
+                    </div>
+                  )))
+                }
               </div>
               {requiredDocuments.length > 0 && (
                 <div className="text-xs text-muted-foreground">
