@@ -446,7 +446,7 @@ const AreaCliente = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <FileText className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">DocFlow</span>
+                <span className="text-xl font-bold text-foreground">Fuzen</span>
               </div>
               <div className="hidden md:block">
                 <span className="text-sm text-muted-foreground">
@@ -459,11 +459,16 @@ const AreaCliente = () => {
                 <User className="h-4 w-4 mr-2" />
                 Perfil
               </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/auth">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Link>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
               </Button>
             </div>
           </div>
@@ -485,9 +490,9 @@ const AreaCliente = () => {
                 </div>
                 <Button 
                   variant="outline" 
-                  onClick={() => {
-                    supabase.auth.signOut();
-                    window.location.href = '/auth';
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = '/';
                   }}
                 >
                   Fazer Login Novamente
@@ -564,7 +569,7 @@ const AreaCliente = () => {
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium">Email de Suporte</Label>
-                      <p className="text-sm text-muted-foreground">suporte@docflow.com</p>
+                      <p className="text-sm text-muted-foreground">suporte@fuzen.online</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Telefone</Label>

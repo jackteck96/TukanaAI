@@ -128,7 +128,7 @@ const SignatureCallback: React.FC = () => {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <FileText className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">DocFlow</span>
+                <span className="text-xl font-bold text-foreground">Fuzen</span>
               </div>
               <div className="hidden md:block">
                 <span className="text-sm text-muted-foreground">
