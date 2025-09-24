@@ -162,39 +162,27 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         throw inviteError;
       }
 
-      // 4. Enviar email de convite (cadastro na plataforma)
+      // 4. Enviar email unificado (convite + boas-vindas)
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-      console.log('Sending invite email to:', formData.clientEmail, 'with link:', inviteLink);
+      console.log('Sending unified invite email to:', formData.clientEmail, 'with link:', inviteLink);
       
-      const { data: inviteResponse, error: inviteEmailError } = await supabase.functions.invoke("invite-collaborator", {
+      const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-invite-email", {
         body: {
           email: formData.clientEmail,
           full_name: formData.clientName,
-          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-          inviteLink,
-        },
-      });
-
-      console.log('Invite email response:', inviteResponse, 'error:', inviteEmailError);
-
-      // 5. Enviar email de boas-vindas (acesso ao processo) 
-      console.log('Sending welcome email to:', formData.clientEmail, 'for process:', processData.id);
-      
-      const { data: welcomeResponse, error: welcomeEmailError } = await supabase.functions.invoke("send-welcome-email", {
-        body: {
           processId: processData.id,
-          clientName: formData.clientName,
-          clientEmail: formData.clientEmail,
           processName: formData.projectName || `Processo - ${formData.clientName}`,
           companyId: company.id,
+          inviteLink,
+          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
         },
       });
 
-      console.log('Welcome email response:', welcomeResponse, 'error:', welcomeEmailError);
+      console.log('Unified email response:', emailResponse, 'error:', emailError);
 
-      // Tratar erros de email
-      if (inviteEmailError || welcomeEmailError) {
-        console.error("Erro ao enviar emails:", { inviteEmailError, welcomeEmailError });
+      // Tratar erro de email
+      if (emailError) {
+        console.error("Erro ao enviar email:", emailError);
         
         // Mostrar modal com link de convite
         const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;

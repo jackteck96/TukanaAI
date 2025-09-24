@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Mail, Send, UserPlus, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompany } from '@/contexts/CompanyContext';
 import { toast } from 'sonner';
 
 interface InviteFormData {
@@ -23,6 +24,7 @@ interface UserInviteSystemProps {
 
 export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps) {
   const { user } = useAuth();
+  const { company } = useCompany();
   const [isOpen, setIsOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [showInviteLink, setShowInviteLink] = useState(false);
@@ -75,15 +77,22 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
   const sendInviteEmail = async (token: string) => {
     try {
+      if (!user || !company?.id) {
+        throw new Error('Usuário ou empresa não identificados');
+      }
+
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
-      // Enviar email de convite customizado para qualquer função (staff ou client)
-      const { error } = await supabase.functions.invoke('invite-collaborator', {
+      // Usar o edge function unificado para colaborador
+      const { error } = await supabase.functions.invoke('send-unified-invite-email', {
         body: {
           email: inviteData.email,
           full_name: inviteData.full_name,
-          inviterName: user?.user_metadata?.full_name || user?.email,
-          inviteLink: inviteLink
+          processId: '', // Colaborador não tem processo específico
+          processName: `Convite para ${getRoleLabel(inviteData.role)}`,
+          companyId: company.id,
+          inviteLink: inviteLink,
+          inviterName: user?.user_metadata?.full_name || user?.email || company.name
         }
       });
 
