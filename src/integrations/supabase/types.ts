@@ -54,9 +54,12 @@ export type Database = {
         Row: {
           conditions: string | null
           created_at: string
+          expected_output: string | null
           id: string
+          input_example: string | null
           is_active: boolean
           keywords: string[]
+          notes: string | null
           priority: number
           process_type: string
           required_documents: string[]
@@ -66,9 +69,12 @@ export type Database = {
         Insert: {
           conditions?: string | null
           created_at?: string
+          expected_output?: string | null
           id?: string
+          input_example?: string | null
           is_active?: boolean
           keywords?: string[]
+          notes?: string | null
           priority?: number
           process_type: string
           required_documents?: string[]
@@ -78,9 +84,12 @@ export type Database = {
         Update: {
           conditions?: string | null
           created_at?: string
+          expected_output?: string | null
           id?: string
+          input_example?: string | null
           is_active?: boolean
           keywords?: string[]
+          notes?: string | null
           priority?: number
           process_type?: string
           required_documents?: string[]

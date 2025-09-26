@@ -56,6 +56,9 @@ interface AITrainingData {
   conditions: string;
   priority: number;
   is_active: boolean;
+  input_example: string;
+  expected_output: string;
+  notes: string;
 }
 
 interface AITrainingCase {
@@ -102,6 +105,17 @@ const AdminDashboard = () => {
   const [isTrainingModalOpen, setIsTrainingModalOpen] = useState(false);
   const [isCaseModalOpen, setIsCaseModalOpen] = useState(false);
   const [editingTraining, setEditingTraining] = useState<AITrainingData | null>(null);
+  const [trainingForm, setTrainingForm] = useState({
+    process_type: "",
+    input_example: "",
+    expected_output: "",
+    notes: "",
+    keywords: [] as string[],
+    required_documents: [] as string[],
+    suggested_documents: [] as string[],
+    conditions: "",
+    priority: 1
+  });
 
   const [loading, setLoading] = useState(true);
 
@@ -276,6 +290,62 @@ const AdminDashboard = () => {
     }
   };
 
+  // AI Training handlers
+  const handleTrainingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingTraining) {
+        const { error } = await supabase
+          .from('ai_training_data')
+          .update(trainingForm)
+          .eq('id', editingTraining.id);
+        
+        if (error) throw error;
+        toast({ title: "Sucesso", description: "Exemplo de treinamento atualizado" });
+      } else {
+        const { error } = await supabase
+          .from('ai_training_data')
+          .insert({ ...trainingForm, is_active: true });
+        
+        if (error) throw error;
+        toast({ title: "Sucesso", description: "Exemplo de treinamento criado" });
+      }
+      
+      setIsTrainingModalOpen(false);
+      setEditingTraining(null);
+      setTrainingForm({
+        process_type: "",
+        input_example: "",
+        expected_output: "",
+        notes: "",
+        keywords: [],
+        required_documents: [],
+        suggested_documents: [],
+        conditions: "",
+        priority: 1
+      });
+      fetchTrainingData();
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteTraining = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_training_data')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Exemplo de treinamento removido" });
+      fetchTrainingData();
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    }
+  };
+
   const handlePreview = (template: GlobalDocumentTemplate) => {
     let content = template.content;
     content = content.replace(/\[CLIENTE\]/g, "João Silva, brasileiro, casado, empresário");
@@ -284,6 +354,38 @@ const AdminDashboard = () => {
     
     setPreviewContent(content);
     setPreviewMode(true);
+  };
+
+  const handleKeywordAdd = (keyword: string) => {
+    if (keyword && !trainingForm.keywords.includes(keyword)) {
+      setTrainingForm(prev => ({
+        ...prev,
+        keywords: [...prev.keywords, keyword]
+      }));
+    }
+  };
+
+  const handleKeywordRemove = (index: number) => {
+    setTrainingForm(prev => ({
+      ...prev,
+      keywords: prev.keywords.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleDocumentAdd = (type: 'required' | 'suggested', doc: string) => {
+    if (doc && !trainingForm[`${type}_documents`].includes(doc)) {
+      setTrainingForm(prev => ({
+        ...prev,
+        [`${type}_documents`]: [...prev[`${type}_documents`], doc]
+      }));
+    }
+  };
+
+  const handleDocumentRemove = (type: 'required' | 'suggested', index: number) => {
+    setTrainingForm(prev => ({
+      ...prev,
+      [`${type}_documents`]: prev[`${type}_documents`].filter((_, i) => i !== index)
+    }));
   };
 
   if (loading) {
@@ -748,43 +850,75 @@ const AdminDashboard = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Regras de Análise</h3>
+              <h3 className="text-lg font-semibold">Exemplos de Treinamento</h3>
               {trainingData.map((rule) => (
                 <Card key={rule.id} className={!rule.is_active ? 'opacity-50' : ''}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">{rule.process_type}</CardTitle>
-                      <Badge variant={rule.is_active ? "default" : "secondary"}>
-                        {rule.is_active ? "Ativa" : "Inativa"}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge variant={rule.is_active ? "default" : "secondary"}>
+                          {rule.is_active ? "Ativa" : "Inativa"}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditingTraining(rule);
+                            setTrainingForm({
+                              process_type: rule.process_type,
+                              input_example: rule.input_example,
+                              expected_output: rule.expected_output,
+                              notes: rule.notes,
+                              keywords: rule.keywords,
+                              required_documents: rule.required_documents,
+                              suggested_documents: rule.suggested_documents,
+                              conditions: rule.conditions,
+                              priority: rule.priority
+                            });
+                            setIsTrainingModalOpen(true);
+                          }}
+                          className="h-8 w-8 hover:bg-accent"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteTraining(rule.id)}
+                          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium">Exemplo de Entrada:</p>
+                        <p className="text-sm text-muted-foreground bg-accent/30 p-2 rounded mt-1">
+                          {rule.input_example || "Não definido"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Saída Esperada:</p>
+                        <p className="text-sm text-muted-foreground bg-accent/30 p-2 rounded mt-1">
+                          {rule.expected_output || "Não definido"}
+                        </p>
+                      </div>
+                      {rule.notes && (
+                        <div>
+                          <p className="text-sm font-medium">Observações:</p>
+                          <p className="text-sm text-muted-foreground">{rule.notes}</p>
+                        </div>
+                      )}
                       <div>
                         <p className="text-sm font-medium">Palavras-chave:</p>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {rule.keywords.map((keyword, index) => (
                             <Badge key={index} variant="outline" className="text-xs">{keyword}</Badge>
                           ))}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm font-medium">Documentos Obrigatórios:</p>
-                          <ul className="text-xs text-muted-foreground mt-1">
-                            {rule.required_documents.map((doc, index) => (
-                              <li key={index}>• {doc}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">Documentos Sugeridos:</p>
-                          <ul className="text-xs text-muted-foreground mt-1">
-                            {rule.suggested_documents.map((doc, index) => (
-                              <li key={index}>• {doc}</li>
-                            ))}
-                          </ul>
                         </div>
                       </div>
                     </div>
