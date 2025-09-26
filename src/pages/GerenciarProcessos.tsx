@@ -20,7 +20,8 @@ import {
   Mail,
   Calendar,
   FileIcon,
-  Edit
+  Edit,
+  Brain
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
@@ -30,6 +31,7 @@ import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
 import EmailLogViewer from "@/components/EmailLogViewer";
+import AIProcessAnalyzer from "@/components/AIProcessAnalyzer";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -50,6 +52,8 @@ const GerenciarProcessos = () => {
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<string>("");
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isAIAnalysisModalOpen, setIsAIAnalysisModalOpen] = useState(false);
+  const [selectedProcessForAnalysis, setSelectedProcessForAnalysis] = useState<any>(null);
   const { toast } = useToast();
 
   // Check if we have a specific process ID in the URL
@@ -264,10 +268,21 @@ const GerenciarProcessos = () => {
                 <Badge className={getStatusColor(currentProcess.status)}>
                   {currentProcess.status}
                 </Badge>
-                <Button variant="outline" onClick={() => setIsNotesModalOpen(true)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar Anotações
-                </Button>
+                  <Button variant="outline" onClick={() => setIsNotesModalOpen(true)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Anotações
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProcessForAnalysis(currentProcess);
+                      setIsAIAnalysisModalOpen(true);
+                    }}
+                  >
+                    <Brain className="h-4 w-4 mr-2" />
+                    Análise IA
+                  </Button>
               </div>
             </div>
           </div>
@@ -415,6 +430,31 @@ const GerenciarProcessos = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* AI Analysis Modal */}
+        <Dialog open={isAIAnalysisModalOpen} onOpenChange={setIsAIAnalysisModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Análise de IA do Processo</DialogTitle>
+            </DialogHeader>
+            {selectedProcessForAnalysis && (
+              <AIProcessAnalyzer 
+                process={{
+                  id: selectedProcessForAnalysis.id,
+                  processType: selectedProcessForAnalysis.processType || selectedProcessForAnalysis.process_type || 'Não informado',
+                  description: selectedProcessForAnalysis.description || '',
+                  requiredDocuments: selectedProcessForAnalysis.requiredDocuments || [],
+                  receivedDocuments: selectedProcessForAnalysis.receivedDocuments || [],
+                  pendingDocuments: selectedProcessForAnalysis.pendingDocuments || [],
+                  clientName: selectedProcessForAnalysis.client_name || selectedProcessForAnalysis.client,
+                  clientEmail: selectedProcessForAnalysis.client_email,
+                  companyId: selectedProcessForAnalysis.company_id
+                }}
+                availableDocuments={[]}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -556,6 +596,31 @@ const GerenciarProcessos = () => {
             ))
           )}
         </div>
+        
+        {/* AI Analysis Modal */}
+        <Dialog open={isAIAnalysisModalOpen} onOpenChange={setIsAIAnalysisModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Análise de IA do Processo</DialogTitle>
+            </DialogHeader>
+            {selectedProcessForAnalysis && (
+              <AIProcessAnalyzer 
+                process={{
+                  id: selectedProcessForAnalysis.id,
+                  processType: selectedProcessForAnalysis.processType || 'Não informado',
+                  description: selectedProcessForAnalysis.description || '',
+                  requiredDocuments: selectedProcessForAnalysis.requiredDocuments || [],
+                  receivedDocuments: selectedProcessForAnalysis.receivedDocuments || [],
+                  pendingDocuments: selectedProcessForAnalysis.pendingDocuments || [],
+                  clientName: selectedProcessForAnalysis.client,
+                  clientEmail: selectedProcessForAnalysis.clientEmail,
+                  companyId: selectedProcessForAnalysis.companyId
+                }}
+                availableDocuments={[]}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
