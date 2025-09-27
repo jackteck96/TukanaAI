@@ -31,7 +31,7 @@ import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
 import EmailLogViewer from "@/components/EmailLogViewer";
-import AIProcessAnalyzer from "@/components/AIProcessAnalyzer";
+import { AIProcessAnalyzer } from "@/components/AIProcessAnalyzer";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -439,18 +439,7 @@ const GerenciarProcessos = () => {
             </DialogHeader>
             {selectedProcessForAnalysis && (
               <AIProcessAnalyzer 
-                process={{
-                  id: selectedProcessForAnalysis.id,
-                  processType: selectedProcessForAnalysis.processType || selectedProcessForAnalysis.process_type || 'Não informado',
-                  description: selectedProcessForAnalysis.description || '',
-                  requiredDocuments: selectedProcessForAnalysis.requiredDocuments || [],
-                  receivedDocuments: selectedProcessForAnalysis.receivedDocuments || [],
-                  pendingDocuments: selectedProcessForAnalysis.pendingDocuments || [],
-                  clientName: selectedProcessForAnalysis.client_name || selectedProcessForAnalysis.client,
-                  clientEmail: selectedProcessForAnalysis.client_email,
-                  companyId: selectedProcessForAnalysis.company_id
-                }}
-                availableDocuments={[]}
+                companyId={selectedProcessForAnalysis.company_id || ''}
               />
             )}
           </DialogContent>
@@ -605,18 +594,7 @@ const GerenciarProcessos = () => {
             </DialogHeader>
             {selectedProcessForAnalysis && (
               <AIProcessAnalyzer 
-                process={{
-                  id: selectedProcessForAnalysis.id,
-                  processType: selectedProcessForAnalysis.processType || 'Não informado',
-                  description: selectedProcessForAnalysis.description || '',
-                  requiredDocuments: selectedProcessForAnalysis.requiredDocuments || [],
-                  receivedDocuments: selectedProcessForAnalysis.receivedDocuments || [],
-                  pendingDocuments: selectedProcessForAnalysis.pendingDocuments || [],
-                  clientName: selectedProcessForAnalysis.client,
-                  clientEmail: selectedProcessForAnalysis.clientEmail,
-                  companyId: selectedProcessForAnalysis.companyId
-                }}
-                availableDocuments={[]}
+                companyId={selectedProcessForAnalysis.company_id || ''}
               />
             )}
           </DialogContent>
