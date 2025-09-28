@@ -63,20 +63,14 @@ serve(async (req) => {
 
     console.log('Tipos de documentos da empresa:', documentTypes?.length || 0);
 
-    const userPrompt = `ANÁLISE DE DOCUMENTOS DE PROCESSO:
-Tipo de Processo: ${processDescription}
+    // Construir contexto de treinamento
+    const trainingContext = trainingData?.map(td => 
+      `Exemplo: ${td.input_example}\nResposta esperada: ${td.expected_output}\nNotas: ${td.notes || 'N/A'}`
+    ).join('\n\n') || '';
 
-DOCUMENTOS FORNECIDOS PARA ANÁLISE:
-${documents.map(doc => `- ${doc.name} (${doc.type})${doc.content ? `: ${doc.content.substring(0, 500)}...` : ''}`).join('\n')}
-
-INSTRUÇÕES:
-1. Primeiro, identifique o checklist completo de documentos obrigatórios para este tipo de processo
-2. Verifique se TODOS os documentos obrigatórios foram fornecidos
-3. Se faltar algum documento obrigatório, retorne status "incomplete" e liste os documentos em falta
-4. Se todos documentos obrigatórios estiverem presentes, analise cada documento detalhadamente
-5. Gere o parecer final consolidado
-
-Analise este processo de documentação seguindo todas as instruções e retorne APENAS o JSON no formato especificado.`;
+    const documentTypesContext = documentTypes?.map(dt => 
+      `Tipo: ${dt.name} - ${dt.description || 'Sem descrição'}`
+    ).join('\n') || '';
 
     // Prompt estruturado para análise de processos de documentação
     const systemPrompt = `Você é um assistente jurídico-documental especializado em PROCESSOS DE DOCUMENTAÇÃO empresarial e administrativos (NUNCA processos judiciais).
@@ -121,21 +115,6 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
     "status": "incomplete" ou "ready_for_validation"
   }
 }`;
-
-    const userPrompt = `ANÁLISE DE DOCUMENTOS DE PROCESSO:
-Tipo de Processo: ${processDescription}
-
-DOCUMENTOS FORNECIDOS PARA ANÁLISE:
-${documents.map(doc => `- ${doc.name} (${doc.type})${doc.content ? `: ${doc.content.substring(0, 500)}...` : ''}`).join('\n')}
-
-INSTRUÇÕES:
-1. Primeiro, identifique o checklist completo de documentos obrigatórios para este tipo de processo
-2. Verifique se TODOS os documentos obrigatórios foram fornecidos
-3. Se faltar algum documento obrigatório, retorne status "incomplete" e liste os documentos em falta
-4. Se todos documentos obrigatórios estiverem presentes, analise cada documento detalhadamente
-5. Gere o parecer final consolidado
-
-Analise este processo de documentação seguindo todas as instruções e retorne APENAS o JSON no formato especificado.`;
 
     console.log('Enviando para análise de IA...');
 
@@ -208,8 +187,6 @@ Analise este processo de documentação seguindo todas as instruções e retorne
 
     console.log(`Processo identificado: ${processType}`);
     console.log(`Documentos em falta: ${missingDocuments.length}`);
-
-    const aiResponse = { ok: true }; // Simular resposta OK
 
     // Gerar análise inteligente baseada nos dados coletados
     const analysisResult: AnalysisResponse = {
@@ -311,12 +288,12 @@ Analise este processo de documentação seguindo todas as instruções e retorne
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro na análise de documentos:', error);
     
     return new Response(JSON.stringify({ 
       error: 'Erro interno na análise',
-      details: error.message 
+      details: error?.message || 'Erro desconhecido'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

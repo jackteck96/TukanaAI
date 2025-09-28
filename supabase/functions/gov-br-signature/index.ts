@@ -134,7 +134,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Erro no processo de assinatura:', error);
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor' 
+      error: (error as Error)?.message || 'Erro interno do servidor' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -169,16 +169,19 @@ async function getSignatureOrder(documentId: string, signerEmail: string): Promi
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   );
 
+  // First get signature flows for the document
+  const { data: flows } = await supabaseClient
+    .from('signature_flows')
+    .select('id')
+    .eq('document_id', documentId);
+
+  const flowIds = flows?.map(f => f.id) || [];
+
   const { data } = await supabaseClient
     .from('signature_requirements')
     .select('signature_order')
     .eq('signer_email', signerEmail)
-    .in('signature_flow_id', 
-      supabaseClient
-        .from('signature_flows')
-        .select('id')
-        .eq('document_id', documentId)
-    )
+    .in('signature_flow_id', flowIds)
     .single();
 
   return data?.signature_order || 1;
