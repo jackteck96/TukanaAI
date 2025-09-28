@@ -55,8 +55,17 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
   const handleAnalyze = async () => {
     if (!processDescription.trim()) {
       toast({
-        title: "Descrição necessária",
-        description: "Por favor, descreva o processo de documentação que precisa ser analisado.",
+        title: "Tipo de processo necessário",
+        description: "Por favor, especifique o tipo de processo de documentação.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (documents.length === 0) {
+      toast({
+        title: "Documentos necessários",
+        description: "Adicione pelo menos um documento para iniciar a análise.",
         variant: "destructive",
       });
       return;
@@ -109,30 +118,33 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
             IA de Análise de Processos de Documentação
           </CardTitle>
           <CardDescription>
-            Sistema inteligente para análise de processos empresariais e administrativos (não judiciais)
+            Sistema inteligente para análise de documentos empresariais e administrativos (não judiciais)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Descrição do Processo */}
+          {/* Tipo de Processo */}
           <div className="space-y-2">
-            <Label htmlFor="process-description">Descrição do Processo de Documentação</Label>
+            <Label htmlFor="process-description">Tipo de Processo de Documentação</Label>
             <Textarea
               id="process-description"
-              placeholder="Descreva o tipo de processo de documentação (ex: abertura de empresa, alteração contratual, due diligence, regularização de cadastros, licenciamento, etc.)"
+              placeholder="Especifique o tipo de processo (ex: abertura de empresa, alteração contratual, due diligence, regularização de cadastros, licenciamento, etc.)"
               value={processDescription}
               onChange={(e) => setProcessDescription(e.target.value)}
-              rows={4}
+              rows={2}
               className="resize-none"
             />
+            <p className="text-sm text-muted-foreground">
+              Esta informação será usada para gerar o checklist de documentos obrigatórios
+            </p>
           </div>
 
-          {/* Documentos - Opcional */}
+          {/* Documentos Obrigatórios */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Documentos já Enviados (Opcional)</Label>
+                <Label>Documentos do Processo</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Adicione apenas se já possui documentos para análise complementar
+                  Adicione todos os documentos necessários para análise
                 </p>
               </div>
               <Button
@@ -168,26 +180,34 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
                 ))}
               </div>
             )}
+
+            {documents.length === 0 && (
+              <div className="p-6 border-2 border-dashed rounded-lg text-center text-muted-foreground">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhum documento adicionado</p>
+                <p className="text-sm">Adicione os documentos para iniciar a análise</p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              A IA analisará o processo baseado na descrição fornecida e gerará um checklist completo dos documentos necessários.
+              A IA irá primeiro verificar se todos os documentos obrigatórios foram enviados e depois analisar cada documento individualmente.
             </p>
             <Button 
               onClick={handleAnalyze} 
               className="w-full"
-              disabled={isAnalyzing || !processDescription.trim()}
+              disabled={isAnalyzing || !processDescription.trim() || documents.length === 0}
             >
               {isAnalyzing ? (
                 <>
                   <Clock className="h-4 w-4 mr-2 animate-spin" />
-                  Analisando...
+                  Analisando Documentos...
                 </>
               ) : (
                 <>
                   <Brain className="h-4 w-4 mr-2" />
-                  Analisar Processo de Documentação
+                  Analisar Documentos do Processo
                 </>
               )}
             </Button>

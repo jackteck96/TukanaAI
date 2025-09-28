@@ -63,14 +63,20 @@ serve(async (req) => {
 
     console.log('Tipos de documentos da empresa:', documentTypes?.length || 0);
 
-    // Construir contexto de treinamento
-    const trainingContext = trainingData?.map(td => 
-      `Exemplo: ${td.input_example}\nResposta esperada: ${td.expected_output}\nNotas: ${td.notes || 'N/A'}`
-    ).join('\n\n') || '';
+    const userPrompt = `ANÁLISE DE DOCUMENTOS DE PROCESSO:
+Tipo de Processo: ${processDescription}
 
-    const documentTypesContext = documentTypes?.map(dt => 
-      `Tipo: ${dt.name} - ${dt.description || 'Sem descrição'}`
-    ).join('\n') || '';
+DOCUMENTOS FORNECIDOS PARA ANÁLISE:
+${documents.map(doc => `- ${doc.name} (${doc.type})${doc.content ? `: ${doc.content.substring(0, 500)}...` : ''}`).join('\n')}
+
+INSTRUÇÕES:
+1. Primeiro, identifique o checklist completo de documentos obrigatórios para este tipo de processo
+2. Verifique se TODOS os documentos obrigatórios foram fornecidos
+3. Se faltar algum documento obrigatório, retorne status "incomplete" e liste os documentos em falta
+4. Se todos documentos obrigatórios estiverem presentes, analise cada documento detalhadamente
+5. Gere o parecer final consolidado
+
+Analise este processo de documentação seguindo todas as instruções e retorne APENAS o JSON no formato especificado.`;
 
     // Prompt estruturado para análise de processos de documentação
     const systemPrompt = `Você é um assistente jurídico-documental especializado em PROCESSOS DE DOCUMENTAÇÃO empresarial e administrativos (NUNCA processos judiciais).
@@ -116,11 +122,18 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
   }
 }`;
 
-    const userPrompt = `PROCESSO DE DOCUMENTAÇÃO PARA ANÁLISE:
-Descrição: ${processDescription}
+    const userPrompt = `ANÁLISE DE DOCUMENTOS DE PROCESSO:
+Tipo de Processo: ${processDescription}
 
-DOCUMENTOS ENVIADOS:
+DOCUMENTOS FORNECIDOS PARA ANÁLISE:
 ${documents.map(doc => `- ${doc.name} (${doc.type})${doc.content ? `: ${doc.content.substring(0, 500)}...` : ''}`).join('\n')}
+
+INSTRUÇÕES:
+1. Primeiro, identifique o checklist completo de documentos obrigatórios para este tipo de processo
+2. Verifique se TODOS os documentos obrigatórios foram fornecidos
+3. Se faltar algum documento obrigatório, retorne status "incomplete" e liste os documentos em falta
+4. Se todos documentos obrigatórios estiverem presentes, analise cada documento detalhadamente
+5. Gere o parecer final consolidado
 
 Analise este processo de documentação seguindo todas as instruções e retorne APENAS o JSON no formato especificado.`;
 
@@ -186,8 +199,11 @@ Analise este processo de documentação seguindo todas as instruções e retorne
     };
 
     const checklist = getChecklist(processType);
+    
+    // Verificar documentos obrigatórios primeiro
+    const providedDocTypes = documents.map(doc => doc.name.toLowerCase());
     const missingDocuments = checklist.filter(item => 
-      !documents.some(doc => doc.name.toLowerCase().includes(item.toLowerCase().split(' ')[0]))
+      !providedDocTypes.some(docType => docType.includes(item.toLowerCase().split(' ')[0]))
     );
 
     console.log(`Processo identificado: ${processType}`);
@@ -244,27 +260,29 @@ Analise este processo de documentação seguindo todas as instruções e retorne
         return analysis;
       }),
       finalReport: {
-        processIdentification: `${processType} - Processo de documentação empresarial identificado com base na descrição fornecida`,
+        processIdentification: `${processType} - Processo de documentação empresarial identificado com base nos documentos fornecidos`,
         strongPoints: documents.length > 0 ? [
-          "Documentos iniciais fornecidos",
+          `${documents.length} documento(s) fornecido(s) para análise`,
           "Processo claramente identificado",
           "Documentação organizada"
         ] : ["Processo claramente identificado"],
         weakPoints: missingDocuments.length > 0 ? [
-          `${missingDocuments.length} documento(s) essencial(is) em falta`,
-          "Documentação incompleta para análise final"
+          `${missingDocuments.length} documento(s) obrigatório(s) em falta`,
+          "Documentação incompleta - análise não pode ser finalizada"
         ] : documents.length === 0 ? [
           "Nenhum documento fornecido para análise"
         ] : ["Nenhum ponto identificado"],
         needsImprovement: missingDocuments.length > 0 ? [
-          "Providenciar documentos em falta",
-          "Verificar validade dos documentos existentes"
-        ] : ["Realizar validação final dos documentos"],
+          "Providenciar todos os documentos obrigatórios listados",
+          "Verificar validade dos documentos existentes",
+          "Completar checklist de documentos antes de prosseguir"
+        ] : ["Realizar validação detalhada dos documentos"],
         missing: missingDocuments.length > 0 ? missingDocuments : ["Nenhum ponto identificado"],
         contractualAnalysis: documents.some(doc => doc.name.toLowerCase().includes('contrato')) ? [
           "Contrato presente no processo",
           "Recomenda-se revisão jurídica das cláusulas",
-          "Verificar conformidade com legislação vigente"
+          "Verificar conformidade com legislação vigente",
+          "Analisar cláusulas de rescisão e penalidades"
         ] : ["Nenhum contrato identificado no processo"],
         status: missingDocuments.length === 0 && documents.length > 0 ? 'ready_for_validation' : 'incomplete'
       }
