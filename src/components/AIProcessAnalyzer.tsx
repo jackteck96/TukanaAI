@@ -126,10 +126,15 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
             />
           </div>
 
-          {/* Documentos */}
+          {/* Documentos - Opcional */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label>Documentos do Processo</Label>
+              <div>
+                <Label>Documentos já Enviados (Opcional)</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Adicione apenas se já possui documentos para análise complementar
+                </p>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -165,23 +170,28 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
             )}
           </div>
 
-          <Button 
-            onClick={handleAnalyze} 
-            className="w-full"
-            disabled={isAnalyzing || !processDescription.trim()}
-          >
-            {isAnalyzing ? (
-              <>
-                <Clock className="h-4 w-4 mr-2 animate-spin" />
-                Analisando...
-              </>
-            ) : (
-              <>
-                <Brain className="h-4 w-4 mr-2" />
-                Analisar Processo de Documentação
-              </>
-            )}
-          </Button>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              A IA analisará o processo baseado na descrição fornecida e gerará um checklist completo dos documentos necessários.
+            </p>
+            <Button 
+              onClick={handleAnalyze} 
+              className="w-full"
+              disabled={isAnalyzing || !processDescription.trim()}
+            >
+              {isAnalyzing ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Brain className="h-4 w-4 mr-2" />
+                  Analisar Processo de Documentação
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
