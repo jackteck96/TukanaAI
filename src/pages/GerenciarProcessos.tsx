@@ -21,7 +21,8 @@ import {
   Calendar,
   FileIcon,
   Edit,
-  Brain
+  Brain,
+  Settings
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
@@ -32,6 +33,7 @@ import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
 import EmailLogViewer from "@/components/EmailLogViewer";
 import { AIProcessAnalyzer } from "@/components/AIProcessAnalyzer";
+import ProcessEditDialog from "@/components/ProcessEditDialog";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -54,6 +56,8 @@ const GerenciarProcessos = () => {
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [isAIAnalysisModalOpen, setIsAIAnalysisModalOpen] = useState(false);
   const [selectedProcessForAnalysis, setSelectedProcessForAnalysis] = useState<any>(null);
+  const [isEditProcessModalOpen, setIsEditProcessModalOpen] = useState(false);
+  const [selectedProcessForEdit, setSelectedProcessForEdit] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Check if we have a specific process ID in the URL
@@ -268,6 +272,16 @@ const GerenciarProcessos = () => {
                 <Badge className={getStatusColor(currentProcess.status)}>
                   {currentProcess.status}
                 </Badge>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSelectedProcessForEdit(currentProcess.id);
+                      setIsEditProcessModalOpen(true);
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Editar Processo
+                  </Button>
                   <Button variant="outline" onClick={() => setIsNotesModalOpen(true)}>
                     <Edit className="h-4 w-4 mr-2" />
                     Editar Anotações
@@ -505,6 +519,20 @@ const GerenciarProcessos = () => {
                       Cliente: {process.client} • Prazo: {process.dueDate}
                     </p>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProcessForEdit(process.id);
+                        setIsEditProcessModalOpen(true);
+                      }}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -586,6 +614,36 @@ const GerenciarProcessos = () => {
           )}
         </div>
         
+        {/* Process Edit Modal */}
+        {selectedProcessForEdit && (
+          <ProcessEditDialog
+            isOpen={isEditProcessModalOpen}
+            onClose={() => {
+              setIsEditProcessModalOpen(false);
+              setSelectedProcessForEdit(null);
+            }}
+            processId={selectedProcessForEdit}
+            onProcessUpdated={() => {
+              setIsEditProcessModalOpen(false);
+              setSelectedProcessForEdit(null);
+              if (processId) {
+                fetchProcessDetails(processId);
+              } else {
+                fetchProcesses();
+              }
+            }}
+            onProcessDeleted={() => {
+              setIsEditProcessModalOpen(false);
+              setSelectedProcessForEdit(null);
+              if (processId) {
+                navigate('/gerenciar-processos');
+              } else {
+                fetchProcesses();
+              }
+            }}
+          />
+        )}
+
         {/* AI Analysis Modal */}
         <Dialog open={isAIAnalysisModalOpen} onOpenChange={setIsAIAnalysisModalOpen}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
