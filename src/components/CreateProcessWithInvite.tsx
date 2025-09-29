@@ -221,7 +221,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
       console.log('Sending unified invite email to:', formData.clientEmail, 'with link:', inviteLink);
       
-      const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-invite-email", {
+      const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-email", {
         body: {
           email: formData.clientEmail,
           full_name: formData.clientName,
@@ -230,6 +230,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           companyId: company.id,
           inviteLink,
           inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+          isCollaborator: false
         },
       });
 

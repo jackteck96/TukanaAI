@@ -84,7 +84,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
       // Usar o edge function unificado para colaborador
-      const { error } = await supabase.functions.invoke('send-unified-invite-email', {
+      const { error } = await supabase.functions.invoke('send-unified-email', {
         body: {
           email: inviteData.email,
           full_name: inviteData.full_name,
@@ -92,7 +92,8 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
           processName: `Convite para ${getRoleLabel(inviteData.role)}`,
           companyId: company.id,
           inviteLink: inviteLink,
-          inviterName: user?.user_metadata?.full_name || user?.email || company.name
+          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+          isCollaborator: true
         }
       });
 
