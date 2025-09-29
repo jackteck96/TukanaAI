@@ -1,7 +1,23 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@4.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// Mock implementation for email sending - logs instead of sending real emails
+const mockEmailSender = {
+  emails: {
+    send: async (emailData: any) => {
+      console.log("📧 Email que seria enviado:", {
+        from: emailData.from,
+        to: emailData.to,
+        subject: emailData.subject,
+        timestamp: new Date().toISOString()
+      });
+      
+      return {
+        data: { id: `mock_${Date.now()}_${Math.random().toString(36).substring(7)}` },
+        error: null
+      };
+    }
+  }
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -249,7 +265,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending unified email to:", email, "Type:", isClientInvite ? "client" : "collaborator");
 
-    const emailResponse = await resend.emails.send({
+    const emailResponse = await mockEmailSender.emails.send({
       from: `Fuzen <${fromEmail}>`,
       to: [email],
       subject,

@@ -1,22 +1,25 @@
 project_id = "devnkdyfzlgspdlfuyam"
 
+[functions.analyze-document-process]
+verify_jwt = true
+
+[functions.create-client-from-invite]
+verify_jwt = false
+
+[functions.gov-br-signature]
+verify_jwt = false
+
 [functions.invite-collaborator]
 verify_jwt = false
 
-[functions.send-invite-email]
-verify_jwt = false
-
-[functions.send-welcome-email]
-verify_jwt = false
-
-[functions.send-unified-invite-email]
+[functions.send-document-notification]
 verify_jwt = false
 
 [functions.send-otp-email]
 verify_jwt = false
 
-[functions.verify-invite]
+[functions.send-unified-email]
 verify_jwt = false
 
-[functions.create-client-from-invite]
+[functions.verify-invite]
 verify_jwt = false
