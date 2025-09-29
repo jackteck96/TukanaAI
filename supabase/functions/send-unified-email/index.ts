@@ -1,21 +1,36 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-// Mock implementation for email sending - logs instead of sending real emails
-const mockEmailSender = {
-  emails: {
-    send: async (emailData: any) => {
-      console.log("📧 Email que seria enviado:", {
-        from: emailData.from,
-        to: emailData.to,
-        subject: emailData.subject,
-        timestamp: new Date().toISOString()
-      });
-      
-      return {
-        data: { id: `mock_${Date.now()}_${Math.random().toString(36).substring(7)}` },
-        error: null
-      };
+// Função para enviar email usando API do Resend diretamente
+const sendEmail = async (emailData: any) => {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  
+  if (!resendApiKey) {
+    console.error("RESEND_API_KEY não configurada");
+    return { data: null, error: "API key não configurada" };
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error("Erro ao enviar email:", data);
+      return { data: null, error: data };
     }
+
+    console.log("Email enviado com sucesso:", data);
+    return { data, error: null };
+  } catch (error: any) {
+    console.error("Erro na requisição para Resend:", error);
+    return { data: null, error: error.message };
   }
 };
 
@@ -265,7 +280,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending unified email to:", email, "Type:", isClientInvite ? "client" : "collaborator");
 
-    const emailResponse = await mockEmailSender.emails.send({
+    const emailResponse = await sendEmail({
       from: `Fuzen <${fromEmail}>`,
       to: [email],
       subject,
