@@ -477,13 +477,62 @@ const GestaoColaboradores = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => cancelInvite(invite.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              if (!user || !company?.id) return;
+                              
+                              // Buscar o token do convite
+                              const { data: inviteData, error: inviteError } = await supabase
+                                .from('user_invites')
+                                .select('token')
+                                .eq('id', invite.id)
+                                .single();
+                              
+                              if (inviteError || !inviteData) {
+                                toast.error('Erro ao buscar convite');
+                                return;
+                              }
+
+                              const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${inviteData.token}`;
+                              
+                              // Reenviar email usando send-unified-email
+                              const { error: emailError } = await supabase.functions.invoke('send-unified-email', {
+                                body: {
+                                  email: invite.email,
+                                  full_name: invite.full_name,
+                                  processId: '',
+                                  processName: `Convite para ${getRoleLabel(invite.role)}`,
+                                  companyId: company.id,
+                                  inviteLink,
+                                  inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+                                  isCollaborator: true
+                                }
+                              });
+
+                              if (emailError) throw emailError;
+
+                              toast.success('Convite reenviado com sucesso!');
+                            } catch (error) {
+                              console.error('Erro ao reenviar convite:', error);
+                              toast.error('Erro ao reenviar convite');
+                            }
+                          }}
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          Reenviar
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => cancelInvite(invite.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

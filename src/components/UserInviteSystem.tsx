@@ -127,22 +127,23 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
       // Gerar token e link de convite
       const token = await generateInviteLink();
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
       // Tentar enviar email de convite
       try {
         await sendInviteEmail(token);
-        toast.success('Convite enviado com sucesso!');
-        setIsOpen(false);
-        setInviteData({ email: '', role: 'staff', full_name: '' });
-        onInviteSent?.();
-      } catch (emailError) {
-        // Se falhar no envio do email, mostrar tela com link
-        console.error('Erro ao enviar email:', emailError);
-        const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+        // Mesmo com sucesso, mostrar o modal com link
         setGeneratedInviteLink(inviteLink);
         setShowInviteLink(true);
-        
-        toast.success('Convite criado! Email não pôde ser enviado, mas o link está disponível.');
+        toast.success('Convite enviado por email! Link disponível para compartilhar.');
+        onInviteSent?.();
+      } catch (emailError) {
+        // Se falhar no envio do email, ainda mostrar tela com link
+        console.error('Erro ao enviar email:', emailError);
+        setGeneratedInviteLink(inviteLink);
+        setShowInviteLink(true);
+        toast.warning('Convite criado! Email não pôde ser enviado, mas o link está disponível.');
+        onInviteSent?.();
       }
     } catch (error: any) {
       console.error('Erro ao criar convite:', error);
@@ -305,23 +306,24 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
         <DialogHeader>
           <DialogTitle className="flex items-center text-green-600">
             <Mail className="h-5 w-5 mr-2" />
-            Convite Criado!
+            Convite Criado com Sucesso!
           </DialogTitle>
           <DialogDescription>
-            O convite foi criado, mas não foi possível enviar por email. Use o link abaixo.
+            O convite foi enviado por email. Use o link abaixo para compartilhar manualmente se necessário.
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-start space-x-2">
-              <Mail className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-300">
-                  Email não enviado
+                <h4 className="font-medium text-blue-800 dark:text-blue-300">
+                  Email enviado
                 </h4>
-                <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                  Houve um problema com o envio automático. Use o link abaixo para convidar <strong>{inviteData.full_name}</strong> manualmente.
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                  O convite foi enviado para <strong>{inviteData.email}</strong>. 
+                  Você também pode compartilhar o link abaixo diretamente com <strong>{inviteData.full_name}</strong>.
                 </p>
               </div>
             </div>

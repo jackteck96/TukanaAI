@@ -236,16 +236,14 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
       console.log('Unified email response:', emailResponse, 'error:', emailError);
 
-      // Tratar erro de email
+      // Sempre mostrar modal com link (independente de sucesso ou erro no email)
+      const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+      setInviteLink(generatedInviteLink);
+      setClientName(formData.clientName);
+      setShowInviteLink(true);
+
       if (emailError) {
         console.error("Erro ao enviar email:", emailError);
-        
-        // Mostrar modal com link de convite
-        const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-        setInviteLink(generatedInviteLink);
-        setClientName(formData.clientName);
-        setShowInviteLink(true);
-
         toast({
           title: "Processo criado com sucesso!",
           description: "O email não pôde ser enviado, mas o link de convite está disponível para compartilhar.",
@@ -253,7 +251,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       } else {
         toast({
           title: "Processo criado com sucesso!",
-          description: `Processo criado com ${requiredDocuments.length} documento(s) necessário(s). Emails de convite e boas-vindas enviados para ${formData.clientEmail}.`,
+          description: `Processo criado com ${requiredDocuments.length} documento(s) necessário(s). Email enviado para ${formData.clientEmail}. Link disponível para compartilhar.`,
         });
       }
 
@@ -263,7 +261,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       }
       
       resetForm();
-      setIsOpen(false);
+      // NÃO fechar o dialog aqui - ele será fechado quando o usuário fechar o modal do link
     } catch (error: any) {
       console.error("Erro ao criar processo:", error);
       toast({
@@ -485,20 +483,20 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         <DialogHeader>
           <DialogTitle className="flex items-center text-green-600">
             <CheckCircle className="h-5 w-5 mr-2" />
-            Processo Criado com Sucesso!
+            Processo Criado e Convite Enviado!
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-start space-x-2">
-              <Mail className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-300">
-                  Email não enviado
+                <h4 className="font-medium text-blue-800 dark:text-blue-300">
+                  Convite enviado por email
                 </h4>
-                <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                  Houve um problema com o envio automático do email. Use o link abaixo para convidar <strong>{clientName}</strong> manualmente.
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                  O email de boas-vindas foi enviado para <strong>{clientName}</strong>. Você também pode compartilhar o link abaixo diretamente:
                 </p>
               </div>
             </div>
@@ -546,8 +544,11 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
               <Copy className="h-4 w-4 mr-2" />
               Copiar Link
             </Button>
-            <Button onClick={() => setShowInviteLink(false)}>
-              Entendi
+            <Button onClick={() => {
+              setShowInviteLink(false);
+              setIsOpen(false);
+            }}>
+              Concluir
             </Button>
           </div>
         </div>
