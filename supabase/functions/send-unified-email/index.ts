@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
       ? `🎉 Bem-vindo! Acesse seu processo: ${processName}`
       : `🤝 Convite para fazer parte da equipe - ${companyName}`;
 
-    const fromEmail = Deno.env.get("RESEND_FROM") || "noreply@resend.dev";
+    const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -280,41 +280,51 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending unified email to:", email, "Type:", isClientInvite ? "client" : "collaborator");
 
-    const emailResponse = await sendEmail({
+    // Build base payload
+    const payload = {
       from: `Fuzen <${fromEmail}>`,
       to: [email],
       subject,
       html: emailHtml,
-    });
+    };
 
-    // Handle Resend errors explicitly so the frontend can react properly
+    // 1) Try sending with configured FROM (may be custom domain)
+    let emailResponse = await sendEmail(payload);
+
+    // 2) If domain not verified, retry automatically with Resend sandbox domain
+    const err = emailResponse.error as any;
+    const domainNotVerified = err && (err.statusCode === 403 || err.status === 403) &&
+      typeof err.message === 'string' && err.message.toLowerCase().includes('domain is not verified');
+
+    if (domainNotVerified) {
+      console.warn('Sender domain not verified. Retrying with onboarding@resend.dev');
+      emailResponse = await sendEmail({
+        ...payload,
+        from: 'Fuzen <onboarding@resend.dev>',
+      });
+    }
+
+    // Final error handling
     if (emailResponse.error) {
-      console.error("Resend returned an error:", emailResponse.error);
+      console.error('Resend returned an error:', emailResponse.error);
       return new Response(
-        JSON.stringify({
-          success: false,
-          emailed: false,
-          error: emailResponse.error,
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
+        JSON.stringify({ success: false, emailed: false, error: emailResponse.error }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log('Email sent successfully:', emailResponse);
 
     return new Response(JSON.stringify({ 
       success: true, 
       emailed: true, 
       messageId: emailResponse.data?.id,
       to: email,
-      type: isClientInvite ? "client_welcome" : "collaborator_invite"
+      type: isClientInvite ? 'client_welcome' : 'collaborator_invite'
     }), {
       status: 200,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...corsHeaders,
       },
     });
