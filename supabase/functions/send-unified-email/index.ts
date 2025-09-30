@@ -318,12 +318,6 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
   } catch (error: any) {
     console.error("Error in send-unified-email function:", error);
     return new Response(
