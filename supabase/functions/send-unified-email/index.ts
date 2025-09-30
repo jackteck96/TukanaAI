@@ -287,6 +287,22 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     });
 
+    // Handle Resend errors explicitly so the frontend can react properly
+    if (emailResponse.error) {
+      console.error("Resend returned an error:", emailResponse.error);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          emailed: false,
+          error: emailResponse.error,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify({ 
@@ -296,6 +312,12 @@ const handler = async (req: Request): Promise<Response> => {
       to: email,
       type: isClientInvite ? "client_welcome" : "collaborator_invite"
     }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
+    });
       status: 200,
       headers: {
         "Content-Type": "application/json",
