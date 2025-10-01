@@ -458,41 +458,12 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Teste de envio de e-mail (Resend)</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-3">
-              <div className="md:col-span-1">
-                <Label htmlFor="testEmail">Destinatário</Label>
-                <Input id="testEmail" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="email@exemplo.com" />
-              </div>
-              <div className="md:col-span-1">
-                <Label htmlFor="testName">Nome</Label>
-                <Input id="testName" value={testName} onChange={(e) => setTestName(e.target.value)} placeholder="Nome do destinatário" />
-              </div>
-              <div className="md:col-span-1">
-                <Label>Tipo</Label>
-                <Select value={testMode} onValueChange={(v) => setTestMode(v as 'collaborator' | 'client')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tipo de convite" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="collaborator">Colaborador</SelectItem>
-                    <SelectItem value="client">Cliente (com processo)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:col-span-3 flex gap-2">
-                <Button onClick={handleSendTestEmail} disabled={sendingTest || !testEmail || !company}>
-                  {sendingTest ? 'Enviando...' : 'Enviar e-mail de teste'}
-                </Button>
-                {!company && <span className="text-sm text-muted-foreground">Associe-se a uma empresa para testar.</span>}
-              </div>
-            </CardContent>
-          </Card>
-          <Tabs defaultValue="document-types" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="document-types" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="email-test" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Teste de E-mail
+            </TabsTrigger>
             <TabsTrigger value="document-types" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Tipos de Documentos
@@ -506,6 +477,84 @@ const AdminDashboard = () => {
               Treinamento da IA
             </TabsTrigger>
           </TabsList>
+
+          {/* Email Test Tab */}
+          <TabsContent value="email-test" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Teste de Envio de E-mail (Resend)</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Envie um e-mail de teste para verificar se o sistema de convites está funcionando corretamente
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="testEmail">E-mail do Destinatário</Label>
+                    <Input 
+                      id="testEmail" 
+                      type="email"
+                      value={testEmail} 
+                      onChange={(e) => setTestEmail(e.target.value)} 
+                      placeholder="email@exemplo.com" 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="testName">Nome do Destinatário</Label>
+                    <Input 
+                      id="testName" 
+                      value={testName} 
+                      onChange={(e) => setTestName(e.target.value)} 
+                      placeholder="Nome Completo" 
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label>Tipo de Convite</Label>
+                  <Select value={testMode} onValueChange={(v) => setTestMode(v as 'collaborator' | 'client')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="collaborator">Convite de Colaborador</SelectItem>
+                      <SelectItem value="client">Convite de Cliente (com processo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {testMode === 'collaborator' 
+                      ? 'Simula convite para um novo colaborador da equipe'
+                      : 'Simula convite para um cliente com processo criado'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4">
+                  <Button 
+                    onClick={handleSendTestEmail} 
+                    disabled={sendingTest || !testEmail || !company}
+                    className="min-w-[200px]"
+                  >
+                    {sendingTest ? 'Enviando...' : 'Enviar E-mail de Teste'}
+                  </Button>
+                  {!company && (
+                    <p className="text-sm text-destructive">
+                      Você precisa estar associado a uma empresa para enviar e-mails de teste.
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-6 p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold mb-2">ℹ️ Informações:</h4>
+                  <ul className="text-sm space-y-1 text-muted-foreground">
+                    <li>• O sistema tentará enviar usando o domínio configurado em RESEND_FROM</li>
+                    <li>• Se houver erro de domínio, tentará automaticamente com convites@fuzen.online</li>
+                    <li>• Como fallback final, usará onboarding@resend.dev (sandbox do Resend)</li>
+                    <li>• Verifique os logs da função para detalhes sobre o envio</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Document Types Tab */}
           <TabsContent value="document-types" className="space-y-6">
