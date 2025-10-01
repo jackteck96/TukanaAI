@@ -27,6 +27,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCompany } from "@/contexts/CompanyContext";
 
 interface GlobalDocumentType {
   id: string;
@@ -74,6 +76,14 @@ interface AITrainingCase {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { company } = useCompany();
+
+  const [testEmail, setTestEmail] = useState<string>(user?.email || "");
+  const [testName, setTestName] = useState<string>(user?.email || "Teste Fuzen");
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testMode, setTestMode] = useState<'collaborator' | 'client'>('collaborator');
+
   
   // States for document types
   const [documentTypes, setDocumentTypes] = useState<GlobalDocumentType[]>([]);
@@ -118,6 +128,32 @@ const AdminDashboard = () => {
   });
 
   const [loading, setLoading] = useState(true);
+
+  const handleSendTestEmail = async () => {
+    try {
+      setSendingTest(true);
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=test-${Date.now()}`;
+      const { error } = await supabase.functions.invoke('send-unified-email', {
+        body: {
+          email: testEmail,
+          full_name: testName || 'Teste',
+          processId: testMode === 'client' ? 'test' : '',
+          processName: testMode === 'client' ? 'Processo de Teste' : `Convite de Teste (${testMode})`,
+          companyId: company?.id,
+          inviteLink,
+          inviterName: (user?.user_metadata as any)?.full_name || user?.email || company?.name || 'Fuzen',
+          isCollaborator: testMode !== 'client',
+        }
+      });
+      if (error) throw error;
+      toast({ title: 'Email de teste enviado', description: `Verifique ${testEmail}` });
+    } catch (e: any) {
+      toast({ title: 'Falha ao enviar email', description: e?.message || 'Erro desconhecido', variant: 'destructive' });
+      console.error('Erro ao enviar email de teste:', e);
+    } finally {
+      setSendingTest(false);
+    }
+  };
 
   // Categories and document options
   const categories = [
@@ -422,7 +458,40 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="document-types" className="space-y-6">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Teste de envio de e-mail (Resend)</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-3">
+              <div className="md:col-span-1">
+                <Label htmlFor="testEmail">Destinatário</Label>
+                <Input id="testEmail" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="email@exemplo.com" />
+              </div>
+              <div className="md:col-span-1">
+                <Label htmlFor="testName">Nome</Label>
+                <Input id="testName" value={testName} onChange={(e) => setTestName(e.target.value)} placeholder="Nome do destinatário" />
+              </div>
+              <div className="md:col-span-1">
+                <Label>Tipo</Label>
+                <Select value={testMode} onValueChange={(v) => setTestMode(v as 'collaborator' | 'client')}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tipo de convite" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="collaborator">Colaborador</SelectItem>
+                    <SelectItem value="client">Cliente (com processo)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="md:col-span-3 flex gap-2">
+                <Button onClick={handleSendTestEmail} disabled={sendingTest || !testEmail || !company}>
+                  {sendingTest ? 'Enviando...' : 'Enviar e-mail de teste'}
+                </Button>
+                {!company && <span className="text-sm text-muted-foreground">Associe-se a uma empresa para testar.</span>}
+              </div>
+            </CardContent>
+          </Card>
+          <Tabs defaultValue="document-types" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="document-types" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
