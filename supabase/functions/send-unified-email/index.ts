@@ -288,20 +288,26 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     };
 
-    // 1) Try sending with configured FROM (may be custom domain)
-    let emailResponse = await sendEmail(payload);
+    // Attempt send with multiple from addresses based on error type
+    const fromCandidates = [`Fuzen <${fromEmail}>`];
+    if (!String(fromEmail).toLowerCase().endsWith('@fuzen.online')) {
+      fromCandidates.push('Fuzen <convites@fuzen.online>');
+    }
+    fromCandidates.push('Fuzen <onboarding@resend.dev>');
 
-    // 2) If domain not verified, retry automatically with Resend sandbox domain
-    const err = emailResponse.error as any;
-    const domainNotVerified = err && (err.statusCode === 403 || err.status === 403) &&
-      typeof err.message === 'string' && err.message.toLowerCase().includes('domain is not verified');
-
-    if (domainNotVerified) {
-      console.warn('Sender domain not verified. Retrying with onboarding@resend.dev');
-      emailResponse = await sendEmail({
-        ...payload,
-        from: 'Fuzen <onboarding@resend.dev>',
-      });
+    let emailResponse = { data: null as any, error: null as any };
+    for (const from of fromCandidates) {
+      const attemptPayload = { ...payload, from };
+      console.log('Attempting to send email with FROM:', from);
+      emailResponse = await sendEmail(attemptPayload);
+      if (!emailResponse.error) break;
+      const err = emailResponse.error as any;
+      const is403 = err && (err.statusCode === 403 || err.status === 403);
+      const domainIssue = is403 && typeof err.message === 'string' && (
+        err.message.toLowerCase().includes('domain is not verified') ||
+        err.message.toLowerCase().includes('only send testing emails')
+      );
+      if (!domainIssue) break; // if it's not a domain/testing restriction, stop retrying
     }
 
     // Final error handling
