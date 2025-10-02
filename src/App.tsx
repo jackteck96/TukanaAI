@@ -33,6 +33,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import GlobalErrorLogger from "./components/GlobalErrorLogger";
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import AnaliseIA from "./pages/AnaliseIA";
 
 const queryClient = new QueryClient();
 
@@ -129,6 +130,11 @@ const App = () => (
                   <AdminRoute>
                     <AdminDashboard />
                   </AdminRoute>
+                } />
+                <Route path="/analise-ia" element={
+                  <ProtectedRoute>
+                    <AnaliseIA />
+                  </ProtectedRoute>
                 } />
                 
                 {/* Catch-all route */}
