@@ -115,10 +115,10 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
   };
 
   const handleAnalyze = async () => {
-    if (!processDescription.trim() && !processId) {
+    if (!processId && documents.length === 0) {
       toast({
-        title: "Descrição necessária",
-        description: "Por favor, descreva o processo documental ou selecione um processo",
+        title: "Documentos necessários",
+        description: "Selecione um processo ou adicione documentos para análise",
         variant: "destructive",
       });
       return;
@@ -202,21 +202,31 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
             <h2 className="text-2xl font-bold">Análise Inteligente de Documentação Empresarial</h2>
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Descrição do Processo Documental
-            </label>
-            <Textarea
-              placeholder="Descreva o processo de documentação que precisa analisar (ex: due diligence para aquisição de empresa, regularização societária, contratos de prestação de serviços, etc.)"
-              value={processDescription}
-              onChange={(e) => setProcessDescription(e.target.value)}
-              rows={4}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              A IA identificará automaticamente o tipo de processo e requisitos necessários
-            </p>
-          </div>
+          {!processId && (
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Descrição do Processo Documental (Opcional)
+              </label>
+              <Textarea
+                placeholder="Descreva o processo de documentação que precisa analisar (ex: due diligence para aquisição de empresa, regularização societária, contratos de prestação de serviços, etc.)"
+                value={processDescription}
+                onChange={(e) => setProcessDescription(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                A IA identificará automaticamente o tipo de processo e requisitos necessários
+              </p>
+            </div>
+          )}
+          
+          {processId && (
+            <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-sm text-primary font-medium">
+                ✓ Processo selecionado - Os documentos serão carregados automaticamente
+              </p>
+            </div>
+          )}
 
           <Separator />
 
@@ -293,7 +303,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
 
           <Button
             onClick={handleAnalyze}
-            disabled={isAnalyzing || !processDescription.trim()}
+            disabled={isAnalyzing || loadingDocuments || (!processId && documents.length === 0)}
             className="w-full"
             size="lg"
           >
@@ -309,6 +319,11 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
               </>
             )}
           </Button>
+          {!processId && documents.length === 0 && (
+            <p className="text-xs text-center text-muted-foreground">
+              Adicione documentos para habilitar a análise
+            </p>
+          )}
         </div>
       </Card>
 
