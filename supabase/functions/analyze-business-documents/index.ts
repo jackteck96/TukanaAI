@@ -54,6 +54,49 @@ serve(async (req) => {
 
     console.log('Starting document analysis for company:', companyId);
 
+    // Buscar documentos automaticamente do processo se processId foi fornecido
+    let processDocuments = documents;
+    let processInfo = null;
+    
+    if (processId) {
+      console.log('Fetching documents from process:', processId);
+      
+      // Buscar informações do processo
+      const { data: process, error: processError } = await supabase
+        .from('processes')
+        .select('*')
+        .eq('id', processId)
+        .single();
+
+      if (processError) {
+        console.error('Error fetching process:', processError);
+      } else {
+        processInfo = process;
+        console.log('Process info loaded:', processInfo?.process_type);
+      }
+
+      // Buscar documentos vinculados ao processo
+      const { data: dbDocuments, error: docsError } = await supabase
+        .from('documents')
+        .select('id, file_name, document_type, status, file_path, validity_date, expiration_date, issuing_location')
+        .eq('process_id', processId);
+
+      if (docsError) {
+        console.error('Error fetching documents:', docsError);
+      } else if (dbDocuments && dbDocuments.length > 0) {
+        // Adicionar documentos do banco de dados à lista
+        const loadedDocs = dbDocuments.map(doc => ({
+          name: doc.file_name,
+          type: doc.document_type,
+          content: `Status: ${doc.status}${doc.validity_date ? `, Validade: ${doc.validity_date}` : ''}${doc.expiration_date ? `, Vencimento: ${doc.expiration_date}` : ''}${doc.issuing_location ? `, Local de Emissão: ${doc.issuing_location}` : ''}`
+        }));
+        
+        // Combinar com documentos adicionais fornecidos manualmente
+        processDocuments = [...loadedDocs, ...documents];
+        console.log(`Loaded ${dbDocuments.length} documents from database, total: ${processDocuments.length}`);
+      }
+    }
+
     // Buscar dados de treinamento da IA (globais e da empresa)
     const { data: trainingData, error: trainingError } = await supabase
       .from('ai_training_data')
@@ -112,12 +155,15 @@ serve(async (req) => {
     // Preparar prompt para IA
     const systemPrompt = `Você é uma IA especializada em análise de documentação empresarial e contratual da plataforma Fuzen.
 
-REGRAS FUNDAMENTAIS:
+REGRAS FUNDAMENTAIS E CRÍTICAS:
 1. Você analisa APENAS processos de documentação administrativa/empresarial, NUNCA processos judiciais
-2. Se informações estiverem ausentes, indique claramente e oriente o usuário
-3. NUNCA invente documentos ou cláusulas inexistentes
-4. Baseie suas análises em boas práticas documentais e contratuais
-5. Tome iniciativa: se identificar risco ou inconsistência, sinalize proativamente
+2. NUNCA invente, crie, simule ou gere conteúdo de documentos que não existam nos documentos analisados
+3. NUNCA invente cláusulas, informações ou dados que não estejam presentes nos documentos fornecidos
+4. Se informações estiverem ausentes, você DEVE responder APENAS: "Informação não encontrada nos documentos analisados"
+5. Se documentos estiverem faltando, você DEVE apenas LISTAR os nomes dos documentos faltantes, NUNCA criar conteúdo simulado
+6. Baseie TODAS as suas análises EXCLUSIVAMENTE nos documentos reais fornecidos
+7. Tome iniciativa: se identificar risco ou inconsistência NOS DOCUMENTOS EXISTENTES, sinalize proativamente
+8. Cada análise é isolada por cliente (company_id) garantindo privacidade total
 
 TIPOS DE PROCESSOS EMPRESARIAIS:
 - Inventário documental
@@ -161,13 +207,28 @@ Sua tarefa é analisar o processo descrito e retornar uma análise estruturada e
 }`;
 
     const userPrompt = `
-DESCRIÇÃO DO PROCESSO:
-${processDescription}
+CONTEXTO DO PROCESSO:
+${processInfo ? `
+Tipo de Processo: ${processInfo.process_type}
+Cliente: ${processInfo.client_name}
+${processInfo.description ? `Descrição: ${processInfo.description}` : ''}
+Status: ${processInfo.status}
+` : ''}
 
-DOCUMENTOS APRESENTADOS:
-${documents.map(doc => `- ${doc.name} (${doc.type})${doc.content ? '\nConteúdo: ' + doc.content.substring(0, 500) : ''}`).join('\n')}
+DESCRIÇÃO ADICIONAL:
+${processDescription || 'Análise dos documentos vinculados ao processo'}
 
-Analise este processo de documentação empresarial e forneça um parecer completo.`;
+DOCUMENTOS DISPONÍVEIS PARA ANÁLISE (${processDocuments.length} no total):
+${processDocuments.map(doc => `- ${doc.name} (${doc.type})${doc.content ? '\n  Informações: ' + doc.content.substring(0, 500) : ''}`).join('\n')}
+
+INSTRUÇÕES CRÍTICAS:
+- Analise APENAS os ${processDocuments.length} documentos listados acima
+- Se alguma informação não estiver presente nesses documentos, informe claramente: "Informação não encontrada nos documentos analisados"
+- NUNCA invente ou simule conteúdo de documentos
+- Liste documentos faltantes apenas pelo nome, sem criar conteúdo fictício
+- Base todas as análises exclusivamente nos documentos reais fornecidos
+
+Forneça um parecer objetivo e estruturado em formato JSON.`;
 
     console.log('Calling Lovable AI for analysis...');
 
@@ -231,12 +292,16 @@ Analise este processo de documentação empresarial e forneça um parecer comple
           company_id: companyId,
           report_data: {
             analysis,
-            documents: documents.map(d => ({ name: d.name, type: d.type })),
+            documents: processDocuments.map(d => ({ name: d.name, type: d.type })),
             generated_at: new Date().toISOString(),
+            process_info: processInfo ? {
+              type: processInfo.process_type,
+              client: processInfo.client_name
+            } : null
           },
-          total_documents: documents.length,
+          total_documents: processDocuments.length,
           pending_documents: analysis.missingDocuments.length,
-          approved_documents: documents.length - analysis.missingDocuments.length,
+          approved_documents: processDocuments.length - analysis.missingDocuments.length,
         });
 
       if (reportError) {

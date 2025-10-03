@@ -32,7 +32,7 @@ import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
 import EmailLogViewer from "@/components/EmailLogViewer";
-import { AIProcessAnalyzer } from "@/components/AIProcessAnalyzer";
+import { BusinessDocumentAnalyzer } from "@/components/BusinessDocumentAnalyzer";
 import ProcessEditDialog from "@/components/ProcessEditDialog";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
@@ -449,11 +449,45 @@ const GerenciarProcessos = () => {
         <Dialog open={isAIAnalysisModalOpen} onOpenChange={setIsAIAnalysisModalOpen}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Análise de IA do Processo</DialogTitle>
+              <DialogTitle>Análise Inteligente de Documentos</DialogTitle>
             </DialogHeader>
             {selectedProcessForAnalysis && (
-              <AIProcessAnalyzer 
+              <BusinessDocumentAnalyzer 
                 companyId={selectedProcessForAnalysis.company_id || ''}
+                processId={selectedProcessForAnalysis.id}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Process Modal */}
+        <Dialog open={isEditProcessModalOpen} onOpenChange={setIsEditProcessModalOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Editar Processo</DialogTitle>
+            </DialogHeader>
+            {selectedProcessForEdit && (
+              <ProcessEditDialog
+                isOpen={isEditProcessModalOpen}
+                processId={selectedProcessForEdit}
+                onClose={() => {
+                  setIsEditProcessModalOpen(false);
+                  setSelectedProcessForEdit(null);
+                }}
+                onProcessUpdated={() => {
+                  setIsEditProcessModalOpen(false);
+                  setSelectedProcessForEdit(null);
+                  if (processId) {
+                    fetchProcessDetails(processId);
+                  }
+                }}
+                onProcessDeleted={() => {
+                  setIsEditProcessModalOpen(false);
+                  setSelectedProcessForEdit(null);
+                  if (processId) {
+                    navigate('/gerenciar-processos');
+                  }
+                }}
               />
             )}
           </DialogContent>
@@ -648,11 +682,12 @@ const GerenciarProcessos = () => {
         <Dialog open={isAIAnalysisModalOpen} onOpenChange={setIsAIAnalysisModalOpen}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Análise de IA do Processo</DialogTitle>
+              <DialogTitle>Análise Inteligente de Documentos</DialogTitle>
             </DialogHeader>
             {selectedProcessForAnalysis && (
-              <AIProcessAnalyzer 
+              <BusinessDocumentAnalyzer 
                 companyId={selectedProcessForAnalysis.company_id || ''}
+                processId={selectedProcessForAnalysis.id}
               />
             )}
           </DialogContent>

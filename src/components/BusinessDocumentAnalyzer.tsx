@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,6 +46,54 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
   const [newDocType, setNewDocType] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [autoLoadedDocs, setAutoLoadedDocs] = useState(0);
+
+  // Buscar documentos automaticamente quando processId estiver disponível
+  useEffect(() => {
+    if (processId) {
+      loadProcessDocuments();
+    }
+  }, [processId]);
+
+  const loadProcessDocuments = async () => {
+    if (!processId) return;
+
+    setLoadingDocuments(true);
+    try {
+      const { data: docsData, error } = await supabase
+        .from('documents')
+        .select('id, file_name, document_type, file_path, status')
+        .eq('process_id', processId);
+
+      if (error) throw error;
+
+      if (docsData && docsData.length > 0) {
+        const loadedDocs: Document[] = docsData.map(doc => ({
+          name: doc.file_name,
+          type: doc.document_type,
+          content: `Status: ${doc.status}` // Informação básica do documento
+        }));
+        
+        setDocuments(loadedDocs);
+        setAutoLoadedDocs(docsData.length);
+        
+        toast({
+          title: "Documentos carregados",
+          description: `${docsData.length} documento(s) encontrado(s) no processo`,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar documentos:', error);
+      toast({
+        title: "Aviso",
+        description: "Não foi possível carregar os documentos automaticamente",
+        variant: "default",
+      });
+    } finally {
+      setLoadingDocuments(false);
+    }
+  };
 
   const addDocument = () => {
     if (!newDocName.trim() || !newDocType.trim()) {
@@ -67,10 +115,10 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
   };
 
   const handleAnalyze = async () => {
-    if (!processDescription.trim()) {
+    if (!processDescription.trim() && !processId) {
       toast({
         title: "Descrição necessária",
-        description: "Por favor, descreva o processo documental",
+        description: "Por favor, descreva o processo documental ou selecione um processo",
         variant: "destructive",
       });
       return;
@@ -174,49 +222,73 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
 
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Documentos (Opcional)
+              Documentos {processId ? '(Carregados automaticamente do processo)' : '(Opcional - Adicione manualmente)'}
             </label>
-            <div className="flex gap-2 mb-3">
-              <Input
-                placeholder="Nome do documento"
-                value={newDocName}
-                onChange={(e) => setNewDocName(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addDocument()}
-              />
-              <Input
-                placeholder="Tipo"
-                value={newDocType}
-                onChange={(e) => setNewDocType(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addDocument()}
-              />
-              <Button onClick={addDocument} size="icon" variant="outline">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {documents.length > 0 && (
-              <div className="space-y-2">
-                {documents.map((doc, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{doc.name}</span>
-                      <Badge variant="secondary">{doc.type}</Badge>
-                    </div>
-                    <Button
-                      onClick={() => removeDocument(index)}
-                      size="icon"
-                      variant="ghost"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+            
+            {loadingDocuments ? (
+              <div className="flex items-center justify-center p-4 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Carregando documentos do processo...
               </div>
+            ) : (
+              <>
+                {processId && autoLoadedDocs > 0 && (
+                  <div className="mb-3 p-3 bg-primary/10 rounded-lg">
+                    <p className="text-sm text-primary">
+                      ✓ {autoLoadedDocs} documento(s) carregado(s) automaticamente do processo
+                    </p>
+                  </div>
+                )}
+                
+                <div className="flex gap-2 mb-3">
+                  <Input
+                    placeholder="Nome do documento"
+                    value={newDocName}
+                    onChange={(e) => setNewDocName(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addDocument()}
+                  />
+                  <Input
+                    placeholder="Tipo"
+                    value={newDocType}
+                    onChange={(e) => setNewDocType(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addDocument()}
+                  />
+                  <Button onClick={addDocument} size="icon" variant="outline" title="Adicionar documento complementar">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {documents.length > 0 && (
+                  <div className="space-y-2">
+                    {documents.map((doc, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{doc.name}</span>
+                          <Badge variant="secondary">{doc.type}</Badge>
+                        </div>
+                        <Button
+                          onClick={() => removeDocument(index)}
+                          size="icon"
+                          variant="ghost"
+                          title="Remover documento"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
+            <p className="text-xs text-muted-foreground mt-2">
+              {processId 
+                ? 'Os documentos do processo foram carregados automaticamente. Você pode adicionar documentos complementares se necessário.'
+                : 'Adicione documentos manualmente para complementar a análise (opcional).'}
+            </p>
           </div>
 
           <Button
