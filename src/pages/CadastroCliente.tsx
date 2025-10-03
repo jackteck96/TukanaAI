@@ -96,9 +96,27 @@ const CadastroCliente = () => {
 
         if (profileError) throw profileError;
 
+        // Enviar email unificado de boas-vindas
+        try {
+          await supabase.functions.invoke("send-unified-email", {
+            body: {
+              email: formData.email,
+              full_name: formData.fullName,
+              companyId: authData.user.id, // Usar o ID do usuário como referência
+              inviteLink: `${window.location.origin}/login`,
+              inviterName: "Equipe Fuzen",
+              isCollaborator: false
+            },
+          });
+          console.log('Email de boas-vindas enviado com sucesso');
+        } catch (emailError) {
+          console.error('Erro ao enviar email de boas-vindas:', emailError);
+          // Não bloquear o cadastro se o email falhar
+        }
+
         toast({
           title: 'Conta criada com sucesso!',
-          description: 'Verifique seu e-mail para confirmar sua conta.',
+          description: 'Verifique seu e-mail para confirmar sua conta e receber as boas-vindas.',
         });
 
         navigate('/cliente');
