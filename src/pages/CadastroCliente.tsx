@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, User, Mail, Lock, Phone, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,8 @@ const CadastroCliente = () => {
     password: '',
     confirmPassword: ''
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -51,6 +54,14 @@ const CadastroCliente = () => {
 
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Senhas não coincidem';
+    }
+
+    if (!acceptedTerms) {
+      newErrors.acceptedTerms = 'Você deve aceitar os Termos de Uso';
+    }
+
+    if (!acceptedPrivacy) {
+      newErrors.acceptedPrivacy = 'Você deve aceitar a Política de Privacidade (LGPD)';
     }
 
     setErrors(newErrors);
@@ -303,6 +314,70 @@ const CadastroCliente = () => {
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                 )}
+              </div>
+
+              <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="acceptedTerms"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => {
+                        setAcceptedTerms(checked as boolean);
+                        if (errors.acceptedTerms) {
+                          setErrors(prev => ({ ...prev, acceptedTerms: '' }));
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <Label
+                      htmlFor="acceptedTerms"
+                      className="text-sm text-muted-foreground cursor-pointer leading-relaxed"
+                    >
+                      Li e aceito os{' '}
+                      <a
+                        href="#"
+                        className="text-primary hover:underline font-medium"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        Termos de Uso
+                      </a>
+                    </Label>
+                  </div>
+                  {errors.acceptedTerms && (
+                    <p className="text-sm text-destructive ml-7">{errors.acceptedTerms}</p>
+                  )}
+
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="acceptedPrivacy"
+                      checked={acceptedPrivacy}
+                      onCheckedChange={(checked) => {
+                        setAcceptedPrivacy(checked as boolean);
+                        if (errors.acceptedPrivacy) {
+                          setErrors(prev => ({ ...prev, acceptedPrivacy: '' }));
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <Label
+                      htmlFor="acceptedPrivacy"
+                      className="text-sm text-muted-foreground cursor-pointer leading-relaxed"
+                    >
+                      Li e aceito a{' '}
+                      <a
+                        href="#"
+                        className="text-primary hover:underline font-medium"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        Política de Privacidade (LGPD)
+                      </a>
+                    </Label>
+                  </div>
+                  {errors.acceptedPrivacy && (
+                    <p className="text-sm text-destructive ml-7">{errors.acceptedPrivacy}</p>
+                  )}
+                </div>
               </div>
 
               <Button
