@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,52 +15,105 @@ import {
   Edit,
   Trash2,
   Eye,
-  Copy
+  Copy,
+  Globe
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ModeloDocumento {
-  id: number;
-  titulo: string;
-  categoria: string;
-  conteudo: string;
-  variaveis: string[];
-  criadoEm: string;
-  ativo: boolean;
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  variables: string[];
+  created_at: string;
+  is_active: boolean;
+  company_id?: string;
+  is_global?: boolean;
 }
 
 const ModelosDocumentos = () => {
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [previewContent, setPreviewContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [companyId, setCompanyId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    titulo: "",
-    categoria: "",
-    conteudo: ""
+    title: "",
+    category: "",
+    content: ""
   });
 
-  const [modelos, setModelos] = useState<ModeloDocumento[]>([
-    {
-      id: 1,
-      titulo: "Contrato de Prestação de Serviços",
-      categoria: "Contrato",
-      conteudo: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS\n\nCONTRATANTE: [CLIENTE]\nCONTRATADA: [EMPRESA]\n\nO CONTRATANTE, pessoa física/jurídica, qualificada como [CLIENTE], e a CONTRATADA, [EMPRESA], celebram o presente contrato mediante as seguintes cláusulas:\n\n1. DO OBJETO\nA CONTRATADA prestará serviços jurídicos conforme especificado no Anexo I.\n\n2. DAS OBRIGAÇÕES\nO CONTRATANTE se compromete a fornecer todas as informações necessárias.\nA CONTRATADA se compromete a executar os serviços com diligência.\n\n3. DO VALOR\nO valor dos serviços será conforme proposta anexa.\n\nData: [DATA]\n\n_____________________        _____________________\n[CLIENTE]                    [EMPRESA]",
-      variaveis: ["CLIENTE", "EMPRESA", "DATA"],
-      criadoEm: "2024-01-15",
-      ativo: true
-    },
-    {
-      id: 2,
-      titulo: "Procuração Específica",
-      categoria: "Procuração",
-      conteudo: "PROCURAÇÃO ESPECÍFICA\n\nOutorgante: [CLIENTE]\nOutorgado: [EMPRESA]\n\nPelo presente instrumento particular de procuração, [CLIENTE], brasileiro(a), qualificado(a) como acima, nomeia e constitui seu bastante procurador [EMPRESA], para o fim específico de:\n\n- Representar o outorgante em todos os atos necessários;\n- Assinar documentos em nome do outorgante;\n- Praticar todos os demais atos necessários ao cumprimento do presente mandato.\n\nEsta procuração é válida até [DATA].\n\nLocal e data: _____________, ____ de _______ de 2024.\n\n_____________________\n[CLIENTE]",
-      variaveis: ["CLIENTE", "EMPRESA", "DATA"],
-      criadoEm: "2024-01-20",
-      ativo: true
+  const [modelos, setModelos] = useState<ModeloDocumento[]>([]);
+
+  useEffect(() => {
+    fetchUserCompany();
+  }, [user]);
+
+  useEffect(() => {
+    if (companyId) {
+      fetchModelos();
     }
-  ]);
+  }, [companyId]);
+
+  const fetchUserCompany = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('company_id')
+      .eq('id', user.id)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching company:', error);
+      return;
+    }
+    
+    setCompanyId(data?.company_id || null);
+  };
+
+  const fetchModelos = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch global templates (admin)
+      const { data: globalTemplates, error: globalError } = await supabase
+        .from('global_document_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (globalError) throw globalError;
+
+      // Fetch company templates
+      const { data: companyTemplates, error: companyError } = await supabase
+        .from('company_document_templates')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (companyError) throw companyError;
+
+      // Combine and mark templates
+      const global = (globalTemplates || []).map(t => ({ ...t, is_global: true }));
+      const company = (companyTemplates || []).map(t => ({ ...t, is_global: false }));
+      
+      setModelos([...company, ...global]);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      toast.error('Erro ao carregar modelos');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categorias = [
     "Contrato",
@@ -80,11 +133,11 @@ const ModelosDocumentos = () => {
     }));
   };
 
-  const detectarVariaveis = (conteudo: string): string[] => {
+  const detectarVariaveis = (content: string): string[] => {
     const regex = /\[([^\]]+)\]/g;
     const variaveis = [];
     let match;
-    while ((match = regex.exec(conteudo)) !== null) {
+    while ((match = regex.exec(content)) !== null) {
       if (!variaveis.includes(match[1])) {
         variaveis.push(match[1]);
       }
@@ -92,52 +145,94 @@ const ModelosDocumentos = () => {
     return variaveis;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const variaveis = detectarVariaveis(formData.conteudo);
     
-    if (editingId) {
-      setModelos(prev => prev.map(modelo => 
-        modelo.id === editingId 
-          ? { ...modelo, ...formData, variaveis }
-          : modelo
-      ));
-      toast("Modelo atualizado com sucesso!");
-      setEditingId(null);
-    } else {
-      const novoModelo: ModeloDocumento = {
-        id: modelos.length + 1,
-        ...formData,
-        variaveis,
-        criadoEm: new Date().toISOString().split('T')[0],
-        ativo: true
-      };
-      setModelos(prev => [...prev, novoModelo]);
-      toast("Modelo criado com sucesso!");
+    if (!companyId) {
+      toast.error('Empresa não encontrada');
+      return;
     }
+
+    const variables = detectarVariaveis(formData.content);
     
-    setFormData({ titulo: "", categoria: "", conteudo: "" });
-    setShowForm(false);
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from('company_document_templates')
+          .update({
+            title: formData.title,
+            category: formData.category,
+            content: formData.content,
+            variables
+          })
+          .eq('id', editingId);
+        
+        if (error) throw error;
+        toast.success("Modelo atualizado com sucesso!");
+      } else {
+        const { error } = await supabase
+          .from('company_document_templates')
+          .insert({
+            company_id: companyId,
+            title: formData.title,
+            category: formData.category,
+            content: formData.content,
+            variables
+          });
+        
+        if (error) throw error;
+        toast.success("Modelo criado com sucesso!");
+      }
+      
+      setFormData({ title: "", category: "", content: "" });
+      setShowForm(false);
+      setEditingId(null);
+      fetchModelos();
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast.error('Erro ao salvar modelo');
+    }
   };
 
   const handleEdit = (modelo: ModeloDocumento) => {
+    if (modelo.is_global) {
+      toast.error('Modelos globais não podem ser editados');
+      return;
+    }
+
     setFormData({
-      titulo: modelo.titulo,
-      categoria: modelo.categoria,
-      conteudo: modelo.conteudo
+      title: modelo.title,
+      category: modelo.category,
+      content: modelo.content
     });
     setEditingId(modelo.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
-    setModelos(prev => prev.filter(modelo => modelo.id !== id));
-    toast("Modelo excluído com sucesso!");
+  const handleDelete = async (id: string, isGlobal: boolean) => {
+    if (isGlobal) {
+      toast.error('Modelos globais não podem ser excluídos');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('company_document_templates')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      toast.success("Modelo excluído com sucesso!");
+      fetchModelos();
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      toast.error('Erro ao excluir modelo');
+    }
   };
 
   const handlePreview = (modelo: ModeloDocumento) => {
-    // Simular dados de cliente e empresa para preview
-    let conteudoPreview = modelo.conteudo;
+    let conteudoPreview = modelo.content;
     conteudoPreview = conteudoPreview.replace(/\[CLIENTE\]/g, "João Silva, brasileiro, casado, empresário, portador do RG nº 12.345.678-9 SSP/SP e CPF nº 123.456.789-00, residente na Rua das Flores, 123, São Paulo/SP");
     conteudoPreview = conteudoPreview.replace(/\[EMPRESA\]/g, "Silva & Associados Advogados, CNPJ nº 12.345.678/0001-90, com sede na Av. Paulista, 1000, São Paulo/SP");
     conteudoPreview = conteudoPreview.replace(/\[DATA\]/g, new Date().toLocaleDateString('pt-BR'));
@@ -156,6 +251,22 @@ const ModelosDocumentos = () => {
     };
     return colors[categoria as keyof typeof colors] || "bg-muted text-muted-foreground";
   };
+
+  const filteredModelos = modelos.filter(modelo =>
+    modelo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    modelo.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando modelos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -180,7 +291,7 @@ const ModelosDocumentos = () => {
               onClick={() => {
                 setShowForm(true);
                 setEditingId(null);
-                setFormData({ titulo: "", categoria: "", conteudo: "" });
+                setFormData({ title: "", category: "", content: "" });
               }}
               disabled={showForm}
             >
@@ -224,21 +335,21 @@ const ModelosDocumentos = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="titulo">Título do Documento</Label>
+                    <Label htmlFor="title">Título do Documento</Label>
                     <Input
-                      id="titulo"
-                      value={formData.titulo}
-                      onChange={(e) => handleInputChange("titulo", e.target.value)}
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => handleInputChange("title", e.target.value)}
                       placeholder="Ex: Contrato de Prestação de Serviços"
                       required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="categoria">Categoria</Label>
+                    <Label htmlFor="category">Categoria</Label>
                     <Select 
-                      value={formData.categoria}
-                      onValueChange={(value) => handleInputChange("categoria", value)} 
+                      value={formData.category}
+                      onValueChange={(value) => handleInputChange("category", value)} 
                       required
                     >
                       <SelectTrigger>
@@ -254,14 +365,14 @@ const ModelosDocumentos = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="conteudo">Modelo do Documento</Label>
+                  <Label htmlFor="content">Modelo do Documento</Label>
                   <div className="text-sm text-muted-foreground mb-2">
                     Use <code className="bg-muted px-1 rounded">[CLIENTE]</code> e <code className="bg-muted px-1 rounded">[EMPRESA]</code> para inserir qualificações automáticas
                   </div>
                   <Textarea
-                    id="conteudo"
-                    value={formData.conteudo}
-                    onChange={(e) => handleInputChange("conteudo", e.target.value)}
+                    id="content"
+                    value={formData.content}
+                    onChange={(e) => handleInputChange("content", e.target.value)}
                     placeholder="Digite o modelo do documento aqui... Use [CLIENTE] e [EMPRESA] onde quiser inserir as qualificações automáticas"
                     rows={15}
                     className="font-mono text-sm"
@@ -269,11 +380,11 @@ const ModelosDocumentos = () => {
                   />
                 </div>
 
-                {formData.conteudo && (
+                {formData.content && (
                   <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm font-medium mb-2">Variáveis detectadas:</p>
                     <div className="flex flex-wrap gap-2">
-                      {detectarVariaveis(formData.conteudo).map((variavel) => (
+                      {detectarVariaveis(formData.content).map((variavel) => (
                         <Badge key={variavel} variant="secondary">
                           {variavel}
                         </Badge>
@@ -293,7 +404,7 @@ const ModelosDocumentos = () => {
                     onClick={() => {
                       setShowForm(false);
                       setEditingId(null);
-                      setFormData({ titulo: "", categoria: "", conteudo: "" });
+                      setFormData({ title: "", category: "", content: "" });
                     }}
                   >
                     Cancelar
@@ -318,14 +429,22 @@ const ModelosDocumentos = () => {
                   <Input
                     placeholder="Buscar modelos..."
                     className="pl-10 w-64"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {modelos.map((modelo) => (
+            {filteredModelos.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Nenhum modelo encontrado</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredModelos.map((modelo) => (
                 <div
                   key={modelo.id}
                   className="p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
@@ -333,11 +452,17 @@ const ModelosDocumentos = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="font-semibold text-foreground">{modelo.titulo}</h3>
-                        <Badge className={getCategoriaColor(modelo.categoria)}>
-                          {modelo.categoria}
+                        <h3 className="font-semibold text-foreground">{modelo.title}</h3>
+                        <Badge className={getCategoriaColor(modelo.category)}>
+                          {modelo.category}
                         </Badge>
-                        {modelo.ativo && (
+                        {modelo.is_global && (
+                          <Badge variant="outline" className="border-primary text-primary">
+                            <Globe className="h-3 w-3 mr-1" />
+                            Global
+                          </Badge>
+                        )}
+                        {modelo.is_active && (
                           <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
                             Ativo
                           </Badge>
@@ -347,19 +472,19 @@ const ModelosDocumentos = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground mb-3">
                         <div className="flex items-center space-x-2">
                           <span className="font-medium">Criado em:</span> 
-                          <span>{new Date(modelo.criadoEm).toLocaleDateString('pt-BR')}</span>
+                          <span>{new Date(modelo.created_at).toLocaleDateString('pt-BR')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="font-medium">Variáveis:</span> 
-                          <span>{modelo.variaveis.length}</span>
+                          <span>{modelo.variables.length}</span>
                         </div>
                       </div>
 
-                      {modelo.variaveis.length > 0 && (
+                      {modelo.variables.length > 0 && (
                         <div className="mb-3">
                           <p className="text-sm font-medium text-muted-foreground mb-2">Variáveis do modelo:</p>
                           <div className="flex flex-wrap gap-1">
-                            {modelo.variaveis.map((variavel) => (
+                            {modelo.variables.map((variavel) => (
                               <Badge key={variavel} variant="outline" className="text-xs">
                                 {variavel}
                               </Badge>
@@ -369,7 +494,7 @@ const ModelosDocumentos = () => {
                       )}
 
                       <div className="text-sm text-muted-foreground">
-                        <p className="line-clamp-2">{modelo.conteudo.substring(0, 100)}...</p>
+                        <p className="line-clamp-2">{modelo.content.substring(0, 100)}...</p>
                       </div>
                     </div>
 
@@ -386,8 +511,8 @@ const ModelosDocumentos = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => {
-                          navigator.clipboard.writeText(modelo.conteudo);
-                          toast("Modelo copiado para a área de transferência!");
+                          navigator.clipboard.writeText(modelo.content);
+                          toast.success("Modelo copiado para a área de transferência!");
                         }}
                         title="Copiar"
                       >
@@ -398,14 +523,16 @@ const ModelosDocumentos = () => {
                         size="sm"
                         onClick={() => handleEdit(modelo)}
                         title="Editar"
+                        disabled={modelo.is_global}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => handleDelete(modelo.id)}
+                        onClick={() => handleDelete(modelo.id, modelo.is_global || false)}
                         title="Excluir"
+                        disabled={modelo.is_global}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -414,6 +541,7 @@ const ModelosDocumentos = () => {
                 </div>
               ))}
             </div>
+            )}
           </CardContent>
         </Card>
       </div>

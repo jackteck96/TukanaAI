@@ -206,6 +206,42 @@ export type Database = {
         }
         Relationships: []
       }
+      company_document_templates: {
+        Row: {
+          category: string
+          company_id: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+          variables: string[]
+        }
+        Insert: {
+          category: string
+          company_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+          variables?: string[]
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+          variables?: string[]
+        }
+        Relationships: []
+      }
       digital_signatures: {
         Row: {
           certificate_issuer: string

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare } from 'lucide-react';
+import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import DocumentActionDialog from './DocumentActionDialog';
+import { TemplateSelector } from './TemplateSelector';
+import DocumentUpload from './DocumentUpload';
 
 interface Document {
   id: string;
@@ -31,6 +33,8 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
   const [userRole, setUserRole] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [processData, setProcessData] = useState<any>(null);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean;
     action: 'reject' | 'request_adjustment';
@@ -233,17 +237,49 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     );
   }
 
+  const handleTemplateSelected = async (template: any) => {
+    // Generate document from template and upload
+    toast.success(`Modelo "${template.title}" selecionado. Gerando documento...`);
+    // Here you would generate the document with process data
+    // and upload it to the process
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Documentos do Processo
-        </CardTitle>
-        <CardDescription>
-          {documents.length} documento(s) anexado(s)
-        </CardDescription>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Documentos do Processo
+              </CardTitle>
+              <CardDescription>
+                {documents.length} documento(s) anexado(s)
+              </CardDescription>
+            </div>
+            {canManageDocuments && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowTemplateSelector(true)}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Gerar de Modelo
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowUploadDialog(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Upload
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardHeader>
       <CardContent className="space-y-4">
         {documents.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -326,20 +362,43 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
         )}
       </CardContent>
       
-      {/* Dialog para rejeição/ajustes */}
-      {processData && companyId && (
-        <DocumentActionDialog
-          isOpen={dialogState.isOpen}
-          onClose={closeDialog}
-          onConfirm={handleDialogConfirm}
-          documentId={dialogState.documentId}
-          processId={processId}
-          clientEmail={processData.client_email}
+        {/* Dialog para rejeição/ajustes */}
+        {processData && companyId && (
+          <DocumentActionDialog
+            isOpen={dialogState.isOpen}
+            onClose={closeDialog}
+            onConfirm={handleDialogConfirm}
+            documentId={dialogState.documentId}
+            processId={processId}
+            clientEmail={processData.client_email}
+            companyId={companyId}
+            action={dialogState.action}
+            documentName={dialogState.documentName}
+          />
+        )}
+      </Card>
+
+      {/* Template Selector */}
+      {companyId && (
+        <TemplateSelector
+          open={showTemplateSelector}
+          onOpenChange={setShowTemplateSelector}
+          processData={processData}
           companyId={companyId}
-          action={dialogState.action}
-          documentName={dialogState.documentName}
+          onTemplateSelected={handleTemplateSelected}
         />
       )}
-    </Card>
+
+      {/* Upload Dialog */}
+      {showUploadDialog && (
+        <DocumentUpload
+          processId={processId}
+          onUploadComplete={() => {
+            setShowUploadDialog(false);
+            loadDocuments();
+          }}
+        />
+      )}
+    </>
   );
 }
