@@ -109,20 +109,25 @@ const CadastroCliente = () => {
 
         // Enviar email unificado de boas-vindas
         try {
-          await supabase.functions.invoke("send-unified-email", {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke("send-unified-email", {
             body: {
               email: formData.email,
               full_name: formData.fullName,
-              companyId: authData.user.id, // Usar o ID do usuário como referência
+              companyId: authData.user.id,
               inviteLink: `${window.location.origin}/login`,
               inviterName: "Equipe Fuzen",
+              role: 'client',
               isCollaborator: false
             },
           });
-          console.log('Email de boas-vindas enviado com sucesso');
+          
+          if (emailError) {
+            console.error('Erro ao enviar email de boas-vindas:', emailError);
+          } else {
+            console.log('Email de boas-vindas enviado com sucesso:', emailData);
+          }
         } catch (emailError) {
-          console.error('Erro ao enviar email de boas-vindas:', emailError);
-          // Não bloquear o cadastro se o email falhar
+          console.error('Exceção ao enviar email de boas-vindas:', emailError);
         }
 
         toast({

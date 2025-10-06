@@ -88,11 +88,10 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
         body: {
           email: inviteData.email,
           full_name: inviteData.full_name,
-          processId: '', // Colaborador não tem processo específico
-          processName: `Convite para ${getRoleLabel(inviteData.role)}`,
           companyId: company.id,
           inviteLink: inviteLink,
           inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+          role: inviteData.role,
           isCollaborator: true
         }
       });

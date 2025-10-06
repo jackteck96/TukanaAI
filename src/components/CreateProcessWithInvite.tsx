@@ -218,42 +218,44 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       }
 
       // 4. Enviar email unificado (convite + boas-vindas)
-      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-      console.log('Sending unified invite email to:', formData.clientEmail, 'with link:', inviteLink);
-      
-      const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-email", {
-        body: {
-          email: formData.clientEmail,
-          full_name: formData.clientName,
-          processId: processData.id,
-          processName: formData.projectName || `Processo - ${formData.clientName}`,
-          companyId: company.id,
-          inviteLink,
-          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-          isCollaborator: false
-        },
-      });
-
-      console.log('Unified email response:', emailResponse, 'error:', emailError);
-
-      // Sempre mostrar modal com link (independente de sucesso ou erro no email)
       const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+      console.log('Sending unified invite email to:', formData.clientEmail, 'with link:', generatedInviteLink);
+      
+      try {
+        const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-email", {
+          body: {
+            email: formData.clientEmail,
+            full_name: formData.clientName,
+            processId: processData.id,
+            processName: formData.projectName || `Processo - ${formData.clientName}`,
+            companyId: company.id,
+            inviteLink: generatedInviteLink,
+            inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+            role: 'client',
+            isCollaborator: false
+          },
+        });
+
+        if (emailError) {
+          console.error("Erro ao enviar email:", emailError);
+          throw emailError;
+        }
+
+        console.log('Email enviado com sucesso:', emailResponse);
+      } catch (emailError) {
+        console.error("Falha no envio do email:", emailError);
+        // Continuar mesmo se o email falhar
+      }
+
+      // Sempre mostrar modal com link
       setInviteLink(generatedInviteLink);
       setClientName(formData.clientName);
       setShowInviteLink(true);
 
-      if (emailError) {
-        console.error("Erro ao enviar email:", emailError);
-        toast({
-          title: "Processo criado com sucesso!",
-          description: "O email não pôde ser enviado, mas o link de convite está disponível para compartilhar.",
-        });
-      } else {
-        toast({
-          title: "Processo criado com sucesso!",
-          description: `Processo criado com ${requiredDocuments.length} documento(s) necessário(s). Email enviado para ${formData.clientEmail}. Link disponível para compartilhar.`,
-        });
-      }
+      toast({
+        title: "Processo criado com sucesso!",
+        description: `Processo criado. Email enviado para ${formData.clientEmail}. Link disponível para compartilhar.`,
+      });
 
       // Refresh data if callback provided
       if (onProcessCreated) {
