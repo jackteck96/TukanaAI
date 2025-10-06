@@ -130,8 +130,11 @@ const Landing = () => {
             </Badge>
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight animate-fade-in animation-delay-200">
+              <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent block mb-4">
+                Fuzen
+              </span>
               <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
-                Fuzen - Gerencie Documentos com Segurança e Eficiência
+                Gerencie Documentos com Segurança e Eficiência
               </span>
             </h1>
             
