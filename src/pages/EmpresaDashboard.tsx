@@ -45,6 +45,25 @@ const EmpresaDashboard = () => {
     console.log('[EmpresaDashboard] mounted', { user: user?.email });
   }, [user]);
 
+  // Redirect clients to their area
+  useEffect(() => {
+    const checkRoleAndRedirect = async () => {
+      if (!user?.id) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile?.role === 'client') {
+        navigate('/cliente', { replace: true });
+      }
+    };
+    
+    checkRoleAndRedirect();
+  }, [user, navigate]);
+
   // Check if user is admin
   useEffect(() => {
     const checkAdminRole = async () => {

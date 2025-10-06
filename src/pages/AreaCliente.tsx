@@ -95,113 +95,6 @@ const AreaCliente = () => {
     }
   ];
 
-  let activeProcesses: any[] = [
-    {
-      id: 1,
-      title: "Contrato de Prestação de Serviços",
-      description: "Renovação anual do contrato principal",
-      status: "Em Análise",
-      progress: 75,
-      dueDate: "2024-08-24",
-      documents: 12,
-      pending: 2,
-      company: "Silva & Associados Advocacia",
-      responsibleLawyer: "Dr. Carlos Silva"
-    },
-    {
-      id: 2,
-      title: "Documentação Fiscal 2024",
-      description: "Documentos para declaração anual",
-      status: "Pendente",
-      progress: 30,
-      dueDate: "2024-08-26",
-      documents: 8,
-      pending: 5,
-      company: "Santos Consultoria Jurídica",
-      responsibleLawyer: "Dra. Ana Santos"
-    },
-    {
-      id: 3,
-      title: "Certificações de Qualidade",
-      description: "Renovação de certificados ISO",
-      status: "Aguardando Documentos",
-      progress: 20,
-      dueDate: "2024-08-30",
-      documents: 4,
-      pending: 8,
-      company: "Lima & Partners",
-      responsibleLawyer: "Dr. Roberto Lima"
-    }
-  ];
-
-  const recentDocuments = [
-    {
-      id: 1,
-      name: "Contrato Social Atualizado.pdf",
-      type: "Contrato",
-      uploadDate: "2024-08-15",
-      status: "Aprovado",
-      size: "2.4 MB"
-    },
-    {
-      id: 2,
-      name: "Balanço Patrimonial Q2.pdf",
-      type: "Financeiro",
-      uploadDate: "2024-08-14",
-      status: "Em Análise",
-      size: "1.8 MB"
-    },
-    {
-      id: 3,
-      name: "Certidão Negativa Federal.pdf",
-      type: "Certidão",
-      uploadDate: "2024-08-13",
-      status: "Aprovado",
-      size: "512 KB"
-    },
-    {
-      id: 4,
-      name: "RG Representante Legal.pdf",
-      type: "Identificação",
-      uploadDate: "2024-08-12",
-      status: "Pendente Correção",
-      size: "1.2 MB"
-    }
-  ];
-
-  const pendingRequests = [
-    {
-      id: 1,
-      title: "Comprovante de Endereço Atualizado",
-      description: "Documento com data dos últimos 90 dias",
-      dueDate: "2024-08-20",
-      priority: "Alta",
-      requestedBy: "Dr. Carlos Silva",
-      processId: 1,
-      processTitle: "Contrato de Prestação de Serviços"
-    },
-    {
-      id: 2,
-      title: "Declaração de Faturamento",
-      description: "Declaração assinada pelo contador",
-      dueDate: "2024-08-22",
-      priority: "Média",
-      requestedBy: "Dra. Ana Santos",
-      processId: 2,
-      processTitle: "Documentação Fiscal 2024"
-    },
-    {
-      id: 3,
-      title: "Ata da Última Assembleia",
-      description: "Documento autenticado em cartório",
-      dueDate: "2024-08-25",
-      priority: "Baixa",
-      requestedBy: "Dr. Roberto Lima",
-      processId: 3,
-      processTitle: "Certificações de Qualidade"
-    }
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Aprovado":
@@ -327,9 +220,14 @@ const AreaCliente = () => {
     load();
   }, [user]);
 
-  // Substituir mocks pelos processos reais quando disponíveis
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  activeProcesses = loadedProcesses.length ? loadedProcesses : activeProcesses;
+  // Usar apenas processos reais, nunca mostrar dados mockados
+  const activeProcesses = loadedProcesses;
+
+  // Usar apenas documentos reais do processo selecionado
+  const recentDocuments = selectedProcess ? (processDocuments[selectedProcess.id] || []) : [];
+
+  // Remover dados mockados de solicitações pendentes - será implementado futuramente
+  const pendingRequests: any[] = [];
 
   const [isCollaboratorsModalOpen, setIsCollaboratorsModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([
