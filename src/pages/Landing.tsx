@@ -125,18 +125,20 @@ const Landing = () => {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
-            <Badge className="mb-6 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
+            <Badge className="mb-8 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
               ✨ Nova versão disponível
             </Badge>
             
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight animate-fade-in animation-delay-200">
-              <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent block mb-4">
-                Fuzen
-              </span>
-              <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
+            <div className="mb-6 animate-fade-in animation-delay-200">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
+                  Fuzen
+                </span>
+              </h1>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground/80 leading-tight">
                 Gerencie Documentos com Segurança e Eficiência
-              </span>
-            </h1>
+              </p>
+            </div>
             
             <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in animation-delay-400">
               A Fuzen é a plataforma completa para empresas que precisam solicitar, armazenar e gerenciar 
