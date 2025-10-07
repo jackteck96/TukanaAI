@@ -186,7 +186,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       const { data: processData, error: processError } = await supabase
         .from("processes")
         .insert({
-          project_name: formData.projectName || `Processo - ${formData.clientName}`,
+          project_name: formData.projectName,
           client_name: formData.clientName,
           client_email: formData.clientEmail,
           cpf_cnpj: formData.cpfCnpj,
@@ -309,15 +309,19 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="projectName">Nome do Projeto/Processo</Label>
+            <Label htmlFor="projectName">Nome do Processo *</Label>
             <Input
               id="projectName"
               value={formData.projectName}
               onChange={(e) =>
                 setFormData({ ...formData, projectName: e.target.value })
               }
-              placeholder="Ex: Processo de documentação para Maria Silva"
+              placeholder="Ex: Abertura de Empresa, Regularização Fiscal..."
+              required
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Digite o nome que identifica este processo/projeto
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

@@ -539,8 +539,11 @@ const GerenciarProcessos = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
+                    <CardTitle className="text-lg">{process.processType}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1 mb-2">
+                      Cliente: {process.client}
+                    </p>
                     <div className="flex items-center space-x-3">
-                      <CardTitle className="text-lg">{process.processType}</CardTitle>
                       <DocumentProgressBattery 
                         progress={calculateProgressFromStatus(process.status)} 
                         size="md" 
@@ -548,10 +551,10 @@ const GerenciarProcessos = () => {
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}
                       </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Prazo: {process.dueDate}
+                      </span>
                     </div>
-                    <p className="text-muted-foreground mt-1">
-                      Cliente: {process.client} • Prazo: {process.dueDate}
-                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button 
