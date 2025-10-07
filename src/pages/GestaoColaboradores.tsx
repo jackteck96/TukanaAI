@@ -64,6 +64,7 @@ const GestaoColaboradores = () => {
         .from('profiles')
         .select('id, full_name, email, role, created_at')
         .eq('company_id', company.id)
+        .neq('role', 'client') // Excluir clientes
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -82,6 +83,7 @@ const GestaoColaboradores = () => {
         .from('user_invites')
         .select('*')
         .eq('company_id', company.id)
+        .neq('role', 'client') // Excluir convites de clientes
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -272,15 +274,15 @@ const GestaoColaboradores = () => {
       <PlanLimitChecker limitType="users" showProgress className="mb-6" />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Membros</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Colaboradores</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamMembers.length}</div>
-            <p className="text-xs text-muted-foreground">Membros ativos da equipe</p>
+            <p className="text-xs text-muted-foreground">Colaboradores ativos</p>
           </CardContent>
         </Card>
 
@@ -341,8 +343,8 @@ const GestaoColaboradores = () => {
           >
             <option value="all">Todos os cargos</option>
             <option value="admin">Administrador</option>
+            <option value="lawyer">Advogado</option>
             <option value="staff">Funcionário</option>
-            <option value="client">Cliente</option>
           </select>
         </div>
         <UserInviteSystem onInviteSent={refreshData} />
