@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
+import { ClientAutocomplete } from "./ClientAutocomplete";
 
 interface CreateProcessForm {
   projectName: string;
@@ -118,6 +119,20 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
     fetchDocumentTypes();
   }, [company?.id]);
+
+  const handleClientSelect = (client: { client_name: string; client_email: string; cpf_cnpj: string }) => {
+    setFormData({
+      ...formData,
+      clientName: client.client_name,
+      clientEmail: client.client_email,
+      cpfCnpj: client.cpf_cnpj || "",
+    });
+    
+    toast({
+      title: "Cliente selecionado",
+      description: "Dados do cliente preenchidos automaticamente. Confira e edite se necessário.",
+    });
+  };
 
   const resetForm = () => {
     setFormData({
@@ -306,14 +321,12 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="clientName">Nome do Cliente</Label>
-              <Input
-                id="clientName"
+              <ClientAutocomplete
+                companyId={company?.id || ""}
                 value={formData.clientName}
-                onChange={(e) =>
-                  setFormData({ ...formData, clientName: e.target.value })
-                }
-                required
+                onChange={(value) => setFormData({ ...formData, clientName: value })}
+                onClientSelect={handleClientSelect}
+                disabled={loading}
               />
             </div>
             <div>
