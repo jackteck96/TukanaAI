@@ -157,16 +157,26 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
   const handleView = async (filePath: string) => {
     try {
+      if (!filePath) {
+        toast.error('Caminho do arquivo não encontrado');
+        return;
+      }
+
       const { data, error } = await supabase.storage
         .from('documents')
         .createSignedUrl(filePath, 3600); // 1 hora de validade
 
       if (error) throw error;
 
+      if (!data?.signedUrl) {
+        toast.error('Não foi possível gerar URL do arquivo');
+        return;
+      }
+
       window.open(data.signedUrl, '_blank');
     } catch (error) {
       console.error('Erro ao visualizar:', error);
-      toast.error('Erro ao visualizar arquivo');
+      toast.error('Erro ao visualizar arquivo. Verifique se o arquivo existe.');
     }
   };
 

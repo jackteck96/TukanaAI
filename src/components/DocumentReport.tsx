@@ -177,7 +177,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
     if (!report || !processData) return;
 
     try {
-      const XLSX = (await import('xlsx')).default;
+      const XLSX = await import('xlsx');
       
       // Dados do processo
       const processInfo = [
@@ -219,11 +219,11 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
       
-      XLSX.writeFile(wb, `relatorio_${processData.client_name}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`);
+      XLSX.writeFile(wb, `relatorio_${processData.client_name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
       toast.success('Relatório Excel baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar Excel:', error);
-      toast.error('Erro ao gerar Excel');
+      toast.error('Erro ao gerar Excel. Tente novamente.');
     }
   };
 
