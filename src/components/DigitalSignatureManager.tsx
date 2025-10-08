@@ -214,9 +214,25 @@ const DigitalSignatureManager: React.FC<DigitalSignatureProps> = ({
   };
 
   const handleGovBrAuth = () => {
-    // Redirecionar para autenticação gov.br
+    // Verificar se as credenciais gov.br estão configuradas
+    toast({
+      title: 'Redirecionando',
+      description: 'Redirecionando para autenticação gov.br...'
+    });
+    
     const redirectUrl = encodeURIComponent(`${window.location.origin}/assinatura-callback`);
-    const govBrUrl = `https://sso.acesso.gov.br/oauth/authorize?response_type=code&client_id=CLIENTE_ID&redirect_uri=${redirectUrl}&scope=openid+profile+email+govbr_company`;
+    const govBrUrl = `https://sso.acesso.gov.br/oauth/authorize?response_type=code&client_id=${import.meta.env.VITE_GOV_BR_CLIENT_ID || 'CONFIGURAR_CLIENTE_ID'}&redirect_uri=${redirectUrl}&scope=openid+profile+email+govbr_company`;
+    
+    if (!import.meta.env.VITE_GOV_BR_CLIENT_ID) {
+      toast({
+        title: 'Erro de configuração',
+        description: 'Credenciais gov.br não configuradas! Configure GOV_BR_CLIENT_ID',
+        variant: 'destructive'
+      });
+      console.error('GOV_BR_CLIENT_ID não encontrado nas variáveis de ambiente');
+      return;
+    }
+    
     window.location.href = govBrUrl;
   };
 
