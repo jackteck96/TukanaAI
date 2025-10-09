@@ -34,6 +34,7 @@ import GlobalErrorLogger from "./components/GlobalErrorLogger";
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import AnaliseIA from "./pages/AnaliseIA";
+import VerifySignature from "./pages/VerifySignature";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cadastro-cliente" element={<CadastroCliente />} />
+                <Route path="/verify-signature/:signatureHash" element={<VerifySignature />} />
               <Route path="/gestao-colaboradores" element={
                 <ProtectedRoute>
                   <GestaoColaboradores />

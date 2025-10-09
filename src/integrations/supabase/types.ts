@@ -526,6 +526,7 @@ export type Database = {
       }
       internal_signatures: {
         Row: {
+          auth_report_url: string | null
           authentication_contact: string
           authentication_method: string
           company_id: string
@@ -544,6 +545,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auth_report_url?: string | null
           authentication_contact: string
           authentication_method: string
           company_id: string
@@ -562,6 +564,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auth_report_url?: string | null
           authentication_contact?: string
           authentication_method?: string
           company_id?: string

@@ -162,8 +162,15 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         file_path_val: `documents/${documentId}`
       });
 
+      // Obter informações do navegador e dispositivo
+      const userAgent = navigator.userAgent;
+      const browser = userAgent.includes('Chrome') ? 'Chrome' : 
+                      userAgent.includes('Firefox') ? 'Firefox' : 
+                      userAgent.includes('Safari') ? 'Safari' : 'Outro';
+      const device = /Mobile|Android|iPhone/i.test(userAgent) ? 'Mobile' : 'Desktop';
+
       // Criar registro de assinatura interna
-      const { error: signatureError } = await supabase
+      const { data: signatureRecord, error: signatureError } = await supabase
         .from('internal_signatures')
         .insert({
           document_id: documentId,
@@ -181,14 +188,34 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             timestamp: signatureTimestamp.toISOString(),
             method: 'internal_otp',
             verification_id: verificationId,
-            ip_address: 'unknown'
+            ip_address: 'unknown',
+            browser: browser,
+            device: device
           }
-        });
+        })
+        .select()
+        .single();
 
       if (signatureError) throw signatureError;
 
+      // Gerar termo de autenticidade automaticamente
+      try {
+        const { error: termError } = await supabase.functions.invoke('generate-authenticity-term', {
+          body: { signatureId: signatureRecord.id }
+        });
+
+        if (termError) {
+          console.error('Erro ao gerar termo de autenticidade:', termError);
+          toast.warning('Assinatura concluída, mas houve erro ao gerar termo de autenticidade');
+        } else {
+          toast.success('Documento assinado e termo de autenticidade gerado!');
+        }
+      } catch (termError) {
+        console.error('Erro ao gerar termo:', termError);
+        toast.warning('Assinatura concluída, mas houve erro ao gerar termo de autenticidade');
+      }
+
       setStep('success');
-      toast.success('Documento assinado com sucesso!');
     } catch (error: any) {
       console.error('Erro ao verificar e assinar:', error);
       toast.error('Erro ao assinar documento');

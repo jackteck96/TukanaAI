@@ -1,6 +1,7 @@
 import React from 'react';
 import DigitalSignatureManager from './DigitalSignatureManager';
 import InternalSignatureManager from './InternalSignatureManager';
+import SignatureTermDownloadButton from './SignatureTermDownloadButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, PenTool, Shield } from 'lucide-react';
@@ -25,10 +26,13 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       {/* Visualizador do Documento */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="h-5 w-5" />
-            <span>{documentName}</span>
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="h-5 w-5" />
+              <span>{documentName}</span>
+            </CardTitle>
+            <SignatureTermDownloadButton documentId={documentId} />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg p-4 min-h-[400px] bg-muted/30">
