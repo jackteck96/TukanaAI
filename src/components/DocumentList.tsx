@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import DocumentActionDialog from './DocumentActionDialog';
 import { TemplateSelector } from './TemplateSelector';
+import { TemplateEditor } from './TemplateEditor';
 import DocumentUpload from './DocumentUpload';
 
 interface Document {
@@ -34,6 +35,8 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [processData, setProcessData] = useState<any>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean;
@@ -58,7 +61,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     try {
       const { data, error } = await supabase
         .from('processes')
-        .select('client_email, company_id')
+        .select('client_name, client_email, cpf_cnpj, project_name, company_id')
         .eq('id', processId)
         .single();
       
@@ -247,11 +250,15 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     );
   }
 
-  const handleTemplateSelected = async (template: any) => {
-    // Generate document from template and upload
-    toast.success(`Modelo "${template.title}" selecionado. Gerando documento...`);
-    // Here you would generate the document with process data
-    // and upload it to the process
+  const handleTemplateSelected = (template: any) => {
+    setSelectedTemplate(template);
+    setShowTemplateSelector(false);
+    setShowTemplateEditor(true);
+  };
+
+  const handleDocumentCreated = () => {
+    loadDocuments();
+    setSelectedTemplate(null);
   };
 
   return (
@@ -396,6 +403,19 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
           processData={processData}
           companyId={companyId}
           onTemplateSelected={handleTemplateSelected}
+        />
+      )}
+
+      {/* Template Editor */}
+      {companyId && (
+        <TemplateEditor
+          open={showTemplateEditor}
+          onOpenChange={setShowTemplateEditor}
+          template={selectedTemplate}
+          processId={processId}
+          processData={processData}
+          companyId={companyId}
+          onDocumentCreated={handleDocumentCreated}
         />
       )}
 
