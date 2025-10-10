@@ -121,16 +121,18 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   }, [company?.id]);
 
   const handleClientSelect = (client: { client_name: string; client_email: string; cpf_cnpj: string }) => {
-    setFormData({
-      ...formData,
+    console.log('Preenchendo dados do cliente:', client); // Debug
+    
+    setFormData(prev => ({
+      ...prev,
       clientName: client.client_name,
       clientEmail: client.client_email,
       cpfCnpj: client.cpf_cnpj || "",
-    });
+    }));
     
     toast({
       title: "Cliente selecionado",
-      description: "Dados do cliente preenchidos automaticamente. Confira e edite se necessário.",
+      description: `Dados preenchidos: ${client.client_name} - ${client.client_email}`,
     });
   };
 

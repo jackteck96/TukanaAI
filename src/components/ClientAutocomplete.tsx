@@ -89,6 +89,7 @@ export const ClientAutocomplete = ({
   }, [value, companyId]);
 
   const handleSelectClient = (client: Client) => {
+    console.log('Cliente selecionado:', client); // Debug
     onChange(client.client_name);
     onClientSelect(client);
     setShowSuggestions(false);
