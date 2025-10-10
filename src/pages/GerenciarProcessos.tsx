@@ -320,18 +320,16 @@ const GerenciarProcessos = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <p className="text-sm">{currentProcess.client_email}</p>
-                    </div>
-                    <EmailResendButton
-                      processId={currentProcess.id}
-                      clientName={currentProcess.client_name}
-                      clientEmail={currentProcess.client_email}
-                      processName={currentProcess.project_name || currentProcess.process_type}
-                    />
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm break-all">{currentProcess.client_email}</p>
                   </div>
+                  <EmailResendButton
+                    processId={currentProcess.id}
+                    clientName={currentProcess.client_name}
+                    clientEmail={currentProcess.client_email}
+                    processName={currentProcess.project_name || currentProcess.process_type}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">CPF/CNPJ</Label>
