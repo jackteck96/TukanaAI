@@ -314,11 +314,11 @@ const GerenciarProcessos = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Nome</Label>
                   <p className="text-sm">{currentProcess.client_name}</p>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Email</Label>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ const GerenciarProcessos = () => {
                     />
                   </div>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">CPF/CNPJ</Label>
                   <p className="text-sm">{currentProcess.cpf_cnpj || 'Não informado'}</p>
                 </div>
@@ -349,18 +349,18 @@ const GerenciarProcessos = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Tipo</Label>
                   <p className="text-sm">{currentProcess.process_type}</p>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Prioridade</Label>
                   <Badge variant={currentProcess.priority === 'Alta' ? 'destructive' : 
                               currentProcess.priority === 'Média' ? 'default' : 'secondary'}>
                     {currentProcess.priority}
                   </Badge>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Progresso</Label>
                   <div className="space-y-2">
                     <Progress value={currentProcess.progress} />
@@ -379,15 +379,15 @@ const GerenciarProcessos = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Criado em</Label>
                   <p className="text-sm">{formatDate(currentProcess.created_at)}</p>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Última atualização</Label>
                   <p className="text-sm">{formatDate(currentProcess.updated_at)}</p>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Prazo</Label>
                   <p className="text-sm">{formatDate(currentProcess.due_date)}</p>
                 </div>
