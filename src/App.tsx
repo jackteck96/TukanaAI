@@ -25,6 +25,7 @@ import CompanyDashboard from "@/components/CompanyDashboard";
 import CadastroCliente from "./pages/CadastroCliente";
 import CadastroViaConvite from "./pages/CadastroViaConvite";
 import GestaoColaboradores from "./pages/GestaoColaboradores";
+import GestaoClientes from "./pages/GestaoClientes";
 import GestaoUsuarios from "./pages/GestaoUsuarios";
 import RelatoriosPonto from "./pages/RelatoriosPonto";
 import ClientInfo from "./pages/ClientInfo";
@@ -61,6 +62,11 @@ const App = () => (
               <Route path="/gestao-colaboradores" element={
                 <ProtectedRoute>
                   <GestaoColaboradores />
+                </ProtectedRoute>
+              } />
+              <Route path="/gestao-clientes" element={
+                <ProtectedRoute>
+                  <GestaoClientes />
                 </ProtectedRoute>
               } />
               <Route path="/gestao-usuarios" element={<ProtectedRoute><GestaoUsuarios /></ProtectedRoute>} />

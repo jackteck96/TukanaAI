@@ -108,7 +108,7 @@ const EmpresaDashboard = () => {
       change: dashboardStats.totalClients > 0 ? "+100%" : "0%",
       icon: Users,
       color: "text-primary",
-      route: "/cliente"
+      route: "/gestao-clientes"
     },
     {
       title: "Processos Ativos",
