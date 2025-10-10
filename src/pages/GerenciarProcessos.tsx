@@ -406,7 +406,10 @@ const GerenciarProcessos = () => {
             </Card>
           )}
 
-          {/* Documents, Notes and Timeline Section */}
+          {/* Timeline */}
+          <ProcessTimeline currentStatus={currentProcess.status} />
+
+          {/* Documents, Notes and Email Log Section */}
           <div className="space-y-6">
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
             <ProcessNotes 
@@ -414,7 +417,6 @@ const GerenciarProcessos = () => {
               companyId={currentProcess.company_id || ''}
             />
             <EmailLogViewer processId={currentProcess.id} />
-            <ProcessTimeline currentStatus={currentProcess.status} />
           </div>
         </div>
 
