@@ -155,7 +155,7 @@ const Landing = () => {
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </a>
-              <Link to="/login">
+              <Link to="/auth">
                 <Button 
                   size="lg" 
                   variant="outline" 

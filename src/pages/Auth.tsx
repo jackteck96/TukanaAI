@@ -201,7 +201,7 @@ const Auth = () => {
           </Link>
           <div className="flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg">LegalTech Platform</span>
+            <span className="font-semibold text-lg">Fuzen</span>
           </div>
         </div>
 

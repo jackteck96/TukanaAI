@@ -35,7 +35,7 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
+            <Link to="/auth">
               <Button variant="outline">Login</Button>
             </Link>
             <a href="#precos">
@@ -69,7 +69,7 @@ const Header = () => {
                 Documentos
               </Link>
               <div className="flex flex-col space-y-2 pt-4">
-                <Link to="/login">
+                <Link to="/auth">
                   <Button variant="outline" className="w-full">Login</Button>
                 </Link>
                 <a href="#precos">
