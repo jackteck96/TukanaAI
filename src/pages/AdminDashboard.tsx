@@ -22,7 +22,10 @@ import {
   Target,
   Save,
   Eye,
-  Copy
+  Copy,
+  UserPlus,
+  Crown,
+  Mail
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -84,6 +87,12 @@ const AdminDashboard = () => {
   const [sendingTest, setSendingTest] = useState(false);
   const [testMode, setTestMode] = useState<'collaborator' | 'client'>('collaborator');
 
+  // States for platform admins
+  const [platformAdmins, setPlatformAdmins] = useState<any[]>([]);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminName, setNewAdminName] = useState("");
+  const [sendingAdminInvite, setSendingAdminInvite] = useState(false);
   
   // States for document types
   const [documentTypes, setDocumentTypes] = useState<GlobalDocumentType[]>([]);
@@ -180,6 +189,7 @@ const AdminDashboard = () => {
   const fetchAllData = async () => {
     try {
       await Promise.all([
+        fetchPlatformAdmins(),
         fetchDocumentTypes(),
         fetchTemplates(),
         fetchTrainingData(),
@@ -189,6 +199,78 @@ const AdminDashboard = () => {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPlatformAdmins = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, created_at')
+        .eq('role', 'admin')
+        .is('company_id', null) // Platform admins don't belong to any company
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setPlatformAdmins(data || []);
+    } catch (error) {
+      console.error('Error fetching platform admins:', error);
+    }
+  };
+
+  const handleInvitePlatformAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newAdminEmail || !newAdminName) {
+      toast({ title: "Erro", description: "Preencha todos os campos", variant: "destructive" });
+      return;
+    }
+
+    try {
+      setSendingAdminInvite(true);
+
+      // Check if admin already exists
+      const { data: existingAdmin } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', newAdminEmail)
+        .eq('role', 'admin')
+        .is('company_id', null)
+        .maybeSingle();
+
+      if (existingAdmin) {
+        toast({ title: "Erro", description: "Este email já é um administrador da plataforma", variant: "destructive" });
+        return;
+      }
+
+      // Send invitation email (they'll create account via signup)
+      const { error: emailError } = await supabase.functions.invoke('send-unified-email', {
+        body: {
+          email: newAdminEmail,
+          full_name: newAdminName,
+          inviterName: user?.user_metadata?.full_name || user?.email || 'Administrador Fuzen',
+          role: 'admin',
+          isCollaborator: false,
+          isPlatformAdmin: true
+        }
+      });
+
+      if (emailError) throw emailError;
+
+      toast({ 
+        title: "Convite enviado!", 
+        description: `Um convite foi enviado para ${newAdminEmail}. Após criar a conta, você precisará definir manualmente o role como 'admin' no banco de dados.` 
+      });
+
+      setIsAdminModalOpen(false);
+      setNewAdminEmail("");
+      setNewAdminName("");
+      fetchPlatformAdmins();
+    } catch (error: any) {
+      console.error('Error inviting platform admin:', error);
+      toast({ title: "Erro", description: error.message || "Erro ao enviar convite", variant: "destructive" });
+    } finally {
+      setSendingAdminInvite(false);
     }
   };
 
@@ -1056,6 +1138,108 @@ const AdminDashboard = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Invite Platform Admin Modal */}
+        <Dialog open={isAdminModalOpen} onOpenChange={setIsAdminModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-primary" />
+                Convidar Novo Administrador
+              </DialogTitle>
+              <DialogDescription>
+                Envie um convite para que uma pessoa se torne administrador da plataforma
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleInvitePlatformAdmin} className="space-y-4">
+              <div>
+                <Label htmlFor="adminName">Nome Completo *</Label>
+                <Input
+                  id="adminName"
+                  value={newAdminName}
+                  onChange={(e) => setNewAdminName(e.target.value)}
+                  placeholder="Digite o nome completo"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminEmail">Email *</Label>
+                <Input
+                  id="adminEmail"
+                  type="email"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  placeholder="admin@exemplo.com"
+                  required
+                />
+              </div>
+              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg p-3">
+                <p className="text-sm text-orange-900 dark:text-orange-300">
+                  <strong>Lembre-se:</strong> Após o novo admin criar sua conta, você precisará definir manualmente o campo <code className="bg-orange-200 dark:bg-orange-900 px-1 rounded">role = 'admin'</code> na tabela <code className="bg-orange-200 dark:bg-orange-900 px-1 rounded">profiles</code> no banco de dados.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsAdminModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={sendingAdminInvite}>
+                  {sendingAdminInvite ? 'Enviando...' : 'Enviar Convite'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Invite Platform Admin Modal */}
+        <Dialog open={isAdminModalOpen} onOpenChange={setIsAdminModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-primary" />
+                Convidar Novo Administrador
+              </DialogTitle>
+              <DialogDescription>
+                Envie um convite para que uma pessoa se torne administrador da plataforma
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleInvitePlatformAdmin} className="space-y-4">
+              <div>
+                <Label htmlFor="adminName">Nome Completo *</Label>
+                <Input
+                  id="adminName"
+                  value={newAdminName}
+                  onChange={(e) => setNewAdminName(e.target.value)}
+                  placeholder="Digite o nome completo"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminEmail">Email *</Label>
+                <Input
+                  id="adminEmail"
+                  type="email"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  placeholder="admin@exemplo.com"
+                  required
+                />
+              </div>
+              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg p-3">
+                <p className="text-sm text-orange-900 dark:text-orange-300">
+                  <strong>Lembre-se:</strong> Após o novo admin criar sua conta, você precisará definir manualmente o campo <code className="bg-orange-200 dark:bg-orange-900 px-1 rounded">role = 'admin'</code> na tabela <code className="bg-orange-200 dark:bg-orange-900 px-1 rounded">profiles</code> no banco de dados.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsAdminModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={sendingAdminInvite}>
+                  {sendingAdminInvite ? 'Enviando...' : 'Enviar Convite'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
