@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from 'xlsx';
 
 interface EmployeeReport {
   employee_name: string;
@@ -139,37 +140,82 @@ const RelatoriosPonto = () => {
     }
   };
 
-  const exportToCsv = () => {
+  const exportToExcel = () => {
     if (employeeReports.length === 0) return;
 
-    const csvContent = [
-      ['Funcionário', 'Data/Hora', 'Tipo', 'Total de Horas'].join(','),
-      ...employeeReports.flatMap(report =>
-        report.entries.map(entry => [
-          report.employee_name,
-          entry.timestamp.toLocaleString('pt-BR'),
+    // Criar array de dados para o Excel
+    const excelData: any[] = [];
+    
+    // Adicionar cabeçalho
+    excelData.push(['RELATÓRIO DE PONTO']);
+    excelData.push([`Período: ${new Date(startDate).toLocaleDateString('pt-BR')} a ${new Date(endDate).toLocaleDateString('pt-BR')}`]);
+    excelData.push([]); // Linha em branco
+    
+    // Para cada funcionário
+    employeeReports.forEach((report, index) => {
+      // Nome do funcionário
+      excelData.push([report.employee_name, '', '', `Total: ${report.totalHours}h`]);
+      
+      // Cabeçalho da tabela de registros
+      excelData.push(['Data', 'Horário', 'Tipo', '']);
+      
+      // Registros do funcionário
+      report.entries.forEach(entry => {
+        excelData.push([
+          entry.timestamp.toLocaleDateString('pt-BR'),
+          entry.timestamp.toLocaleTimeString('pt-BR'),
           getEntryTypeLabel(entry.type),
           ''
-        ].join(','))
-      ),
-      ['', '', 'TOTAIS:', ''],
-      ...employeeReports.map(report => [
+        ]);
+      });
+      
+      // Linha em branco entre funcionários
+      excelData.push([]);
+    });
+    
+    // Adicionar resumo geral
+    excelData.push(['RESUMO GERAL']);
+    excelData.push(['Funcionário', 'Total de Registros', 'Total de Horas', '']);
+    employeeReports.forEach(report => {
+      excelData.push([
         report.employee_name,
-        '',
-        '',
-        `${report.totalHours}h`
-      ].join(','))
-    ].join('\n');
+        report.entries.length.toString(),
+        `${report.totalHours}h`,
+        ''
+      ]);
+    });
+    
+    // Totais gerais
+    excelData.push([]);
+    excelData.push([
+      'TOTAL GERAL',
+      employeeReports.reduce((total, report) => total + report.entries.length, 0).toString(),
+      `${Math.round(employeeReports.reduce((total, report) => total + report.totalHours, 0) * 100) / 100}h`,
+      ''
+    ]);
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `relatorio-ponto-${startDate}-${endDate}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Criar workbook e worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(excelData);
+    
+    // Ajustar largura das colunas
+    ws['!cols'] = [
+      { wch: 25 }, // Coluna A - Funcionário/Data
+      { wch: 15 }, // Coluna B - Horário/Registros
+      { wch: 20 }, // Coluna C - Tipo
+      { wch: 15 }  // Coluna D - Total
+    ];
+    
+    // Adicionar worksheet ao workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Relatório de Ponto');
+    
+    // Baixar arquivo
+    XLSX.writeFile(wb, `relatorio-ponto-${startDate}-${endDate}.xlsx`);
+    
+    toast({
+      title: "Relatório exportado!",
+      description: "O arquivo Excel foi baixado com sucesso.",
+    });
   };
 
   if (!isAdmin) {
@@ -265,10 +311,10 @@ const RelatoriosPonto = () => {
               {employeeReports.length > 0 && (
                 <Button
                   variant="outline"
-                  onClick={exportToCsv}
+                  onClick={exportToExcel}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Exportar
+                  Exportar Excel
                 </Button>
               )}
             </div>
