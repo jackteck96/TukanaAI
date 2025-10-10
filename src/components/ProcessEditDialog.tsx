@@ -369,7 +369,7 @@ const ProcessEditDialog = ({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="project_name">Nome do Projeto</Label>
                     <Input
                       id="project_name"
@@ -378,7 +378,7 @@ const ProcessEditDialog = ({
                       placeholder="Digite o nome do projeto"
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="client_name">Nome do Cliente</Label>
                     <Input
                       id="client_name"
@@ -387,7 +387,7 @@ const ProcessEditDialog = ({
                       placeholder="Digite o nome do cliente"
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="client_email">Email do Cliente</Label>
                     <Input
                       id="client_email"
@@ -397,7 +397,7 @@ const ProcessEditDialog = ({
                       placeholder="Digite o email do cliente"
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="cpf_cnpj">CPF/CNPJ</Label>
                     <Input
                       id="cpf_cnpj"
@@ -406,7 +406,7 @@ const ProcessEditDialog = ({
                       placeholder="Digite o CPF ou CNPJ"
                     />
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="process_type">Tipo de Processo</Label>
                     <Select
                       value={formData.process_type}
@@ -424,7 +424,7 @@ const ProcessEditDialog = ({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
                     <Select
                       value={formData.status}
@@ -440,7 +440,7 @@ const ProcessEditDialog = ({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="priority">Prioridade</Label>
                     <Select
                       value={formData.priority}
@@ -456,7 +456,7 @@ const ProcessEditDialog = ({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="due_date">Prazo</Label>
                     <Input
                       id="due_date"
@@ -466,7 +466,7 @@ const ProcessEditDialog = ({
                     />
                   </div>
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>
                   <Textarea
                     id="description"
@@ -489,8 +489,8 @@ const ProcessEditDialog = ({
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Adicionar Nova Solicitação */}
-                <div className="flex items-end gap-2">
-                  <div className="flex-1">
+                <div className="flex flex-col sm:flex-row items-end gap-2">
+                  <div className="flex-1 w-full space-y-2">
                     <Label htmlFor="newDocType">Solicitar Novo Documento</Label>
                     <Select
                       value={newDocumentType}

@@ -422,7 +422,7 @@ const GerenciarProcessos = () => {
               <DialogTitle>Editar Anotações do Processo</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="notes">Anotações</Label>
                 <Textarea
                   id="notes"
@@ -433,7 +433,7 @@ const GerenciarProcessos = () => {
                   className="min-h-[150px]"
                 />
               </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsNotesModalOpen(false)}>
                   Cancelar
                 </Button>

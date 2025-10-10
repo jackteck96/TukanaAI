@@ -169,9 +169,9 @@ export default function TaskManager({ processId, companyId }: TaskManagerProps) 
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Título da Tarefa</Label>
+                <Label htmlFor="title">Título da Tarefa *</Label>
                 <Input
                   id="title"
                   placeholder="Ex: Solicitar RG do cliente"
@@ -181,7 +181,7 @@ export default function TaskManager({ processId, companyId }: TaskManagerProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="document_type">Tipo de Documento</Label>
+                <Label htmlFor="document_type">Tipo de Documento *</Label>
                 <Select 
                   value={newTask.document_type} 
                   onValueChange={(value) => setNewTask({ ...newTask, document_type: value })}
@@ -206,6 +206,7 @@ export default function TaskManager({ processId, companyId }: TaskManagerProps) 
                   placeholder="Detalhes adicionais sobre o documento necessário"
                   value={newTask.description}
                   onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  rows={3}
                 />
               </div>
 

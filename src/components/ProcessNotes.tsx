@@ -111,21 +111,23 @@ export default function ProcessNotes({ processId, companyId, className }: Proces
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new note */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Textarea
             placeholder="Adicione uma anotação sobre este processo..."
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
             className="min-h-[80px]"
           />
-          <Button 
-            onClick={addNote}
-            disabled={!newNote.trim() || loading}
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {loading ? 'Adicionando...' : 'Adicionar Anotação'}
-          </Button>
+          <div className="flex justify-end">
+            <Button 
+              onClick={addNote}
+              disabled={!newNote.trim() || loading}
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {loading ? 'Adicionando...' : 'Adicionar Anotação'}
+            </Button>
+          </div>
         </div>
 
         {notes.length > 0 && <Separator />}
