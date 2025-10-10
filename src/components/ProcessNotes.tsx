@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { MessageSquare, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MessageSquare, Plus, Reply, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +15,8 @@ interface ProcessNote {
   user_name: string;
   user_id: string;
   created_at: string;
+  parent_note_id: string | null;
+  replies?: ProcessNote[];
 }
 
 interface ProcessNotesProps {
@@ -27,6 +30,9 @@ export default function ProcessNotes({ processId, companyId, className }: Proces
   const [newNote, setNewNote] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingNotes, setLoadingNotes] = useState(true);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [replyToNoteId, setReplyToNoteId] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -39,10 +45,25 @@ export default function ProcessNotes({ processId, companyId, className }: Proces
         .from('process_notes')
         .select('*')
         .eq('process_id', processId)
+        .is('parent_note_id', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setNotes(data || []);
+
+      // Load replies for each note
+      const notesWithReplies = await Promise.all(
+        (data || []).map(async (note) => {
+          const { data: replies } = await supabase
+            .from('process_notes')
+            .select('*')
+            .eq('parent_note_id', note.id)
+            .order('created_at', { ascending: true });
+          
+          return { ...note, replies: replies || [] };
+        })
+      );
+
+      setNotes(notesWithReplies);
     } catch (error) {
       console.error('Erro ao carregar anotações:', error);
       toast.error('Erro ao carregar anotações');
@@ -56,7 +77,6 @@ export default function ProcessNotes({ processId, companyId, className }: Proces
 
     setLoading(true);
     try {
-      // Buscar nome do usuário
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name, email')
@@ -72,17 +92,56 @@ export default function ProcessNotes({ processId, companyId, className }: Proces
           company_id: companyId,
           user_id: user.id,
           user_name: userName,
-          content: newNote.trim()
+          content: newNote.trim(),
+          parent_note_id: null
         });
 
       if (error) throw error;
 
       toast.success('Anotação adicionada com sucesso');
       setNewNote('');
-      loadNotes(); // Recarregar anotações
+      loadNotes();
     } catch (error) {
       console.error('Erro ao adicionar anotação:', error);
       toast.error('Erro ao adicionar anotação');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addReply = async () => {
+    if (!replyContent.trim() || !user || !replyToNoteId) return;
+
+    setLoading(true);
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+
+      const userName = profile?.full_name || profile?.email || 'Usuário';
+
+      const { error } = await supabase
+        .from('process_notes')
+        .insert({
+          process_id: processId,
+          company_id: companyId,
+          user_id: user.id,
+          user_name: userName,
+          content: replyContent.trim(),
+          parent_note_id: replyToNoteId
+        });
+
+      if (error) throw error;
+
+      toast.success('Resposta adicionada com sucesso');
+      setReplyContent('');
+      setReplyToNoteId(null);
+      loadNotes();
+    } catch (error) {
+      console.error('Erro ao adicionar resposta:', error);
+      toast.error('Erro ao adicionar resposta');
     } finally {
       setLoading(false);
     }
@@ -142,30 +201,124 @@ export default function ProcessNotes({ processId, companyId, className }: Proces
             </div>
           ) : (
             notes.map((note) => (
-              <div
-                key={note.id}
-                className="p-4 bg-muted/30 rounded-lg border-l-4 border-l-primary/50"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-foreground">
-                    {note.user_name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(note.created_at).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
+              <div key={note.id} className="space-y-2">
+                <div
+                  className="p-4 bg-muted/30 rounded-lg border-l-4 border-l-primary/50 cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {note.user_name}
+                      </span>
+                      {note.replies && note.replies.length > 0 && (
+                        <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                          {note.replies.length} {note.replies.length === 1 ? 'resposta' : 'respostas'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(note.created_at).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                      {expandedNoteId === note.id ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {note.content}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {note.content}
-                </p>
+
+                {/* Expanded view with replies */}
+                {expandedNoteId === note.id && (
+                  <div className="ml-8 space-y-2">
+                    {note.replies && note.replies.length > 0 && (
+                      <div className="space-y-2">
+                        {note.replies.map((reply) => (
+                          <div
+                            key={reply.id}
+                            className="p-3 bg-muted/20 rounded-lg border-l-2 border-l-primary/30"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-sm font-medium text-foreground">
+                                {reply.user_name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(reply.created_at).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {reply.content}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReplyToNoteId(note.id);
+                      }}
+                    >
+                      <Reply className="h-4 w-4 mr-2" />
+                      Responder
+                    </Button>
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
+
+        {/* Reply Dialog */}
+        <Dialog open={!!replyToNoteId} onOpenChange={(open) => !open && setReplyToNoteId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Responder Anotação</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Textarea
+                placeholder="Digite sua resposta..."
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                className="min-h-[100px]"
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setReplyToNoteId(null);
+                    setReplyContent('');
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={addReply}
+                  disabled={!replyContent.trim() || loading}
+                >
+                  {loading ? 'Enviando...' : 'Enviar Resposta'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

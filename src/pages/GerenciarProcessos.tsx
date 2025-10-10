@@ -32,6 +32,7 @@ import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
 import EmailLogViewer from "@/components/EmailLogViewer";
+import ProcessNotes from "@/components/ProcessNotes";
 import { BusinessDocumentAnalyzer } from "@/components/BusinessDocumentAnalyzer";
 import ProcessEditDialog from "@/components/ProcessEditDialog";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
@@ -405,11 +406,15 @@ const GerenciarProcessos = () => {
             </Card>
           )}
 
-          {/* Timeline and Documents Section */}
+          {/* Documents, Notes and Timeline Section */}
           <div className="space-y-6">
-            <ProcessTimeline currentStatus={currentProcess.status} />
-            <EmailLogViewer processId={currentProcess.id} />
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
+            <ProcessNotes 
+              processId={currentProcess.id} 
+              companyId={currentProcess.company_id || ''}
+            />
+            <EmailLogViewer processId={currentProcess.id} />
+            <ProcessTimeline currentStatus={currentProcess.status} />
           </div>
         </div>
 

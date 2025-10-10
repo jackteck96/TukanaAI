@@ -629,6 +629,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          parent_note_id: string | null
           process_id: string
           updated_at: string
           user_id: string
@@ -639,6 +640,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          parent_note_id?: string | null
           process_id: string
           updated_at?: string
           user_id: string
@@ -649,12 +651,21 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          parent_note_id?: string | null
           process_id?: string
           updated_at?: string
           user_id?: string
           user_name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "process_notes_parent_note_id_fkey"
+            columns: ["parent_note_id"]
+            isOneToOne: false
+            referencedRelation: "process_notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       processes: {
         Row: {
