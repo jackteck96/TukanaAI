@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invites: {
+        Row: {
+          approval_token: string
+          approved_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          invited_by: string
+          status: string
+        }
+        Insert: {
+          approval_token?: string
+          approved_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          full_name: string
+          id?: string
+          invited_by: string
+          status?: string
+        }
+        Update: {
+          approval_token?: string
+          approved_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          invited_by?: string
+          status?: string
+        }
+        Relationships: []
+      }
       ai_training_cases: {
         Row: {
           correct_documents: string[]

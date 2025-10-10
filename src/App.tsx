@@ -36,6 +36,7 @@ import AdminRoute from "./components/AdminRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import AnaliseIA from "./pages/AnaliseIA";
 import VerifySignature from "./pages/VerifySignature";
+import ApproveAdmin from "./pages/ApproveAdmin";
 
 const queryClient = new QueryClient();
 
@@ -144,6 +145,7 @@ const App = () => (
                     <AnaliseIA />
                   </ProtectedRoute>
                 } />
+                <Route path="/approve-admin" element={<ApproveAdmin />} />
                 
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />

@@ -24,5 +24,8 @@ verify_jwt = false
 [functions.send-unified-email]
 verify_jwt = false
 
+[functions.approve-admin-invite]
+verify_jwt = false
+
 [functions.verify-invite]
 verify_jwt = false

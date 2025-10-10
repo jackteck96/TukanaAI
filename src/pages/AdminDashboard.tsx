@@ -243,32 +243,55 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Send invitation email (they'll create account via signup)
-      const { error: emailError } = await supabase.functions.invoke('send-unified-email', {
-        body: {
+      // Get current user data to send approval email
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('Usuário não autenticado');
+
+      const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', currentUser.id)
+        .single();
+
+      // Create admin invite
+      const { data: invite, error: inviteError } = await supabase
+        .from('admin_invites')
+        .insert({
           email: newAdminEmail,
           full_name: newAdminName,
-          inviterName: user?.user_metadata?.full_name || user?.email || 'Administrador Fuzen',
-          role: 'admin',
-          isCollaborator: false,
-          isPlatformAdmin: true
+          invited_by: currentUser.id
+        })
+        .select()
+        .single();
+
+      if (inviteError) throw inviteError;
+
+      // Send approval email to current admin
+      const approvalLink = `${window.location.origin}/approve-admin?token=${invite.approval_token}`;
+      
+      const { error: emailError } = await supabase.functions.invoke('send-unified-email', {
+        body: {
+          to: currentUserProfile?.email || currentUser.email,
+          recipientName: 'Administrador',
+          companyName: 'Plataforma',
+          inviteLink: approvalLink,
+          isCollaboratorInvite: false
         }
       });
 
       if (emailError) throw emailError;
 
       toast({ 
-        title: "Convite enviado!", 
-        description: `Um convite foi enviado para ${newAdminEmail}. Após criar a conta, você precisará definir manualmente o role como 'admin' no banco de dados.` 
+        title: "Convite criado!", 
+        description: `Um email foi enviado para você aprovar o convite de ${newAdminEmail}.`
       });
 
       setIsAdminModalOpen(false);
       setNewAdminEmail("");
       setNewAdminName("");
-      fetchPlatformAdmins();
     } catch (error: any) {
       console.error('Error inviting platform admin:', error);
-      toast({ title: "Erro", description: error.message || "Erro ao enviar convite", variant: "destructive" });
+      toast({ title: "Erro", description: error.message || "Erro ao criar convite", variant: "destructive" });
     } finally {
       setSendingAdminInvite(false);
     }
