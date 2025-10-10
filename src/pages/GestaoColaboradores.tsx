@@ -64,10 +64,12 @@ const GestaoColaboradores = () => {
         .from('profiles')
         .select('id, full_name, email, role, created_at')
         .eq('company_id', company.id)
-        .neq('role', 'client') // Excluir clientes
+        .in('role', ['admin', 'lawyer', 'staff']) // Filtrar apenas colaboradores
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Colaboradores carregados:', data); // Debug
       setTeamMembers(data || []);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -83,10 +85,12 @@ const GestaoColaboradores = () => {
         .from('user_invites')
         .select('*')
         .eq('company_id', company.id)
-        .neq('role', 'client') // Excluir convites de clientes
+        .in('role', ['admin', 'lawyer', 'staff']) // Filtrar apenas convites de colaboradores
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Convites carregados:', data); // Debug
       setInvites(data || []);
     } catch (error) {
       console.error('Error fetching invites:', error);
