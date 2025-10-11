@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileText,
   Clock,
@@ -21,9 +22,12 @@ import {
   LogOut,
   FileDown,
   ExternalLink,
-  Printer
+  Printer,
+  ArrowLeft,
+  Mail,
+  FileIcon
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,10 +41,19 @@ import ProcessTimeline from "@/components/ProcessTimeline";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import ClientNotifications from "@/components/ClientNotifications";
 import ProcessNotes from "@/components/ProcessNotes";
+import TaskManager from "@/components/TaskManager";
+import { TemplateSelector } from "@/components/TemplateSelector";
+import { TemplateEditor } from "@/components/TemplateEditor";
 
 const AreaCliente = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<any>(null);
+  
+  // Get process ID from URL
+  const urlParams = new URLSearchParams(location.search);
+  const processId = urlParams.get('id');
   
   // Carregar perfil real do cliente
   useEffect(() => {
@@ -237,6 +250,41 @@ const AreaCliente = () => {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [companyPlan, setCompanyPlan] = useState({ currentUsers: 2, userLimit: 5, plan: "professional" });
   const [newCollaborator, setNewCollaborator] = useState({ name: "", email: "", role: "staff" });
+  const [currentProcess, setCurrentProcess] = useState<any>(null);
+  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
+  const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Load detailed process if processId is in URL
+  useEffect(() => {
+    if (processId && user?.email) {
+      loadProcessDetails(processId);
+    }
+  }, [processId, user]);
+
+  const loadProcessDetails = async (id: string) => {
+    try {
+      const { data: processData, error } = await supabase
+        .from('processes')
+        .select('*')
+        .eq('id', id)
+        .eq('client_email', user?.email)
+        .single();
+
+      if (error) throw error;
+      if (!processData) {
+        toast.error("Processo não encontrado ou você não tem permissão para acessá-lo");
+        navigate('/area-cliente');
+        return;
+      }
+
+      setCurrentProcess(processData);
+    } catch (error) {
+      console.error('Error loading process details:', error);
+      toast.error("Erro ao carregar detalhes do processo");
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -333,6 +381,197 @@ const AreaCliente = () => {
     toast.success("Convite enviado com sucesso!");
   };
 
+  // If viewing a specific process, show detailed view
+  if (processId && currentProcess) {
+    const formatDate = (dateString: string | null) => {
+      if (!dateString) return 'Não definido';
+      return new Date(dateString).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="bg-card border-b border-border sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/area-cliente')}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Voltar
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {currentProcess.project_name || currentProcess.process_type}
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Meu Processo
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge className={getStatusColor(currentProcess.status)}>
+                  {currentProcess.status}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-6 space-y-6">
+          {/* Process Information */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Process Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileIcon className="h-5 w-5" />
+                  Detalhes do Processo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Tipo</Label>
+                  <p className="text-sm">{currentProcess.process_type}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Prioridade</Label>
+                  <Badge variant={currentProcess.priority === 'Alta' ? 'destructive' : 
+                              currentProcess.priority === 'Média' ? 'default' : 'secondary'}>
+                    {currentProcess.priority}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Progresso</Label>
+                  <div className="space-y-2">
+                    <Progress value={currentProcess.progress || 0} />
+                    <p className="text-sm text-muted-foreground">{currentProcess.progress || 0}% concluído</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Datas Importantes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Criado em</Label>
+                  <p className="text-sm">{formatDate(currentProcess.created_at)}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Última atualização</Label>
+                  <p className="text-sm">{formatDate(currentProcess.updated_at)}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Prazo</Label>
+                  <p className="text-sm">{formatDate(currentProcess.due_date)}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Description */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Descrição</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap">{currentProcess.description || 'Sem descrição'}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Timeline */}
+          <ProcessTimeline currentStatus={currentProcess.status} />
+
+          {/* Tabs Section */}
+          <Tabs defaultValue="documents" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="tasks">Tarefas</TabsTrigger>
+              <TabsTrigger value="documents">Documentos</TabsTrigger>
+              <TabsTrigger value="templates">Modelos</TabsTrigger>
+              <TabsTrigger value="notes">Anotações</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="tasks" className="space-y-4">
+              <TaskManager processId={currentProcess.id} companyId={currentProcess.company_id || ''} />
+            </TabsContent>
+
+            <TabsContent value="documents" className="space-y-4">
+              <DocumentList processId={currentProcess.id} refreshKey={refreshKey} />
+            </TabsContent>
+
+            <TabsContent value="templates" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Modelos de Documentos</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Utilize nossos modelos para criar documentos padronizados
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={() => setIsTemplateSelectorOpen(true)}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Selecionar Modelo
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="notes" className="space-y-4">
+              <ProcessNotes 
+                processId={currentProcess.id} 
+                companyId={currentProcess.company_id || ''}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Template Selector */}
+        <TemplateSelector
+          open={isTemplateSelectorOpen}
+          onOpenChange={setIsTemplateSelectorOpen}
+          companyId={currentProcess.company_id || ''}
+          processData={currentProcess}
+          onTemplateSelected={(template) => {
+            setSelectedTemplate(template);
+            setIsTemplateSelectorOpen(false);
+            setIsTemplateEditorOpen(true);
+          }}
+        />
+
+        {/* Template Editor */}
+        {selectedTemplate && (
+          <TemplateEditor
+            open={isTemplateEditorOpen}
+            onOpenChange={setIsTemplateEditorOpen}
+            template={selectedTemplate}
+            processId={currentProcess.id}
+            processData={currentProcess}
+            companyId={currentProcess.company_id || ''}
+            onDocumentCreated={() => {
+              setRefreshKey(prev => prev + 1);
+              setIsTemplateEditorOpen(false);
+              setSelectedTemplate(null);
+              toast.success("Documento criado com sucesso!");
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Default dashboard view (list of processes)
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -511,7 +750,7 @@ const AreaCliente = () => {
                   <div
                     key={process.id}
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => handleViewProcess(process.id)}
+                    onClick={() => navigate(`/area-cliente?id=${process.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-3">
@@ -552,7 +791,7 @@ const AreaCliente = () => {
                         variant="ghost"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleViewProcess(process.id);
+                          navigate(`/area-cliente?id=${process.id}`);
                         }}
                       >
                         <ExternalLink className="h-3 w-3 mr-1" />
@@ -590,7 +829,7 @@ const AreaCliente = () => {
                   <div
                     key={request.id}
                     className={`p-4 rounded-lg border-l-4 cursor-pointer hover:bg-muted/30 transition-colors ${getPriorityColor(request.priority)}`}
-                    onClick={() => handleViewProcess(request.processId)}
+                    onClick={() => navigate(`/area-cliente?id=${request.processId}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-foreground text-sm">
