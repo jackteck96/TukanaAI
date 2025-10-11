@@ -83,32 +83,13 @@ const AreaCliente = () => {
     status: "Ativo"
   };
 
-  const stats = [
-    {
-      title: "Documentos Enviados",
-      value: "24",
-      icon: FileText,
-      color: "text-primary"
-    },
-    {
-      title: "Pendentes de Envio",
-      value: "3",
-      icon: Clock,
-      color: "text-orange-500"
-    },
-    {
-      title: "Aprovados",
-      value: "18",
-      icon: CheckCircle,
-      color: "text-green-500"
-    },
-    {
-      title: "Em Análise",
-      value: "3",
-      icon: AlertCircle,
-      color: "text-yellow-500"
-    }
-  ];
+  // Estatísticas reais calculadas
+  const [realStats, setRealStats] = useState({
+    totalDocuments: 0,
+    pendingTasks: 0,
+    approvedDocuments: 0,
+    inReview: 0
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,6 +137,54 @@ const AreaCliente = () => {
   const [loadedProcesses, setLoadedProcesses] = useState<any[]>([]);
   const [loadingProcesses, setLoadingProcesses] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
+
+  // Carregar estatísticas reais
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!user?.email) return;
+      
+      try {
+        // Buscar todos os processos do cliente
+        const { data: processesData } = await supabase
+          .from('processes')
+          .select('id')
+          .eq('client_email', user.email);
+        
+        if (!processesData || processesData.length === 0) return;
+        
+        const processIds = processesData.map(p => p.id);
+        
+        // Buscar documentos
+        const { data: documents } = await supabase
+          .from('documents')
+          .select('status')
+          .in('process_id', processIds);
+        
+        // Buscar tarefas pendentes
+        const { data: tasks } = await supabase
+          .from('tasks')
+          .select('id, status')
+          .in('process_id', processIds)
+          .eq('status', 'pending');
+        
+        const totalDocs = documents?.length || 0;
+        const approved = documents?.filter(d => d.status === 'Aprovado').length || 0;
+        const inReview = documents?.filter(d => d.status === 'Pendente').length || 0;
+        const pendingTasks = tasks?.length || 0;
+        
+        setRealStats({
+          totalDocuments: totalDocs,
+          pendingTasks,
+          approvedDocuments: approved,
+          inReview
+        });
+      } catch (error) {
+        console.error('[AreaCliente] Erro ao carregar estatísticas:', error);
+      }
+    };
+    
+    loadStats();
+  }, [user?.email]);
 
   useEffect(() => {
     const load = async () => {
@@ -823,23 +852,69 @@ const AreaCliente = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardContent className="flex items-center p-6">
-                <div className="flex items-center">
-                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {stat.value}
-                    </p>
-                  </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center p-6">
+              <div className="flex items-center">
+                <FileText className="h-8 w-8 text-primary" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Documentos Enviados
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {realStats.totalDocuments}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center p-6">
+              <div className="flex items-center">
+                <Clock className="h-8 w-8 text-orange-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Pendentes de Envio
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {realStats.pendingTasks}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center p-6">
+              <div className="flex items-center">
+                <CheckCircle className="h-8 w-8 text-green-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Aprovados
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {realStats.approvedDocuments}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center p-6">
+              <div className="flex items-center">
+                <AlertCircle className="h-8 w-8 text-yellow-500" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Em Análise
+                  </p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {realStats.inReview}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Client Notifications */}
