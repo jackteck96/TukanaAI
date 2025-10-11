@@ -44,6 +44,8 @@ import ProcessNotes from "@/components/ProcessNotes";
 import TaskManager from "@/components/TaskManager";
 import { TemplateSelector } from "@/components/TemplateSelector";
 import { TemplateEditor } from "@/components/TemplateEditor";
+import ClientTaskView from "@/components/ClientTaskView";
+import DigitalSignatureManager from "@/components/DigitalSignatureManager";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -267,7 +269,18 @@ const AreaCliente = () => {
     try {
       const { data: processData, error } = await supabase
         .from('processes')
-        .select('*')
+        .select(`
+          *,
+          documents (
+            id,
+            file_name,
+            file_path,
+            file_type,
+            document_type,
+            status,
+            created_at
+          )
+        `)
         .eq('id', id)
         .eq('client_email', user?.email)
         .single();
@@ -495,16 +508,17 @@ const AreaCliente = () => {
           <ProcessTimeline currentStatus={currentProcess.status} />
 
           {/* Tabs Section */}
-          <Tabs defaultValue="documents" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="tasks">Tarefas</TabsTrigger>
+          <Tabs defaultValue="tasks" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="tasks">Solicitações</TabsTrigger>
               <TabsTrigger value="documents">Documentos</TabsTrigger>
               <TabsTrigger value="templates">Modelos</TabsTrigger>
               <TabsTrigger value="notes">Anotações</TabsTrigger>
+              <TabsTrigger value="signatures">Assinaturas</TabsTrigger>
             </TabsList>
 
             <TabsContent value="tasks" className="space-y-4">
-              <TaskManager processId={currentProcess.id} companyId={currentProcess.company_id || ''} />
+              <ClientTaskView processId={currentProcess.id} companyId={currentProcess.company_id || ''} />
             </TabsContent>
 
             <TabsContent value="documents" className="space-y-4">
@@ -533,6 +547,41 @@ const AreaCliente = () => {
                 processId={currentProcess.id} 
                 companyId={currentProcess.company_id || ''}
               />
+            </TabsContent>
+
+            <TabsContent value="signatures" className="space-y-4">
+              {currentProcess.documents && currentProcess.documents.length > 0 ? (
+                <div className="space-y-4">
+                  {currentProcess.documents.map((doc: any) => (
+                    <Card key={doc.id}>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <FileText className="h-5 w-5" />
+                          {doc.file_name}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          Tipo: {doc.document_type} | Status: {doc.status}
+                        </p>
+                      </CardHeader>
+                      <CardContent>
+                        <DigitalSignatureManager
+                          documentId={doc.id}
+                          processId={currentProcess.id}
+                          documentName={doc.file_name}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Nenhum documento disponível para assinatura</p>
+                    <p className="text-sm">Envie documentos primeiro na aba "Solicitações"</p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </div>
