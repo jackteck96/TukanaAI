@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -344,20 +344,39 @@ const AreaCliente = () => {
         return;
       }
 
-      // Buscar informações da empresa
+      console.log('[AreaCliente] Processo carregado:', processData);
+
+      // Buscar informações da empresa que solicitou os documentos
       if (processData.company_id) {
-        const { data: companyData } = await supabase
+        const { data: companyData, error: companyError } = await supabase
           .from('companies')
           .select('name, logo_url')
           .eq('id', processData.company_id)
           .single();
         
-        if (companyData) {
+        console.log('[AreaCliente] Empresa carregada:', companyData, 'Erro:', companyError);
+        
+        if (!companyError && companyData) {
           (processData as any).company_name = companyData.name;
           (processData as any).company_logo = companyData.logo_url;
+        } else {
+          console.error('Erro ao carregar empresa:', companyError);
+          // Se não conseguir carregar a empresa, tentar obter do perfil do criador
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('full_name, company_id')
+            .eq('id', processData.created_by)
+            .single();
+          
+          console.log('[AreaCliente] Perfil do criador:', creatorProfile);
+          
+          if (creatorProfile) {
+            (processData as any).company_name = creatorProfile.full_name || 'Solicitante';
+          }
         }
       }
 
+      console.log('[AreaCliente] Processo final com empresa:', processData);
       setCurrentProcess(processData);
     } catch (error) {
       console.error('Error loading process details:', error);
@@ -519,7 +538,7 @@ const AreaCliente = () => {
                 <div className="flex-1">
                   <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Processo solicitado por</p>
                   <h2 className="text-3xl font-bold text-foreground mb-1">
-                    {(currentProcess as any).company_name || 'Empresa não identificada'}
+                    {(currentProcess as any).company_name || 'Carregando...'}
                   </h2>
                   <p className="text-sm text-muted-foreground">
                     Acompanhe o andamento e envie os documentos solicitados
@@ -614,7 +633,23 @@ const AreaCliente = () => {
             </TabsContent>
 
             <TabsContent value="documents" className="space-y-4">
-              <DocumentList processId={currentProcess.id} refreshKey={refreshKey} />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documentos do Processo</CardTitle>
+                  <CardDescription>
+                    Todos os documentos relacionados a este processo (exceto solicitações específicas)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="font-medium">Documentos gerais do processo</p>
+                    <p className="text-sm mt-2">
+                      Os documentos solicitados pela empresa estão na aba "Solicitações"
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="templates" className="space-y-4">
