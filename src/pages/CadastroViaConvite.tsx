@@ -7,17 +7,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import ClientInviteView from "@/components/ClientInviteView";
 
 interface InviteData {
   email: string;
   company_id: string;
   status: string;
   expires_at: string;
-  // Optional fields depending on source table
   process_id?: string | null;
   full_name?: string | null;
   role?: 'staff' | 'client' | 'admin' | 'lawyer';
   source: 'client' | 'user';
+}
+
+interface InviteDetails {
+  invite: any;
+  process: any;
+  company: any;
+  documentRequests: any[];
 }
 
 export default function CadastroViaConvite() {
@@ -27,6 +34,8 @@ export default function CadastroViaConvite() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [inviteData, setInviteData] = useState<InviteData | null>(null);
+  const [inviteDetails, setInviteDetails] = useState<InviteDetails | null>(null);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -88,46 +97,47 @@ useEffect(() => {
 const checkInviteToken = async () => {
   console.log('[CadastroViaConvite] Checking token:', token);
   try {
-    const { data, error } = await supabase.functions.invoke('verify-invite', {
+    // Buscar detalhes completos do convite via edge function
+    const { data, error } = await supabase.functions.invoke('get-invite-details', {
       body: { token }
     });
 
-    console.log('[CadastroViaConvite] verify-invite response:', { data, error });
+    console.log('[CadastroViaConvite] get-invite-details response:', { data, error });
 
-    if (error) {
-      console.error('[CadastroViaConvite] Error from verify-invite:', error);
-      throw error;
-    }
-    if (!data) {
-      console.error('[CadastroViaConvite] No data returned from verify-invite');
-      throw new Error('Sem dados de convite');
+    if (error || !data?.success) {
+      console.error('[CadastroViaConvite] Error from get-invite-details:', error || data?.error);
+      throw new Error(data?.error || 'Convite inválido');
     }
 
-    console.log('[CadastroViaConvite] Invite data received:', data);
+    console.log('[CadastroViaConvite] Invite details received:', data);
 
-    if (data.type === 'client') {
-      setInviteData({
-        email: data.email,
-        company_id: data.company_id,
-        process_id: data.process_id,
-        status: 'pending',
-        expires_at: data.expires_at,
-        source: 'client'
-      });
+    // Armazenar detalhes completos
+    setInviteDetails({
+      invite: data.invite,
+      process: data.process,
+      company: data.company,
+      documentRequests: data.documentRequests || [],
+    });
+
+    // Armazenar dados básicos do convite
+    setInviteData({
+      email: data.invite.email,
+      company_id: data.invite.company_id,
+      process_id: data.invite.process_id,
+      status: data.invite.status,
+      expires_at: data.invite.expires_at,
+      source: 'client',
+    });
+
+    // Se o usuário já estiver logado com o mesmo e-mail, mostrar a área do cliente
+    if (user && (user as any).email === data.invite.email) {
+      setShowRegistrationForm(false);
     } else {
-      setInviteData({
-        email: data.email,
-        company_id: data.company_id,
-        full_name: data.full_name,
-        role: data.role,
-        status: 'pending',
-        expires_at: data.expires_at,
-        source: 'user'
-      });
+      setShowRegistrationForm(true);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('[CadastroViaConvite] checkInviteToken error:', error);
-    setErrorMsg('Convite inválido, já usado ou expirado.');
+    setErrorMsg(error.message || 'Convite inválido, já usado ou expirado.');
   } finally {
     setLoading(false);
   }
@@ -343,12 +353,29 @@ useEffect(() => {
     );
   }
 
-  if (!inviteData) {
+  // Se não há dados do convite ainda, exibir loading
+  if (!inviteData || !inviteDetails) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Verificando convite...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se o usuário já estiver autenticado com o e-mail correto, mostrar área do cliente
+  if (!showRegistrationForm && user && (user as any).email === inviteData.email) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-4xl mx-auto py-8">
+          <ClientInviteView
+            processData={inviteDetails.process}
+            companyData={inviteDetails.company}
+            documentRequests={inviteDetails.documentRequests}
+            onUploadSuccess={() => checkInviteToken()}
+          />
         </div>
       </div>
     );
