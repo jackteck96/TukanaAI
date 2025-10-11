@@ -592,10 +592,37 @@ const AreaCliente = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Perfil
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Perfil
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Meu Perfil</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Nome</Label>
+                      <p className="text-sm text-muted-foreground">{clientInfo.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Email</Label>
+                      <p className="text-sm text-muted-foreground">{clientInfo.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Telefone</Label>
+                      <p className="text-sm text-muted-foreground">{clientInfo.phone}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Status</Label>
+                      <Badge variant="outline">{clientInfo.status}</Badge>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -907,30 +934,37 @@ const AreaCliente = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentDocuments.slice(0, 4).map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => handleViewDocumentDetails(doc)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {doc.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {doc.type} • {doc.size} • {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
-                      </p>
+            {recentDocuments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhum documento encontrado</p>
+                <p className="text-sm">Seus documentos aparecerão aqui quando forem adicionados aos processos</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentDocuments.slice(0, 4).map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3 flex-1">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {doc.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.type} • {doc.uploadDate}
+                        </p>
+                      </div>
+                      <Badge className={getStatusColor(doc.status)}>
+                        {doc.status}
+                      </Badge>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(doc.status)}>
-                    {doc.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>

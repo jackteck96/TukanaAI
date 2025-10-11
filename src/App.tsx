@@ -94,6 +94,11 @@ const App = () => (
                     <AreaCliente />
                   </ProtectedRoute>
                 } />
+                <Route path="/area-cliente" element={
+                  <ProtectedRoute>
+                    <AreaCliente />
+                  </ProtectedRoute>
+                } />
                 <Route path="/modelos-documentos" element={
                   <ProtectedRoute>
                     <ModelosDocumentos />
