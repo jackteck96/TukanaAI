@@ -28,9 +28,6 @@ const Header = () => {
             <a href="#precos" className="text-muted-foreground hover:text-primary transition-colors">
               Preços
             </a>
-            <Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">
-              Login
-            </Link>
           </nav>
 
           {/* Desktop CTA */}
@@ -65,9 +62,6 @@ const Header = () => {
               <a href="#precos" className="text-muted-foreground hover:text-primary transition-colors">
                 Preços
               </a>
-              <Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">
-                Login
-              </Link>
               <div className="flex flex-col space-y-2 pt-4">
                 <Link to="/auth">
                   <Button variant="outline" className="w-full">Login</Button>
