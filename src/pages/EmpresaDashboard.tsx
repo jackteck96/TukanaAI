@@ -277,10 +277,12 @@ const EmpresaDashboard = () => {
                   <span>Clientes Recentes</span>
                 </CardTitle>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filtrar
-                  </Button>
+                  <Link to="/gestao-clientes">
+                    <Button variant="outline" size="sm">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Ver Todos
+                    </Button>
+                  </Link>
                   <Link to="/gestao-colaboradores">
                     <Button variant="ghost" size="sm">
                       <UserPlus className="h-4 w-4 mr-2" />
