@@ -292,6 +292,20 @@ const AreaCliente = () => {
         return;
       }
 
+      // Buscar informações da empresa
+      if (processData.company_id) {
+        const { data: companyData } = await supabase
+          .from('companies')
+          .select('name, logo_url')
+          .eq('id', processData.company_id)
+          .single();
+        
+        if (companyData) {
+          (processData as any).company_name = companyData.name;
+          (processData as any).company_logo = companyData.logo_url;
+        }
+      }
+
       setCurrentProcess(processData);
     } catch (error) {
       console.error('Error loading process details:', error);
@@ -437,6 +451,27 @@ const AreaCliente = () => {
         </header>
 
         <div className="p-6 space-y-6">
+          {/* Company Information */}
+          {(currentProcess as any).company_name && (
+            <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  {(currentProcess as any).company_logo && (
+                    <img 
+                      src={(currentProcess as any).company_logo} 
+                      alt={(currentProcess as any).company_name}
+                      className="h-16 w-16 rounded-lg object-contain bg-white p-2"
+                    />
+                  )}
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Solicitado por</p>
+                    <h2 className="text-2xl font-bold text-foreground">{(currentProcess as any).company_name}</h2>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Process Information */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Process Details */}
