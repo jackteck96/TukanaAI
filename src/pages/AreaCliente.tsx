@@ -167,7 +167,7 @@ const AreaCliente = () => {
       try {
         const { data: procs, error } = await supabase
           .from('processes')
-          .select('id, project_name, description, status, progress, due_date')
+          .select('id, project_name, description, status, progress, due_date, company_id')
           .eq('client_email', user.email);
           
         if (error) {
@@ -176,18 +176,41 @@ const AreaCliente = () => {
           return;
         }
         
-        const mapped = (procs || []).map((p: any) => ({
-          id: p.id,
-          title: p.project_name || 'Processo',
-          description: p.description || '',
-          status: p.status,
-          progress: Number(p.progress || 0),
-          dueDate: p.due_date,
-          documents: 0,
-          pending: 0,
-          company: '',
-          responsibleLawyer: ''
-        }));
+        // Buscar informações das empresas
+        const companyIds = [...new Set((procs || []).map((p: any) => p.company_id).filter(Boolean))];
+        let companiesMap: Record<string, any> = {};
+        
+        if (companyIds.length > 0) {
+          const { data: companies } = await supabase
+            .from('companies')
+            .select('id, name, logo_url')
+            .in('id', companyIds);
+          
+          if (companies) {
+            companiesMap = companies.reduce((acc: any, c: any) => {
+              acc[c.id] = c;
+              return acc;
+            }, {});
+          }
+        }
+        
+        const mapped = (procs || []).map((p: any) => {
+          const company = companiesMap[p.company_id];
+          return {
+            id: p.id,
+            title: p.project_name || 'Processo',
+            description: p.description || '',
+            status: p.status,
+            progress: Number(p.progress || 0),
+            dueDate: p.due_date,
+            documents: 0,
+            pending: 0,
+            company: company?.name || 'Empresa não identificada',
+            company_id: p.company_id,
+            company_logo: company?.logo_url,
+            responsibleLawyer: ''
+          };
+        });
         
         setLoadedProcesses(mapped);
         if (mapped.length) {
@@ -914,6 +937,12 @@ const AreaCliente = () => {
                         {process.status}
                       </Badge>
                     </div>
+                    {process.company && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-muted-foreground">Empresa:</span>
+                        <span className="text-xs text-foreground font-semibold">{process.company}</span>
+                      </div>
+                    )}
                     <p className="text-sm text-muted-foreground mb-3">
                       {process.description}
                     </p>
