@@ -4,22 +4,72 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
 import { Building2, User, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Login = () => {
   const [userType, setUserType] = useState<"empresa" | "cliente" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login and redirect to appropriate dashboard
-    if (userType === "empresa") {
-      navigate("/empresa");
-    } else if (userType === "cliente") {
-      navigate("/cliente");
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast.success("Login realizado com sucesso!");
+      
+      // Redirect based on user role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profile?.role === 'client') {
+        navigate('/cliente');
+      } else {
+        navigate('/empresa');
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao fazer login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
+      setIsResetModalOpen(false);
+      setResetEmail("");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao enviar email de recuperação");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -115,7 +165,45 @@ const Login = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
+                  <DialogTrigger asChild>
+                    <button 
+                      type="button"
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Recuperar Senha</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handlePasswordReset} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="reset-email">Email</Label>
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button 
+                        type="submit" 
+                        className="w-full" 
+                        variant="hero"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Enviando..." : "Enviar Link de Recuperação"}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -124,8 +212,8 @@ const Login = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" variant="hero">
-              Entrar
+            <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
           
