@@ -389,6 +389,63 @@ export type Database = {
           },
         ]
       }
+      document_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          current_status: string
+          document_name: string
+          id: string
+          instructions: string | null
+          last_upload_id: string | null
+          last_uploaded_at: string | null
+          process_id: string
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          current_status?: string
+          document_name: string
+          id?: string
+          instructions?: string | null
+          last_upload_id?: string | null
+          last_uploaded_at?: string | null
+          process_id: string
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          current_status?: string
+          document_name?: string
+          id?: string
+          instructions?: string | null
+          last_upload_id?: string | null
+          last_uploaded_at?: string | null
+          process_id?: string
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_requests_last_upload_id_fkey"
+            columns: ["last_upload_id"]
+            isOneToOne: false
+            referencedRelation: "document_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_requests_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_types: {
         Row: {
           company_id: string
@@ -424,6 +481,66 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      document_uploads: {
+        Row: {
+          client_email: string | null
+          client_id: string | null
+          company_id: string
+          created_at: string
+          document_request_id: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          process_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_email?: string | null
+          client_id?: string | null
+          company_id: string
+          created_at?: string
+          document_request_id: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          process_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string | null
+          client_id?: string | null
+          company_id?: string
+          created_at?: string
+          document_request_id?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          process_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_uploads_document_request_id_fkey"
+            columns: ["document_request_id"]
+            isOneToOne: false
+            referencedRelation: "document_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_uploads_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       documents: {
         Row: {
@@ -1100,7 +1217,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      invitations: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          email: string | null
+          expires_at: string | null
+          id: string | null
+          invited_by: string | null
+          process_id: string | null
+          status: string | null
+          token: string | null
+          used_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string | null
+          invited_by?: string | null
+          process_id?: string | null
+          status?: string | null
+          token?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string | null
+          invited_by?: string | null
+          process_id?: string | null
+          status?: string | null
+          token?: string | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_access_process: {
