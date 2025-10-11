@@ -208,9 +208,15 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
         </CardHeader>
         <CardContent>
           {tasks.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>Nenhum documento foi solicitado ainda</p>
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
+                <FileText className="h-12 w-12 text-muted-foreground opacity-50" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Nenhum documento solicitado ainda</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                A empresa ainda não criou solicitações de documentos para este processo. 
+                Quando houver documentos solicitados, eles aparecerão aqui.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">

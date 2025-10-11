@@ -451,26 +451,31 @@ const AreaCliente = () => {
         </header>
 
         <div className="p-6 space-y-6">
-          {/* Company Information */}
-          {(currentProcess as any).company_name && (
-            <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  {(currentProcess as any).company_logo && (
+          {/* Company Information - VISIBLE */}
+          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-2 border-primary/30">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                {(currentProcess as any).company_logo && (
+                  <div className="h-20 w-20 rounded-lg bg-white p-3 flex items-center justify-center shadow-md">
                     <img 
                       src={(currentProcess as any).company_logo} 
                       alt={(currentProcess as any).company_name}
-                      className="h-16 w-16 rounded-lg object-contain bg-white p-2"
+                      className="max-h-full max-w-full object-contain"
                     />
-                  )}
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Solicitado por</p>
-                    <h2 className="text-2xl font-bold text-foreground">{(currentProcess as any).company_name}</h2>
                   </div>
+                )}
+                <div className="flex-1">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Processo solicitado por</p>
+                  <h2 className="text-3xl font-bold text-foreground mb-1">
+                    {(currentProcess as any).company_name || 'Empresa não identificada'}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Acompanhe o andamento e envie os documentos solicitados
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Process Information */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -585,38 +590,70 @@ const AreaCliente = () => {
             </TabsContent>
 
             <TabsContent value="signatures" className="space-y-4">
-              {currentProcess.documents && currentProcess.documents.length > 0 ? (
-                <div className="space-y-4">
-                  {currentProcess.documents.map((doc: any) => (
-                    <Card key={doc.id}>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <FileText className="h-5 w-5" />
-                          {doc.file_name}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          Tipo: {doc.document_type} | Status: {doc.status}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Assinaturas Digitais</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Assine documentos digitalmente ou envie novos documentos para assinatura
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Upload de novo documento para assinatura */}
+                  <div className="p-4 border-2 border-dashed rounded-lg bg-muted/30">
+                    <div className="text-center space-y-2">
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Enviar Documento para Assinatura</p>
+                        <p className="text-xs text-muted-foreground">
+                          Envie um documento que você e a empresa precisam assinar
                         </p>
-                      </CardHeader>
-                      <CardContent>
-                        <DigitalSignatureManager
-                          documentId={doc.id}
-                          processId={currentProcess.id}
-                          documentName={doc.file_name}
-                        />
+                      </div>
+                      <DocumentUpload
+                        processId={currentProcess.id}
+                        onUploadComplete={() => {
+                          loadProcessDetails(currentProcess.id);
+                          setRefreshKey(prev => prev + 1);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Documentos existentes para assinatura */}
+                  {currentProcess.documents && currentProcess.documents.length > 0 ? (
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-sm">Documentos Disponíveis</h3>
+                      {currentProcess.documents.map((doc: any) => (
+                        <Card key={doc.id} className="border-l-4 border-l-primary">
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <FileText className="h-5 w-5" />
+                              {doc.file_name}
+                            </CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                              Tipo: {doc.document_type} | Status: {doc.status}
+                            </p>
+                          </CardHeader>
+                          <CardContent>
+                            <DigitalSignatureManager
+                              documentId={doc.id}
+                              processId={currentProcess.id}
+                              documentName={doc.file_name}
+                            />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p>Nenhum documento disponível para assinatura</p>
+                        <p className="text-sm">Envie documentos primeiro na aba "Solicitações"</p>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="text-center py-8 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhum documento disponível para assinatura</p>
-                    <p className="text-sm">Envie documentos primeiro na aba "Solicitações"</p>
-                  </CardContent>
-                </Card>
-              )}
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
