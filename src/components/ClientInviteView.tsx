@@ -22,6 +22,7 @@ interface ClientInviteViewProps {
   companyData: any;
   documentRequests: DocumentRequest[];
   onUploadSuccess: () => void;
+  inviteToken: string;
 }
 
 export default function ClientInviteView({
@@ -29,6 +30,7 @@ export default function ClientInviteView({
   companyData,
   documentRequests,
   onUploadSuccess,
+  inviteToken,
 }: ClientInviteViewProps) {
   const { toast } = useToast();
   const [uploading, setUploading] = useState<string | null>(null);
@@ -112,6 +114,25 @@ export default function ClientInviteView({
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
+  };
+
+  const allRequiredUploaded = documentRequests
+    .filter((r) => r.required)
+    .every((r) => (r.document_uploads ?? []).length > 0);
+
+  const handleFinish = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('complete-invite-submission', {
+        body: { token: inviteToken }
+      });
+      if (error || !data?.success) {
+        throw new Error(data?.error || 'Falha ao finalizar.');
+      }
+      toast({ title: 'Enviado!', description: 'Todos os documentos foram enviados e o processo foi marcado como Sent.' });
+      onUploadSuccess();
+    } catch (err: any) {
+      toast({ title: 'Erro ao finalizar', description: err.message || 'Tente novamente.', variant: 'destructive' });
+    }
   };
 
   return (
@@ -209,6 +230,12 @@ export default function ClientInviteView({
           )}
         </CardContent>
       </Card>
+
+      <div className="flex justify-end">
+        <Button onClick={handleFinish} disabled={!allRequiredUploaded}>
+          Finalizar e Enviar
+        </Button>
+      </div>
     </div>
   );
 }

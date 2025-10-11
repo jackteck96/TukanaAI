@@ -375,6 +375,7 @@ useEffect(() => {
             companyData={inviteDetails.company}
             documentRequests={inviteDetails.documentRequests}
             onUploadSuccess={() => checkInviteToken()}
+            inviteToken={token as string}
           />
         </div>
       </div>
