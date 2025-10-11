@@ -231,7 +231,12 @@ useEffect(() => {
           window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
 
-        navigate(inviteData.source === 'user' ? '/empresa' : '/cliente');
+        // Redireciona para o processo específico do convite (se for cliente)
+        if (inviteData.source === 'client' && inviteData.process_id) {
+          navigate(`/area-cliente?id=${inviteData.process_id}`);
+        } else {
+          navigate(inviteData.source === 'user' ? '/empresa' : '/area-cliente');
+        }
         return;
       }
 
@@ -303,7 +308,13 @@ useEffect(() => {
         title: 'Conta criada com sucesso!',
         description: 'Sua conta foi criada e confirmada. Você já pode fazer login.',
       });
-      navigate(`/auth?prefill=${encodeURIComponent(inviteData.email)}`);
+      
+      // Redireciona para login com o process_id se for cliente
+      if (inviteData.source === 'client' && inviteData.process_id) {
+        navigate(`/auth?prefill=${encodeURIComponent(inviteData.email)}&redirect=/area-cliente?id=${inviteData.process_id}`);
+      } else {
+        navigate(`/auth?prefill=${encodeURIComponent(inviteData.email)}`);
+      }
     } catch (error: any) {
       console.error('Erro ao criar conta:', error);
       toast({

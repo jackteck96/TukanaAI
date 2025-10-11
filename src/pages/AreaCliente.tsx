@@ -53,9 +53,9 @@ const AreaCliente = () => {
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<any>(null);
   
-  // Get process ID from URL
+  // Get process ID from URL (vindo do convite)
   const urlParams = new URLSearchParams(location.search);
-  const processId = urlParams.get('id');
+  const inviteProcessId = urlParams.get('id');
   
   // Carregar perfil real do cliente
   useEffect(() => {
@@ -194,88 +194,171 @@ const AreaCliente = () => {
       setProcessError(null);
       
       try {
-        const { data: procs, error } = await supabase
-          .from('processes')
-          .select('id, project_name, description, status, progress, due_date, company_id')
-          .eq('client_email', user.email);
+        // Se há um inviteProcessId, carregar apenas esse processo
+        if (inviteProcessId) {
+          console.log('[AreaCliente] Carregando processo do convite:', inviteProcessId);
           
-        if (error) {
-          console.error('[AreaCliente] fetch processes error', error);
-          setProcessError('Não foi possível carregar seus processos. Tente fazer login novamente.');
-          return;
-        }
-        
-        // Buscar informações das empresas
-        const companyIds = [...new Set((procs || []).map((p: any) => p.company_id).filter(Boolean))];
-        let companiesMap: Record<string, any> = {};
-        
-        if (companyIds.length > 0) {
-          const { data: companies } = await supabase
-            .from('companies')
-            .select('id, name, logo_url')
-            .in('id', companyIds);
+          const { data: processData, error: processError } = await supabase
+            .from('processes')
+            .select('id, project_name, description, status, progress, due_date, company_id, client_email')
+            .eq('id', inviteProcessId)
+            .single();
           
-          if (companies) {
-            companiesMap = companies.reduce((acc: any, c: any) => {
-              acc[c.id] = c;
-              return acc;
-            }, {});
+          if (processError || !processData) {
+            console.error('[AreaCliente] Erro ao carregar processo do convite:', processError);
+            setProcessError('Processo não encontrado ou você não tem acesso a ele.');
+            return;
           }
-        }
-        
-        const mapped = (procs || []).map((p: any) => {
-          const company = companiesMap[p.company_id];
-          return {
-            id: p.id,
-            title: p.project_name || 'Processo',
-            description: p.description || '',
-            status: p.status,
-            progress: Number(p.progress || 0),
-            dueDate: p.due_date,
+          
+          // Validar que o cliente tem acesso ao processo
+          if (processData.client_email !== user.email) {
+            console.error('[AreaCliente] Cliente não tem acesso ao processo');
+            setProcessError('Você não tem acesso a este processo.');
+            return;
+          }
+          
+          // Buscar informações da empresa
+          let companyName = 'Empresa não identificada';
+          let companyLogo = null;
+          
+          if (processData.company_id) {
+            const { data: companyData } = await supabase
+              .from('companies')
+              .select('name, logo_url')
+              .eq('id', processData.company_id)
+              .single();
+            
+            if (companyData) {
+              companyName = companyData.name;
+              companyLogo = companyData.logo_url;
+            }
+          }
+          
+          const mappedProcess = {
+            id: processData.id,
+            title: processData.project_name || 'Processo',
+            description: processData.description || '',
+            status: processData.status,
+            progress: Number(processData.progress || 0),
+            dueDate: processData.due_date,
             documents: 0,
             pending: 0,
-            company: company?.name || 'Empresa não identificada',
-            company_id: p.company_id,
-            company_logo: company?.logo_url,
+            company: companyName,
+            company_id: processData.company_id,
+            company_logo: companyLogo,
             responsibleLawyer: ''
           };
-        });
-        
-        setLoadedProcesses(mapped);
-        if (mapped.length) {
-          setSelectedProcess((prev: any) => prev ?? mapped[0]);
-        }
-        
-        const ids = (procs || []).map((p: any) => p.id);
-        if (ids.length) {
+          
+          setLoadedProcesses([mappedProcess]);
+          setSelectedProcess(mappedProcess);
+          
+          // Carregar documentos deste processo
           const { data: docs } = await supabase
             .from('documents')
-            .select('id, file_name, document_type, status, created_at, process_id')
-            .in('process_id', ids);
-          const docsByProcess: Record<string, any[]> = {};
-          (docs || []).forEach((d: any) => {
-            const item = {
-              id: d.id,
-              name: d.file_name,
-              type: d.document_type,
-              uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
-              status: d.status,
-              size: ''
+            .select('id, file_name, document_type, status, created_at')
+            .eq('process_id', inviteProcessId);
+          
+          const docsArr = (docs || []).map((d: any) => ({
+            id: d.id,
+            name: d.file_name,
+            type: d.document_type,
+            uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
+            status: d.status,
+            size: ''
+          }));
+          
+          const pendingCount = docsArr.filter((x: any) =>
+            String(x.status || '').toLowerCase().includes('pend')
+          ).length;
+          
+          setProcessDocuments({ [inviteProcessId]: docsArr });
+          setLoadedProcesses([{ ...mappedProcess, documents: docsArr.length, pending: pendingCount }]);
+          
+        } else {
+          // Carregar todos os processos do cliente (comportamento padrão)
+          const { data: procs, error } = await supabase
+            .from('processes')
+            .select('id, project_name, description, status, progress, due_date, company_id')
+            .eq('client_email', user.email);
+            
+          if (error) {
+            console.error('[AreaCliente] fetch processes error', error);
+            setProcessError('Não foi possível carregar seus processos. Tente fazer login novamente.');
+            return;
+          }
+          
+          // Buscar informações das empresas
+          const companyIds = [...new Set((procs || []).map((p: any) => p.company_id).filter(Boolean))];
+          let companiesMap: Record<string, any> = {};
+          
+          if (companyIds.length > 0) {
+            const { data: companies } = await supabase
+              .from('companies')
+              .select('id, name, logo_url')
+              .in('id', companyIds);
+            
+            if (companies) {
+              companiesMap = companies.reduce((acc: any, c: any) => {
+                acc[c.id] = c;
+                return acc;
+              }, {});
+            }
+          }
+          
+          const mapped = (procs || []).map((p: any) => {
+            const company = companiesMap[p.company_id];
+            return {
+              id: p.id,
+              title: p.project_name || 'Processo',
+              description: p.description || '',
+              status: p.status,
+              progress: Number(p.progress || 0),
+              dueDate: p.due_date,
+              documents: 0,
+              pending: 0,
+              company: company?.name || 'Empresa não identificada',
+              company_id: p.company_id,
+              company_logo: company?.logo_url,
+              responsibleLawyer: ''
             };
-            const key = d.process_id;
-            if (!docsByProcess[key]) docsByProcess[key] = [];
-            docsByProcess[key].push(item);
           });
-          setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
-          setLoadedProcesses((prev) =>
-            prev.map((p) => {
-              const docsArr = docsByProcess[p.id] || [];
-              const pendingCount = docsArr.filter((x: any) =>
-                String(x.status || '').toLowerCase().includes('pend')
-              ).length;
-              return { ...p, documents: docsArr.length, pending: pendingCount };
-            })
-          );
+          
+          setLoadedProcesses(mapped);
+          if (mapped.length) {
+            setSelectedProcess((prev: any) => prev ?? mapped[0]);
+          }
+          
+          const ids = (procs || []).map((p: any) => p.id);
+          if (ids.length) {
+            const { data: docs } = await supabase
+              .from('documents')
+              .select('id, file_name, document_type, status, created_at, process_id')
+              .in('process_id', ids);
+            const docsByProcess: Record<string, any[]> = {};
+            (docs || []).forEach((d: any) => {
+              const item = {
+                id: d.id,
+                name: d.file_name,
+                type: d.document_type,
+                uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
+                status: d.status,
+                size: ''
+              };
+              const key = d.process_id;
+              if (!docsByProcess[key]) docsByProcess[key] = [];
+              docsByProcess[key].push(item);
+            });
+            setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
+            setLoadedProcesses((prev) =>
+              prev.map((p) => {
+                const docsArr = docsByProcess[p.id] || [];
+                const pendingCount = docsArr.filter((x: any) =>
+                  String(x.status || '').toLowerCase().includes('pend')
+                ).length;
+                return { ...p, documents: docsArr.length, pending: pendingCount };
+              })
+            );
+          }
         }
       } catch (error) {
         console.error('[AreaCliente] Error loading processes:', error);
@@ -285,7 +368,7 @@ const AreaCliente = () => {
       }
     };
     load();
-  }, [user]);
+  }, [user, inviteProcessId]);
 
   // Usar apenas processos reais, nunca mostrar dados mockados
   const activeProcesses = loadedProcesses;
@@ -310,12 +393,12 @@ const AreaCliente = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Load detailed process if processId is in URL
+  // Load detailed process if inviteProcessId is in URL
   useEffect(() => {
-    if (processId && user?.email) {
-      loadProcessDetails(processId);
+    if (inviteProcessId && user?.email) {
+      loadProcessDetails(inviteProcessId);
     }
-  }, [processId, user]);
+  }, [inviteProcessId, user]);
 
   const loadProcessDetails = async (id: string) => {
     try {
@@ -480,7 +563,7 @@ const AreaCliente = () => {
   };
 
   // If viewing a specific process, show detailed view
-  if (processId && currentProcess) {
+  if (inviteProcessId && currentProcess) {
     const formatDate = (dateString: string | null) => {
       if (!dateString) return 'Não definido';
       return new Date(dateString).toLocaleDateString('pt-BR', {
