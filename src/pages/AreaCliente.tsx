@@ -57,6 +57,7 @@ const AreaCliente = () => {
   // Get process ID from URL (vindo do convite)
   const urlParams = new URLSearchParams(location.search);
   const inviteProcessId = urlParams.get('id');
+  const inviteToken = urlParams.get('token');
   
   // Carregar perfil real do cliente
   useEffect(() => {
@@ -392,6 +393,42 @@ const AreaCliente = () => {
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Carregar processo via token de convite (acesso público)
+  useEffect(() => {
+    const loadByToken = async () => {
+      if (!inviteToken) return;
+      try {
+        const { data, error } = await supabase.functions.invoke('get-invite-details', { body: { token: inviteToken } });
+        if (error || !data?.success) {
+          console.error('[AreaCliente] Erro ao carregar via token:', error || data?.error);
+          return;
+        }
+        const p = data.process;
+        const company = data.company;
+        const mappedProcess = {
+          id: p.id,
+          title: p.project_name || 'Processo',
+          description: p.description || '',
+          status: p.status,
+          progress: Number(p.progress || 0),
+          dueDate: p.due_date,
+          documents: 0,
+          pending: 0,
+          company: company?.name || 'Empresa',
+          company_id: p.company_id,
+          company_logo: company?.logo_url,
+          responsibleLawyer: ''
+        };
+        setLoadedProcesses([mappedProcess]);
+        setSelectedProcess(mappedProcess);
+        setCurrentProcess({ ...p, company_name: company?.name, company_logo: company?.logo_url });
+      } catch (err) {
+        console.error('[AreaCliente] Erro inesperado via token:', err);
+      }
+    };
+    loadByToken();
+  }, [inviteToken]);
 
   // Load detailed process if inviteProcessId is in URL
   useEffect(() => {
