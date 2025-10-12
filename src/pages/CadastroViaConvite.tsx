@@ -1,77 +1,170 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { supabase } from "../supabase"; // ajuste o caminho se necessário
+import { supabase } from "@/integrations/supabase/client";
 
-const CadastroViaConvite = () => {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
-
-  const [processData, setProcessData] = useState<any>(null);
+export default function CadastroViaConvite() {
+  const [invite, setInvite] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    document: "",
+  });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
+  // 1️⃣ Buscar o convite pelo token da URL
   useEffect(() => {
-    const fetchProcessData = async () => {
-      if (!token) {
-        setError("Invalid or missing token.");
-        setLoading(false);
-        return;
-      }
-
+    async function fetchInvite() {
       try {
+        const token = new URLSearchParams(window.location.search).get("token");
+        if (!token) {
+          alert("Token inválido.");
+          return;
+        }
+
         const { data, error } = await supabase
-          .from("processos")
-          .select("id, titulo, descricao, documentos(id, nome, status)")
-          .eq("token_convite", token)
+          .from("invites")
+          .select("*, clients(*), document_requests(*)")
+          .eq("token", token)
           .single();
 
         if (error || !data) {
-          throw error || new Error("No data found for this token.");
+          console.error(error);
+          alert("Convite não encontrado.");
+          return;
         }
 
-        setProcessData(data);
-      } catch (err: any) {
-        setError(err.message);
+        setInvite(data);
+        setDocuments(data.document_requests || []);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchProcessData();
-  }, [token]);
+    fetchInvite();
+  }, []);
 
-  if (loading) return <p>Carregando dados...</p>;
-  if (error) return <p>Erro: {error}</p>;
-  if (!processData) return <p>Nenhum processo encontrado.</p>;
+  // 2️⃣ Atualizar campos do formulário
+  function handleChange(e: any) {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  }
+
+  // 3️⃣ Upload de documentos
+  async function handleFileUpload(requestId: string, file: File) {
+    try {
+      const filePath = `${invite.client_id}/${requestId}/${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("documents").upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      await supabase.from("document_uploads").insert({
+        client_id: invite.client_id,
+        document_request_id: requestId,
+        file_path: filePath,
+        uploaded_at: new Date(),
+      });
+
+      alert("Documento enviado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao enviar o documento.");
+    }
+  }
+
+  // 4️⃣ Submeter cadastro
+  async function handleInviteSubmission() {
+    try {
+      if (!invite) return;
+
+      const { error: updateError } = await supabase
+        .from("clients")
+        .update({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          document: formData.document,
+          updated_at: new Date(),
+        })
+        .eq("id", invite.client_id);
+
+      if (updateError) {
+        console.error(updateError);
+        alert("Erro ao salvar cadastro.");
+        return;
+      }
+
+      await supabase.from("invites").update({ status: "completed" }).eq("id", invite.id);
+
+      alert("Cadastro finalizado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro inesperado. Tente novamente.");
+    }
+  }
+
+  if (loading) return <p>Carregando...</p>;
+
+  if (!invite) return <p className="text-center text-red-500 mt-10">Convite inválido ou expirado.</p>;
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">{processData.titulo}</h1>
-      <p className="mb-6 text-gray-600">{processData.descricao}</p>
+    <div className="max-w-2xl mx-auto mt-10 bg-white p-6 rounded-2xl shadow">
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        Convite de Documentação — {invite.clients?.name || "Cliente"}
+      </h1>
 
-      <h2 className="text-xl font-semibold mb-3">Documentos solicitados:</h2>
-      <ul className="space-y-4">
-        {processData.documentos.map((doc: any) => (
-          <li key={doc.id} className="border p-4 rounded-lg">
-            <p className="font-medium">{doc.nome}</p>
-            <input
-              type="file"
-              className="mt-2"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                alert(`Arquivo ${file.name} anexado para ${doc.nome}`);
-              }}
-            />
-          </li>
-        ))}
-      </ul>
+      <div className="space-y-4">
+        <input
+          className="w-full border rounded p-2"
+          placeholder="Nome completo"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        <input
+          className="w-full border rounded p-2"
+          placeholder="E-mail"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <input
+          className="w-full border rounded p-2"
+          placeholder="Telefone"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+        />
+        <input
+          className="w-full border rounded p-2"
+          placeholder="Documento (CPF/CNPJ)"
+          name="document"
+          value={formData.document}
+          onChange={handleChange}
+        />
+      </div>
 
-      <button className="mt-8 bg-blue-600 text-white px-4 py-2 rounded-lg" onClick={() => alert("Envio finalizado!")}>
-        Finalizar envio
+      <h2 className="text-xl font-semibold mt-6 mb-3">Documentos Solicitados</h2>
+      {documents.length === 0 ? (
+        <p>Nenhum documento solicitado.</p>
+      ) : (
+        <ul className="space-y-3">
+          {documents.map((doc) => (
+            <li key={doc.id} className="border p-3 rounded flex justify-between items-center">
+              <span>{doc.name}</span>
+              <input type="file" onChange={(e) => e.target.files?.[0] && handleFileUpload(doc.id, e.target.files[0])} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
+        onClick={handleInviteSubmission}
+      >
+        Finalizar e Enviar
       </button>
     </div>
   );
-};
-
-export default CadastroViaConvite;
+}
