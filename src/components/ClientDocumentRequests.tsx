@@ -51,7 +51,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           instructions,
           required,
           current_status,
-          document_uploads (
+          document_uploads!document_uploads_document_request_id_fkey (
             id,
             file_path,
             file_type,

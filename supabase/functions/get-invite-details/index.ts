@@ -102,7 +102,7 @@ serve(async (req: Request): Promise<Response> => {
       .from('document_requests')
       .select(`
         *,
-        document_uploads(*)
+        document_uploads:document_uploads!document_uploads_document_request_id_fkey(*)
       `)
       .eq('process_id', invite.process_id)
       .order('created_at', { ascending: true });
