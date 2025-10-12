@@ -46,6 +46,7 @@ import { TemplateSelector } from "@/components/TemplateSelector";
 import { TemplateEditor } from "@/components/TemplateEditor";
 import ClientTaskView from "@/components/ClientTaskView";
 import DigitalSignatureManager from "@/components/DigitalSignatureManager";
+import ClientDocumentRequests from "@/components/ClientDocumentRequests";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -712,7 +713,10 @@ const AreaCliente = () => {
             </TabsList>
 
             <TabsContent value="tasks" className="space-y-4">
-              <ClientTaskView processId={currentProcess.id} companyId={currentProcess.company_id || ''} />
+              <ClientDocumentRequests 
+                processId={currentProcess.id} 
+                companyName={(currentProcess as any).company_name}
+              />
             </TabsContent>
 
             <TabsContent value="documents" className="space-y-4">
