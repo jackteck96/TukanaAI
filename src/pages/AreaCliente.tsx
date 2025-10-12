@@ -201,7 +201,20 @@ const AreaCliente = () => {
           
           const { data: processData, error: processError } = await supabase
             .from('processes')
-            .select('id, project_name, description, status, progress, due_date, company_id, client_email')
+            .select(`
+              id, 
+              project_name, 
+              description, 
+              status, 
+              progress, 
+              due_date, 
+              company_id, 
+              client_email,
+              companies (
+                name,
+                logo_url
+              )
+            `)
             .eq('id', inviteProcessId)
             .single();
           
@@ -222,17 +235,10 @@ const AreaCliente = () => {
           let companyName = 'Empresa não identificada';
           let companyLogo = null;
           
-          if (processData.company_id) {
-            const { data: companyData } = await supabase
-              .from('companies')
-              .select('name, logo_url')
-              .eq('id', processData.company_id)
-              .single();
-            
-            if (companyData) {
-              companyName = companyData.name;
-              companyLogo = companyData.logo_url;
-            }
+          if (processData.companies) {
+            companyName = processData.companies.name || companyName;
+            companyLogo = processData.companies.logo_url;
+            console.log('[AreaCliente] Empresa do processo:', companyName);
           }
           
           const mappedProcess = {
@@ -279,7 +285,19 @@ const AreaCliente = () => {
           // Carregar todos os processos do cliente (comportamento padrão)
           const { data: procs, error } = await supabase
             .from('processes')
-            .select('id, project_name, description, status, progress, due_date, company_id')
+            .select(`
+              id, 
+              project_name, 
+              description, 
+              status, 
+              progress, 
+              due_date, 
+              company_id,
+              companies (
+                name,
+                logo_url
+              )
+            `)
             .eq('client_email', user.email);
             
           if (error) {
@@ -288,26 +306,7 @@ const AreaCliente = () => {
             return;
           }
           
-          // Buscar informações das empresas
-          const companyIds = [...new Set((procs || []).map((p: any) => p.company_id).filter(Boolean))];
-          let companiesMap: Record<string, any> = {};
-          
-          if (companyIds.length > 0) {
-            const { data: companies } = await supabase
-              .from('companies')
-              .select('id, name, logo_url')
-              .in('id', companyIds);
-            
-            if (companies) {
-              companiesMap = companies.reduce((acc: any, c: any) => {
-                acc[c.id] = c;
-                return acc;
-              }, {});
-            }
-          }
-          
           const mapped = (procs || []).map((p: any) => {
-            const company = companiesMap[p.company_id];
             return {
               id: p.id,
               title: p.project_name || 'Processo',
@@ -317,9 +316,9 @@ const AreaCliente = () => {
               dueDate: p.due_date,
               documents: 0,
               pending: 0,
-              company: company?.name || 'Empresa não identificada',
+              company: p.companies?.name || 'Empresa não identificada',
               company_id: p.company_id,
-              company_logo: company?.logo_url,
+              company_logo: p.companies?.logo_url,
               responsibleLawyer: ''
             };
           });
@@ -407,6 +406,10 @@ const AreaCliente = () => {
         .from('processes')
         .select(`
           *,
+          companies (
+            name,
+            logo_url
+          ),
           documents (
             id,
             file_name,
@@ -430,34 +433,14 @@ const AreaCliente = () => {
 
       console.log('[AreaCliente] Processo carregado:', processData);
 
-      // Buscar informações da empresa que solicitou os documentos
-      if (processData.company_id) {
-        const { data: companyData, error: companyError } = await supabase
-          .from('companies')
-          .select('name, logo_url')
-          .eq('id', processData.company_id)
-          .single();
-        
-        console.log('[AreaCliente] Empresa carregada:', companyData, 'Erro:', companyError);
-        
-        if (!companyError && companyData) {
-          (processData as any).company_name = companyData.name;
-          (processData as any).company_logo = companyData.logo_url;
-        } else {
-          console.error('Erro ao carregar empresa:', companyError);
-          // Se não conseguir carregar a empresa, tentar obter do perfil do criador
-          const { data: creatorProfile } = await supabase
-            .from('profiles')
-            .select('full_name, company_id')
-            .eq('id', processData.created_by)
-            .single();
-          
-          console.log('[AreaCliente] Perfil do criador:', creatorProfile);
-          
-          if (creatorProfile) {
-            (processData as any).company_name = creatorProfile.full_name || 'Solicitante';
-          }
-        }
+      // Extrair informações da empresa
+      if (processData.companies) {
+        (processData as any).company_name = processData.companies.name;
+        (processData as any).company_logo = processData.companies.logo_url;
+        console.log('[AreaCliente] Empresa vinculada:', processData.companies.name);
+      } else {
+        console.warn('[AreaCliente] Processo sem empresa vinculada');
+        (processData as any).company_name = 'Empresa não identificada';
       }
 
       console.log('[AreaCliente] Processo final com empresa:', processData);
