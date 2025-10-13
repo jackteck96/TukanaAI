@@ -30,12 +30,6 @@ verify_jwt = false
 [functions.verify-invite]
 verify_jwt = false
 
-[functions.approve-admin-invite]
-verify_jwt = false
-
-[functions.verify-invite]
-verify_jwt = false
-
 [functions.get-invite-details]
 verify_jwt = false
 
@@ -47,3 +41,7 @@ verify_jwt = true
 
 [functions.ensure-requests-for-process]
 verify_jwt = false
+
+[functions.complete-admin-signup]
+verify_jwt = false
+

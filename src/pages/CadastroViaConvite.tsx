@@ -20,6 +20,7 @@ export default function CadastroViaConvite() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [isCollaborator, setIsCollaborator] = useState(false);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
 
   useEffect(() => {
     async function fetchInviteDetails() {
@@ -50,8 +51,12 @@ export default function CadastroViaConvite() {
 
         setInviteDetails(data);
 
-        // Verificar se é convite de colaborador
-        if (data.invite?.isCollaboratorInvite) {
+        // Verificar se é convite de administrador da plataforma
+        if (data.invite?.role === 'admin' && !data.invite?.company_id) {
+          setIsPlatformAdmin(true);
+          setFullName(data.invite?.full_name || "");
+        } else if (data.invite?.isCollaboratorInvite) {
+          // Verificar se é convite de colaborador
           setIsCollaborator(true);
           setFullName(data.invite?.full_name || "");
         }
@@ -88,7 +93,9 @@ export default function CadastroViaConvite() {
   // Se o usuário já está logado e o email corresponde ao convite, redirecionar para o dashboard
   useEffect(() => {
     if (user && inviteDetails?.invite?.email && user.email === inviteDetails.invite.email) {
-      if (isCollaborator) {
+      if (isPlatformAdmin) {
+        navigate('/admin');
+      } else if (isCollaborator) {
         navigate('/empresa');
       } else {
         const processId = inviteDetails.process?.id;
@@ -97,7 +104,7 @@ export default function CadastroViaConvite() {
         }
       }
     }
-  }, [user, inviteDetails, navigate, isCollaborator]);
+  }, [user, inviteDetails, navigate, isCollaborator, isPlatformAdmin]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +132,35 @@ export default function CadastroViaConvite() {
     setIsRegistering(true);
 
     try {
-      if (isCollaborator) {
+      if (isPlatformAdmin) {
+        // Criar conta de administrador da plataforma usando a edge function
+        const { data, error } = await supabase.functions.invoke('complete-admin-signup', {
+          body: {
+            token,
+            email: inviteDetails.invite.email,
+            password,
+            full_name: fullName.trim()
+          }
+        });
+
+        if (error || !data?.success) {
+          console.error('Erro ao criar administrador:', error);
+          toast.error("Erro ao criar conta", {
+            description: data?.error || error?.message || "Tente novamente mais tarde"
+          });
+          return;
+        }
+
+        toast.success("Conta de administrador criada com sucesso!", {
+          description: "Faça login para acessar o painel administrativo"
+        });
+
+        // Redirecionar para login
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+
+      } else if (isCollaborator) {
         // Criar conta de colaborador
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: inviteDetails.invite.email,
@@ -245,14 +280,22 @@ export default function CadastroViaConvite() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
-              {isCollaborator ? 'Cadastro de Colaborador' : 'Cadastro de Cliente'}
+              {isPlatformAdmin ? 'Cadastro de Administrador' : isCollaborator ? 'Cadastro de Colaborador' : 'Cadastro de Cliente'}
             </CardTitle>
             <CardDescription>
-              Você foi convidado{isCollaborator ? ' para integrar a equipe de' : ' por'} <strong>{companyName}</strong>
+              {isPlatformAdmin 
+                ? 'Você foi convidado para ser um Administrador da Plataforma'
+                : `Você foi convidado${isCollaborator ? ' para integrar a equipe de' : ' por'} `}
+              {!isPlatformAdmin && <strong>{companyName}</strong>}
             </CardDescription>
             <CardDescription className="text-sm text-muted-foreground mt-2">
               Email: {inviteEmail}
             </CardDescription>
+            {isPlatformAdmin && (
+              <CardDescription className="text-sm font-medium mt-1 text-primary">
+                🔐 Você terá acesso total ao painel administrativo da plataforma
+              </CardDescription>
+            )}
             {isCollaborator && inviteDetails.invite?.role && (
               <CardDescription className="text-sm font-medium mt-1">
                 Função: {inviteDetails.invite.role === 'staff' ? 'Funcionário' : inviteDetails.invite.role}
