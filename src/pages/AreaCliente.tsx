@@ -459,7 +459,7 @@ const AreaCliente = () => {
         `)
         .eq('id', id)
         .eq('client_email', user?.email)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (!processData) {

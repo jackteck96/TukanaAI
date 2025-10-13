@@ -74,37 +74,62 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         return;
       }
       
-      const { data, error } = await supabase
-        .from('document_requests')
-        .select(`
-          id,
-          document_name,
-          instructions,
-          required,
-          current_status,
-          document_uploads!document_uploads_document_request_id_fkey (
-            id,
-            file_path,
-            file_type,
-            status,
-            created_at
-          )
-        `)
-        .eq('process_id', processId)
-        .order('created_at', { ascending: true });
+      // Fluxo autenticado: buscar via Edge Function com verificação de acesso
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('get-process-requests', {
+        body: { processId }
+      });
 
-      if (error) {
-        console.error('Erro ao carregar solicitações:', error);
-        toast.error("Erro ao carregar documentos solicitados");
-        return;
+      if (!fnError && fnData?.success) {
+        const mapped = (fnData.documentRequests || []).map((req: any) => ({
+          id: req.id,
+          document_name: req.document_name,
+          instructions: req.instructions,
+          required: req.required,
+          current_status: req.current_status,
+          document_uploads: (req.document_uploads || []).map((u: any) => ({
+            id: u.id,
+            file_path: u.file_path,
+            file_type: u.file_type,
+            status: u.status,
+            created_at: u.created_at,
+          }))
+        }));
+        setDocumentRequests(mapped as any);
+      } else {
+        // Fallback direto (mantém compatibilidade caso a função falhe)
+        const { data, error } = await supabase
+          .from('document_requests')
+          .select(`
+            id,
+            document_name,
+            instructions,
+            required,
+            current_status,
+            document_uploads!document_uploads_document_request_id_fkey (
+              id,
+              file_path,
+              file_type,
+              status,
+              created_at
+            )
+          `)
+          .eq('process_id', processId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Erro ao carregar solicitações (fallback):', error);
+          toast.error('Erro ao carregar documentos solicitados');
+          return;
+        }
+
+        const formattedData = (data || []).map((req: any) => ({
+          ...req,
+          document_uploads: req.document_uploads || []
+        }));
+
+        setDocumentRequests(formattedData as any);
       }
 
-      const formattedData = (data || []).map((req: any) => ({
-        ...req,
-        document_uploads: req.document_uploads || []
-      }));
-
-      setDocumentRequests(formattedData as any);
     } catch (err) {
       console.error('Erro inesperado:', err);
       toast.error("Erro ao carregar documentos");

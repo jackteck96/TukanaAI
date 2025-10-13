@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.complete-invite-submission]
 verify_jwt = false
+
+[functions.get-process-requests]
+verify_jwt = true
