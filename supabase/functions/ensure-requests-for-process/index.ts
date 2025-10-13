@@ -55,163 +55,112 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Verificar se já existem document_requests
-    const { data: existingReqs, error: existingErr } = await supabase
-      .from('document_requests')
-      .select('*')
-      .eq('process_id', processId);
-
-    if (existingErr) {
-      console.warn('[ensure-requests-for-process] Erro verificando document_requests:', existingErr);
-    }
-
+    // Sincronizar solicitações com o que a empresa realmente pediu para ESTE processo
     let created = 0;
 
-    if (!existingReqs || existingReqs.length === 0) {
-      console.log('[ensure-requests-for-process] Nenhum document_request; buscando tasks...');
-      const { data: tasks, error: tasksError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('process_id', processId)
-        .order('created_at', { ascending: true });
+    // 1) Determinar a fonte da verdade
+    // 1.a) Tasks do processo (mais específico)
+    const { data: tasks, error: tasksError } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('process_id', processId)
+      .order('created_at', { ascending: true });
 
-      if (tasksError) {
-        console.error('[ensure-requests-for-process] Erro ao buscar tasks:', tasksError);
-        return new Response(
-          JSON.stringify({ success: false, error: 'Erro ao buscar tasks' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+    if (tasksError) {
+      console.error('[ensure-requests-for-process] Erro ao buscar tasks:', tasksError);
+    }
 
-      if (tasks && tasks.length > 0) {
-        const toInsert = tasks.map((t: any) => ({
-          process_id: processId,
-          company_id: process.company_id,
-          required: true,
-          document_name: t.document_type || t.title,
-          instructions: t.description,
-          current_status: t.status === 'completed' ? 'aprovado' : 'pendente',
-        }));
+    let desiredNames: string[] = [];
+    if (tasks && tasks.length > 0) {
+      desiredNames = Array.from(new Set((tasks || []).map((t: any) => (t.document_type || t.title || '').toString().trim()).filter(Boolean)));
+      console.log('[ensure-requests-for-process] Fonte: tasks →', desiredNames);
+    }
 
-        const { data: inserted, error: insertError } = await supabase
-          .from('document_requests')
-          .insert(toInsert)
-          .select('*');
-
-        if (insertError) {
-          console.error('[ensure-requests-for-process] Erro ao criar document_requests a partir das tasks:', insertError);
-          return new Response(
-            JSON.stringify({ success: false, error: 'Erro ao criar solicitações' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        created = inserted?.length || 0;
-        console.log('[ensure-requests-for-process] document_requests criados:', created);
-      } else {
-        console.log('[ensure-requests-for-process] Nenhuma task encontrada para o processo.');
-      }
-
-      // Fallback 1: criar a partir de process.process_type (empresa selecionou tipos no processo)
-      try {
-        // Checar novamente se ainda não há solicitações
-        const { data: checkReqs1 } = await supabase
-          .from('document_requests')
-          .select('id')
-          .eq('process_id', processId)
-          .limit(1);
-
-        if (!checkReqs1 || checkReqs1.length === 0) {
-          const rawType: string = (process.process_type || '').toString();
-          if (rawType) {
-            // Extrair parte após os dois pontos, se houver, e separar por vírgulas
-            const afterColon = rawType.includes(':') ? (rawType.split(':').pop() || rawType) : rawType;
-            const names = afterColon.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
-
-            if (names.length > 0) {
-              const toInsertFromProcessType = names.map((name: string) => ({
-                process_id: processId,
-                company_id: process.company_id,
-                required: true,
-                document_name: name,
-                instructions: null,
-                current_status: 'pendente',
-              }));
-
-              const { data: insertedFromPT, error: insertPTError } = await supabase
-                .from('document_requests')
-                .insert(toInsertFromProcessType)
-                .select('*');
-
-              if (insertPTError) {
-                console.warn('[ensure-requests-for-process] Erro ao criar a partir de process_type:', insertPTError);
-              } else {
-                const addedPT = insertedFromPT?.length || 0;
-                created += addedPT;
-                console.log('[ensure-requests-for-process] document_requests criados a partir de process_type:', addedPT, names);
-              }
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('[ensure-requests-for-process] Fallback process_type falhou:', e);
-      }
-
-      // Fallback 2: criar solicitações a partir dos tipos de documentos da empresa
-      try {
-        // Verificar novamente se ainda não há solicitações
-        const { data: checkReqs } = await supabase
-          .from('document_requests')
-          .select('id')
-          .eq('process_id', processId)
-          .limit(1);
-
-        if (!checkReqs || checkReqs.length === 0) {
-          const { data: types, error: typesError } = await supabase
-            .from('document_types')
-            .select('*')
-            .eq('company_id', process.company_id)
-            .order('created_at', { ascending: true });
-
-          if (typesError) {
-            console.warn('[ensure-requests-for-process] Erro ao buscar document_types:', typesError);
-          } else if (types && types.length > 0) {
-            const toInsertFromTypes = types.map((dt: any) => ({
-              process_id: processId,
-              company_id: process.company_id,
-              required: true,
-              document_name: dt.name,
-              instructions: dt.notes || null,
-              current_status: 'pendente',
-            }));
-
-            const { data: insertedFromTypes, error: insertTypesError } = await supabase
-              .from('document_requests')
-              .insert(toInsertFromTypes)
-              .select('*');
-
-            if (insertTypesError) {
-              console.error('[ensure-requests-for-process] Erro ao criar document_requests a partir de document_types:', insertTypesError);
-            } else {
-              const added = insertedFromTypes?.length || 0;
-              created += added;
-              console.log('[ensure-requests-for-process] document_requests criados a partir de document_types:', added);
-            }
-          } else {
-            console.log('[ensure-requests-for-process] Nenhum document_type encontrado para a empresa.');
-          }
-        }
-      } catch (e) {
-        console.warn('[ensure-requests-for-process] Fallback de document_types falhou:', e);
+    // 1.b) Campo process.process_type (ex.: "Documento: RG, CPF")
+    if (desiredNames.length === 0) {
+      const rawType: string = (process.process_type || '').toString();
+      if (rawType) {
+        const afterColon = rawType.includes(':') ? (rawType.split(':').pop() || rawType) : rawType;
+        desiredNames = Array.from(new Set(afterColon.split(',').map((s) => s.trim()).filter((s) => s.length > 0)));
+        if (desiredNames.length) console.log('[ensure-requests-for-process] Fonte: process.process_type →', desiredNames);
       }
     }
 
-    // Retornar lista atualizada de document_requests com seus uploads
+    // 1.c) Tipos cadastrados na empresa (catálogo) como último recurso
+    if (desiredNames.length === 0) {
+      const { data: types, error: typesError } = await supabase
+        .from('document_types')
+        .select('name, notes')
+        .eq('company_id', process.company_id)
+        .order('created_at', { ascending: true });
+      if (!typesError && types && types.length > 0) {
+        desiredNames = Array.from(new Set(types.map((t: any) => t.name)));
+        console.log('[ensure-requests-for-process] Fonte: document_types →', desiredNames);
+      }
+    }
+
+    // 2) Carregar existentes (com uploads)
+    const { data: existingReqsFull } = await supabase
+      .from('document_requests')
+      .select('id, document_name, document_uploads:document_uploads!document_uploads_document_request_id_fkey(id)')
+      .eq('process_id', processId);
+
+    const existingByName = new Map<string, { id: string; uploads: number }>();
+    (existingReqsFull || []).forEach((r: any) => {
+      existingByName.set((r.document_name || '').toString(), { id: r.id, uploads: (r.document_uploads || []).length });
+    });
+
+    // 3) Inserir o que falta
+    const toInsertNames = desiredNames.filter((name) => !existingByName.has(name));
+    if (toInsertNames.length > 0) {
+      const toInsert = toInsertNames.map((name) => ({
+        process_id: processId,
+        company_id: process.company_id,
+        required: true,
+        document_name: name,
+        instructions: null,
+        current_status: 'pendente',
+      }));
+      const { data: insertedReqs, error: insertErr } = await supabase
+        .from('document_requests')
+        .insert(toInsert)
+        .select('id');
+      if (insertErr) {
+        console.error('[ensure-requests-for-process] Erro ao inserir faltantes:', insertErr);
+      } else {
+        created += insertedReqs?.length || 0;
+        console.log('[ensure-requests-for-process] Inseridos faltantes:', created);
+      }
+    }
+
+    // 4) Remover o que não foi pedido (sem uploads)
+    const toDeleteIds: string[] = [];
+    (existingReqsFull || []).forEach((r: any) => {
+      const name = (r.document_name || '').toString();
+      const uploads = (r.document_uploads || []).length;
+      if (!desiredNames.includes(name) && uploads === 0) {
+        toDeleteIds.push(r.id);
+      }
+    });
+    if (toDeleteIds.length > 0) {
+      const { error: delErr } = await supabase
+        .from('document_requests')
+        .delete()
+        .in('id', toDeleteIds);
+      if (delErr) {
+        console.warn('[ensure-requests-for-process] Falha ao remover não pedidos:', delErr);
+      } else {
+        console.log('[ensure-requests-for-process] Removidos não pedidos:', toDeleteIds.length);
+      }
+    }
+
+    // 5) Retornar lista atualizada de document_requests com seus uploads
     const { data: finalReqs, error: finalErr } = await supabase
       .from('document_requests')
       .select('*, document_uploads:document_uploads!document_uploads_document_request_id_fkey(*)')
       .eq('process_id', processId)
       .order('created_at', { ascending: true });
+
 
     if (finalErr) {
       console.warn('[ensure-requests-for-process] Erro ao carregar solicitações finais:', finalErr);
@@ -220,7 +169,7 @@ serve(async (req: Request): Promise<Response> => {
     const response: EnsureRequestsResponse = {
       success: true,
       created,
-      existing: (existingReqs?.length || 0),
+      existing: (finalReqs?.length || 0),
       documentRequests: finalReqs || [],
     };
 
