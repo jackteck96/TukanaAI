@@ -1215,6 +1215,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          client_email: string | null
+          company_id: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_email?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_email?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       invitations: {
@@ -1262,6 +1300,10 @@ export type Database = {
         Args: { process_uuid: string }
         Returns: boolean
       }
+      can_manage_company: {
+        Args: { comp_id: string; user_uuid: string }
+        Returns: boolean
+      }
       can_sign_document: {
         Args: { document_uuid: string; signer_email_param: string }
         Returns: boolean
@@ -1298,6 +1340,36 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_role_details: {
+        Args: { user_uuid: string }
+        Returns: {
+          client_email: string
+          company_id: string
+          role: string
+        }[]
+      }
+      get_user_roles: {
+        Args: { user_uuid: string }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      has_any_role: {
+        Args: {
+          check_roles: Database["public"]["Enums"]["app_role"][]
+          user_uuid: string
+        }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          check_role: Database["public"]["Enums"]["app_role"]
+          user_uuid: string
+        }
+        Returns: boolean
+      }
+      is_platform_admin: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       log_process_access: {
         Args: { access_type: string; process_uuid: string }
         Returns: undefined
@@ -1308,6 +1380,12 @@ export type Database = {
       }
     }
     Enums: {
+      app_role:
+        | "platform_admin"
+        | "company_admin"
+        | "company_collaborator"
+        | "client"
+        | "client_collaborator"
       subscription_plan: "starter" | "professional" | "enterprise"
       subscription_status: "active" | "trial" | "expired" | "canceled"
       user_role: "admin" | "lawyer" | "staff" | "client"
@@ -1438,6 +1516,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: [
+        "platform_admin",
+        "company_admin",
+        "company_collaborator",
+        "client",
+        "client_collaborator",
+      ],
       subscription_plan: ["starter", "professional", "enterprise"],
       subscription_status: ["active", "trial", "expired", "canceled"],
       user_role: ["admin", "lawyer", "staff", "client"],
