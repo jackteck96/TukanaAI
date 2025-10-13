@@ -115,7 +115,7 @@ serve(async (req: Request): Promise<Response> => {
 
     let effectiveDocumentRequests = documentRequests || [];
 
-    // 4b) Fallback: se não houver document_requests, mapear tasks como solicitações
+    // 4b) Fallback: se não houver document_requests, materializar a partir das tasks
     if (!effectiveDocumentRequests || effectiveDocumentRequests.length === 0) {
       console.log('[get-invite-details] Sem document_requests; buscando tasks para o processo...');
       const { data: tasks, error: tasksError } = await supabase
@@ -130,20 +130,37 @@ serve(async (req: Request): Promise<Response> => {
 
       if (tasks && tasks.length > 0) {
         console.log('[get-invite-details] Tasks encontradas:', tasks.length);
-        effectiveDocumentRequests = tasks.map((t: any) => ({
-          id: t.id,
+        const toInsert = tasks.map((t: any) => ({
           process_id: invite.process_id,
           company_id: process.company_id,
           required: true,
-          created_at: t.created_at,
-          updated_at: t.updated_at,
-          last_upload_id: null,
-          last_uploaded_at: null,
-          current_status: t.status === 'completed' ? 'aprovado' : 'pendente',
           document_name: t.document_type || t.title,
           instructions: t.description,
-          document_uploads: []
+          current_status: t.status === 'completed' ? 'aprovado' : 'pendente',
         }));
+        const { data: inserted, error: insertError } = await supabase
+          .from('document_requests')
+          .insert(toInsert)
+          .select(`*, document_uploads:document_uploads!document_uploads_document_request_id_fkey(*)`);
+        if (insertError) {
+          console.warn('[get-invite-details] Falha ao materializar document_requests; retornando tasks mapeadas:', insertError);
+          effectiveDocumentRequests = tasks.map((t: any) => ({
+            id: t.id,
+            process_id: invite.process_id,
+            company_id: process.company_id,
+            required: true,
+            created_at: t.created_at,
+            updated_at: t.updated_at,
+            last_upload_id: null,
+            last_uploaded_at: null,
+            current_status: t.status === 'completed' ? 'aprovado' : 'pendente',
+            document_name: t.document_type || t.title,
+            instructions: t.description,
+            document_uploads: []
+          }));
+        } else {
+          effectiveDocumentRequests = inserted || [];
+        }
       }
     }
 

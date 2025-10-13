@@ -437,6 +437,28 @@ const AreaCliente = () => {
     }
   }, [inviteProcessId, user]);
 
+  // Garantir que as solicitações existam para o processo selecionado (cria a partir de tasks se necessário)
+  useEffect(() => {
+    const ensureRequests = async () => {
+      try {
+        const pid = selectedProcess?.id || inviteProcessId;
+        if (!pid) return;
+        const { data, error } = await supabase.functions.invoke('ensure-requests-for-process', {
+          body: { processId: pid }
+        });
+        if (error || !data?.success) {
+          console.warn('[AreaCliente] ensure-requests-for-process falhou:', error || data?.error);
+        } else {
+          console.log('[AreaCliente] ensure-requests-for-process ok. Criados:', data.created);
+          setRefreshKey((k) => k + 1);
+        }
+      } catch (e) {
+        console.warn('[AreaCliente] ensure-requests-for-process erro inesperado:', e);
+      }
+    };
+    ensureRequests();
+  }, [selectedProcess?.id, inviteProcessId]);
+
   const loadProcessDetails = async (id: string) => {
     try {
       const { data: processData, error } = await supabase
@@ -734,6 +756,7 @@ const AreaCliente = () => {
 
             <TabsContent value="tasks" className="space-y-4">
               <ClientDocumentRequests 
+                key={`cdr-${currentProcess.id}-${refreshKey}`}
                 processId={currentProcess.id} 
                 companyName={(currentProcess as any).company_name}
               />

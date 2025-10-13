@@ -48,6 +48,21 @@ export default function CadastroViaConvite() {
         }
 
         setInviteDetails(data);
+
+        // Garantir que as tasks virem solicitações visíveis para o cliente
+        try {
+          const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
+            body: { processId: data.process.id }
+          });
+          if (ensureError || !ensureData?.success) {
+            console.warn('[CadastroViaConvite] ensure-requests-for-process falhou:', ensureError || ensureData?.error);
+          } else {
+            console.log('[CadastroViaConvite] ensure-requests-for-process ok. Criados:', ensureData.created);
+          }
+        } catch (e) {
+          console.warn('[CadastroViaConvite] ensure-requests-for-process erro inesperado:', e);
+        }
+
       } catch (err: any) {
         console.error('Erro ao buscar convite:', err);
         toast.error("Erro", {
