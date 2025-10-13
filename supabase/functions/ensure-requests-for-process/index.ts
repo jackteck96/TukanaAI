@@ -112,7 +112,52 @@ serve(async (req: Request): Promise<Response> => {
         console.log('[ensure-requests-for-process] Nenhuma task encontrada para o processo.');
       }
 
-      // Fallback: criar solicitações a partir dos tipos de documentos da empresa
+      // Fallback 1: criar a partir de process.process_type (empresa selecionou tipos no processo)
+      try {
+        // Checar novamente se ainda não há solicitações
+        const { data: checkReqs1 } = await supabase
+          .from('document_requests')
+          .select('id')
+          .eq('process_id', processId)
+          .limit(1);
+
+        if (!checkReqs1 || checkReqs1.length === 0) {
+          const rawType: string = (process.process_type || '').toString();
+          if (rawType) {
+            // Extrair parte após os dois pontos, se houver, e separar por vírgulas
+            const afterColon = rawType.includes(':') ? (rawType.split(':').pop() || rawType) : rawType;
+            const names = afterColon.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+
+            if (names.length > 0) {
+              const toInsertFromProcessType = names.map((name: string) => ({
+                process_id: processId,
+                company_id: process.company_id,
+                required: true,
+                document_name: name,
+                instructions: null,
+                current_status: 'pendente',
+              }));
+
+              const { data: insertedFromPT, error: insertPTError } = await supabase
+                .from('document_requests')
+                .insert(toInsertFromProcessType)
+                .select('*');
+
+              if (insertPTError) {
+                console.warn('[ensure-requests-for-process] Erro ao criar a partir de process_type:', insertPTError);
+              } else {
+                const addedPT = insertedFromPT?.length || 0;
+                created += addedPT;
+                console.log('[ensure-requests-for-process] document_requests criados a partir de process_type:', addedPT, names);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[ensure-requests-for-process] Fallback process_type falhou:', e);
+      }
+
+      // Fallback 2: criar solicitações a partir dos tipos de documentos da empresa
       try {
         // Verificar novamente se ainda não há solicitações
         const { data: checkReqs } = await supabase
