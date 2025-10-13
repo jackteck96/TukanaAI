@@ -36,6 +36,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('[ClientDocumentRequests] Montando com processId:', processId);
     loadDocumentRequests();
   }, [processId]);
 
@@ -47,6 +48,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       if (token) {
+        console.log('[ClientDocumentRequests] Usando caminho via token', { token });
         const { data, error } = await supabase.functions.invoke('get-invite-details', {
           body: { token }
         });
@@ -69,6 +71,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
               created_at: u.created_at,
             }))
           }));
+          console.log('[ClientDocumentRequests] Carregado via convite, total:', fromFunction.length);
           setDocumentRequests(fromFunction as any);
         }
         return;

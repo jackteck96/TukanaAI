@@ -28,6 +28,7 @@ serve(async (req: Request): Promise<Response> => {
       : null;
 
     if (!accessToken) {
+      console.warn('[get-process-requests] Sem Authorization Bearer no header');
       return new Response(
         JSON.stringify({ success: false, error: 'Não autenticado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -42,13 +43,13 @@ serve(async (req: Request): Promise<Response> => {
     const { processId }: GetProcessRequestsRequest = await req.json();
 
     if (!processId) {
+      console.warn('[get-process-requests] processId ausente no body');
       return new Response(
         JSON.stringify({ success: false, error: 'processId é obrigatório' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Identificar usuário a partir do token recebido
     const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
     if (userError || !userData?.user) {
       console.error('[get-process-requests] Erro ao obter usuário do token:', userError);
@@ -59,6 +60,8 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const requesterEmail = userData.user.email || null;
+    console.log('[get-process-requests] Usuário autenticado:', requesterEmail);
+
     if (!requesterEmail) {
       return new Response(
         JSON.stringify({ success: false, error: 'Email do usuário não encontrado' }),
@@ -66,7 +69,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Validar acesso ao processo: o email do usuário deve ser o client_email do processo
+    console.log('[get-process-requests] Validando acesso ao processo:', processId);
     const { data: process, error: processError } = await supabase
       .from('processes')
       .select('id, client_email')
@@ -89,7 +92,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Buscar solicitações de documentos do processo
+    console.log('[get-process-requests] Buscando solicitações de documentos do processo');
     const { data: documentRequests, error: docReqError } = await supabase
       .from('document_requests')
       .select(`
@@ -106,6 +109,8 @@ serve(async (req: Request): Promise<Response> => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('[get-process-requests] Total de solicitações:', documentRequests?.length || 0);
 
     const response: GetProcessRequestsResponse = {
       success: true,
