@@ -56,22 +56,51 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         if (error || !data?.success) {
           console.error('Erro ao carregar via convite:', error || data?.error);
           toast.error("Erro ao carregar documentos solicitados");
+          return;
+        }
+
+        const fromFunction = (data.documentRequests || []).map((req: any) => ({
+          id: req.id,
+          document_name: req.document_name,
+          instructions: req.instructions,
+          required: req.required,
+          current_status: req.current_status,
+          document_uploads: (req.document_uploads || []).map((u: any) => ({
+            id: u.id,
+            file_path: u.file_path,
+            file_type: u.file_type,
+            status: u.status,
+            created_at: u.created_at,
+          }))
+        }));
+        console.log('[ClientDocumentRequests] Carregado via convite, total:', fromFunction.length);
+
+        if (fromFunction.length === 0) {
+          console.log('[ClientDocumentRequests] Convite sem document_requests, buscando tasks...');
+          const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('process_id', processId)
+            .order('created_at', { ascending: true });
+
+          if (tasksError) {
+            console.warn('[ClientDocumentRequests] Erro ao buscar tasks no fluxo por token:', tasksError);
+          }
+
+          if (tasksData && tasksData.length > 0) {
+            const tasksAsDocs = tasksData.map((task: any) => ({
+              id: task.id,
+              document_name: task.document_type || task.title,
+              instructions: task.description,
+              required: true,
+              current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
+              document_uploads: []
+            }));
+            setDocumentRequests(tasksAsDocs as any);
+          } else {
+            setDocumentRequests(fromFunction as any);
+          }
         } else {
-          const fromFunction = (data.documentRequests || []).map((req: any) => ({
-            id: req.id,
-            document_name: req.document_name,
-            instructions: req.instructions,
-            required: req.required,
-            current_status: req.current_status,
-            document_uploads: (req.document_uploads || []).map((u: any) => ({
-              id: u.id,
-              file_path: u.file_path,
-              file_type: u.file_type,
-              status: u.status,
-              created_at: u.created_at,
-            }))
-          }));
-          console.log('[ClientDocumentRequests] Carregado via convite, total:', fromFunction.length);
           setDocumentRequests(fromFunction as any);
         }
         return;
