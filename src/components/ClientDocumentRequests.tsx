@@ -44,6 +44,16 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     try {
       setLoading(true);
       
+      // Tentar materializar solicitações antes de buscar (garante criação a partir de tasks ou tipos)
+      try {
+        const { data: preEnsure } = await supabase.functions.invoke('ensure-requests-for-process', {
+          body: { processId }
+        });
+        console.log('[ClientDocumentRequests] Pre-ensure executed. Criados:', preEnsure?.created);
+      } catch (e) {
+        console.warn('[ClientDocumentRequests] Pre-ensure falhou:', e);
+      }
+      
       // Se houver token no link (acesso via convite), usar a edge function pública
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');

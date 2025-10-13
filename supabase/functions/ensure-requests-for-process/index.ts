@@ -111,6 +111,54 @@ serve(async (req: Request): Promise<Response> => {
       } else {
         console.log('[ensure-requests-for-process] Nenhuma task encontrada para o processo.');
       }
+
+      // Fallback: criar solicitações a partir dos tipos de documentos da empresa
+      try {
+        // Verificar novamente se ainda não há solicitações
+        const { data: checkReqs } = await supabase
+          .from('document_requests')
+          .select('id')
+          .eq('process_id', processId)
+          .limit(1);
+
+        if (!checkReqs || checkReqs.length === 0) {
+          const { data: types, error: typesError } = await supabase
+            .from('document_types')
+            .select('*')
+            .eq('company_id', process.company_id)
+            .order('created_at', { ascending: true });
+
+          if (typesError) {
+            console.warn('[ensure-requests-for-process] Erro ao buscar document_types:', typesError);
+          } else if (types && types.length > 0) {
+            const toInsertFromTypes = types.map((dt: any) => ({
+              process_id: processId,
+              company_id: process.company_id,
+              required: true,
+              document_name: dt.name,
+              instructions: dt.notes || null,
+              current_status: 'pendente',
+            }));
+
+            const { data: insertedFromTypes, error: insertTypesError } = await supabase
+              .from('document_requests')
+              .insert(toInsertFromTypes)
+              .select('*');
+
+            if (insertTypesError) {
+              console.error('[ensure-requests-for-process] Erro ao criar document_requests a partir de document_types:', insertTypesError);
+            } else {
+              const added = insertedFromTypes?.length || 0;
+              created += added;
+              console.log('[ensure-requests-for-process] document_requests criados a partir de document_types:', added);
+            }
+          } else {
+            console.log('[ensure-requests-for-process] Nenhum document_type encontrado para a empresa.');
+          }
+        }
+      } catch (e) {
+        console.warn('[ensure-requests-for-process] Fallback de document_types falhou:', e);
+      }
     }
 
     // Retornar lista atualizada de document_requests com seus uploads
