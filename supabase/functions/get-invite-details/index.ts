@@ -113,13 +113,47 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log('[get-invite-details] Documentos solicitados:', documentRequests?.length || 0);
 
+    let effectiveDocumentRequests = documentRequests || [];
+
+    // 4b) Fallback: se não houver document_requests, mapear tasks como solicitações
+    if (!effectiveDocumentRequests || effectiveDocumentRequests.length === 0) {
+      console.log('[get-invite-details] Sem document_requests; buscando tasks para o processo...');
+      const { data: tasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('process_id', invite.process_id)
+        .order('created_at', { ascending: true });
+
+      if (tasksError) {
+        console.warn('[get-invite-details] Erro ao buscar tasks:', tasksError);
+      }
+
+      if (tasks && tasks.length > 0) {
+        console.log('[get-invite-details] Tasks encontradas:', tasks.length);
+        effectiveDocumentRequests = tasks.map((t: any) => ({
+          id: t.id,
+          process_id: invite.process_id,
+          company_id: process.company_id,
+          required: true,
+          created_at: t.created_at,
+          updated_at: t.updated_at,
+          last_upload_id: null,
+          last_uploaded_at: null,
+          current_status: t.status === 'completed' ? 'aprovado' : 'pendente',
+          document_name: t.document_type || t.title,
+          instructions: t.description,
+          document_uploads: []
+        }));
+      }
+    }
+
     // 5) Retornar dados completos
     const response: GetInviteDetailsResponse = {
       success: true,
       invite,
       process,
       company: company || null,
-      documentRequests: documentRequests || [],
+      documentRequests: effectiveDocumentRequests,
     };
 
     return new Response(

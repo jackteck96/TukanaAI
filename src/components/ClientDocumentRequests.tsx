@@ -76,29 +76,30 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         console.log('[ClientDocumentRequests] Carregado via convite, total:', fromFunction.length);
 
         if (fromFunction.length === 0) {
-          console.log('[ClientDocumentRequests] Convite sem document_requests, buscando tasks...');
-          const { data: tasksData, error: tasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('process_id', processId)
-            .order('created_at', { ascending: true });
-
-          if (tasksError) {
-            console.warn('[ClientDocumentRequests] Erro ao buscar tasks no fluxo por token:', tasksError);
-          }
-
-          if (tasksData && tasksData.length > 0) {
-            const tasksAsDocs = tasksData.map((task: any) => ({
-              id: task.id,
-              document_name: task.document_type || task.title,
-              instructions: task.description,
-              required: true,
-              current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
-              document_uploads: []
-            }));
-            setDocumentRequests(tasksAsDocs as any);
-          } else {
+          console.log('[ClientDocumentRequests] Convite sem document_requests, sincronizando via Edge Function...');
+          const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
+            body: { processId }
+          });
+          if (ensureError || !ensureData?.success) {
+            console.error('[ClientDocumentRequests] Erro ao garantir solicitações:', ensureError || ensureData?.error);
             setDocumentRequests(fromFunction as any);
+          } else {
+            const ensured = (ensureData.documentRequests || []).map((req: any) => ({
+              id: req.id,
+              document_name: req.document_name,
+              instructions: req.instructions,
+              required: req.required,
+              current_status: req.current_status,
+              document_uploads: (req.document_uploads || []).map((u: any) => ({
+                id: u.id,
+                file_path: u.file_path,
+                file_type: u.file_type,
+                status: u.status,
+                created_at: u.created_at,
+              }))
+            }));
+            console.log('[ClientDocumentRequests] Sincronizado. Total após ensure:', ensured.length);
+            setDocumentRequests(ensured as any);
           }
         } else {
           setDocumentRequests(fromFunction as any);
@@ -129,28 +130,31 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         
         console.log('[ClientDocumentRequests] Total via Edge Function:', mapped.length);
         
-        // Se não houver document_requests, buscar tasks e mapear como solicitações
+        // Se não houver document_requests, sincronizar a partir de tasks via Edge Function
         if (mapped.length === 0) {
-          console.log('[ClientDocumentRequests] Nenhum document_request encontrado, buscando tasks...');
-          const { data: tasksData, error: tasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('process_id', processId)
-            .order('created_at', { ascending: true });
-
-          if (!tasksError && tasksData && tasksData.length > 0) {
-            console.log('[ClientDocumentRequests] Mapeando tasks como solicitações, total:', tasksData.length);
-            const tasksAsDocs = tasksData.map((task: any) => ({
-              id: task.id,
-              document_name: task.document_type || task.title,
-              instructions: task.description,
-              required: true,
-              current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
-              document_uploads: []
-            }));
-            setDocumentRequests(tasksAsDocs as any);
-          } else {
+          console.log('[ClientDocumentRequests] Nenhum document_request encontrado, sincronizando via Edge Function...');
+          const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
+            body: { processId }
+          });
+          if (ensureError || !ensureData?.success) {
+            console.error('[ClientDocumentRequests] Erro no ensure (autenticado):', ensureError || ensureData?.error);
             setDocumentRequests(mapped as any);
+          } else {
+            const ensured = (ensureData.documentRequests || []).map((req: any) => ({
+              id: req.id,
+              document_name: req.document_name,
+              instructions: req.instructions,
+              required: req.required,
+              current_status: req.current_status,
+              document_uploads: (req.document_uploads || []).map((u: any) => ({
+                id: u.id,
+                file_path: u.file_path,
+                file_type: u.file_type,
+                status: u.status,
+                created_at: u.created_at,
+              }))
+            }));
+            setDocumentRequests(ensured as any);
           }
         } else {
           setDocumentRequests(mapped as any);
