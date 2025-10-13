@@ -97,7 +97,35 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
             created_at: u.created_at,
           }))
         }));
-        setDocumentRequests(mapped as any);
+        
+        console.log('[ClientDocumentRequests] Total via Edge Function:', mapped.length);
+        
+        // Se não houver document_requests, buscar tasks e mapear como solicitações
+        if (mapped.length === 0) {
+          console.log('[ClientDocumentRequests] Nenhum document_request encontrado, buscando tasks...');
+          const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('process_id', processId)
+            .order('created_at', { ascending: true });
+
+          if (!tasksError && tasksData && tasksData.length > 0) {
+            console.log('[ClientDocumentRequests] Mapeando tasks como solicitações, total:', tasksData.length);
+            const tasksAsDocs = tasksData.map((task: any) => ({
+              id: task.id,
+              document_name: task.document_type || task.title,
+              instructions: task.description,
+              required: true,
+              current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
+              document_uploads: []
+            }));
+            setDocumentRequests(tasksAsDocs as any);
+          } else {
+            setDocumentRequests(mapped as any);
+          }
+        } else {
+          setDocumentRequests(mapped as any);
+        }
       } else {
         // Fallback direto (mantém compatibilidade caso a função falhe)
         const { data, error } = await supabase
@@ -130,7 +158,32 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           document_uploads: req.document_uploads || []
         }));
 
-        setDocumentRequests(formattedData as any);
+        // Se não houver document_requests, buscar tasks
+        if (formattedData.length === 0) {
+          console.log('[ClientDocumentRequests] Fallback: nenhum document_request, buscando tasks...');
+          const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('process_id', processId)
+            .order('created_at', { ascending: true });
+
+          if (!tasksError && tasksData && tasksData.length > 0) {
+            console.log('[ClientDocumentRequests] Fallback: mapeando tasks, total:', tasksData.length);
+            const tasksAsDocs = tasksData.map((task: any) => ({
+              id: task.id,
+              document_name: task.document_type || task.title,
+              instructions: task.description,
+              required: true,
+              current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
+              document_uploads: []
+            }));
+            setDocumentRequests(tasksAsDocs as any);
+          } else {
+            setDocumentRequests(formattedData as any);
+          }
+        } else {
+          setDocumentRequests(formattedData as any);
+        }
       }
 
     } catch (err) {
