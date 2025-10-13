@@ -227,9 +227,43 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     }
   };
 
-  const handleFileUpload = async (documentRequestId: string, file: File) => {
+  const handleFileUpload = async (request: DocumentRequest, file: File) => {
     try {
-      setUploadingDocId(documentRequestId);
+      setUploadingDocId(request.id);
+
+      // Antes de tudo, garantir que exista um document_request real para este documento
+      try {
+        const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
+          body: { processId }
+        });
+        if (ensureError) {
+          console.warn('[ClientDocumentRequests] ensure-requests-for-process falhou antes do upload:', ensureError);
+        } else {
+          console.log('[ClientDocumentRequests] ensure-requests-for-process OK antes do upload:', ensureData?.created);
+        }
+      } catch (e) {
+        console.warn('[ClientDocumentRequests] ensure-requests-for-process erro inesperado:', e);
+      }
+
+      // Resolver o ID do document_request: se o ID atual não existir, buscar por nome
+      let documentRequestId = request.id;
+      const { data: existingReq } = await supabase
+        .from('document_requests')
+        .select('id')
+        .eq('id', request.id)
+        .maybeSingle();
+
+      if (!existingReq) {
+        const { data: byName } = await supabase
+          .from('document_requests')
+          .select('id')
+          .eq('process_id', processId)
+          .eq('document_name', request.document_name)
+          .maybeSingle();
+        if (byName?.id) {
+          documentRequestId = byName.id as string;
+        }
+      }
 
       // Upload para o storage
       const fileExt = file.name.split('.').pop();
@@ -411,7 +445,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                             toast.error("Arquivo muito grande. Máximo de 10MB");
                             return;
                           }
-                          handleFileUpload(request.id, file);
+                          handleFileUpload(request, file);
                         }
                       }}
                       disabled={uploadingDocId === request.id}
