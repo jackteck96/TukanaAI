@@ -82,10 +82,6 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const { company } = useCompany();
 
-  const [testEmail, setTestEmail] = useState<string>(user?.email || "");
-  const [testName, setTestName] = useState<string>(user?.email || "Teste Fuzen");
-  const [sendingTest, setSendingTest] = useState(false);
-  const [testMode, setTestMode] = useState<'collaborator' | 'client'>('collaborator');
 
   // States for platform admins
   const [platformAdmins, setPlatformAdmins] = useState<any[]>([]);
@@ -138,31 +134,6 @@ const AdminDashboard = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const handleSendTestEmail = async () => {
-    try {
-      setSendingTest(true);
-      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=test-${Date.now()}`;
-      const { error } = await supabase.functions.invoke('send-unified-email', {
-        body: {
-          email: testEmail,
-          full_name: testName || 'Teste',
-          processId: testMode === 'client' ? 'test' : '',
-          processName: testMode === 'client' ? 'Processo de Teste' : `Convite de Teste (${testMode})`,
-          companyId: company?.id,
-          inviteLink,
-          inviterName: (user?.user_metadata as any)?.full_name || user?.email || company?.name || 'Fuzen',
-          isCollaborator: testMode !== 'client',
-        }
-      });
-      if (error) throw error;
-      toast({ title: 'Email de teste enviado', description: `Verifique ${testEmail}` });
-    } catch (e: any) {
-      toast({ title: 'Falha ao enviar email', description: e?.message || 'Erro desconhecido', variant: 'destructive' });
-      console.error('Erro ao enviar email de teste:', e);
-    } finally {
-      setSendingTest(false);
-    }
-  };
 
   // Categories and document options
   const categories = [
@@ -205,14 +176,26 @@ const AdminDashboard = () => {
   const fetchPlatformAdmins = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, created_at')
-        .eq('role', 'admin')
-        .is('company_id', null) // Platform admins don't belong to any company
+        .from('user_roles')
+        .select(`
+          user_id,
+          role,
+          created_at,
+          profiles!inner(email, full_name)
+        `)
+        .eq('role', 'platform_admin')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      setPlatformAdmins(data || []);
+      
+      const admins = (data || []).map((item: any) => ({
+        id: item.user_id,
+        email: item.profiles.email,
+        full_name: item.profiles.full_name,
+        created_at: item.created_at
+      }));
+      
+      setPlatformAdmins(admins);
     } catch (error) {
       console.error('Error fetching platform admins:', error);
     }
@@ -229,18 +212,26 @@ const AdminDashboard = () => {
     try {
       setSendingAdminInvite(true);
 
-      // Check if admin already exists
-      const { data: existingAdmin } = await supabase
+      // Check if email is already registered
+      const { data: existingUser } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', newAdminEmail)
-        .eq('role', 'admin')
-        .is('company_id', null)
         .maybeSingle();
 
-      if (existingAdmin) {
-        toast({ title: "Erro", description: "Este email já é um administrador da plataforma", variant: "destructive" });
-        return;
+      if (existingUser) {
+        // Check if already has platform_admin role
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', existingUser.id)
+          .eq('role', 'platform_admin')
+          .maybeSingle();
+
+        if (existingRole) {
+          toast({ title: "Erro", description: "Este email já é um administrador da plataforma", variant: "destructive" });
+          return;
+        }
       }
 
       // Get current user data to send approval email
@@ -289,6 +280,7 @@ const AdminDashboard = () => {
       setIsAdminModalOpen(false);
       setNewAdminEmail("");
       setNewAdminName("");
+      fetchPlatformAdmins();
     } catch (error: any) {
       console.error('Error inviting platform admin:', error);
       toast({ title: "Erro", description: error.message || "Erro ao criar convite", variant: "destructive" });
@@ -563,11 +555,11 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="document-types" className="space-y-6">
+        <Tabs defaultValue="admins" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="email-test" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Teste de E-mail
+            <TabsTrigger value="admins" className="flex items-center gap-2">
+              <Crown className="w-4 h-4" />
+              Administradores
             </TabsTrigger>
             <TabsTrigger value="document-types" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -583,82 +575,100 @@ const AdminDashboard = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Email Test Tab */}
-          <TabsContent value="email-test" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Teste de Envio de E-mail (Resend)</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Envie um e-mail de teste para verificar se o sistema de convites está funcionando corretamente
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="testEmail">E-mail do Destinatário</Label>
-                    <Input 
-                      id="testEmail" 
-                      type="email"
-                      value={testEmail} 
-                      onChange={(e) => setTestEmail(e.target.value)} 
-                      placeholder="email@exemplo.com" 
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="testName">Nome do Destinatário</Label>
-                    <Input 
-                      id="testName" 
-                      value={testName} 
-                      onChange={(e) => setTestName(e.target.value)} 
-                      placeholder="Nome Completo" 
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label>Tipo de Convite</Label>
-                  <Select value={testMode} onValueChange={(v) => setTestMode(v as 'collaborator' | 'client')}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="collaborator">Convite de Colaborador</SelectItem>
-                      <SelectItem value="client">Convite de Cliente (com processo)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {testMode === 'collaborator' 
-                      ? 'Simula convite para um novo colaborador da equipe'
-                      : 'Simula convite para um cliente com processo criado'}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 pt-4">
-                  <Button 
-                    onClick={handleSendTestEmail} 
-                    disabled={sendingTest || !testEmail || !company}
-                    className="min-w-[200px]"
-                  >
-                    {sendingTest ? 'Enviando...' : 'Enviar E-mail de Teste'}
+          {/* Admins Tab */}
+          <TabsContent value="admins" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Administradores da Plataforma</h2>
+              <Dialog open={isAdminModalOpen} onOpenChange={setIsAdminModalOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Adicionar Administrador
                   </Button>
-                  {!company && (
-                    <p className="text-sm text-destructive">
-                      Você precisa estar associado a uma empresa para enviar e-mails de teste.
-                    </p>
-                  )}
-                </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Convidar Novo Administrador</DialogTitle>
+                    <DialogDescription>
+                      Adicione um novo administrador da plataforma. Um email de aprovação será enviado.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleInvitePlatformAdmin} className="space-y-4">
+                    <div>
+                      <Label htmlFor="adminName">Nome Completo</Label>
+                      <Input
+                        id="adminName"
+                        value={newAdminName}
+                        onChange={(e) => setNewAdminName(e.target.value)}
+                        placeholder="Nome do novo administrador"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="adminEmail">E-mail</Label>
+                      <Input
+                        id="adminEmail"
+                        type="email"
+                        value={newAdminEmail}
+                        onChange={(e) => setNewAdminEmail(e.target.value)}
+                        placeholder="email@exemplo.com"
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button type="submit" className="flex-1" disabled={sendingAdminInvite}>
+                        {sendingAdminInvite ? 'Enviando...' : 'Enviar Convite'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsAdminModalOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
 
-                <div className="mt-6 p-4 bg-muted rounded-lg">
-                  <h4 className="font-semibold mb-2">ℹ️ Informações:</h4>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• O sistema tentará enviar usando o domínio configurado em RESEND_FROM</li>
-                    <li>• Se houver erro de domínio, tentará automaticamente com convites@fuzen.online</li>
-                    <li>• Como fallback final, usará onboarding@resend.dev (sandbox do Resend)</li>
-                    <li>• Verifique os logs da função para detalhes sobre o envio</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid gap-4">
+              {platformAdmins.map((admin) => (
+                <Card key={admin.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Crown className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{admin.full_name || admin.email}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{admin.email}</p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">
+                        Administrador
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Adicionado em: {new Date(admin.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {platformAdmins.length === 0 && (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Nenhum administrador cadastrado ainda.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Document Types Tab */}
