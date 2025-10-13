@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface CompanyRouteProps {
   children: React.ReactNode;
@@ -15,6 +15,23 @@ const CompanyRoute = ({ children }: CompanyRouteProps) => {
   const { toast } = useToast();
   
   const loading = authLoading || roleLoading;
+  const unauthorized = !isCompanyUser && !isPlatformAdmin;
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (unauthorized && user) {
+      if (!toastShownRef.current) {
+        toast({
+          title: "Acesso Restrito",
+          description: "Apenas usuários da empresa podem acessar esta área.",
+          variant: "destructive"
+        });
+        toastShownRef.current = true;
+      }
+    } else {
+      toastShownRef.current = false;
+    }
+  }, [unauthorized, user]);
 
   // Show loading while checking auth and role
   if (loading) {
@@ -33,16 +50,8 @@ const CompanyRoute = ({ children }: CompanyRouteProps) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Show access denied if not company user or platform admin
-  if (!isCompanyUser && !isPlatformAdmin) {
-    useEffect(() => {
-      toast({
-        title: "Acesso Restrito",
-        description: "Apenas usuários da empresa podem acessar esta área.",
-        variant: "destructive"
-      });
-    }, []);
-    
+  // Access denied if not company user or platform admin
+  if (unauthorized) {
     return <Navigate to="/" replace />;
   }
 

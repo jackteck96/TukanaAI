@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -16,6 +16,23 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
   const { toast } = useToast();
   
   const loading = authLoading || roleLoading;
+  const unauthorized = !isPlatformAdmin;
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (unauthorized && user) {
+      if (!toastShownRef.current) {
+        toast({
+          title: "Acesso Restrito",
+          description: "Apenas administradores da plataforma podem acessar esta área.",
+          variant: "destructive"
+        });
+        toastShownRef.current = true;
+      }
+    } else {
+      toastShownRef.current = false;
+    }
+  }, [unauthorized, user]);
 
   // Show loading while checking auth and role
   if (loading) {
@@ -34,16 +51,8 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Show access denied if not platform admin
-  if (!isPlatformAdmin) {
-    useEffect(() => {
-      toast({
-        title: "Acesso Restrito",
-        description: "Apenas administradores da plataforma podem acessar esta área.",
-        variant: "destructive"
-      });
-    }, []);
-    
+  // Access denied if not platform admin
+  if (unauthorized) {
     return <Navigate to="/" replace />;
   }
 
