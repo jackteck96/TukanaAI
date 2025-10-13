@@ -192,7 +192,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           client_name: formData.clientName,
           client_email: formData.clientEmail,
           cpf_cnpj: formData.cpfCnpj,
-          process_type: requiredDocuments.length > 0 ? `Documentação: ${requiredDocuments.slice(0,2).join(", ")}` : "Processo Documental",
+          process_type: requiredDocuments.length > 0 ? `Documentação: ${requiredDocuments.join(", ")}` : "Processo Documental",
           description: formData.description,
           priority: formData.priority,
           due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
