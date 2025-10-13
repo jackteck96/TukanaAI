@@ -19,6 +19,7 @@ export default function CadastroViaConvite() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isCollaborator, setIsCollaborator] = useState(false);
 
   useEffect(() => {
     async function fetchInviteDetails() {
@@ -49,18 +50,26 @@ export default function CadastroViaConvite() {
 
         setInviteDetails(data);
 
-        // Garantir que as tasks virem solicitações visíveis para o cliente
-        try {
-          const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
-            body: { processId: data.process.id }
-          });
-          if (ensureError || !ensureData?.success) {
-            console.warn('[CadastroViaConvite] ensure-requests-for-process falhou:', ensureError || ensureData?.error);
-          } else {
-            console.log('[CadastroViaConvite] ensure-requests-for-process ok. Criados:', ensureData.created);
+        // Verificar se é convite de colaborador
+        if (data.invite?.isCollaboratorInvite) {
+          setIsCollaborator(true);
+          setFullName(data.invite?.full_name || "");
+        }
+
+        // Garantir que as tasks virem solicitações visíveis para o cliente (apenas para clientes)
+        if (data.process?.id) {
+          try {
+            const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
+              body: { processId: data.process.id }
+            });
+            if (ensureError || !ensureData?.success) {
+              console.warn('[CadastroViaConvite] ensure-requests-for-process falhou:', ensureError || ensureData?.error);
+            } else {
+              console.log('[CadastroViaConvite] ensure-requests-for-process ok. Criados:', ensureData.created);
+            }
+          } catch (e) {
+            console.warn('[CadastroViaConvite] ensure-requests-for-process erro inesperado:', e);
           }
-        } catch (e) {
-          console.warn('[CadastroViaConvite] ensure-requests-for-process erro inesperado:', e);
         }
 
       } catch (err: any) {
@@ -79,12 +88,16 @@ export default function CadastroViaConvite() {
   // Se o usuário já está logado e o email corresponde ao convite, redirecionar para o dashboard
   useEffect(() => {
     if (user && inviteDetails?.invite?.email && user.email === inviteDetails.invite.email) {
-      const processId = inviteDetails.process?.id;
-      if (processId) {
-        navigate(`/area-cliente?id=${processId}`);
+      if (isCollaborator) {
+        navigate('/empresa');
+      } else {
+        const processId = inviteDetails.process?.id;
+        if (processId) {
+          navigate(`/area-cliente?id=${processId}`);
+        }
       }
     }
-  }, [user, inviteDetails, navigate]);
+  }, [user, inviteDetails, navigate, isCollaborator]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,33 +125,90 @@ export default function CadastroViaConvite() {
     setIsRegistering(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-client-from-invite', {
-        body: {
-          token,
+      if (isCollaborator) {
+        // Criar conta de colaborador
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: inviteDetails.invite.email,
           password,
-          fullName: fullName.trim()
-        }
-      });
-
-      if (error || !data?.success) {
-        console.error('Erro ao criar cliente:', error);
-        toast.error("Erro ao criar conta", {
-          description: data?.error || error?.message || "Tente novamente mais tarde"
+          options: {
+            data: {
+              full_name: fullName.trim(),
+              role: inviteDetails.invite.role || 'staff'
+            }
+          }
         });
-        return;
+
+        if (signUpError) {
+          console.error('Erro ao criar colaborador:', signUpError);
+          toast.error("Erro ao criar conta", {
+            description: signUpError.message || "Tente novamente mais tarde"
+          });
+          return;
+        }
+
+        // Atualizar o perfil com company_id
+        if (signUpData.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              company_id: inviteDetails.invite.company_id,
+              role: inviteDetails.invite.role || 'staff'
+            })
+            .eq('id', signUpData.user.id);
+
+          if (profileError) {
+            console.warn('Erro ao atualizar perfil:', profileError);
+          }
+
+          // Marcar convite como usado
+          await supabase
+            .from('user_invites')
+            .update({
+              status: 'accepted',
+              used_at: new Date().toISOString()
+            })
+            .eq('token', token);
+        }
+
+        toast.success("Cadastro realizado com sucesso!", {
+          description: "Faça login para acessar o sistema"
+        });
+
+        // Redirecionar para login
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+
+      } else {
+        // Criar conta de cliente (fluxo existente)
+        const { data, error } = await supabase.functions.invoke('create-client-from-invite', {
+          body: {
+            token,
+            password,
+            fullName: fullName.trim()
+          }
+        });
+
+        if (error || !data?.success) {
+          console.error('Erro ao criar cliente:', error);
+          toast.error("Erro ao criar conta", {
+            description: data?.error || error?.message || "Tente novamente mais tarde"
+          });
+          return;
+        }
+
+        toast.success("Cadastro realizado com sucesso!", {
+          description: "Faça login para acessar seus documentos"
+        });
+
+        // Redirecionar para login
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
       }
 
-      toast.success("Cadastro realizado com sucesso!", {
-        description: "Faça login para acessar seus documentos"
-      });
-
-      // Redirecionar para login
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
-
     } catch (err: any) {
-      console.error('Erro inesperado ao criar cliente:', err);
+      console.error('Erro inesperado ao criar conta:', err);
       toast.error("Erro inesperado", {
         description: err.message || "Tente novamente mais tarde"
       });
@@ -174,13 +244,20 @@ export default function CadastroViaConvite() {
       <div className="max-w-md mx-auto">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Cadastro de Cliente</CardTitle>
+            <CardTitle className="text-2xl">
+              {isCollaborator ? 'Cadastro de Colaborador' : 'Cadastro de Cliente'}
+            </CardTitle>
             <CardDescription>
-              Você foi convidado por <strong>{companyName}</strong>
+              Você foi convidado{isCollaborator ? ' para integrar a equipe de' : ' por'} <strong>{companyName}</strong>
             </CardDescription>
             <CardDescription className="text-sm text-muted-foreground mt-2">
               Email: {inviteEmail}
             </CardDescription>
+            {isCollaborator && inviteDetails.invite?.role && (
+              <CardDescription className="text-sm font-medium mt-1">
+                Função: {inviteDetails.invite.role === 'staff' ? 'Funcionário' : inviteDetails.invite.role}
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleRegister} className="space-y-4">
@@ -249,7 +326,7 @@ export default function CadastroViaConvite() {
         </Card>
       </div>
 
-      {inviteDetails?.process && (
+      {!isCollaborator && inviteDetails?.process && (
         <div className="max-w-3xl mx-auto mt-8">
           <Card>
             <CardHeader>

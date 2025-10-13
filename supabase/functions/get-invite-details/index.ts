@@ -41,15 +41,43 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log('[get-invite-details] Buscando convite com token:', token);
 
-    // 1) Buscar convite na tabela client_invites
-    const { data: invite, error: inviteError } = await supabase
+    // 1) Tentar buscar na tabela client_invites primeiro
+    let invite: any = null;
+    let isCollaboratorInvite = false;
+    
+    const { data: clientInvite, error: clientInviteError } = await supabase
       .from('client_invites')
       .select('*')
       .eq('token', token)
-      .single();
+      .maybeSingle();
 
-    if (inviteError || !invite) {
-      console.error('[get-invite-details] Convite não encontrado:', inviteError);
+    if (clientInvite) {
+      invite = clientInvite;
+      console.log('[get-invite-details] Convite de cliente encontrado');
+    } else {
+      // Se não encontrou em client_invites, tentar em user_invites (colaboradores)
+      console.log('[get-invite-details] Não encontrado em client_invites, tentando user_invites...');
+      const { data: userInvite, error: userInviteError } = await supabase
+        .from('user_invites')
+        .select('*')
+        .eq('token', token)
+        .maybeSingle();
+
+      if (userInvite) {
+        invite = userInvite;
+        isCollaboratorInvite = true;
+        console.log('[get-invite-details] Convite de colaborador encontrado');
+      } else {
+        console.error('[get-invite-details] Convite não encontrado em nenhuma tabela');
+        return new Response(
+          JSON.stringify({ success: false, error: 'Convite inválido ou expirado' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    if (!invite) {
+      console.error('[get-invite-details] Convite não encontrado');
       return new Response(
         JSON.stringify({ success: false, error: 'Convite inválido ou expirado' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -65,16 +93,55 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('[get-invite-details] Convite encontrado:', invite);
+    console.log('[get-invite-details] Convite encontrado:', invite, 'isCollaboratorInvite:', isCollaboratorInvite);
 
-    // 2) Buscar processo vinculado
-    const { data: process, error: processError } = await supabase
+    // 2) Para convites de colaborador, não há processo vinculado
+    let process = null;
+    let company = null;
+    let documentRequests: any[] = [];
+
+    if (isCollaboratorInvite) {
+      // Para colaboradores, apenas buscar a empresa
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', invite.company_id)
+        .single();
+
+      if (companyError) {
+        console.error('[get-invite-details] Empresa não encontrada para colaborador:', companyError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Empresa não encontrada' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      company = companyData;
+      console.log('[get-invite-details] Empresa encontrada para colaborador:', company);
+
+      // Retornar resposta para colaborador sem processo
+      const response: GetInviteDetailsResponse = {
+        success: true,
+        invite: { ...invite, isCollaboratorInvite: true },
+        process: null,
+        company: company,
+        documentRequests: [],
+      };
+
+      return new Response(
+        JSON.stringify(response),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Para convites de cliente, buscar processo vinculado
+    const { data: processData, error: processError } = await supabase
       .from('processes')
       .select('*')
       .eq('id', invite.process_id)
       .single();
 
-    if (processError || !process) {
+    if (processError || !processData) {
       console.error('[get-invite-details] Processo não encontrado:', processError);
       return new Response(
         JSON.stringify({ success: false, error: 'Processo vinculado não encontrado' }),
@@ -82,10 +149,12 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
+    process = processData;
+
     console.log('[get-invite-details] Processo encontrado:', process);
 
     // 3) Buscar empresa solicitante
-    const { data: company, error: companyError } = await supabase
+    const { data: companyData, error: companyError } = await supabase
       .from('companies')
       .select('*')
       .eq('id', process.company_id)
@@ -95,6 +164,7 @@ serve(async (req: Request): Promise<Response> => {
       console.warn('[get-invite-details] Empresa não encontrada:', companyError);
     }
 
+    company = companyData;
     console.log('[get-invite-details] Empresa encontrada:', company);
 
     // 4) Buscar documentos solicitados
