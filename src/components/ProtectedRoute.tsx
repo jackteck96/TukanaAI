@@ -41,18 +41,6 @@ const ProtectedRoute = ({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Check role-based access
-  useEffect(() => {
-    if (!loading && primaryRole) {
-      console.log('[ProtectedRoute] Role check:', { 
-        primaryRole, 
-        requireCompany, 
-        requireClient, 
-        requirePlatformAdmin 
-      });
-    }
-  }, [loading, primaryRole, requireCompany, requireClient, requirePlatformAdmin]);
-
   // Require platform admin
   if (requirePlatformAdmin && !loading && !isPlatformAdmin) {
     console.log('[ProtectedRoute] Platform admin required, redirecting');
