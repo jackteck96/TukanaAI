@@ -1,13 +1,26 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requireCompany?: boolean;
+  requireClient?: boolean;
+  requirePlatformAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ 
+  children, 
+  requireCompany = false,
+  requireClient = false,
+  requirePlatformAdmin = false
+}: ProtectedRouteProps) => {
+  const { user, loading: authLoading } = useAuth();
+  const { primaryRole, loading: roleLoading, isPlatformAdmin, isCompanyUser, isClientUser } = useUserRole();
   const location = useLocation();
+  
+  const loading = authLoading || roleLoading;
 
   // Show loading spinner while checking auth status
   if (loading) {
@@ -28,7 +41,37 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  console.log('[ProtectedRoute] authenticated, rendering child route');
+  // Check role-based access
+  useEffect(() => {
+    if (!loading && primaryRole) {
+      console.log('[ProtectedRoute] Role check:', { 
+        primaryRole, 
+        requireCompany, 
+        requireClient, 
+        requirePlatformAdmin 
+      });
+    }
+  }, [loading, primaryRole, requireCompany, requireClient, requirePlatformAdmin]);
+
+  // Require platform admin
+  if (requirePlatformAdmin && !loading && !isPlatformAdmin) {
+    console.log('[ProtectedRoute] Platform admin required, redirecting');
+    return <Navigate to="/" replace />;
+  }
+
+  // Require company user
+  if (requireCompany && !loading && !isCompanyUser && !isPlatformAdmin) {
+    console.log('[ProtectedRoute] Company role required, redirecting');
+    return <Navigate to="/" replace />;
+  }
+
+  // Require client user
+  if (requireClient && !loading && !isClientUser && !isPlatformAdmin) {
+    console.log('[ProtectedRoute] Client role required, redirecting');
+    return <Navigate to="/" replace />;
+  }
+
+  console.log('[ProtectedRoute] authenticated and authorized, rendering child route');
   return <>{children}</>;
 };
 

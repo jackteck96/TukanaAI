@@ -4,14 +4,13 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 
-interface AdminRouteProps {
+interface ClientRouteProps {
   children: React.ReactNode;
 }
 
-// AdminRoute agora é APENAS para platform_admin
-const AdminRoute = ({ children }: AdminRouteProps) => {
+const ClientRoute = ({ children }: ClientRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { isPlatformAdmin, loading: roleLoading } = useUserRole();
+  const { isClientUser, isPlatformAdmin, loading: roleLoading } = useUserRole();
   const location = useLocation();
   const { toast } = useToast();
   
@@ -34,12 +33,12 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Show access denied if not platform admin
-  if (!isPlatformAdmin) {
+  // Show access denied if not client user or platform admin
+  if (!isClientUser && !isPlatformAdmin) {
     useEffect(() => {
       toast({
         title: "Acesso Restrito",
-        description: "Apenas administradores da plataforma podem acessar esta área.",
+        description: "Apenas clientes podem acessar esta área.",
         variant: "destructive"
       });
     }, []);
@@ -47,8 +46,8 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/" replace />;
   }
 
-  // Render children if platform admin
+  // Render children if authorized
   return <>{children}</>;
 };
 
-export default AdminRoute;
+export default ClientRoute;
