@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import ClientDocumentRequests from "@/components/ClientDocumentRequests";
 
 export default function CadastroViaConvite() {
   const navigate = useNavigate();
@@ -369,27 +368,6 @@ export default function CadastroViaConvite() {
         </Card>
       </div>
 
-      {!isCollaborator && inviteDetails?.process && (
-        <div className="max-w-3xl mx-auto mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Documentação do Processo</CardTitle>
-              <CardDescription>
-                {(inviteDetails.process.project_name || 'Processo')} — {(inviteDetails.company?.name || 'Empresa')}
-              </CardDescription>
-              {inviteDetails.process.description && (
-                <p className="text-sm text-muted-foreground mt-1">{inviteDetails.process.description}</p>
-              )}
-            </CardHeader>
-            <CardContent>
-              <ClientDocumentRequests
-                processId={inviteDetails.process.id}
-                companyName={inviteDetails.company?.name}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
