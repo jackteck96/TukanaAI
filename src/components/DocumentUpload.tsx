@@ -161,6 +161,9 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
             onChange={handleFileChange}
             accept=".pdf,application/pdf"
           />
+          <p className="text-xs text-muted-foreground mt-1">
+            Apenas arquivos PDF são permitidos
+          </p>
           {file && (
             <p className="text-sm text-muted-foreground mt-1">
               <FileText className="h-4 w-4 inline mr-1" />
