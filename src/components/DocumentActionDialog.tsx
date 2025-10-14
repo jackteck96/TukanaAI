@@ -40,12 +40,21 @@ export default function DocumentActionDialog({
 
     setLoading(true);
     try {
-      // Atualizar status do documento
-      const newStatus = action === 'reject' ? 'Rejeitado' : 'Ajustes Solicitados';
+      // Atualizar status do documento e salvar a mensagem nos campos apropriados
+      const newStatus = action === 'reject' ? 'Recusado' : 'Ajuste Necessário';
+      
+      const updateData: any = { status: newStatus };
+      
+      // Adicionar a mensagem no campo apropriado
+      if (action === 'reject') {
+        updateData.rejection_reason = message.trim();
+      } else {
+        updateData.adjustment_comments = message.trim();
+      }
       
       const { error: docError } = await supabase
         .from('documents')
-        .update({ status: newStatus })
+        .update(updateData)
         .eq('id', documentId);
 
       if (docError) throw docError;
