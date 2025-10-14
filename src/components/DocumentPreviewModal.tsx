@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { FileText, Download, Check, X, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import PdfInlineRenderer from './PdfInlineRenderer';
 
 interface PreviewDocument {
   id: string;
@@ -31,6 +32,7 @@ const DocumentPreviewModal = ({
   onDownload,
 }: DocumentPreviewModalProps) => {
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +43,8 @@ const DocumentPreviewModal = ({
       if (!open) return;
       setError(null);
       setLoading(true);
+      setPdfBlob(null);
+      setViewerUrl(null);
       try {
         const { data, error } = await supabase.storage
           .from('documents')
@@ -56,13 +60,17 @@ const DocumentPreviewModal = ({
           ? new Blob([data], { type: 'application/pdf' })
           : data;
 
-        createdUrl = URL.createObjectURL(blob);
-        setViewerUrl(createdUrl);
-        console.debug('[Preview] Blob type:', blob.type);
+        if (isPdf) {
+          setPdfBlob(blob);
+        } else {
+          createdUrl = URL.createObjectURL(blob);
+          setViewerUrl(createdUrl);
+        }
       } catch (e: any) {
         console.error('[DocumentPreviewModal] Erro ao carregar documento:', e);
         setError('Não foi possível carregar o documento.');
         setViewerUrl(null);
+        setPdfBlob(null);
       } finally {
         setLoading(false);
       }
@@ -96,43 +104,48 @@ const DocumentPreviewModal = ({
               <div className="h-[70vh] flex items-center justify-center text-muted-foreground">
                 Carregando documento…
               </div>
-            ) : viewerUrl ? (
-              isPdf ? (
-                // Usamos iframe para melhor compatibilidade com PDFs inline
-                <iframe
-                  src={viewerUrl}
-                  className="w-full h-[70vh] border-0"
-                  title={`Visualização de ${document.file_name}`}
-                />
-              ) : (
-                // Fallback para imagens ou outros tipos simples
-                <object
-                  data={viewerUrl}
-                  type={document.file_type || 'application/octet-stream'}
-                  className="w-full h-[70vh]"
-                >
-                  <div className="h-full w-full flex items-center justify-center text-muted-foreground p-6 text-center">
-                    <div>
-                      <p>Não foi possível exibir o documento dentro da página.</p>
-                      <a
-                        href={viewerUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline"
-                      >
-                        Abrir em nova aba
-                      </a>
+            ) : (
+              <>
+                {isPdf ? (
+                  pdfBlob ? (
+                    <PdfInlineRenderer blob={pdfBlob} />
+                  ) : (
+                    <div className="h-[70vh] flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>{error ?? 'Documento PDF não disponível para visualização'}</p>
+                      </div>
+                    </div>
+                  )
+                ) : viewerUrl ? (
+                  <object
+                    data={viewerUrl}
+                    type={document.file_type || 'application/octet-stream'}
+                    className="w-full h-[70vh]"
+                  >
+                    <div className="h-full w-full flex items-center justify-center text-muted-foreground p-6 text-center">
+                      <div>
+                        <p>Não foi possível exibir o documento dentro da página.</p>
+                        <a
+                          href={viewerUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline"
+                        >
+                          Abrir em nova aba
+                        </a>
+                      </div>
+                    </div>
+                  </object>
+                ) : (
+                  <div className="h-[70vh] flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>{error ?? 'Documento não disponível para visualização'}</p>
                     </div>
                   </div>
-                </object>
-              )
-            ) : (
-              <div className="h-[70vh] flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>{error ?? 'Documento não disponível para visualização'}</p>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
 
