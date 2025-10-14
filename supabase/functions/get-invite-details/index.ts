@@ -168,7 +168,7 @@ serve(async (req: Request): Promise<Response> => {
     console.log('[get-invite-details] Empresa encontrada:', company);
 
     // 4) Buscar documentos solicitados
-    const { data: documentRequests, error: docReqError } = await supabase
+    const { data: docRequestsData, error: docReqError } = await supabase
       .from('document_requests')
       .select(`
         *,
@@ -181,9 +181,9 @@ serve(async (req: Request): Promise<Response> => {
       console.warn('[get-invite-details] Erro ao buscar documentos solicitados:', docReqError);
     }
 
-    console.log('[get-invite-details] Documentos solicitados:', documentRequests?.length || 0);
+    console.log('[get-invite-details] Documentos solicitados:', docRequestsData?.length || 0);
 
-    let effectiveDocumentRequests = documentRequests || [];
+    let effectiveDocumentRequests = docRequestsData || [];
 
     // 4b) Fallback: se não houver document_requests, materializar a partir das tasks
     if (!effectiveDocumentRequests || effectiveDocumentRequests.length === 0) {

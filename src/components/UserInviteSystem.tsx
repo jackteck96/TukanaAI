@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 interface InviteFormData {
   email: string;
-  role: 'staff' | 'client';
+  role: 'staff';
   full_name: string;
 }
 
@@ -181,9 +181,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'staff':
-        return 'Funcionário';
-      case 'client':
-        return 'Cliente';
+        return 'Colaborador da Empresa';
       default:
         return role;
     }
@@ -233,38 +231,14 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
           <div className="space-y-2">
             <Label htmlFor="role">Função</Label>
-            <Select 
-              value={inviteData.role} 
-              onValueChange={(value: 'staff' | 'client') => 
-                setInviteData({ ...inviteData, role: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="staff">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                      Funcionário
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Acesso limitado
-                    </span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="client">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
-                      Cliente
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Apenas seus processos
-                    </span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="p-3 bg-muted rounded-lg">
+              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                Colaborador da Empresa
+              </Badge>
+              <p className="text-sm text-muted-foreground mt-2">
+                Terá acesso aos processos e recursos da empresa
+              </p>
+            </div>
           </div>
 
           <div className="pt-4 space-y-3">
