@@ -41,9 +41,9 @@ export default function ClientInviteView({
     setUploading(requestId);
 
     try {
+      // Tentar obter usuário autenticado, mas permitir upload via token se não estiver
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${processData.id}/${requestId}/${Date.now()}.${fileExt}`;
 
@@ -61,8 +61,8 @@ export default function ClientInviteView({
           process_id: processData.id,
           document_request_id: requestId,
           company_id: processData.company_id,
-          client_id: user.id,
-          client_email: user.email,
+          client_id: user?.id || null,
+          client_email: processData.client_email,
           file_path: fileName,
           file_size: file.size,
           file_type: file.type,
