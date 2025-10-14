@@ -119,10 +119,21 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
       console.log('[DocumentList] User roles:', roles);
       const procCompany = processData?.company_id ?? null;
       console.log('[DocumentList] Process company_id:', procCompany);
-      const hasPerm = roles.some(r => (r.role === 'company_admin' || r.role === 'company_collaborator') && (
+      let hasPerm = roles.some(r => (r.role === 'company_admin' || r.role === 'company_collaborator') && (
         procCompany ? r.company_id === procCompany : true
       ));
-      console.log('[DocumentList] hasCompanyPermission calculado:', hasPerm);
+      console.log('[DocumentList] hasCompanyPermission (roles) calculado:', hasPerm);
+
+      // Validação via RPC (fonte da verdade no banco)
+      if (user && procCompany) {
+        const rpcRes = await supabase.rpc('can_manage_company', { user_uuid: user.id, comp_id: procCompany });
+        if (rpcRes.error) {
+          console.warn('[DocumentList] RPC can_manage_company error:', rpcRes.error);
+        } else {
+          hasPerm = !!rpcRes.data;
+          console.log('[DocumentList] hasCompanyPermission (rpc) calculado:', hasPerm);
+        }
+      }
       setHasCompanyPermission(hasPerm);
     } catch (error) {
       console.error('Erro ao carregar role do usuário:', error);
