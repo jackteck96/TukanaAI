@@ -137,6 +137,8 @@ export default function DocumentSearchModal({ isOpen, onClose }: DocumentSearchM
 
   const handleView = async (filePath: string) => {
     try {
+      console.debug('[DocumentSearchModal] Visualizar via Blob:', filePath);
+
       const { data, error } = await supabase.storage
         .from('documents')
         .download(filePath);
@@ -145,7 +147,14 @@ export default function DocumentSearchModal({ isOpen, onClose }: DocumentSearchM
       if (!data) throw new Error('Arquivo não encontrado');
 
       const url = URL.createObjectURL(data);
-      window.open(url, '_blank');
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (error) {
       console.error('Erro ao visualizar:', error);
       toast.error('Erro ao visualizar arquivo');
