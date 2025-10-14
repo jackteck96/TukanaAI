@@ -41,7 +41,7 @@ export default function DocumentActionDialog({
     setLoading(true);
     try {
       // Atualizar status do documento e salvar a mensagem nos campos apropriados
-      const newStatus = action === 'reject' ? 'Recusado' : 'Ajuste Necessário';
+      const newStatus = action === 'reject' ? 'Recusado' : 'Ajustes Solicitados';
       
       const updateData: any = { status: newStatus };
       
