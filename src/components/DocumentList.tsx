@@ -60,14 +60,18 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
 
   useEffect(() => {
-    loadDocuments();
-    loadUserRole();
-    loadProcessData();
+    const loadData = async () => {
+      await loadProcessData();
+      await loadUserRole();
+      loadDocuments();
+    };
+    loadData();
   }, [processId, refreshKey, user]);
 
-  // Recalcular permissões quando os dados do processo estiverem disponíveis
+  // Recalcular permissões quando os dados do processo mudarem
   useEffect(() => {
-    if (user) {
+    if (user && processData) {
+      console.log('[DocumentList] Recalculando permissões. ProcessData:', processData);
       loadUserRole();
     }
   }, [processData?.company_id, user?.id]);
@@ -88,6 +92,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
   const loadUserRole = async () => {
     if (!user) return;
+    console.log('[DocumentList] loadUserRole chamado. User:', user.id, 'ProcessData:', processData);
     try {
       const [profileRes, rolesRes] = await Promise.all([
         supabase
@@ -103,18 +108,21 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
       if (profileRes.error) throw profileRes.error;
       const profile = profileRes.data as { role: string | null; company_id: string | null } | null;
+      console.log('[DocumentList] Profile data:', profile);
       setUserRole(profile?.role ?? null);
       setCompanyId(profile?.company_id ?? null);
 
       if (rolesRes.error) {
-        // Not critical if user has no roles row yet
         console.warn('[DocumentList] Falha ao carregar user_roles:', rolesRes.error);
       }
       const roles = (rolesRes.data as Array<{ role: string; company_id: string | null }>) || [];
+      console.log('[DocumentList] User roles:', roles);
       const procCompany = processData?.company_id ?? null;
+      console.log('[DocumentList] Process company_id:', procCompany);
       const hasPerm = roles.some(r => (r.role === 'company_admin' || r.role === 'company_collaborator') && (
         procCompany ? r.company_id === procCompany : true
       ));
+      console.log('[DocumentList] hasCompanyPermission calculado:', hasPerm);
       setHasCompanyPermission(hasPerm);
     } catch (error) {
       console.error('Erro ao carregar role do usuário:', error);
@@ -275,6 +283,8 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
   // Verificar se o usuário pode gerenciar documentos (não é cliente ou possui permissão por user_roles)
   const canManageDocuments = (userRole && userRole !== 'client') || hasCompanyPermission;
+  
+  console.log('[DocumentList] Render - canManageDocuments:', canManageDocuments, 'userRole:', userRole, 'hasCompanyPermission:', hasCompanyPermission);
 
   if (loading) {
     return (
