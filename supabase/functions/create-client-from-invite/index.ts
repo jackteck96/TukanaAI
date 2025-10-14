@@ -79,55 +79,17 @@ serve(async (req: Request) => {
     });
 
     if (createError) {
-      // Se já existe, confirmar e atualizar senha do usuário existente
+      // Se usuário já existe, retornar erro para que faça login
       const code = (createError as any).code || (createError as any).status || '';
       if (code === 'email_exists' || (createError as any).status === 422) {
-        console.warn('[create-client-from-invite] User already exists, upgrading existing account');
-        // Encontrar ID do usuário existente via tabela de perfis
-        const { data: profileRow, error: profileLookupError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', invite.email)
-          .maybeSingle();
-
-        let existingUserId: string | null = profileRow?.id || null;
-
-        if (!existingUserId) {
-          // Fallback: varrer usuários via Admin API (último recurso)
-          const { data: usersPage, error: listErr } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
-          if (listErr) {
-            console.error('[create-client-from-invite] listUsers error:', listErr);
-          }
-          const match = (usersPage as any)?.users?.find((u: any) => (u.email || '').toLowerCase() === invite.email.toLowerCase());
-          existingUserId = match?.id || null;
-        }
-
-        if (!existingUserId) {
-          console.error('[create-client-from-invite] Could not resolve existing user id by email');
-          return new Response(
-            JSON.stringify({ error: 'Usuário já existe mas não foi possível localizá-lo.' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-          );
-        }
-
-        const { data: updatedUser, error: updateErr } = await supabase.auth.admin.updateUserById(existingUserId, {
-          password,
-          email_confirm: true,
-          user_metadata: {
-            full_name: fullName,
-            role: 'client',
-          },
-        });
-
-        if (updateErr) {
-          console.error('[create-client-from-invite] Error updating existing user:', updateErr);
-          return new Response(
-            JSON.stringify({ error: updateErr.message || 'Falha ao atualizar usuário existente' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-          );
-        }
-
-        createdUser = { id: updatedUser.user.id, email: updatedUser.user.email! };
+        console.warn('[create-client-from-invite] User already exists');
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: 'Um usuário com este email já existe. Por favor, faça login.' 
+          }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
       } else {
         console.error('[create-client-from-invite] Error creating user:', createError);
         return new Response(
@@ -197,6 +159,38 @@ serve(async (req: Request) => {
 
     if (updateError) {
       console.error('[create-client-from-invite] Error updating invite:', updateError);
+    }
+
+    // Buscar dados da empresa e do processo para o email
+    const { data: company } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('id', invite.company_id)
+      .single();
+
+    const { data: process } = await supabase
+      .from('processes')
+      .select('project_name, process_type')
+      .eq('id', invite.process_id)
+      .single();
+
+    // Enviar email de boas-vindas ao cliente
+    try {
+      const { error: emailError } = await supabase.functions.invoke('send-unified-email', {
+        body: {
+          to: invite.email,
+          companyName: company?.name || 'Empresa',
+          inviteType: 'client',
+          clientName: fullName,
+          processName: process?.project_name || process?.process_type || 'Processo',
+        }
+      });
+
+      if (emailError) {
+        console.error('[create-client-from-invite] Error sending welcome email:', emailError);
+      }
+    } catch (emailErr) {
+      console.error('[create-client-from-invite] Error invoking send-unified-email:', emailErr);
     }
 
     console.log('[create-client-from-invite] Client created successfully:', createdUser.email);

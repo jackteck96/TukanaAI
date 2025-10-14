@@ -232,13 +232,33 @@ export default function CadastroViaConvite() {
         }
 
         toast.success("Cadastro realizado com sucesso!", {
-          description: "Faça login para acessar seus documentos"
+          description: "Fazendo login automático..."
         });
 
-        // Redirecionar para login
-        setTimeout(() => {
-          navigate('/login');
-        }, 1500);
+        // Fazer login automático após cadastro
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: inviteDetails.invite.email,
+          password,
+        });
+
+        if (signInError) {
+          console.error('Erro ao fazer login automático:', signInError);
+          toast.error("Conta criada com sucesso", {
+            description: "Por favor, faça login manualmente"
+          });
+          setTimeout(() => {
+            navigate('/login');
+          }, 1500);
+          return;
+        }
+
+        // Redirecionar para área do cliente
+        const processId = inviteDetails.process?.id;
+        if (processId) {
+          navigate(`/area-cliente?id=${processId}`);
+        } else {
+          navigate('/area-cliente');
+        }
       }
 
     } catch (err: any) {
