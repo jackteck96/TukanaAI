@@ -49,8 +49,16 @@ const DocumentPreviewModal = ({
         if (error) throw error;
         if (!data) throw new Error('Arquivo não encontrado');
 
-        createdUrl = URL.createObjectURL(data);
+        // Alguns uploads podem vir como application/octet-stream.
+        // Forçamos o tipo para PDF se a extensão indicar .pdf para garantir renderização inline.
+        const isPdf = document.file_name.toLowerCase().endsWith('.pdf');
+        const blob = isPdf && data.type !== 'application/pdf'
+          ? new Blob([data], { type: 'application/pdf' })
+          : data;
+
+        createdUrl = URL.createObjectURL(blob);
         setViewerUrl(createdUrl);
+        console.debug('[Preview] Blob type:', blob.type);
       } catch (e: any) {
         console.error('[DocumentPreviewModal] Erro ao carregar documento:', e);
         setError('Não foi possível carregar o documento.');
@@ -65,7 +73,9 @@ const DocumentPreviewModal = ({
     return () => {
       if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
-  }, [open, document.file_path]);
+  }, [open, document.file_path, document.file_name]);
+
+  const isPdf = document.file_name?.toLowerCase().endsWith('.pdf') || document.file_type === 'application/pdf';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,25 +97,35 @@ const DocumentPreviewModal = ({
                 Carregando documento…
               </div>
             ) : viewerUrl ? (
-              <object
-                data={viewerUrl}
-                type="application/pdf"
-                className="w-full h-[70vh]"
-              >
-                <div className="h-full w-full flex items-center justify-center text-muted-foreground p-6 text-center">
-                  <div>
-                    <p>Não foi possível exibir o documento dentro da página.</p>
-                    <a
-                      href={viewerUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline"
-                    >
-                      Abrir em nova aba
-                    </a>
+              isPdf ? (
+                // Usamos iframe para melhor compatibilidade com PDFs inline
+                <iframe
+                  src={viewerUrl}
+                  className="w-full h-[70vh] border-0"
+                  title={`Visualização de ${document.file_name}`}
+                />
+              ) : (
+                // Fallback para imagens ou outros tipos simples
+                <object
+                  data={viewerUrl}
+                  type={document.file_type || 'application/octet-stream'}
+                  className="w-full h-[70vh]"
+                >
+                  <div className="h-full w-full flex items-center justify-center text-muted-foreground p-6 text-center">
+                    <div>
+                      <p>Não foi possível exibir o documento dentro da página.</p>
+                      <a
+                        href={viewerUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                      >
+                        Abrir em nova aba
+                      </a>
+                    </div>
                   </div>
-                </div>
-              </object>
+                </object>
+              )
             ) : (
               <div className="h-[70vh] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
