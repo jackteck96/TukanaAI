@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare, Plus, Info, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -462,6 +463,29 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                     >
                       <MessageSquare className="h-4 w-4" />
                     </Button>
+
+                    {/* Fallback: menu de ações compacto (garante visibilidade em layouts estreitos) */}
+                    <div className="sm:hidden">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <Eye className="sr-only" />
+                            •••
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleApprove(doc.id)}>
+                            <Check className="h-4 w-4 mr-2" /> Aprovar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleReject(doc.id, doc.file_name)}>
+                            <X className="h-4 w-4 mr-2" /> Rejeitar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleRequestAdjustment(doc.id, doc.file_name)}>
+                            <MessageSquare className="h-4 w-4 mr-2" /> Solicitar ajuste
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </>
                 )}
               </div>
