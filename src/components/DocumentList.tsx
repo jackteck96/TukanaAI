@@ -165,18 +165,16 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
         return;
       }
 
+      // Baixa o arquivo como Blob e abre em nova aba via URL local (evita bloqueios do navegador)
       const { data, error } = await supabase.storage
         .from('documents')
-        .createSignedUrl(filePath, 3600); // 1 hora de validade
+        .download(filePath);
 
       if (error) throw error;
+      if (!data) throw new Error('Arquivo não encontrado');
 
-      if (!data?.signedUrl) {
-        toast.error('Não foi possível gerar URL do arquivo');
-        return;
-      }
-
-      window.open(data.signedUrl, '_blank');
+      const blobUrl = URL.createObjectURL(data);
+      window.open(blobUrl, '_blank');
     } catch (error) {
       console.error('Erro ao visualizar:', error);
       toast.error('Erro ao visualizar arquivo. Verifique se o arquivo existe.');

@@ -139,11 +139,13 @@ export default function DocumentSearchModal({ isOpen, onClose }: DocumentSearchM
     try {
       const { data, error } = await supabase.storage
         .from('documents')
-        .createSignedUrl(filePath, 3600);
+        .download(filePath);
 
       if (error) throw error;
+      if (!data) throw new Error('Arquivo não encontrado');
 
-      window.open(data.signedUrl, '_blank');
+      const url = URL.createObjectURL(data);
+      window.open(url, '_blank');
     } catch (error) {
       console.error('Erro ao visualizar:', error);
       toast.error('Erro ao visualizar arquivo');
