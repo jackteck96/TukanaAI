@@ -5,14 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Upload, FileText, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle, Clock, AlertCircle, MessageSquare, Info, XCircle } from "lucide-react";
 
 interface DocumentUpload {
   id: string;
   file_path: string;
   file_type: string;
   status: string;
+  created_at: string;
+}
+
+interface DocumentFromTable {
+  id: string;
+  file_name: string;
+  status: string;
+  rejection_reason?: string;
+  adjustment_comments?: string;
   created_at: string;
 }
 
@@ -23,6 +34,7 @@ interface DocumentRequest {
   required: boolean;
   current_status: string;
   document_uploads?: DocumentUpload[];
+  related_documents?: DocumentFromTable[];
 }
 
 interface ClientDocumentRequestsProps {
@@ -34,6 +46,8 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
   const [documentRequests, setDocumentRequests] = useState<DocumentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
+  const [selectedDocForComments, setSelectedDocForComments] = useState<DocumentFromTable | null>(null);
+  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
 
   useEffect(() => {
     console.log('[ClientDocumentRequests] Montando com processId:', processId);
@@ -44,7 +58,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     try {
       setLoading(true);
       
-      // Tentar materializar solicitações antes de buscar (garante criação a partir de tasks ou tipos)
+      // Tentar materializar solicitações antes de buscar
       try {
         const { data: preEnsure } = await supabase.functions.invoke('ensure-requests-for-process', {
           body: { processId }
@@ -54,7 +68,14 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         console.warn('[ClientDocumentRequests] Pre-ensure falhou:', e);
       }
       
-      // Se houver token no link (acesso via convite), usar a edge function pública
+      // Buscar documentos da tabela documents para correlacionar status
+      const { data: documentsData } = await supabase
+        .from('documents')
+        .select('id, file_name, document_type, status, rejection_reason, adjustment_comments, created_at')
+        .eq('process_id', processId);
+      
+      console.log('[ClientDocumentRequests] Documentos da tabela documents:', documentsData);
+      // Se houver token no link (acesso via convite)
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       if (token) {
@@ -69,47 +90,59 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           return;
         }
 
-        const fromFunction = (data.documentRequests || []).map((req: any) => ({
-          id: req.id,
-          document_name: req.document_name,
-          instructions: req.instructions,
-          required: req.required,
-          current_status: req.current_status,
-          document_uploads: (req.document_uploads || []).map((u: any) => ({
-            id: u.id,
-            file_path: u.file_path,
-            file_type: u.file_type,
-            status: u.status,
-            created_at: u.created_at,
-          }))
-        }));
+        const fromFunction = (data.documentRequests || []).map((req: any) => {
+          const relatedDocs = (documentsData || []).filter(
+            (doc: any) => doc.document_type === req.document_name
+          );
+          
+          return {
+            id: req.id,
+            document_name: req.document_name,
+            instructions: req.instructions,
+            required: req.required,
+            current_status: req.current_status,
+            document_uploads: (req.document_uploads || []).map((u: any) => ({
+              id: u.id,
+              file_path: u.file_path,
+              file_type: u.file_type,
+              status: u.status,
+              created_at: u.created_at,
+            })),
+            related_documents: relatedDocs
+          };
+        });
         console.log('[ClientDocumentRequests] Carregado via convite, total:', fromFunction.length);
 
         if (fromFunction.length === 0) {
-          console.log('[ClientDocumentRequests] Convite sem document_requests, sincronizando via Edge Function...');
+          console.log('[ClientDocumentRequests] Convite sem document_requests, sincronizando...');
           const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
             body: { processId }
           });
-          if (ensureError || !ensureData?.success) {
-            console.error('[ClientDocumentRequests] Erro ao garantir solicitações:', ensureError || ensureData?.error);
-            setDocumentRequests(fromFunction as any);
-          } else {
-            const ensured = (ensureData.documentRequests || []).map((req: any) => ({
-              id: req.id,
-              document_name: req.document_name,
-              instructions: req.instructions,
-              required: req.required,
-              current_status: req.current_status,
-              document_uploads: (req.document_uploads || []).map((u: any) => ({
-                id: u.id,
-                file_path: u.file_path,
-                file_type: u.file_type,
-                status: u.status,
-                created_at: u.created_at,
-              }))
-            }));
-            console.log('[ClientDocumentRequests] Sincronizado. Total após ensure:', ensured.length);
+          if (!ensureError && ensureData?.success) {
+            const ensured = (ensureData.documentRequests || []).map((req: any) => {
+              const relatedDocs = (documentsData || []).filter(
+                (doc: any) => doc.document_type === req.document_name
+              );
+              
+              return {
+                id: req.id,
+                document_name: req.document_name,
+                instructions: req.instructions,
+                required: req.required,
+                current_status: req.current_status,
+                document_uploads: (req.document_uploads || []).map((u: any) => ({
+                  id: u.id,
+                  file_path: u.file_path,
+                  file_type: u.file_type,
+                  status: u.status,
+                  created_at: u.created_at,
+                })),
+                related_documents: relatedDocs
+              };
+            });
             setDocumentRequests(ensured as any);
+          } else {
+            setDocumentRequests(fromFunction as any);
           }
         } else {
           setDocumentRequests(fromFunction as any);
@@ -117,60 +150,71 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         return;
       }
       
-      // Fluxo autenticado: buscar via Edge Function com verificação de acesso
+      // Fluxo autenticado
       const { data: fnData, error: fnError } = await supabase.functions.invoke('get-process-requests', {
         body: { processId }
       });
 
       if (!fnError && fnData?.success) {
-        const mapped = (fnData.documentRequests || []).map((req: any) => ({
-          id: req.id,
-          document_name: req.document_name,
-          instructions: req.instructions,
-          required: req.required,
-          current_status: req.current_status,
-          document_uploads: (req.document_uploads || []).map((u: any) => ({
-            id: u.id,
-            file_path: u.file_path,
-            file_type: u.file_type,
-            status: u.status,
-            created_at: u.created_at,
-          }))
-        }));
+        const mapped = (fnData.documentRequests || []).map((req: any) => {
+          const relatedDocs = (documentsData || []).filter(
+            (doc: any) => doc.document_type === req.document_name
+          );
+          
+          return {
+            id: req.id,
+            document_name: req.document_name,
+            instructions: req.instructions,
+            required: req.required,
+            current_status: req.current_status,
+            document_uploads: (req.document_uploads || []).map((u: any) => ({
+              id: u.id,
+              file_path: u.file_path,
+              file_type: u.file_type,
+              status: u.status,
+              created_at: u.created_at,
+            })),
+            related_documents: relatedDocs
+          };
+        });
         
         console.log('[ClientDocumentRequests] Total via Edge Function:', mapped.length);
         
-        // Se não houver document_requests, sincronizar a partir de tasks via Edge Function
         if (mapped.length === 0) {
-          console.log('[ClientDocumentRequests] Nenhum document_request encontrado, sincronizando via Edge Function...');
           const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
             body: { processId }
           });
-          if (ensureError || !ensureData?.success) {
-            console.error('[ClientDocumentRequests] Erro no ensure (autenticado):', ensureError || ensureData?.error);
-            setDocumentRequests(mapped as any);
-          } else {
-            const ensured = (ensureData.documentRequests || []).map((req: any) => ({
-              id: req.id,
-              document_name: req.document_name,
-              instructions: req.instructions,
-              required: req.required,
-              current_status: req.current_status,
-              document_uploads: (req.document_uploads || []).map((u: any) => ({
-                id: u.id,
-                file_path: u.file_path,
-                file_type: u.file_type,
-                status: u.status,
-                created_at: u.created_at,
-              }))
-            }));
+          if (!ensureError && ensureData?.success) {
+            const ensured = (ensureData.documentRequests || []).map((req: any) => {
+              const relatedDocs = (documentsData || []).filter(
+                (doc: any) => doc.document_type === req.document_name
+              );
+              
+              return {
+                id: req.id,
+                document_name: req.document_name,
+                instructions: req.instructions,
+                required: req.required,
+                current_status: req.current_status,
+                document_uploads: (req.document_uploads || []).map((u: any) => ({
+                  id: u.id,
+                  file_path: u.file_path,
+                  file_type: u.file_type,
+                  status: u.status,
+                  created_at: u.created_at,
+                })),
+                related_documents: relatedDocs
+              };
+            });
             setDocumentRequests(ensured as any);
+          } else {
+            setDocumentRequests(mapped as any);
           }
         } else {
           setDocumentRequests(mapped as any);
         }
       } else {
-        // Fallback direto (mantém compatibilidade caso a função falhe)
+        // Fallback direto
         const { data, error } = await supabase
           .from('document_requests')
           .select(`
@@ -196,14 +240,20 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           return;
         }
 
-        const formattedData = (data || []).map((req: any) => ({
-          ...req,
-          document_uploads: req.document_uploads || []
-        }));
+        const formattedData = (data || []).map((req: any) => {
+          const relatedDocs = (documentsData || []).filter(
+            (doc: any) => doc.document_type === req.document_name
+          );
+          
+          return {
+            ...req,
+            document_uploads: req.document_uploads || [],
+            related_documents: relatedDocs
+          };
+        });
 
-        // Se não houver document_requests, buscar tasks
         if (formattedData.length === 0) {
-          console.log('[ClientDocumentRequests] Fallback: nenhum document_request, buscando tasks...');
+          console.log('[ClientDocumentRequests] Fallback: buscando tasks...');
           const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
@@ -211,15 +261,21 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
             .order('created_at', { ascending: true });
 
           if (!tasksError && tasksData && tasksData.length > 0) {
-            console.log('[ClientDocumentRequests] Fallback: mapeando tasks, total:', tasksData.length);
-            const tasksAsDocs = tasksData.map((task: any) => ({
-              id: task.id,
-              document_name: task.document_type || task.title,
-              instructions: task.description,
-              required: true,
-              current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
-              document_uploads: []
-            }));
+            const tasksAsDocs = tasksData.map((task: any) => {
+              const relatedDocs = (documentsData || []).filter(
+                (doc: any) => doc.document_type === (task.document_type || task.title)
+              );
+              
+              return {
+                id: task.id,
+                document_name: task.document_type || task.title,
+                instructions: task.description,
+                required: true,
+                current_status: task.status === 'completed' ? 'aprovado' : 'pendente',
+                document_uploads: [],
+                related_documents: relatedDocs
+              };
+            });
             setDocumentRequests(tasksAsDocs as any);
           } else {
             setDocumentRequests(formattedData as any);
@@ -412,16 +468,60 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                       <p className="text-sm text-muted-foreground">{request.instructions}</p>
                     )}
 
-                    {request.document_uploads && request.document_uploads.length > 0 && (
+                    {request.related_documents && request.related_documents.length > 0 && (
                       <div className="mt-3 space-y-2">
                         <p className="text-sm font-medium">Documentos enviados:</p>
+                        {request.related_documents.map((doc) => (
+                          <div key={doc.id} className="bg-muted/30 p-3 rounded-lg space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <FileText className="w-4 h-4 flex-shrink-0" />
+                              <span className="flex-1 truncate">{doc.file_name}</span>
+                              <Badge 
+                                variant="outline"
+                                className={
+                                  doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400' :
+                                  doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400' :
+                                  doc.status === 'Ajuste Necessário' ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400' :
+                                  'border-blue-500 text-blue-700 dark:text-blue-400'
+                                }
+                              >
+                                {doc.status}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Enviado em {new Date(doc.created_at).toLocaleDateString('pt-BR')}
+                            </div>
+                            
+                            {(doc.status === 'Recusado' || doc.status === 'Ajuste Necessário') && 
+                             (doc.rejection_reason || doc.adjustment_comments) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => {
+                                  setSelectedDocForComments(doc);
+                                  setIsCommentsDialogOpen(true);
+                                }}
+                              >
+                                <MessageSquare className="h-3 w-3 mr-2" />
+                                Ver observações da empresa
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {request.document_uploads && request.document_uploads.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">Histórico de envios:</p>
                         {request.document_uploads.map((upload) => (
-                          <div key={upload.id} className="flex items-center gap-2 text-sm bg-muted p-2 rounded">
-                            <FileText className="w-4 h-4" />
+                          <div key={upload.id} className="flex items-center gap-2 text-xs bg-muted/20 p-2 rounded">
+                            <Clock className="w-3 h-3" />
                             <span className="flex-1">
-                              Enviado em {new Date(upload.created_at).toLocaleDateString('pt-BR')}
+                              {new Date(upload.created_at).toLocaleDateString('pt-BR')}
                             </span>
-                            {getStatusBadge(upload.status)}
+                            <Badge variant="outline" className="text-xs">{upload.status}</Badge>
                           </div>
                         ))}
                       </div>
@@ -485,6 +585,48 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog de Observações */}
+      <Dialog open={isCommentsDialogOpen} onOpenChange={setIsCommentsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Observações da Empresa
+            </DialogTitle>
+            <DialogDescription>
+              Arquivo: {selectedDocForComments?.file_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedDocForComments?.status === 'Recusado' && selectedDocForComments?.rejection_reason && (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>Documento Recusado</AlertTitle>
+                <AlertDescription className="mt-2">
+                  {selectedDocForComments.rejection_reason}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {selectedDocForComments?.status === 'Ajuste Necessário' && selectedDocForComments?.adjustment_comments && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Ajuste Necessário</AlertTitle>
+                <AlertDescription className="mt-2">
+                  {selectedDocForComments.adjustment_comments}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-end">
+              <Button onClick={() => setIsCommentsDialogOpen(false)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
