@@ -40,6 +40,12 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
+      // Verificar se é PDF
+      if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+        toast.error('Apenas arquivos PDF são permitidos');
+        event.target.value = ''; // Limpar o input
+        return;
+      }
       setFile(selectedFile);
     }
   };
@@ -153,7 +159,7 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
             id="file"
             type="file"
             onChange={handleFileChange}
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            accept=".pdf,application/pdf"
           />
           {file && (
             <p className="text-sm text-muted-foreground mt-1">
