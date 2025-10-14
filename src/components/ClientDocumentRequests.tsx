@@ -478,17 +478,32 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                                 <FileText className="w-4 h-4 flex-shrink-0" />
                                 <span className="truncate">{doc.file_name}</span>
                               </div>
-                              <Badge 
-                                variant="outline"
-                                className={
-                                  doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400 flex-shrink-0' :
-                                  doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400 flex-shrink-0' :
-                                  doc.status === 'Ajuste Necessário' ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400 flex-shrink-0' :
-                                  'border-blue-500 text-blue-700 dark:text-blue-400 flex-shrink-0'
-                                }
-                              >
-                                {doc.status}
-                              </Badge>
+                              {(['Ajustes Solicitados', 'Ajuste Necessário'].includes(doc.status)) ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-shrink-0 text-warning border-warning/30 hover:bg-warning/10"
+                                  onClick={() => {
+                                    setSelectedDocForComments(doc);
+                                    setIsCommentsDialogOpen(true);
+                                  }}
+                                >
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  Ajustes Solicitados
+                                </Button>
+                              ) : (
+                                <Badge 
+                                  variant="outline"
+                                  className={
+                                    doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400 flex-shrink-0' :
+                                    doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400 flex-shrink-0' :
+                                    (doc.status === 'Ajuste Necessário' || doc.status === 'Ajustes Solicitados') ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400 flex-shrink-0' :
+                                    'border-blue-500 text-blue-700 dark:text-blue-400 flex-shrink-0'
+                                  }
+                                >
+                                  {doc.status}
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-xs text-muted-foreground">
                               Enviado em {new Date(doc.created_at).toLocaleDateString('pt-BR', { 
@@ -500,21 +515,6 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                               })}
                             </div>
                             
-                            {(doc.status === 'Recusado' || doc.status === 'Ajuste Necessário') && 
-                             (doc.rejection_reason || doc.adjustment_comments) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full mt-2 border-orange-500 text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950/50"
-                                onClick={() => {
-                                  setSelectedDocForComments(doc);
-                                  setIsCommentsDialogOpen(true);
-                                }}
-                              >
-                                <MessageSquare className="h-4 w-4 mr-2" />
-                                Ver o que foi solicitado
-                              </Button>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -617,10 +617,10 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
               </Alert>
             )}
             
-            {selectedDocForComments?.status === 'Ajuste Necessário' && selectedDocForComments?.adjustment_comments && (
+            {(['Ajuste Necessário','Ajustes Solicitados'].includes(selectedDocForComments?.status || '')) && selectedDocForComments?.adjustment_comments && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Ajuste Necessário</AlertTitle>
+                <AlertTitle>Ajustes Solicitados</AlertTitle>
                 <AlertDescription className="mt-2">
                   {selectedDocForComments.adjustment_comments}
                 </AlertDescription>
