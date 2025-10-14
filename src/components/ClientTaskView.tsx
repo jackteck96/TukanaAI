@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, Clock, AlertCircle, Upload, FileText, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Upload, FileText, Loader2, XCircle, MessageSquare, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -28,6 +29,8 @@ interface Document {
   status: string;
   file_name: string;
   created_at: string;
+  rejection_reason?: string;
+  adjustment_comments?: string;
 }
 
 interface ClientTaskViewProps {
@@ -58,6 +61,8 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
   const [file, setFile] = useState<File | null>(null);
   const [uploaderName, setUploaderName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedDocForComments, setSelectedDocForComments] = useState<Document | null>(null);
+  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -75,10 +80,10 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
       if (tasksError) throw tasksError;
       setTasks(tasksData || []);
 
-      // Carregar documentos
+      // Carregar documentos com informações adicionais
       const { data: docsData, error: docsError } = await supabase
         .from('documents')
-        .select('*')
+        .select('id, document_type, status, file_name, created_at, rejection_reason, adjustment_comments')
         .eq('process_id', processId)
         .order('created_at', { ascending: false });
 
@@ -119,6 +124,12 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
+      // Verificar se é PDF
+      if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+        toast.error('Apenas arquivos PDF são permitidos');
+        event.target.value = ''; // Limpar o input
+        return;
+      }
       setFile(selectedFile);
     }
   };
@@ -271,22 +282,40 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
                           <p className="text-xs font-medium text-muted-foreground mb-2">Documentos enviados:</p>
                           <div className="space-y-2">
                             {relatedDocs.map((doc) => (
-                              <div key={doc.id} className="flex items-center justify-between text-xs bg-muted/30 p-2 rounded">
-                                <div className="flex items-center gap-2">
-                                  <FileText className="h-3 w-3" />
-                                  <span>{doc.file_name}</span>
+                              <div key={doc.id} className="bg-muted/30 p-3 rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <FileText className="h-3 w-3 flex-shrink-0" />
+                                    <span className="text-xs truncate">{doc.file_name}</span>
+                                  </div>
+                                  <Badge 
+                                    variant="outline" 
+                                    className={
+                                      doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400' :
+                                      doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400' :
+                                      doc.status === 'Ajuste Necessário' ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400' :
+                                      'border-blue-500 text-blue-700 dark:text-blue-400'
+                                    }
+                                  >
+                                    {doc.status}
+                                  </Badge>
                                 </div>
-                                <Badge 
-                                  variant="outline" 
-                                  className={
-                                    doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400' :
-                                    doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400' :
-                                    doc.status === 'Ajuste Necessário' ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400' :
-                                    'border-blue-500 text-blue-700 dark:text-blue-400'
-                                  }
-                                >
-                                  {doc.status}
-                                </Badge>
+                                
+                                {(doc.status === 'Recusado' || doc.status === 'Ajuste Necessário') && 
+                                 (doc.rejection_reason || doc.adjustment_comments) && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full mt-2"
+                                    onClick={() => {
+                                      setSelectedDocForComments(doc);
+                                      setIsCommentsDialogOpen(true);
+                                    }}
+                                  >
+                                    <MessageSquare className="h-3 w-3 mr-2" />
+                                    Ver observações da empresa
+                                  </Button>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -327,8 +356,11 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
                 id="file"
                 type="file"
                 onChange={handleFileChange}
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                accept=".pdf,application/pdf"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Apenas arquivos PDF são permitidos
+              </p>
               {file && (
                 <p className="text-sm text-muted-foreground mt-1">
                   <FileText className="h-4 w-4 inline mr-1" />
@@ -356,6 +388,48 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
                     Enviar
                   </>
                 )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Observações */}
+      <Dialog open={isCommentsDialogOpen} onOpenChange={setIsCommentsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Observações da Empresa
+            </DialogTitle>
+            <DialogDescription>
+              Arquivo: {selectedDocForComments?.file_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedDocForComments?.status === 'Recusado' && selectedDocForComments?.rejection_reason && (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>Documento Recusado</AlertTitle>
+                <AlertDescription className="mt-2">
+                  {selectedDocForComments.rejection_reason}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {selectedDocForComments?.status === 'Ajuste Necessário' && selectedDocForComments?.adjustment_comments && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Ajuste Necessário</AlertTitle>
+                <AlertDescription className="mt-2">
+                  {selectedDocForComments.adjustment_comments}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-end">
+              <Button onClick={() => setIsCommentsDialogOpen(false)}>
+                Fechar
               </Button>
             </div>
           </div>

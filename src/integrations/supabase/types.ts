@@ -544,6 +544,7 @@ export type Database = {
       }
       documents: {
         Row: {
+          adjustment_comments: string | null
           company_id: string | null
           created_at: string
           document_type: string
@@ -555,12 +556,14 @@ export type Database = {
           id: string
           issuing_location: string | null
           process_id: string
+          rejection_reason: string | null
           status: string
           updated_at: string
           uploaded_by: string
           validity_date: string | null
         }
         Insert: {
+          adjustment_comments?: string | null
           company_id?: string | null
           created_at?: string
           document_type: string
@@ -572,12 +575,14 @@ export type Database = {
           id?: string
           issuing_location?: string | null
           process_id: string
+          rejection_reason?: string | null
           status?: string
           updated_at?: string
           uploaded_by: string
           validity_date?: string | null
         }
         Update: {
+          adjustment_comments?: string | null
           company_id?: string | null
           created_at?: string
           document_type?: string
@@ -589,6 +594,7 @@ export type Database = {
           id?: string
           issuing_location?: string | null
           process_id?: string
+          rejection_reason?: string | null
           status?: string
           updated_at?: string
           uploaded_by?: string
