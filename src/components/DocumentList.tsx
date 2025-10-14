@@ -332,10 +332,25 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                       {doc.document_type} • {(doc.file_size / 1024).toFixed(1)} KB
                     </p>
                   </div>
-                  <Badge className={getStatusColor(doc.status)}>
-                    {getStatusIcon(doc.status)}
-                    {doc.status}
-                  </Badge>
+                  {(['Ajustes Solicitados', 'Ajuste Necessário'].includes(doc.status)) ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-warning border-warning/30 hover:bg-warning/10"
+                      onClick={() => {
+                        setSelectedDocForComments(doc);
+                        setIsCommentsDialogOpen(true);
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Ajustes Solicitados
+                    </Button>
+                  ) : (
+                    <Badge className={getStatusColor(doc.status)}>
+                      {getStatusIcon(doc.status)}
+                      {doc.status}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span>Enviado por: {doc.uploaded_by}</span>
