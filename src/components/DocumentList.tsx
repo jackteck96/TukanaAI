@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare, Plus } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare, Plus, Info, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +23,8 @@ interface Document {
   uploaded_by: string;
   status: string;
   created_at: string;
+  rejection_reason?: string;
+  adjustment_comments?: string;
 }
 
 interface DocumentListProps {
@@ -51,6 +55,8 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
   });
   const { user } = useAuth();
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
+  const [selectedDocForComments, setSelectedDocForComments] = useState<Document | null>(null);
+  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
 
   useEffect(() => {
     loadDocuments();
@@ -95,7 +101,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     try {
       const { data, error } = await supabase
         .from('documents')
-        .select('*')
+        .select('id, file_name, file_path, file_type, file_size, document_type, uploaded_by, status, created_at, rejection_reason, adjustment_comments')
         .eq('process_id', processId)
         .order('created_at', { ascending: false });
 
@@ -320,21 +326,38 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <FileText className="h-5 w-5 text-primary" />
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-medium">{doc.file_name}</h4>
                     <p className="text-sm text-muted-foreground">
                       {doc.document_type} • {(doc.file_size / 1024).toFixed(1)} KB
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Enviado por: {doc.uploaded_by}</span>
-                  <span>Em: {new Date(doc.created_at).toLocaleDateString('pt-BR')}</span>
                   <Badge className={getStatusColor(doc.status)}>
                     {getStatusIcon(doc.status)}
                     {doc.status}
                   </Badge>
                 </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>Enviado por: {doc.uploaded_by}</span>
+                  <span>Em: {new Date(doc.created_at).toLocaleDateString('pt-BR')}</span>
+                </div>
+                
+                {/* Mostrar botão de observações quando há ajustes ou rejeição */}
+                {(doc.status === 'Recusado' || doc.status === 'Ajuste Necessário') && 
+                 (doc.rejection_reason || doc.adjustment_comments) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2 border-orange-500 text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950/50"
+                    onClick={() => {
+                      setSelectedDocForComments(doc);
+                      setIsCommentsDialogOpen(true);
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Ver ajustes solicitados
+                  </Button>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -466,6 +489,48 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
           }}
         />
       )}
+
+      {/* Dialog de Observações */}
+      <Dialog open={isCommentsDialogOpen} onOpenChange={setIsCommentsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Observações do Documento
+            </DialogTitle>
+            <DialogDescription>
+              Arquivo: {selectedDocForComments?.file_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedDocForComments?.status === 'Recusado' && selectedDocForComments?.rejection_reason && (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>Documento Recusado</AlertTitle>
+                <AlertDescription className="mt-2">
+                  {selectedDocForComments.rejection_reason}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {selectedDocForComments?.status === 'Ajuste Necessário' && selectedDocForComments?.adjustment_comments && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Ajustes Solicitados</AlertTitle>
+                <AlertDescription className="mt-2">
+                  {selectedDocForComments.adjustment_comments}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-end">
+              <Button onClick={() => setIsCommentsDialogOpen(false)}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
