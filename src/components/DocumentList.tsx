@@ -425,7 +425,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                 </Button>
                 
                 {/* Botões de aprovação/rejeição apenas para funcionários da empresa */}
-                {canManageDocuments && doc.status !== 'Aprovado' && (
+                {canManageDocuments && (
                   <>
                     <Button
                       size="sm"
