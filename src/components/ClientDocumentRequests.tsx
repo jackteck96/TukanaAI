@@ -48,6 +48,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
   const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
   const [selectedDocForComments, setSelectedDocForComments] = useState<DocumentFromTable | null>(null);
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
+  const [latestNotificationMessage, setLatestNotificationMessage] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('[ClientDocumentRequests] Montando com processId:', processId);
@@ -293,6 +294,29 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     }
   };
 
+  // Abre o diálogo e busca fallback em client_notifications se necessário
+  const openComments = async (doc: DocumentFromTable) => {
+    setSelectedDocForComments(doc);
+    setIsCommentsDialogOpen(true);
+    setLatestNotificationMessage(null);
+
+    if (!(doc.rejection_reason || doc.adjustment_comments)) {
+      try {
+        const { data, error } = await supabase
+          .from('client_notifications')
+          .select('message, notification_type')
+          .eq('document_id', doc.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (!error && data && data.length > 0) {
+          setLatestNotificationMessage(data[0].message || null);
+        }
+      } catch (e) {
+        console.warn('[ClientDocumentRequests] Falha ao buscar notificação:', e);
+      }
+    }
+  };
+
   const handleFileUpload = async (request: DocumentRequest, file: File) => {
     try {
       setUploadingDocId(request.id);
@@ -483,10 +507,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                                   variant="outline"
                                   size="sm"
                                   className="flex-shrink-0 text-warning border-warning/30 hover:bg-warning/10"
-                                  onClick={() => {
-                                    setSelectedDocForComments(doc);
-                                    setIsCommentsDialogOpen(true);
-                                  }}
+                                  onClick={() => openComments(doc)}
                                 >
                                   <MessageSquare className="h-4 w-4 mr-2" />
                                   Ajustes Solicitados
@@ -600,29 +621,31 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />
-              Observações da Empresa
+              {selectedDocForComments?.status === 'Recusado'
+                ? `Documento recusado por ${companyName || 'empresa'}`
+                : `Ajustes solicitados por ${companyName || 'empresa'}`}
             </DialogTitle>
             <DialogDescription>
               Arquivo: {selectedDocForComments?.file_name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {selectedDocForComments?.status === 'Recusado' && selectedDocForComments?.rejection_reason && (
+            {selectedDocForComments?.status === 'Recusado' && (selectedDocForComments?.rejection_reason || latestNotificationMessage) && (
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
                 <AlertTitle>Documento Recusado</AlertTitle>
                 <AlertDescription className="mt-2">
-                  {selectedDocForComments.rejection_reason}
+                  {selectedDocForComments.rejection_reason || latestNotificationMessage}
                 </AlertDescription>
               </Alert>
             )}
             
-            {(['Ajuste Necessário','Ajustes Solicitados'].includes(selectedDocForComments?.status || '')) && selectedDocForComments?.adjustment_comments && (
+            {(['Ajuste Necessário','Ajustes Solicitados'].includes(selectedDocForComments?.status || '')) && (selectedDocForComments?.adjustment_comments || latestNotificationMessage) && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Ajustes Solicitados</AlertTitle>
                 <AlertDescription className="mt-2">
-                  {selectedDocForComments.adjustment_comments}
+                  {selectedDocForComments.adjustment_comments || latestNotificationMessage}
                 </AlertDescription>
               </Alert>
             )}
