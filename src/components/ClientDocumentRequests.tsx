@@ -473,23 +473,31 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                         <p className="text-sm font-medium">Documentos enviados:</p>
                         {request.related_documents.map((doc) => (
                           <div key={doc.id} className="bg-muted/30 p-3 rounded-lg space-y-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <FileText className="w-4 h-4 flex-shrink-0" />
-                              <span className="flex-1 truncate">{doc.file_name}</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 text-sm flex-1 min-w-0">
+                                <FileText className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">{doc.file_name}</span>
+                              </div>
                               <Badge 
                                 variant="outline"
                                 className={
-                                  doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400' :
-                                  doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400' :
-                                  doc.status === 'Ajuste Necessário' ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400' :
-                                  'border-blue-500 text-blue-700 dark:text-blue-400'
+                                  doc.status === 'Aprovado' ? 'border-green-500 text-green-700 dark:text-green-400 flex-shrink-0' :
+                                  doc.status === 'Recusado' ? 'border-red-500 text-red-700 dark:text-red-400 flex-shrink-0' :
+                                  doc.status === 'Ajuste Necessário' ? 'border-yellow-500 text-yellow-700 dark:text-yellow-400 flex-shrink-0' :
+                                  'border-blue-500 text-blue-700 dark:text-blue-400 flex-shrink-0'
                                 }
                               >
                                 {doc.status}
                               </Badge>
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              Enviado em {new Date(doc.created_at).toLocaleDateString('pt-BR')}
+                              Enviado em {new Date(doc.created_at).toLocaleDateString('pt-BR', { 
+                                day: '2-digit', 
+                                month: '2-digit', 
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </div>
                             
                             {(doc.status === 'Recusado' || doc.status === 'Ajuste Necessário') && 
@@ -497,14 +505,14 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="w-full"
+                                className="w-full mt-2 border-orange-500 text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950/50"
                                 onClick={() => {
                                   setSelectedDocForComments(doc);
                                   setIsCommentsDialogOpen(true);
                                 }}
                               >
-                                <MessageSquare className="h-3 w-3 mr-2" />
-                                Ver observações da empresa
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Ver o que foi solicitado
                               </Button>
                             )}
                           </div>
