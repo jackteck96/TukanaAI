@@ -10,7 +10,7 @@ import DocumentActionDialog from './DocumentActionDialog';
 import { TemplateSelector } from './TemplateSelector';
 import { TemplateEditor } from './TemplateEditor';
 import DocumentUpload from './DocumentUpload';
-
+import DocumentPreviewModal from './DocumentPreviewModal';
 interface Document {
   id: string;
   file_name: string;
@@ -50,6 +50,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     documentName: ''
   });
   const { user } = useAuth();
+  const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -339,7 +340,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleView(doc.file_path)}
+                  onClick={() => setPreviewDoc(doc)}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -423,6 +424,35 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
           processData={processData}
           companyId={companyId}
           onDocumentCreated={handleDocumentCreated}
+        />
+      )}
+
+      {/* Preview Modal */}
+      {previewDoc && (
+        <DocumentPreviewModal
+          open={!!previewDoc}
+          onOpenChange={(open) => {
+            if (!open) setPreviewDoc(null);
+          }}
+          document={{
+            id: previewDoc.id,
+            file_name: previewDoc.file_name,
+            file_path: previewDoc.file_path,
+            file_type: previewDoc.file_type,
+          }}
+          onApprove={(id) => {
+            handleApprove(id);
+            setPreviewDoc(null);
+          }}
+          onReject={(id, name) => {
+            setPreviewDoc(null);
+            handleReject(id, name);
+          }}
+          onRequestAdjustment={(id, name) => {
+            setPreviewDoc(null);
+            handleRequestAdjustment(id, name);
+          }}
+          onDownload={(path, name) => handleDownload(path, name)}
         />
       )}
 
