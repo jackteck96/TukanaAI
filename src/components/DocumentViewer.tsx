@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import InternalSignatureManager from './InternalSignatureManager';
+import MultiSignatureManager from './MultiSignatureManager';
 import SignatureTermDownloadButton from './SignatureTermDownloadButton';
 import PdfInlineRenderer from './PdfInlineRenderer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, Users, PenTool } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DocumentViewerProps {
@@ -127,13 +129,36 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </CardContent>
       </Card>
 
-      {/* Assinatura Interna */}
+      {/* Assinatura */}
       {showSignature && (
-        <InternalSignatureManager
-          documentId={documentId}
-          processId={processId}
-          documentName={documentName}
-        />
+        <Tabs defaultValue="sign" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="sign" className="flex items-center space-x-2">
+              <PenTool className="h-4 w-4" />
+              <span>Assinar Agora</span>
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="flex items-center space-x-2">
+              <Users className="h-4 w-4" />
+              <span>Gerenciar Signatários</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="sign" className="mt-6">
+            <InternalSignatureManager
+              documentId={documentId}
+              processId={processId}
+              documentName={documentName}
+            />
+          </TabsContent>
+          
+          <TabsContent value="manage" className="mt-6">
+            <MultiSignatureManager
+              documentId={documentId}
+              processId={processId}
+              documentName={documentName}
+            />
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
