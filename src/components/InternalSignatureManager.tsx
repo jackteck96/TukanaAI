@@ -116,122 +116,47 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   };
 
   const handleVerifyAndSign = async () => {
-    if (!otpCode) {
-      toast.error('Digite o código de verificação');
+    if (!otpCode || otpCode.length !== 6) {
+      toast.error('Digite o código de 6 dígitos');
       return;
     }
 
     setLoading(true);
     try {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Usuário não autenticado');
-
-      // Verificar OTP
-      const { data: otpData, error: otpError } = await supabase
-        .from('otp_verifications')
-        .select()
-        .eq('id', verificationId)
-        .eq('verification_code', otpCode)
-        .eq('is_verified', false)
-        .gt('expires_at', new Date().toISOString())
-        .single();
-
-      if (otpError || !otpData) {
-        toast.error('Código inválido ou expirado');
+      if (!user.user) {
+        toast.error('Usuário não autenticado');
         return;
       }
 
-      // Marcar OTP como verificado
-      await supabase
-        .from('otp_verifications')
-        .update({ is_verified: true })
-        .eq('id', verificationId);
-
-      // Buscar company_id do usuário
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_id')
-        .eq('id', user.user.id)
-        .single();
-
-      if (!profile?.company_id) throw new Error('Company ID não encontrado');
-
-      // Gerar hashes para assinatura
-      const signatureTimestamp = new Date();
-
-      // Gerar hash de assinatura (com fallback se RPC indisponível)
-      let signatureHash = `sig_${documentId}_${user.user.id}_${signatureTimestamp.getTime()}`;
-      try {
-        const { data, error } = await supabase.rpc('generate_signature_hash', {
-          document_uuid: documentId,
-          signer_uuid: user.user.id,
-          timestamp_val: signatureTimestamp.toISOString()
-        });
-        if (!error && data) signatureHash = data as string;
-      } catch (e) {
-        console.warn('RPC generate_signature_hash falhou, usando fallback:', e);
-      }
-
-      // Gerar hash do documento (com fallback se RPC indisponível)
-      let documentHash = `doc_${documentId}_${signatureTimestamp.getTime()}`;
-      try {
-        const { data: docInfo } = await supabase
-          .from('documents')
-          .select('file_path')
-          .eq('id', documentId)
-          .single();
-        const { data, error } = await supabase.rpc('generate_document_hash', {
-          document_uuid: documentId,
-          file_path_val: docInfo?.file_path || ''
-        });
-        if (!error && data) documentHash = data as string;
-      } catch (e) {
-        console.warn('RPC generate_document_hash falhou, usando fallback:', e);
-      }
-
-      // Obter informações do navegador e dispositivo
       const userAgent = navigator.userAgent;
-      const browser = userAgent.includes('Chrome') ? 'Chrome' : 
-                      userAgent.includes('Firefox') ? 'Firefox' : 
-                      userAgent.includes('Safari') ? 'Safari' : 'Outro';
-      const device = /Mobile|Android|iPhone/i.test(userAgent) ? 'Mobile' : 'Desktop';
 
-      // Criar registro de assinatura interna
-      const { data: signatureRecord, error: signatureError } = await supabase
-        .from('internal_signatures')
-        .insert({
-          document_id: documentId,
-          process_id: processId,
-          company_id: profile.company_id,
-          signer_id: user.user.id,
-          signer_name: signatureData.signerName,
-          signer_email: signatureData.signerEmail,
-          authentication_method: 'email',
-          authentication_contact: signatureData.authContact,
-          signature_hash: signatureHash,
-          document_hash: documentHash,
-          signature_order: 1,
-          signature_metadata: {
-            timestamp: signatureTimestamp.toISOString(),
-            method: 'internal_otp',
-            verification_id: verificationId,
-            ip_address: 'unknown',
-            browser: browser,
-            device: device,
-            signature_position: placement ? { x_percent: placement.x, y_percent: placement.y, page: 1 } : null
-          }
-        })
-        .select()
-        .single();
+      // Delegar para Edge Function com validação no servidor e inserção segura
+      const { data, error } = await supabase.functions.invoke('complete-internal-signature', {
+        body: {
+          verificationId,
+          otpCode,
+          documentId,
+          processId,
+          signerName: signatureData.signerName,
+          signerEmail: signatureData.signerEmail,
+          authContact: signatureData.authContact,
+          placement: placement ? { x_percent: placement.x, y_percent: placement.y, page: 1 } : null,
+          userAgent,
+        }
+      });
 
-      if (signatureError) throw signatureError;
+      if (error || !data?.ok) {
+        console.error('complete-internal-signature error:', error || data);
+        toast.error('Erro ao assinar documento');
+        return;
+      }
 
-      // Gerar termo de autenticidade automaticamente
+      // Gerar termo de autenticidade
       try {
         const { error: termError } = await supabase.functions.invoke('generate-authenticity-term', {
-          body: { signatureId: signatureRecord.id }
+          body: { signatureId: data.signatureId }
         });
-
         if (termError) {
           console.error('Erro ao gerar termo de autenticidade:', termError);
           toast.warning('Assinatura concluída, mas houve erro ao gerar termo de autenticidade');
@@ -244,8 +169,6 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       }
 
       setStep('success');
-
-      // Notificar empresa e recarregar signatários
       await notifyCompanyAndClient();
     } catch (error: any) {
       console.error('Erro ao verificar e assinar:', error);
@@ -332,9 +255,15 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             </div>
           </div>
 
-          <Button onClick={handleNewSignature} variant="outline" className="w-full">
-            Nova Assinatura
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={handleNewSignature} variant="outline">
+              Nova Assinatura
+            </Button>
+            {/* Botão de download ficará visível porque o viewer conta assinaturas */}
+            <a href="#baixar-documento-assinado" className="inline-flex">
+              <Button type="button" className="w-full">Baixar Documento</Button>
+            </a>
+          </div>
         </CardContent>
       </Card>
     );

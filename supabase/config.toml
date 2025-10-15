@@ -45,3 +45,6 @@ verify_jwt = false
 [functions.complete-admin-signup]
 verify_jwt = false
 
+[functions.complete-internal-signature]
+verify_jwt = true
+
