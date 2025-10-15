@@ -213,12 +213,16 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Erro ao salvar PDF: ${uploadError.message}`);
     }
 
-    // Obter URL pública do arquivo
-    const { data: urlData } = supabase.storage
+    // Obter URL assinada (bucket é privado)
+    const { data: signedUrlData, error: signedErr } = await supabase.storage
       .from("documents")
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 dias
 
-    const pdfUrl = urlData.publicUrl;
+    if (signedErr || !signedUrlData) {
+      throw new Error(`Erro ao gerar URL assinada do PDF: ${signedErr?.message || 'desconhecido'}`);
+    }
+
+    const pdfUrl = signedUrlData.signedUrl;
 
     // Atualizar registro da assinatura com URL do termo
     console.log("Atualizando assinatura com URL do termo:", { signatureId, pdfUrl });

@@ -6,17 +6,19 @@ import { toast } from 'sonner';
 
 interface SignatureTermDownloadButtonProps {
   documentId: string;
+  refreshKey?: number;
 }
 
 const SignatureTermDownloadButton: React.FC<SignatureTermDownloadButtonProps> = ({
-  documentId
+  documentId,
+  refreshKey
 }) => {
   const [termUrl, setTermUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadSignatureTerm();
-  }, [documentId]);
+  }, [documentId, refreshKey]);
 
   const loadSignatureTerm = async () => {
     try {

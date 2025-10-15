@@ -295,6 +295,11 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
       setStep('success');
       await notifyCompanyAndClient();
+
+      // Chamar callback para recarregar dados no componente pai
+      if (onSigned) {
+        onSigned();
+      }
       
       // Chamar callback para recarregar dados no componente pai
       if (onSigned) {

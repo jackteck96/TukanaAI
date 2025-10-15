@@ -155,7 +155,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                   Baixar Documento Assinado
                 </Button>
               )}
-              <SignatureTermDownloadButton documentId={documentId} />
+              <SignatureTermDownloadButton documentId={documentId} refreshKey={signedCount} />
             </div>
           </div>
         </CardHeader>

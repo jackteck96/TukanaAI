@@ -2,6 +2,7 @@
 // Validates OTP server-side and creates an internal signature record using service role
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+import { PDFDocument, StandardFonts, rgb } from 'npm:pdf-lib@1.17.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -168,6 +169,60 @@ Deno.serve(async (req) => {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
+    }
+
+    // Tentar aplicar assinatura visual no PDF e atualizar arquivo
+    try {
+      if (docInfo?.file_path) {
+        const { data: origBlob, error: dlErr } = await supabaseAdmin.storage
+          .from('documents')
+          .download(docInfo.file_path);
+        if (!dlErr && origBlob) {
+          const origBytes = new Uint8Array(await origBlob.arrayBuffer());
+          const pdfDoc = await PDFDocument.load(origBytes);
+          const pages = pdfDoc.getPages();
+          const pageIndex = (placement?.page ? Math.max(1, placement.page) - 1 : 0);
+          const page = pages[Math.min(pageIndex, pages.length - 1)];
+          const { width, height } = page.getSize();
+          const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+          // Calcular posição
+          let x = width - 220;
+          let y = 40;
+          if (placement && typeof placement.x_percent === 'number' && typeof placement.y_percent === 'number') {
+            x = Math.max(20, Math.min(width - 220, Math.round(placement.x_percent * width)));
+            // y_percent normalmente vem do topo; converter para coordenadas do pdf-lib (origem bottom-left)
+            y = Math.max(20, Math.min(height - 60, Math.round((1 - placement.y_percent) * height)));
+          }
+
+          // Caixa e textos
+          page.drawRectangle({ x, y, width: 200, height: 50, color: rgb(1, 1, 1), opacity: 0.85, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+          page.drawText('Assinado eletronicamente', { x: x + 8, y: y + 32, size: 10, font, color: rgb(0,0,0) });
+          page.drawText(`Por: ${signerName}`, { x: x + 8, y: y + 18, size: 10, font, color: rgb(0,0,0) });
+          page.drawText(new Date(signatureTimestamp).toLocaleString('pt-BR'), { x: x + 8, y: y + 6, size: 9, font, color: rgb(0,0,0) });
+
+          const stampedBytes = await pdfDoc.save();
+          const signedPath = `signed/${docInfo.file_path}`;
+          const { error: upErr } = await supabaseAdmin.storage
+            .from('documents')
+            .upload(signedPath, stampedBytes, { contentType: 'application/pdf', upsert: true });
+
+          if (!upErr) {
+            // Atualizar documento para apontar para a versão assinada
+            const { error: updDocErr } = await supabaseAdmin
+              .from('documents')
+              .update({ file_path: signedPath })
+              .eq('id', documentId);
+            if (updDocErr) {
+              console.warn('[complete-internal-signature] Falha ao atualizar file_path para assinado', updDocErr);
+            }
+          } else {
+            console.warn('[complete-internal-signature] Falha ao subir PDF assinado', upErr);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[complete-internal-signature] Não foi possível aplicar assinatura visual', e);
     }
 
     return new Response(
