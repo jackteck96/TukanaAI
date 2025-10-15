@@ -3,6 +3,7 @@ import InternalSignatureManager from './InternalSignatureManager';
 import SignatureTermDownloadButton from './SignatureTermDownloadButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DocumentViewerProps {
   documentId: string;
@@ -21,34 +22,48 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
 }) => {
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(documentUrl || null);
 
   useEffect(() => {
-    let createdUrl: string | null = null;
-    const load = async () => {
-      if (!documentUrl) {
-        setViewerUrl(null);
-        return;
-      }
+    const resolve = async () => {
       try {
-        setLoading(true);
-        const res = await fetch(documentUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        createdUrl = url;
-        setViewerUrl(url);
+        if (documentUrl) {
+          setResolvedUrl(documentUrl);
+          return;
+        }
+        // Buscar file_path e gerar URL assinada
+        const { data, error } = await supabase
+          .from('documents')
+          .select('file_path')
+          .eq('id', documentId)
+          .single();
+        if (error) throw error;
+        if (data?.file_path) {
+          const { data: signed, error: signErr } = await supabase
+            .storage
+            .from('documents')
+            .createSignedUrl(data.file_path, 60 * 15);
+          if (signErr) throw signErr;
+          setResolvedUrl(signed?.signedUrl || null);
+        } else {
+          setResolvedUrl(null);
+        }
       } catch (err) {
-        console.error('Erro ao carregar documento:', err);
-        setViewerUrl(null);
-      } finally {
-        setLoading(false);
+        console.error('Erro ao resolver URL do documento:', err);
+        setResolvedUrl(null);
       }
     };
-    load();
-    return () => {
-      if (createdUrl) URL.revokeObjectURL(createdUrl);
-    };
-  }, [documentUrl]);
+    resolve();
+  }, [documentUrl, documentId]);
+
+  useEffect(() => {
+    setLoading(true);
+    try {
+      setViewerUrl(resolvedUrl);
+    } finally {
+      setLoading(false);
+    }
+  }, [resolvedUrl]);
 
   return (
     <div className="space-y-6">
@@ -65,7 +80,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg p-4 min-h-[400px] bg-muted/30">
-            {documentUrl ? (
+            {resolvedUrl ? (
               loading ? (
                 <div className="flex items-center justify-center h-96 text-muted-foreground">
                   <p>Carregando documento…</p>

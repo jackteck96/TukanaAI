@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { PenTool, Mail, Smartphone, Shield, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { PenTool, Mail, Shield, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import SignaturePlacement from './SignaturePlacement';
 
 interface InternalSignatureManagerProps {
   documentId: string;
@@ -20,7 +19,7 @@ interface InternalSignatureManagerProps {
 interface SignatureData {
   signerName: string;
   signerEmail: string;
-  authMethod: 'email' | 'sms';
+  authMethod: 'email';
   authContact: string;
 }
 
@@ -39,6 +38,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   });
   const [otpCode, setOtpCode] = useState('');
   const [verificationId, setVerificationId] = useState<string>('');
+  const [placement, setPlacement] = useState<{ x: number; y: number } | null>(null);
 
   const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -91,12 +91,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
           }
         });
 
-        if (emailError) throw emailError;
-        // Exibir também o código como fallback para testes
         toast.success(`Código enviado por email! (Código: ${code})`);
-      } else {
-        // Para SMS, apenas mostrar o código (implementação simplificada)
-        toast.success(`Código OTP: ${code} (implementação de SMS pendente)`);
       }
 
       setStep('otp');
@@ -179,7 +174,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
           signer_id: user.user.id,
           signer_name: signatureData.signerName,
           signer_email: signatureData.signerEmail,
-          authentication_method: signatureData.authMethod,
+          authentication_method: 'email',
           authentication_contact: signatureData.authContact,
           signature_hash: signatureHash,
           document_hash: documentHash,
@@ -190,7 +185,8 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             verification_id: verificationId,
             ip_address: 'unknown',
             browser: browser,
-            device: device
+            device: device,
+            signature_position: placement ? { x_percent: placement.x, y_percent: placement.y, page: 1 } : null
           }
         })
         .select()
@@ -234,6 +230,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
     });
     setOtpCode('');
     setVerificationId('');
+    setPlacement(null);
   };
 
   if (step === 'success') {
@@ -249,7 +246,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
           <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>
-              O documento "{documentName}" foi assinado com sucesso usando autenticação por {signatureData.authMethod === 'email' ? 'email' : 'SMS'}.
+              O documento "{documentName}" foi assinado com sucesso usando verificação por email.
             </AlertDescription>
           </Alert>
           
@@ -258,7 +255,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             <div className="bg-muted p-3 rounded-lg space-y-1 text-sm">
               <p><strong>Signatário:</strong> {signatureData.signerName}</p>
               <p><strong>Email:</strong> {signatureData.signerEmail}</p>
-              <p><strong>Método:</strong> {signatureData.authMethod === 'email' ? 'Email' : 'SMS'}</p>
+              <p><strong>Método:</strong> Email</p>
               <p><strong>Data:</strong> {new Date().toLocaleString('pt-BR')}</p>
             </div>
           </div>
@@ -340,8 +337,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription>
-            Assine digitalmente usando verificação por email ou SMS. 
-            Esta modalidade utiliza autenticação de dois fatores para garantir a segurança.
+            Assine digitalmente usando verificação por email.
           </AlertDescription>
         </Alert>
 
@@ -369,47 +365,19 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
           <Separator />
 
-          <div className="space-y-4">
-            <Label>Método de Autenticação</Label>
-            
-            <Select 
-              value={signatureData.authMethod} 
-              onValueChange={(value: 'email' | 'sms') => 
-                setSignatureData(prev => ({ ...prev, authMethod: value, authContact: '' }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="email">
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4" />
-                    <span>Email</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="sms">
-                  <div className="flex items-center space-x-2">
-                    <Smartphone className="h-4 w-4" />
-                    <span>SMS</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <div className="space-y-2">
-              <Label htmlFor="authContact">
-                {signatureData.authMethod === 'email' ? 'Email para verificação *' : 'Telefone para SMS *'}
-              </Label>
-              <Input
-                id="authContact"
-                type={signatureData.authMethod === 'email' ? 'email' : 'tel'}
-                placeholder={signatureData.authMethod === 'email' ? 'email@exemplo.com' : '(11) 99999-9999'}
-                value={signatureData.authContact}
-                onChange={(e) => setSignatureData(prev => ({ ...prev, authContact: e.target.value }))}
-              />
-            </div>
+        <div className="space-y-4">
+          <Label>Email para verificação</Label>
+          <div className="space-y-2">
+            <Label htmlFor="authContact">Email para verificação *</Label>
+            <Input
+              id="authContact"
+              type="email"
+              placeholder="email@exemplo.com"
+              value={signatureData.authContact}
+              onChange={(e) => setSignatureData(prev => ({ ...prev, authContact: e.target.value }))}
+            />
           </div>
+        </div>
         </div>
 
         <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
