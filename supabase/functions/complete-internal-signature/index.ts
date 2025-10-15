@@ -57,11 +57,11 @@ Deno.serve(async (req) => {
 
     // Validate OTP server-side
     const nowIso = new Date().toISOString();
+    // Fetch OTP row by ID only, compare code server-side to avoid column/type mismatches
     const { data: otpRow, error: otpErr } = await supabaseAdmin
       .from('otp_verifications')
       .select('*')
       .eq('id', verificationId)
-      .eq('verification_code', otpCode)
       .single();
 
     if (otpErr || !otpRow) {
@@ -76,6 +76,16 @@ Deno.serve(async (req) => {
     if (otpRow.expires_at && new Date(otpRow.expires_at).getTime() <= Date.now()) {
       console.error('[complete-internal-signature] OTP expired', { verificationId });
       return new Response(JSON.stringify({ error: 'Invalid or expired code', details: 'expired' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    // Compare user-provided code with stored code (supporting different possible column names/types)
+    const storedCode = otpRow.verification_code ?? otpRow.code ?? otpRow.otp_code ?? null;
+    if (!storedCode || String(storedCode).trim() !== String(otpCode).trim()) {
+      console.error('[complete-internal-signature] OTP code mismatch', { verificationId });
+      return new Response(JSON.stringify({ error: 'Invalid or expired code', details: 'mismatch' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
