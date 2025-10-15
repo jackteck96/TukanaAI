@@ -297,6 +297,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       const errMsg = (error as any)?.message || (typeof error === 'string' ? error : 'Erro ao assinar documento');
       toast.error(`Erro ao assinar: ${errMsg}`);
     } finally {
+      setLoading(false);
     }
   };
 
