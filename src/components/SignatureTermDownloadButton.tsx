@@ -27,7 +27,7 @@ const SignatureTermDownloadButton: React.FC<SignatureTermDownloadButtonProps> = 
       // Buscar assinaturas internas do documento
       const { data: signatures, error } = await supabase
         .from('internal_signatures')
-        .select('auth_report_url, signer_email')
+        .select('auth_report_url, signer_email, signature_hash')
         .eq('document_id', documentId)
         .not('auth_report_url', 'is', null);
 
@@ -49,15 +49,23 @@ const SignatureTermDownloadButton: React.FC<SignatureTermDownloadButtonProps> = 
       if (!profile) return;
 
       // Verificar se o usuário assinou este documento
-      const userSignature = signatures?.find(sig => sig.signer_email === profile.email);
-      
-      if (userSignature?.auth_report_url) {
-        setTermUrl(userSignature.auth_report_url);
-      } else if (signatures && signatures.length > 0) {
-        // Se não encontrou assinatura do usuário, mas há assinaturas, mostrar a primeira
-        // (útil para admins que querem ver termos)
-        setTermUrl(signatures[0].auth_report_url);
+      const userSignature = signatures?.find(sig => sig.signer_email === profile.email) || signatures?.[0];
+
+      // Sempre gerar uma URL assinada fresca para evitar problemas com URLs antigas públicas
+      if (userSignature?.signature_hash) {
+        const path = `authenticity-terms/${userSignature.signature_hash}.pdf`;
+        const { data: signed, error: signErr } = await supabase.storage
+          .from('documents')
+          .createSignedUrl(path, 60 * 60 * 24 * 7);
+        if (signed?.signedUrl) {
+          setTermUrl(signed.signedUrl);
+        } else if (userSignature?.auth_report_url) {
+          // Fallback para URL antiga gravada
+          console.warn('Falha ao gerar URL assinada nova, usando URL salva', signErr);
+          setTermUrl(userSignature.auth_report_url);
+        }
       }
+
     } catch (error) {
       console.error('Erro ao carregar termo:', error);
     } finally {

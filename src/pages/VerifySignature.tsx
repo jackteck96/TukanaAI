@@ -83,14 +83,34 @@ const VerifySignature: React.FC = () => {
     }
   };
 
-  const handleDownloadTerm = () => {
+  const handleDownloadTerm = async () => {
+    if (!signature) {
+      toast.error('Termo de autenticidade não disponível');
+      return;
+    }
+    // Sempre tentar gerar uma URL assinada fresca para evitar URLs públicas antigas
+    try {
+      const path = `authenticity-terms/${signature.signature_hash}.pdf`;
+      const { data: signed, error } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(path, 60 * 60 * 24 * 7);
+      if (signed?.signedUrl) {
+        window.open(signed.signedUrl, '_blank');
+        return;
+      }
+      if (error) {
+        console.warn('Falha ao gerar URL assinada, usando URL salva', error);
+      }
+    } catch (e) {
+      console.warn('Exceção ao gerar URL assinada, usando URL salva', e);
+    }
+
     if (signature?.auth_report_url) {
       window.open(signature.auth_report_url, '_blank');
     } else {
       toast.error('Termo de autenticidade não disponível');
     }
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center p-4">
