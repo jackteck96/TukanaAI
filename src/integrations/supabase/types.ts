@@ -545,7 +545,10 @@ export type Database = {
       documents: {
         Row: {
           adjustment_comments: string | null
+          authenticity_term_url: string | null
+          client_signed_at: string | null
           company_id: string | null
+          company_signed_at: string | null
           created_at: string
           document_type: string
           expiration_date: string | null
@@ -557,6 +560,8 @@ export type Database = {
           issuing_location: string | null
           process_id: string
           rejection_reason: string | null
+          requires_signature: boolean | null
+          signature_status: string | null
           status: string
           updated_at: string
           uploaded_by: string
@@ -564,7 +569,10 @@ export type Database = {
         }
         Insert: {
           adjustment_comments?: string | null
+          authenticity_term_url?: string | null
+          client_signed_at?: string | null
           company_id?: string | null
+          company_signed_at?: string | null
           created_at?: string
           document_type: string
           expiration_date?: string | null
@@ -576,6 +584,8 @@ export type Database = {
           issuing_location?: string | null
           process_id: string
           rejection_reason?: string | null
+          requires_signature?: boolean | null
+          signature_status?: string | null
           status?: string
           updated_at?: string
           uploaded_by: string
@@ -583,7 +593,10 @@ export type Database = {
         }
         Update: {
           adjustment_comments?: string | null
+          authenticity_term_url?: string | null
+          client_signed_at?: string | null
           company_id?: string | null
+          company_signed_at?: string | null
           created_at?: string
           document_type?: string
           expiration_date?: string | null
@@ -595,6 +608,8 @@ export type Database = {
           issuing_location?: string | null
           process_id?: string
           rejection_reason?: string | null
+          requires_signature?: boolean | null
+          signature_status?: string | null
           status?: string
           updated_at?: string
           uploaded_by?: string

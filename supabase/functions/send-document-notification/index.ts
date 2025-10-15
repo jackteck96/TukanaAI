@@ -1,28 +1,103 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 interface NotificationRequest {
-  clientEmail: string;
-  clientName: string;
-  documentName: string;
-  processTitle: string;
-  notificationType: 'document_rejected' | 'document_adjustment_requested';
-  message: string;
+  documentId?: string;
+  processId?: string;
+  documentName?: string;
+  senderType?: 'client' | 'company';
+  requiresSignature?: boolean;
+  // Legacy fields
+  clientEmail?: string;
+  clientName?: string;
+  processTitle?: string;
+  notificationType?: 'document_rejected' | 'document_adjustment_requested';
+  message?: string;
   companyName?: string;
 }
 
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const requestData: NotificationRequest = await req.json();
+
+    // Se é notificação nova (com documentId)
+    if (requestData.documentId && requestData.processId) {
+      const { documentId, processId, documentName, senderType, requiresSignature } = requestData;
+
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Buscar informações do processo
+      const { data: process, error: processError } = await supabaseClient
+        .from('processes')
+        .select('client_email, client_name, company_id, companies(name)')
+        .eq('id', processId)
+        .single();
+
+      if (processError || !process) {
+        throw new Error('Processo não encontrado');
+      }
+
+      // Determinar destinatário baseado em quem enviou
+      const recipientEmail = senderType === 'client' 
+        ? (await getCompanyAdminEmail(supabaseClient, process.company_id))
+        : process.client_email;
+
+      const senderName = senderType === 'client' 
+        ? process.client_name 
+        : (process as any).companies?.name || 'Empresa';
+
+      // Criar notificação na plataforma
+      await supabaseClient
+        .from('client_notifications')
+        .insert({
+          process_id: processId,
+          document_id: documentId,
+          company_id: process.company_id,
+          client_email: process.client_email,
+          notification_type: requiresSignature ? 'signature_request' : 'document_uploaded',
+          title: requiresSignature 
+            ? `Documento requer sua assinatura` 
+            : `Novo documento enviado`,
+          message: requiresSignature
+            ? `O documento "${documentName}" foi enviado por ${senderName} e requer sua assinatura.`
+            : `${senderName} enviou o documento "${documentName}".`
+        });
+
+      // Enviar email se requer assinatura
+      if (requiresSignature) {
+        await supabaseClient.functions.invoke('send-unified-email', {
+          body: {
+            to: recipientEmail,
+            subject: `Documento requer sua assinatura - ${documentName}`,
+            template: 'signature_request',
+            data: {
+              documentName,
+              senderName,
+              processId
+            }
+          }
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Legacy: notificação de rejeição/ajuste
     const { 
       clientEmail, 
       clientName, 
@@ -31,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
       notificationType, 
       message,
       companyName = "Sistema Jurídico"
-    }: NotificationRequest = await req.json();
+    } = requestData;
 
     const isRejection = notificationType === 'document_rejected';
     const subject = isRejection 
@@ -44,10 +119,9 @@ const handler = async (req: Request): Promise<Response> => {
       type: notificationType,
       document: documentName,
       process: processTitle,
-      message: message.substring(0, 100) + "..."
+      message: message?.substring(0, 100) + "..."
     });
 
-    // Simular envio de email bem-sucedido para manter compatibilidade
     const emailResponse = {
       id: `mock-${Date.now()}`,
       status: "sent",
@@ -66,15 +140,31 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-document-notification function:", error);
+    console.error('Erro ao enviar notificação:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-};
+});
 
-serve(handler);
+async function getCompanyAdminEmail(supabaseClient: any, companyId: string): Promise<string> {
+  const { data } = await supabaseClient
+    .from('user_roles')
+    .select('user_id')
+    .eq('company_id', companyId)
+    .eq('role', 'company_admin')
+    .limit(1)
+    .single();
+
+  if (data) {
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('email')
+      .eq('id', data.user_id)
+      .single();
+    return profile?.email || '';
+  }
+
+  return '';
+}

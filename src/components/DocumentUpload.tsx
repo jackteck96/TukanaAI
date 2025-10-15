@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DocumentUploadProps {
   processId: string;
@@ -36,6 +37,7 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
   const [documentType, setDocumentType] = useState('');
   const [uploaderName, setUploaderName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [requiresSignature, setRequiresSignature] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -74,8 +76,29 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
         throw uploadError;
       }
 
+      // Buscar informações do processo para determinar quem está enviando
+      const { data: processData } = await supabase
+        .from('processes')
+        .select('client_email, company_id')
+        .eq('id', processId)
+        .single();
+
+      const { data: userData } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userData.user?.id || '')
+        .single();
+
+      // Determinar status de assinatura baseado em quem está enviando
+      let signatureStatus = 'not_required';
+      if (requiresSignature && processData && profile) {
+        const isClient = profile.email === processData.client_email;
+        signatureStatus = isClient ? 'pending_company' : 'pending_client';
+      }
+
       // Salvar informações do documento na tabela
-      const { error: dbError } = await supabase
+      const { data: docData, error: dbError } = await supabase
         .from('documents')
         .insert({
           process_id: processId,
@@ -85,8 +108,12 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
           file_type: file.type,
           file_size: file.size,
           document_type: documentType,
-          uploaded_by: uploaderName
-        });
+          uploaded_by: uploaderName,
+          requires_signature: requiresSignature,
+          signature_status: signatureStatus
+        })
+        .select()
+        .single();
 
       if (dbError) {
         throw dbError;
@@ -97,12 +124,27 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
         process_uuid: processId 
       });
 
+      // Se requer assinatura, enviar notificação para a outra parte
+      if (requiresSignature && processData && docData) {
+        const isClient = profile?.email === processData.client_email;
+        await supabase.functions.invoke('send-document-notification', {
+          body: {
+            documentId: docData.id,
+            processId: processId,
+            documentName: newFileName,
+            senderType: isClient ? 'client' : 'company',
+            requiresSignature: true
+          }
+        });
+      }
+
       toast.success('Documento enviado com sucesso!');
       
       // Limpar formulário
       setFile(null);
       setDocumentType('');
       setUploaderName('');
+      setRequiresSignature(false);
       
       // Callback para atualizar a interface pai
       onUploadComplete?.();
@@ -170,6 +212,20 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
               {file.name} ({(file.size / 1024).toFixed(1)} KB)
             </p>
           )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="requiresSignature"
+            checked={requiresSignature}
+            onCheckedChange={(checked) => setRequiresSignature(checked as boolean)}
+          />
+          <Label
+            htmlFor="requiresSignature"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+          >
+            Requer assinatura
+          </Label>
         </div>
 
         <Button 

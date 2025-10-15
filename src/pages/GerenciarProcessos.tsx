@@ -31,7 +31,7 @@ import DocumentProgressBattery from "@/components/DocumentProgressBattery";
 import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
-import EmailLogViewer from "@/components/EmailLogViewer";
+
 import ProcessNotes from "@/components/ProcessNotes";
 import { BusinessDocumentAnalyzer } from "@/components/BusinessDocumentAnalyzer";
 import ProcessEditDialog from "@/components/ProcessEditDialog";
@@ -422,7 +422,6 @@ const GerenciarProcessos = () => {
               processId={currentProcess.id} 
               companyId={currentProcess.company_id || ''}
             />
-            <EmailLogViewer processId={currentProcess.id} />
           </div>
         </div>
 

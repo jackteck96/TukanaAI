@@ -294,13 +294,32 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       }
 
       setStep('success');
-      await notifyCompanyAndClient();
 
-      // Chamar callback para recarregar dados no componente pai
-      if (onSigned) {
-        onSigned();
-      }
-      
+      // Determinar tipo de signatário (cliente ou empresa)
+      const { data: processData } = await supabase
+        .from('processes')
+        .select('client_email')
+        .eq('id', processId)
+        .single();
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', user.user.id)
+        .single();
+
+      const isClient = profileData?.email === processData?.client_email;
+
+      // Invocar edge function para completar fluxo de assinatura dupla
+      await supabase.functions.invoke('complete-dual-signature', {
+        body: {
+          documentId,
+          processId,
+          signerType: isClient ? 'client' : 'company',
+          signatureId
+        }
+      });
+
       // Chamar callback para recarregar dados no componente pai
       if (onSigned) {
         onSigned();
