@@ -158,8 +158,11 @@ const DigitalSignatureManager: React.FC<DigitalSignatureProps> = ({
 
       // Criar requerimentos
       const requirementsData = requirements.map(req => ({
-        ...req,
-        signature_flow_id: flowData.id
+        signature_flow_id: flowData.id,
+        signer_email: req.signer_email,
+        signer_name: req.signer_name,
+        signature_order: req.signature_order,
+        is_required: req.is_required
       }));
 
       const { error: reqError } = await supabase
