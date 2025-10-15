@@ -174,9 +174,13 @@ Deno.serve(async (req) => {
     // Tentar aplicar assinatura visual no PDF e atualizar arquivo
     try {
       if (docInfo?.file_path) {
+        console.log('[complete-internal-signature] Baixando PDF original', docInfo.file_path);
         const { data: origBlob, error: dlErr } = await supabaseAdmin.storage
           .from('documents')
           .download(docInfo.file_path);
+        if (dlErr) {
+          console.warn('[complete-internal-signature] Falha ao baixar PDF original', dlErr);
+        }
         if (!dlErr && origBlob) {
           const origBytes = new Uint8Array(await origBlob.arrayBuffer());
           const pdfDoc = await PDFDocument.load(origBytes);
@@ -203,11 +207,14 @@ Deno.serve(async (req) => {
 
           const stampedBytes = await pdfDoc.save();
           const signedPath = `signed/${docInfo.file_path}`;
+          const stampedBlob = new Blob([stampedBytes], { type: 'application/pdf' });
+          console.log('[complete-internal-signature] Enviando PDF assinado para', signedPath, 'tamanho', stampedBytes.byteLength);
           const { error: upErr } = await supabaseAdmin.storage
             .from('documents')
-            .upload(signedPath, stampedBytes, { contentType: 'application/pdf', upsert: true });
+            .upload(signedPath, stampedBlob, { contentType: 'application/pdf', upsert: true });
 
           if (!upErr) {
+            console.log('[complete-internal-signature] Upload do PDF assinado concluído');
             // Atualizar documento para apontar para a versão assinada
             const { error: updDocErr } = await supabaseAdmin
               .from('documents')
@@ -215,6 +222,8 @@ Deno.serve(async (req) => {
               .eq('id', documentId);
             if (updDocErr) {
               console.warn('[complete-internal-signature] Falha ao atualizar file_path para assinado', updDocErr);
+            } else {
+              console.log('[complete-internal-signature] file_path do documento atualizado para', signedPath);
             }
           } else {
             console.warn('[complete-internal-signature] Falha ao subir PDF assinado', upErr);
