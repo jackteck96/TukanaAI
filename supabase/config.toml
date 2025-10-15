@@ -46,5 +46,5 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.complete-internal-signature]
-verify_jwt = true
+verify_jwt = false
 

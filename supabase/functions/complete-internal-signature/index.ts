@@ -30,12 +30,7 @@ Deno.serve(async (req) => {
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Client bound to user JWT for auth context
-    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: req.headers.get('Authorization')! } },
-    });
-
-    // Admin client with service role for RLS-bypassing writes (use carefully!)
+    // Admin client with service role for RLS-bypassing writes
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const {
@@ -57,15 +52,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get current user from JWT
-    const { data: userData, error: userErr } = await supabaseAuth.auth.getUser();
-    if (userErr || !userData?.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-    const userId = userData.user.id;
+    // Public function: user will be derived from OTP row
+    let userId: string | null = null;
 
     // Validate OTP server-side
     const nowIso = new Date().toISOString();
@@ -85,12 +73,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (otpRow.user_id !== userId) {
-      return new Response(JSON.stringify({ error: 'Code does not belong to user' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
+    // Derive the user from the OTP row (public function)
+    userId = otpRow.user_id;
 
     // Mark OTP as verified
     const { error: markErr } = await supabaseAdmin
