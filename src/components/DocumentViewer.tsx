@@ -5,8 +5,10 @@ import SignatureTermDownloadButton from './SignatureTermDownloadButton';
 import PdfInlineRenderer from './PdfInlineRenderer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Users, PenTool } from 'lucide-react';
+import { FileText, Users, PenTool, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface DocumentViewerProps {
   documentId: string;
@@ -26,6 +28,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [viewerBlob, setViewerBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(documentUrl || null);
+  const [signedCount, setSignedCount] = useState(0);
 
   useEffect(() => {
     const resolve = async () => {
@@ -83,17 +86,75 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     return () => { aborted = true; };
   }, [resolvedUrl]);
 
+  // Verificar quantidade de assinaturas para exibir o botão de download
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('internal_signatures')
+          .select('id')
+          .eq('document_id', documentId);
+        setSignedCount(data?.length || 0);
+      } catch (err) {
+        console.error('Erro ao checar assinaturas:', err);
+      }
+    })();
+  }, [documentId]);
+
+  const downloadSignedDocument = async () => {
+    try {
+      const { data: doc } = await supabase
+        .from('documents')
+        .select('file_path')
+        .eq('id', documentId)
+        .single();
+
+      if (!doc?.file_path) {
+        toast.error('Documento não encontrado');
+        return;
+      }
+
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .download(doc.file_path);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${documentName}_assinado.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('Download iniciado');
+    } catch (error) {
+      console.error('Erro ao baixar documento assinado:', error);
+      toast.error('Erro ao baixar documento assinado');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Visualizador do Documento */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between"> 
             <CardTitle className="flex items-center space-x-2">
               <FileText className="h-5 w-5" />
               <span>{documentName}</span>
             </CardTitle>
-            <SignatureTermDownloadButton documentId={documentId} />
+            <div className="flex items-center gap-2">
+              {signedCount > 0 && (
+                <Button variant="default" onClick={downloadSignedDocument}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar Documento Assinado
+                </Button>
+              )}
+              <SignatureTermDownloadButton documentId={documentId} />
+            </div>
           </div>
         </CardHeader>
         <CardContent>

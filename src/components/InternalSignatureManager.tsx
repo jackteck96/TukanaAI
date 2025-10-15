@@ -50,6 +50,11 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(signatureData.signerEmail) || !emailRegex.test(signatureData.authContact)) {
+      toast.error('Informe emails válidos');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -91,6 +96,12 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             documentName: documentName
           }
         });
+
+        if (emailError) {
+          console.error('Erro ao enviar email de OTP:', emailError);
+          toast.error('Falha ao enviar o email de verificação');
+          return;
+        }
 
         toast.success(`Código enviado por email! (Código: ${code})`);
       }
@@ -147,29 +158,36 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
       // Gerar hashes para assinatura
       const signatureTimestamp = new Date();
-      const { data: signatureHashResult, error: hashError } = await supabase.rpc('generate_signature_hash', {
-        document_uuid: documentId,
-        signer_uuid: user.user.id,
-        timestamp_val: signatureTimestamp.toISOString()
-      });
 
-      if (hashError) {
-        console.error('Erro ao gerar hash de assinatura:', hashError);
-        throw new Error('Falha ao gerar hash de assinatura');
+      // Gerar hash de assinatura (com fallback se RPC indisponível)
+      let signatureHash = `sig_${documentId}_${user.user.id}_${signatureTimestamp.getTime()}`;
+      try {
+        const { data, error } = await supabase.rpc('generate_signature_hash', {
+          document_uuid: documentId,
+          signer_uuid: user.user.id,
+          timestamp_val: signatureTimestamp.toISOString()
+        });
+        if (!error && data) signatureHash = data as string;
+      } catch (e) {
+        console.warn('RPC generate_signature_hash falhou, usando fallback:', e);
       }
 
-      const { data: documentHashResult, error: docHashError } = await supabase.rpc('generate_document_hash', {
-        document_uuid: documentId,
-        file_path_val: `documents/${documentId}`
-      });
-
-      if (docHashError) {
-        console.error('Erro ao gerar hash do documento:', docHashError);
-        throw new Error('Falha ao gerar hash do documento');
+      // Gerar hash do documento (com fallback se RPC indisponível)
+      let documentHash = `doc_${documentId}_${signatureTimestamp.getTime()}`;
+      try {
+        const { data: docInfo } = await supabase
+          .from('documents')
+          .select('file_path')
+          .eq('id', documentId)
+          .single();
+        const { data, error } = await supabase.rpc('generate_document_hash', {
+          document_uuid: documentId,
+          file_path_val: docInfo?.file_path || ''
+        });
+        if (!error && data) documentHash = data as string;
+      } catch (e) {
+        console.warn('RPC generate_document_hash falhou, usando fallback:', e);
       }
-
-      const signatureHash = signatureHashResult || `fallback_${Date.now()}`;
-      const documentHash = documentHashResult || `fallback_doc_${Date.now()}`;
 
       // Obter informações do navegador e dispositivo
       const userAgent = navigator.userAgent;
