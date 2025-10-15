@@ -402,6 +402,32 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         return;
       }
 
+      // Apagar notificações relacionadas a este documento ao reenviar
+      try {
+        const { data: documentsWithNotifications } = await supabase
+          .from('documents')
+          .select('id')
+          .eq('process_id', processId)
+          .eq('document_type', request.document_name);
+
+        if (documentsWithNotifications && documentsWithNotifications.length > 0) {
+          const documentIds = documentsWithNotifications.map(d => d.id);
+          
+          const { error: deleteError } = await supabase
+            .from('client_notifications')
+            .delete()
+            .in('document_id', documentIds);
+
+          if (deleteError) {
+            console.error('Erro ao apagar notificações:', deleteError);
+          } else {
+            console.log('Notificações apagadas para documentos reenviados');
+          }
+        }
+      } catch (notifError) {
+        console.warn('Erro ao processar notificações:', notifError);
+      }
+
       toast.success("Documento enviado com sucesso!");
       loadDocumentRequests(); // Recarregar lista
     } catch (err) {
