@@ -1314,6 +1314,10 @@ export type Database = {
         Args: { document_uuid: string; signer_email_param: string }
         Returns: boolean
       }
+      can_view_company: {
+        Args: { comp_id: string }
+        Returns: boolean
+      }
       check_plan_limits: {
         Args: { company_uuid: string; limit_type: string }
         Returns: Json

@@ -104,7 +104,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
           return;
         }
 
-        toast.success(`Código enviado por email! (Código: ${code})`);
+        toast.success('Código enviado por email!');
       }
 
       setStep('otp');
