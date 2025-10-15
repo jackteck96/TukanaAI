@@ -15,6 +15,7 @@ interface InternalSignatureManagerProps {
   documentId: string;
   processId: string;
   documentName: string;
+  onSigned?: () => void;
 }
 
 interface SignatureData {

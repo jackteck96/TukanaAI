@@ -62,12 +62,20 @@ Deno.serve(async (req) => {
       .select('*')
       .eq('id', verificationId)
       .eq('verification_code', otpCode)
-      .gt('expires_at', nowIso)
       .single();
 
     if (otpErr || !otpRow) {
       console.error('[complete-internal-signature] OTP validation failed', { otpErr, verificationId, otpCode });
       return new Response(JSON.stringify({ error: 'Invalid or expired code', details: otpErr?.message || otpErr }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    // Expiration check (server-side)
+    if (otpRow.expires_at && new Date(otpRow.expires_at).getTime() <= Date.now()) {
+      console.error('[complete-internal-signature] OTP expired', { verificationId });
+      return new Response(JSON.stringify({ error: 'Invalid or expired code', details: 'expired' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
