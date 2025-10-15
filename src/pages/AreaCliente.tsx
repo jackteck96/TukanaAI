@@ -45,7 +45,7 @@ import TaskManager from "@/components/TaskManager";
 import { TemplateSelector } from "@/components/TemplateSelector";
 import { TemplateEditor } from "@/components/TemplateEditor";
 import ClientTaskView from "@/components/ClientTaskView";
-import DigitalSignatureManager from "@/components/DigitalSignatureManager";
+import DocumentViewer from "@/components/DocumentViewer";
 import ClientDocumentRequests from "@/components/ClientDocumentRequests";
 
 const AreaCliente = () => {
@@ -851,7 +851,7 @@ const AreaCliente = () => {
                             </p>
                           </CardHeader>
                           <CardContent>
-                            <DigitalSignatureManager
+                            <DocumentViewer
                               documentId={doc.id}
                               processId={currentProcess.id}
                               documentName={doc.file_name}
