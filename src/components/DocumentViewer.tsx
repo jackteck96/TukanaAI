@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import InternalSignatureManager from './InternalSignatureManager';
 import SignatureTermDownloadButton from './SignatureTermDownloadButton';
+import PdfInlineRenderer from './PdfInlineRenderer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +21,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   documentUrl,
   showSignature = true
 }) => {
-  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [viewerBlob, setViewerBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(documentUrl || null);
 
@@ -57,12 +58,27 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   }, [documentUrl, documentId]);
 
   useEffect(() => {
-    setLoading(true);
-    try {
-      setViewerUrl(resolvedUrl);
-    } finally {
-      setLoading(false);
+    if (!resolvedUrl) {
+      setViewerBlob(null);
+      return;
     }
+    let aborted = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(resolvedUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        if (!aborted) setViewerBlob(blob);
+      } catch (err) {
+        console.error('Erro ao baixar PDF:', err);
+        if (!aborted) setViewerBlob(null);
+      } finally {
+        if (!aborted) setLoading(false);
+      }
+    };
+    load();
+    return () => { aborted = true; };
   }, [resolvedUrl]);
 
   return (
@@ -85,23 +101,16 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                 <div className="flex items-center justify-center h-96 text-muted-foreground">
                   <p>Carregando documento…</p>
                 </div>
-              ) : viewerUrl ? (
-                <object
-                  data={viewerUrl}
-                  type="application/pdf"
-                  className="w-full h-96"
-                >
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    <p>Não foi possível exibir o documento. </p>
-                    <a href={viewerUrl} target="_blank" rel="noreferrer" className="underline ml-2">Abrir em nova aba</a>
-                  </div>
-                </object>
+              ) : viewerBlob ? (
+                <PdfInlineRenderer blob={viewerBlob} />
               ) : (
                 <div className="flex items-center justify-center h-96 text-muted-foreground">
                   <div className="text-center">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>Não foi possível visualizar o documento inline.</p>
-                    <a href={documentUrl} target="_blank" rel="noreferrer" className="underline">Abrir original</a>
+                    {resolvedUrl && (
+                      <a href={resolvedUrl} target="_blank" rel="noreferrer" className="underline">Abrir em nova aba</a>
+                    )}
                   </div>
                 </div>
               )
@@ -110,7 +119,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                 <div className="text-center">
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Documento não disponível para visualização</p>
-                  <p className="text-sm">Faça o download para visualizar o arquivo</p>
+                  <p className="text-sm">Não foi possível gerar uma URL para o arquivo</p>
                 </div>
               </div>
             )}
