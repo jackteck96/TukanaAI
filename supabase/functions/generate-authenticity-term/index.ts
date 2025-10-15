@@ -29,11 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Buscar dados da assinatura com melhor tratamento de erro
     const { data: signature, error: sigError } = await supabase
       .from("internal_signatures")
-      .select(`
-        *,
-        documents(file_name, id),
-        processes(client_name, project_name)
-      `)
+      .select("*")
       .eq("id", signatureId)
       .maybeSingle();
 
@@ -47,6 +43,25 @@ const handler = async (req: Request): Promise<Response> => {
     if (!signature) {
       console.error("Assinatura não encontrada no banco de dados:", signatureId);
       throw new Error("Assinatura não encontrada no banco de dados");
+    }
+
+    // Buscar dados adicionais (documento e processo)
+    const { data: documentData, error: docError } = await supabase
+      .from("documents")
+      .select("file_name, id")
+      .eq("id", signature.document_id)
+      .maybeSingle();
+    if (docError) {
+      console.warn("Erro ao buscar documento:", docError);
+    }
+
+    const { data: processData, error: procError } = await supabase
+      .from("processes")
+      .select("client_name, project_name")
+      .eq("id", signature.process_id)
+      .maybeSingle();
+    if (procError) {
+      console.warn("Erro ao buscar processo:", procError);
     }
 
     // Gerar QR Code
@@ -92,11 +107,11 @@ const handler = async (req: Request): Promise<Response> => {
     y += 8;
     
     doc.setFont("helvetica", "normal");
-    doc.text(`Nome do Documento: ${signature.documents?.file_name || "N/A"}`, 20, y);
+    doc.text(`Nome do Documento: ${documentData?.file_name || "N/A"}`, 20, y);
     y += 6;
     doc.text(`ID do Documento: ${signature.document_id}`, 20, y);
     y += 6;
-    doc.text(`Processo: ${signature.processes?.project_name || signature.processes?.client_name || "N/A"}`, 20, y);
+    doc.text(`Processo: ${processData?.project_name || processData?.client_name || "N/A"}`, 20, y);
     y += 10;
     
     // Dados da Assinatura
