@@ -131,6 +131,12 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       }
 
       const userAgent = navigator.userAgent;
+      console.log('[InternalSignatureManager] invoking complete-internal-signature', {
+        verificationId,
+        documentId,
+        processId,
+        signerEmail: signatureData.signerEmail,
+      });
 
       // Delegar para Edge Function com validação no servidor e inserção segura
       const { data, error } = await supabase.functions.invoke('complete-internal-signature', {
