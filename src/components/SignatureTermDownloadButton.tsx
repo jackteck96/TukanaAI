@@ -73,9 +73,24 @@ const SignatureTermDownloadButton: React.FC<SignatureTermDownloadButtonProps> = 
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (termUrl) {
-      window.open(termUrl, '_blank');
+      try {
+        const response = await fetch(termUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'termo-autenticidade.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        toast.success('Termo de autenticidade baixado com sucesso');
+      } catch (error) {
+        console.error('Erro ao baixar termo:', error);
+        toast.error('Erro ao baixar termo de autenticidade');
+      }
     } else {
       toast.error('Termo de autenticidade não disponível');
     }

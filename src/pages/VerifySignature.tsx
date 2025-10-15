@@ -88,6 +88,9 @@ const VerifySignature: React.FC = () => {
       toast.error('Termo de autenticidade não disponível');
       return;
     }
+    
+    let downloadUrl = signature.auth_report_url;
+    
     // Sempre tentar gerar uma URL assinada fresca para evitar URLs públicas antigas
     try {
       const path = `authenticity-terms/${signature.signature_hash}.pdf`;
@@ -95,18 +98,31 @@ const VerifySignature: React.FC = () => {
         .from('documents')
         .createSignedUrl(path, 60 * 60 * 24 * 7);
       if (signed?.signedUrl) {
-        window.open(signed.signedUrl, '_blank');
-        return;
-      }
-      if (error) {
+        downloadUrl = signed.signedUrl;
+      } else if (error) {
         console.warn('Falha ao gerar URL assinada, usando URL salva', error);
       }
     } catch (e) {
       console.warn('Exceção ao gerar URL assinada, usando URL salva', e);
     }
 
-    if (signature?.auth_report_url) {
-      window.open(signature.auth_report_url, '_blank');
+    if (downloadUrl) {
+      try {
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'termo-autenticidade.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        toast.success('Termo de autenticidade baixado com sucesso');
+      } catch (error) {
+        console.error('Erro ao baixar termo:', error);
+        toast.error('Erro ao baixar termo de autenticidade');
+      }
     } else {
       toast.error('Termo de autenticidade não disponível');
     }
