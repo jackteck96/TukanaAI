@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Gerando termo de autenticidade para assinatura:", signatureId);
 
-    // Buscar dados da assinatura
+    // Buscar dados da assinatura com melhor tratamento de erro
     const { data: signature, error: sigError } = await supabase
       .from("internal_signatures")
       .select(`
@@ -35,10 +35,18 @@ const handler = async (req: Request): Promise<Response> => {
         processes(client_name, project_name)
       `)
       .eq("id", signatureId)
-      .single();
+      .maybeSingle();
 
-    if (sigError || !signature) {
-      throw new Error("Assinatura não encontrada");
+    console.log("Resultado da busca:", { signature, sigError });
+
+    if (sigError) {
+      console.error("Erro ao buscar assinatura:", sigError);
+      throw new Error(`Erro ao buscar assinatura: ${sigError.message}`);
+    }
+
+    if (!signature) {
+      console.error("Assinatura não encontrada no banco de dados:", signatureId);
+      throw new Error("Assinatura não encontrada no banco de dados");
     }
 
     // Gerar QR Code
