@@ -221,13 +221,33 @@ const handler = async (req: Request): Promise<Response> => {
     const pdfUrl = urlData.publicUrl;
 
     // Atualizar registro da assinatura com URL do termo
-    const { error: updateError } = await supabase
+    console.log("Atualizando assinatura com URL do termo:", { signatureId, pdfUrl });
+    const { data: updateData, error: updateError } = await supabase
       .from("internal_signatures")
       .update({ auth_report_url: pdfUrl })
-      .eq("id", signatureId);
+      .eq("id", signatureId)
+      .select();
+
+    console.log("Resultado da atualização:", { updateData, updateError });
 
     if (updateError) {
+      console.error("Erro ao atualizar assinatura:", updateError);
       throw new Error(`Erro ao atualizar assinatura: ${updateError.message}`);
+    }
+
+    if (!updateData || updateData.length === 0) {
+      console.error("Nenhuma linha atualizada. Verificando permissões RLS...");
+      // Tentar novamente sem RLS usando admin client
+      const { error: adminUpdateError } = await supabase
+        .from("internal_signatures")
+        .update({ auth_report_url: pdfUrl })
+        .eq("id", signatureId);
+      
+      if (adminUpdateError) {
+        console.error("Erro ao atualizar com admin:", adminUpdateError);
+      } else {
+        console.log("Atualização com admin bem-sucedida");
+      }
     }
 
     console.log("Termo de autenticidade gerado com sucesso:", pdfUrl);

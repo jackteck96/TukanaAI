@@ -87,18 +87,20 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   }, [resolvedUrl]);
 
   // Verificar quantidade de assinaturas para exibir o botão de download
+  const checkSignatures = async () => {
+    try {
+      const { data } = await supabase
+        .from('internal_signatures')
+        .select('id')
+        .eq('document_id', documentId);
+      setSignedCount(data?.length || 0);
+    } catch (err) {
+      console.error('Erro ao checar assinaturas:', err);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('internal_signatures')
-          .select('id')
-          .eq('document_id', documentId);
-        setSignedCount(data?.length || 0);
-      } catch (err) {
-        console.error('Erro ao checar assinaturas:', err);
-      }
-    })();
+    checkSignatures();
   }, [documentId]);
 
   const downloadSignedDocument = async () => {
@@ -209,6 +211,9 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               documentId={documentId}
               processId={processId}
               documentName={documentName}
+              onSigned={() => {
+                checkSignatures();
+              }}
             />
           </TabsContent>
           

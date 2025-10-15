@@ -40,7 +40,8 @@ interface SignatureData {
 const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   documentId,
   processId,
-  documentName
+  documentName,
+  onSigned
 }) => {
   const [step, setStep] = useState<'form' | 'otp' | 'success'>('form');
   const [loading, setLoading] = useState(false);
@@ -275,14 +276,16 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       }
 
       // Gerar termo de autenticidade
+      console.log('Gerando termo de autenticidade para signatureId:', signatureId);
       try {
-        const { error: termError } = await supabase.functions.invoke('generate-authenticity-term', {
+        const { data: termData, error: termError } = await supabase.functions.invoke('generate-authenticity-term', {
           body: { signatureId }
         });
         if (termError) {
           console.error('Erro ao gerar termo de autenticidade:', termError);
           toast.warning('Assinatura concluída, mas houve erro ao gerar termo de autenticidade');
         } else {
+          console.log('Termo gerado com sucesso:', termData);
           toast.success('Documento assinado e termo de autenticidade gerado!');
         }
       } catch (termError) {
@@ -292,6 +295,11 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
       setStep('success');
       await notifyCompanyAndClient();
+      
+      // Chamar callback para recarregar dados no componente pai
+      if (onSigned) {
+        onSigned();
+      }
     } catch (error: any) {
       console.error('Erro ao verificar e assinar:', error);
       const errMsg = (error as any)?.message || (typeof error === 'string' ? error : 'Erro ao assinar documento');
