@@ -265,11 +265,13 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
       let signatureId: string | null = null;
       if (error || !data?.ok) {
-        console.warn('[InternalSignatureManager] Edge Function indisponível, usando fallback no cliente', { error, data });
+        const serverErrMsg = (data as any)?.error || (error as any)?.message || 'Falha desconhecida';
+        console.warn('[InternalSignatureManager] Edge Function falhou, usando fallback no cliente', { error, data, serverErrMsg });
+        toast.warning(`Falha no servidor ao assinar: ${serverErrMsg}`);
         signatureId = await clientSideSign(user.user.id);
         if (!signatureId) return;
       } else {
-        signatureId = data.signatureId as string;
+        signatureId = (data as any).signatureId as string;
       }
 
       // Gerar termo de autenticidade
@@ -292,9 +294,9 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
       await notifyCompanyAndClient();
     } catch (error: any) {
       console.error('Erro ao verificar e assinar:', error);
-      toast.error('Erro ao assinar documento');
+      const errMsg = (error as any)?.message || (typeof error === 'string' ? error : 'Erro ao assinar documento');
+      toast.error(`Erro ao assinar: ${errMsg}`);
     } finally {
-      setLoading(false);
     }
   };
 
