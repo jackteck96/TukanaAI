@@ -81,7 +81,6 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
       setVerificationId(otpData.id);
 
-      // Enviar email se método for email
       if (signatureData.authMethod === 'email') {
         const { error: emailError } = await supabase.functions.invoke('send-otp-email', {
           body: {
@@ -93,7 +92,8 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         });
 
         if (emailError) throw emailError;
-        toast.success('Código enviado por email!');
+        // Exibir também o código como fallback para testes
+        toast.success(`Código enviado por email! (Código: ${code})`);
       } else {
         // Para SMS, apenas mostrar o código (implementação simplificada)
         toast.success(`Código OTP: ${code} (implementação de SMS pendente)`);
