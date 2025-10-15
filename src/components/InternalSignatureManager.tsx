@@ -146,9 +146,16 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         }
       });
 
-      if (error || !data?.ok) {
-        console.error('complete-internal-signature error:', error || data);
-        toast.error('Erro ao assinar documento');
+      if (error) {
+        console.error('complete-internal-signature error:', error);
+        // Mostrar a mensagem detalhada do Edge Function quando disponível
+        // @ts-ignore - supabase error typing varies
+        toast.error(error.message || 'Erro ao assinar documento');
+        return;
+      }
+      if (!data?.ok) {
+        console.error('complete-internal-signature failure:', data);
+        toast.error(data?.error || 'Erro ao assinar documento');
         return;
       }
 

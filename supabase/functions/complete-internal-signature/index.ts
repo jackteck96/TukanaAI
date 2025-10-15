@@ -74,12 +74,12 @@ Deno.serve(async (req) => {
       .select('*')
       .eq('id', verificationId)
       .eq('verification_code', otpCode)
-      .eq('is_verified', false)
       .gt('expires_at', nowIso)
       .single();
 
     if (otpErr || !otpRow) {
-      return new Response(JSON.stringify({ error: 'Invalid or expired code' }), {
+      console.error('[complete-internal-signature] OTP validation failed', { otpErr, verificationId, otpCode });
+      return new Response(JSON.stringify({ error: 'Invalid or expired code', details: otpErr?.message || otpErr }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
@@ -111,7 +111,8 @@ Deno.serve(async (req) => {
       .eq('id', processId)
       .single();
     if (processErr || !process?.company_id) {
-      return new Response(JSON.stringify({ error: 'Process or company not found' }), {
+      console.error('[complete-internal-signature] Process fetch error', processErr);
+      return new Response(JSON.stringify({ error: 'Process or company not found', details: processErr?.message || processErr }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
@@ -160,7 +161,8 @@ Deno.serve(async (req) => {
       .single();
 
     if (insertErr || !signatureRow) {
-      return new Response(JSON.stringify({ error: 'Failed to create signature record' }), {
+      console.error('[complete-internal-signature] Insert failed', insertErr);
+      return new Response(JSON.stringify({ error: 'Failed to create signature record', details: insertErr?.message || insertErr }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
