@@ -141,6 +141,40 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     }
   };
 
+  const updateProcessProgress = async () => {
+    try {
+      const { data: docs, error: docsError } = await supabase
+        .from('documents')
+        .select('status')
+        .eq('process_id', processId);
+
+      if (docsError) throw docsError;
+      if (!docs || docs.length === 0) return;
+
+      const total = docs.length;
+      const approved = docs.filter(d => d.status === 'Aprovado').length;
+      const progress = Math.round((approved / total) * 100);
+
+      let status = 'Em andamento';
+      if (progress === 100) {
+        status = 'Concluído';
+      } else if (progress === 0) {
+        status = 'Pendente';
+      }
+
+      const { error: updateError } = await supabase
+        .from('processes')
+        .update({ progress, status })
+        .eq('id', processId);
+
+      if (updateError) throw updateError;
+      
+      console.log(`[DocumentList] Progresso atualizado: ${progress}%, Status: ${status}`);
+    } catch (error) {
+      console.error('Erro ao atualizar progresso do processo:', error);
+    }
+  };
+
   const loadDocuments = async () => {
     try {
       const { data, error } = await supabase
@@ -251,6 +285,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
       if (error) throw error;
 
       toast.success(`Documento ${newStatus.toLowerCase()} com sucesso`);
+      await updateProcessProgress();
       loadDocuments(); // Recarregar lista
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -289,14 +324,16 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     });
   };
 
-  const handleDialogConfirm = () => {
+  const handleDialogConfirm = async () => {
+    await updateProcessProgress();
     loadDocuments(); // Recarregar lista após ação
   };
 
-  // Verificar se o usuário pode gerenciar documentos (não é cliente ou possui permissão por user_roles)
-  const canManageDocuments = (userRole && userRole !== 'client') || hasCompanyPermission;
+  // Verificar se o usuário pode gerenciar documentos
+  const canManageDocuments = hasCompanyPermission || 
+    ['admin', 'lawyer', 'staff'].includes(userRole || '');
   
-  console.log('[DocumentList] Render - canManageDocuments:', canManageDocuments, 'userRole:', userRole, 'hasCompanyPermission:', hasCompanyPermission);
+  console.log('[DocumentList] Render - canManageDocuments:', canManageDocuments, 'hasCompanyPermission:', hasCompanyPermission, 'userRole:', userRole);
 
   if (loading) {
     return (
@@ -455,37 +492,14 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                     >
                       <X className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRequestAdjustment(doc.id, doc.file_name)}
-                      className="text-warning hover:bg-warning/10"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-
-                    {/* Fallback: menu de ações compacto (garante visibilidade em layouts estreitos) */}
-                    <div className="sm:hidden">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="outline">
-                            <Eye className="sr-only" />
-                            •••
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleApprove(doc.id)}>
-                            <Check className="h-4 w-4 mr-2" /> Aprovar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleReject(doc.id, doc.file_name)}>
-                            <X className="h-4 w-4 mr-2" /> Rejeitar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleRequestAdjustment(doc.id, doc.file_name)}>
-                            <MessageSquare className="h-4 w-4 mr-2" /> Solicitar ajuste
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleRequestAdjustment(doc.id, doc.file_name)}
+                       className="text-warning hover:bg-warning/10"
+                     >
+                       <MessageSquare className="h-4 w-4" />
+                     </Button>
                   </>
                 )}
               </div>

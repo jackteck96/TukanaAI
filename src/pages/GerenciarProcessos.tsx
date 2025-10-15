@@ -97,6 +97,12 @@ const GerenciarProcessos = () => {
 
       if (error) throw error;
 
+      // Calcular progresso baseado nos documentos
+      const docs = processData.documents || [];
+      const total = docs.length;
+      const approved = docs.filter((d: any) => d.status === 'Aprovado').length;
+      const calculatedProgress = total > 0 ? Math.round((approved / total) * 100) : 0;
+
       setCurrentProcess({
         id: processData.id,
         project_name: processData.project_name,
@@ -107,11 +113,11 @@ const GerenciarProcessos = () => {
         description: processData.description,
         status: processData.status,
         priority: processData.priority,
-        progress: processData.progress,
+        progress: calculatedProgress,
         due_date: processData.due_date,
         created_at: processData.created_at,
         updated_at: processData.updated_at,
-        documents: processData.documents || []
+        documents: docs
       });
       
       setNotes(processData.description || "");
