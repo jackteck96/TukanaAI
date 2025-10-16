@@ -150,6 +150,11 @@ const App = () => (
                     <AnaliseIA />
                   </ProtectedRoute>
                 } />
+                <Route path="/treinar-ia" element={
+                  <AdminRoute>
+                    <TreinarIA />
+                  </AdminRoute>
+                } />
                 <Route path="/approve-admin" element={<ApproveAdmin />} />
                 
                 {/* Catch-all route */}
