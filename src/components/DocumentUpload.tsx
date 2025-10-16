@@ -186,6 +186,26 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
           file_type: docData.file_type
         });
         setShowPreviewModal(true);
+
+        // Enviar notificação e email para o destinatário
+        try {
+          const senderType = profile?.email === processData?.client_email ? 'client' : 'company';
+
+          await supabase.functions.invoke('send-document-notification', {
+            body: {
+              documentId: docData.id,
+              processId: processId,
+              documentName: docData.file_name,
+              senderType,
+              requiresSignature: true
+            }
+          });
+
+          console.log('Notificação de assinatura enviada com sucesso');
+        } catch (notificationError) {
+          console.error('Erro ao enviar notificação:', notificationError);
+          // Não bloquear o upload se a notificação falhar
+        }
       }
 
     } catch (error) {
