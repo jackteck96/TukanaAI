@@ -578,15 +578,12 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
       )}
 
       {/* Upload Dialog */}
-      {showUploadDialog && (
-        <DocumentUpload
-          processId={processId}
-          onUploadComplete={() => {
-            setShowUploadDialog(false);
-            loadDocuments();
-          }}
-        />
-      )}
+      <DocumentUpload
+        processId={processId}
+        open={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
+        onUploadComplete={loadDocuments}
+      />
 
       {/* Dialog de Observações */}
       <Dialog open={isCommentsDialogOpen} onOpenChange={setIsCommentsDialogOpen}>

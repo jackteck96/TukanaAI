@@ -816,24 +816,17 @@ const AreaCliente = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Upload de novo documento para assinatura */}
-                  <div className="p-4 border-2 border-dashed rounded-lg bg-muted/30">
-                    <div className="text-center space-y-2">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Enviar Documento para Assinatura</p>
-                        <p className="text-xs text-muted-foreground">
-                          Envie um documento que você e a empresa precisam assinar
-                        </p>
-                      </div>
-                      <DocumentUpload
-                        processId={currentProcess.id}
-                        onUploadComplete={() => {
-                          loadProcessDetails(currentProcess.id);
-                          setRefreshKey(prev => prev + 1);
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      setSelectedProcess(currentProcess);
+                      setIsUploadModalOpen(true);
+                    }}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Enviar Documento para Assinatura
+                  </Button>
 
                   {/* Documentos existentes para assinatura */}
                   {currentProcess.documents && currentProcess.documents.length > 0 ? (
@@ -1496,55 +1489,46 @@ const AreaCliente = () => {
       </Dialog>
 
       {/* Upload Modal */}
-      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Enviar Documento</DialogTitle>
-            <DialogDescription>
-              Envie um documento para o processo selecionado
-            </DialogDescription>
-          </DialogHeader>
-          {selectedProcess && (
-            <DocumentUpload
-              processId={String(selectedProcess.id)}
-              onUploadComplete={() => {
-                setIsUploadModalOpen(false);
-                // Recarregar documentos
-                const load = async () => {
-                  if (!user?.email) return;
-                  const { data: procs } = await supabase
-                    .from('processes')
-                    .select('id')
-                    .eq('client_email', user.email);
-                  const ids = (procs || []).map((p: any) => p.id);
-                  if (ids.length) {
-                    const { data: docs } = await supabase
-                      .from('documents')
-                      .select('id, file_name, document_type, status, created_at, process_id')
-                      .in('process_id', ids);
-                    const docsByProcess: Record<string, any[]> = {};
-                    (docs || []).forEach((d: any) => {
-                      const item = {
-                        id: d.id,
-                        name: d.file_name,
-                        type: d.document_type,
-                        uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
-                        status: d.status,
-                        size: ''
-                      };
-                      const key = d.process_id;
-                      if (!docsByProcess[key]) docsByProcess[key] = [];
-                      docsByProcess[key].push(item);
-                    });
-                    setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
-                  }
-                };
-                load();
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {selectedProcess && (
+        <DocumentUpload
+          processId={String(selectedProcess.id)}
+          open={isUploadModalOpen}
+          onOpenChange={setIsUploadModalOpen}
+          onUploadComplete={() => {
+            // Recarregar documentos
+            const load = async () => {
+              if (!user?.email) return;
+              const { data: procs } = await supabase
+                .from('processes')
+                .select('id')
+                .eq('client_email', user.email);
+              const ids = (procs || []).map((p: any) => p.id);
+              if (ids.length) {
+                const { data: docs } = await supabase
+                  .from('documents')
+                  .select('id, file_name, document_type, status, created_at, process_id')
+                  .in('process_id', ids);
+                const docsByProcess: Record<string, any[]> = {};
+                (docs || []).forEach((d: any) => {
+                  const item = {
+                    id: d.id,
+                    name: d.file_name,
+                    type: d.document_type,
+                    uploadDate: new Date(d.created_at).toLocaleDateString('pt-BR'),
+                    status: d.status,
+                    size: ''
+                  };
+                  const key = d.process_id;
+                  if (!docsByProcess[key]) docsByProcess[key] = [];
+                  docsByProcess[key].push(item);
+                });
+                setProcessDocuments((prev: any) => ({ ...prev, ...docsByProcess }));
+              }
+            };
+            load();
+          }}
+        />
+      )}
 
       {/* Collaborators Modal */}
       <CollaboratorsModal

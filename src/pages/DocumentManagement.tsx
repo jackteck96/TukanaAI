@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Search, FileText, Users, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Plus, Search, FileText, Users, BarChart3, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +36,7 @@ export default function DocumentManagement() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   
   // Estados para criar novo processo
   const [isCreatingProcess, setIsCreatingProcess] = useState(false);
@@ -303,8 +304,18 @@ export default function DocumentManagement() {
                   </TabsContent>
 
                   <TabsContent value="upload" className="space-y-6">
+                    <Button 
+                      className="w-full"
+                      onClick={() => setShowUploadDialog(true)}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Enviar Documento
+                    </Button>
+                    
                     <DocumentUpload 
                       processId={selectedProcess.id} 
+                      open={showUploadDialog}
+                      onOpenChange={setShowUploadDialog}
                       onUploadComplete={handleUploadComplete}
                     />
                   </TabsContent>
