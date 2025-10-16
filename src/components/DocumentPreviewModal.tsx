@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { FileText, Download, Check, X, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import PdfInlineRenderer from './PdfInlineRenderer';
+import InternalSignatureManager from './InternalSignatureManager';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PreviewDocument {
   id: string;
@@ -31,10 +33,14 @@ const DocumentPreviewModal = ({
   onRequestAdjustment,
   onDownload,
 }: DocumentPreviewModalProps) => {
+  const { user } = useAuth();
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [processId, setProcessId] = useState<string | null>(null);
+  const [documentData, setDocumentData] = useState<any>(null);
+  const [showSignature, setShowSignature] = useState(false);
 
   useEffect(() => {
     let createdUrl: string | null = null;
@@ -46,6 +52,23 @@ const DocumentPreviewModal = ({
       setPdfBlob(null);
       setViewerUrl(null);
       try {
+        // Buscar dados do documento incluindo process_id e requires_signature
+        const { data: docData, error: docError } = await supabase
+          .from('documents')
+          .select('process_id, requires_signature, signature_status')
+          .eq('id', document.id)
+          .single();
+
+        if (docError) throw docError;
+        setDocumentData(docData);
+        setProcessId(docData?.process_id || null);
+        
+        // Mostrar assinatura se requer assinatura e não está totalmente assinado
+        setShowSignature(
+          docData?.requires_signature === true && 
+          docData?.signature_status !== 'fully_signed'
+        );
+
         const { data, error } = await supabase.storage
           .from('documents')
           .download(document.file_path);
@@ -81,7 +104,7 @@ const DocumentPreviewModal = ({
     return () => {
       if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
-  }, [open, document.file_path, document.file_name]);
+  }, [open, document.file_path, document.file_name, document.id]);
 
   const isPdf = document.file_name?.toLowerCase().endsWith('.pdf') || document.file_type === 'application/pdf';
 
@@ -148,6 +171,21 @@ const DocumentPreviewModal = ({
               </>
             )}
           </div>
+
+          {/* Campo de Assinatura */}
+          {showSignature && processId && (
+            <div className="mt-6 border-t pt-6">
+              <InternalSignatureManager
+                documentId={document.id}
+                processId={processId}
+                documentName={document.file_name}
+                onSigned={() => {
+                  // Recarregar dados do documento após assinatura
+                  setShowSignature(false);
+                }}
+              />
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-2 justify-between">
             <div className="flex gap-2">
