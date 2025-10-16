@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,20 +16,6 @@ interface DocumentUploadProps {
   onUploadComplete?: () => void;
 }
 
-const documentTypes = [
-  'RG',
-  'CPF',
-  'Comprovante de Residência',
-  'Certidão de Nascimento',
-  'Certidão de Casamento',
-  'Procuração',
-  'Contrato',
-  'Laudo Médico',
-  'Receita Médica',
-  'Exame Médico',
-  'Outros'
-];
-
 export default function DocumentUpload({ processId, onUploadComplete }: DocumentUploadProps) {
   const { user } = useAuth();
   const { company } = useCompany();
@@ -38,6 +24,35 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
   const [uploaderName, setUploaderName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [requiresSignature, setRequiresSignature] = useState(false);
+  const [documentTypes, setDocumentTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+
+  // Buscar tipos de documentos cadastrados pela empresa
+  useEffect(() => {
+    const fetchDocumentTypes = async () => {
+      if (!company?.id) return;
+      
+      setLoadingTypes(true);
+      try {
+        const { data, error } = await supabase
+          .from('document_types')
+          .select('id, name')
+          .eq('company_id', company.id)
+          .order('name');
+
+        if (error) throw error;
+        
+        setDocumentTypes(data || []);
+      } catch (error) {
+        console.error('Erro ao carregar tipos de documentos:', error);
+        toast.error('Erro ao carregar tipos de documentos');
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+
+    fetchDocumentTypes();
+  }, [company?.id]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -177,16 +192,22 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
 
         <div>
           <Label htmlFor="document-type">Tipo de Documento</Label>
-          <Select value={documentType} onValueChange={setDocumentType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o tipo" />
+          <Select value={documentType} onValueChange={setDocumentType} disabled={loadingTypes}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder={loadingTypes ? "Carregando..." : "Selecione o tipo"} />
             </SelectTrigger>
-            <SelectContent>
-              {documentTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
+            <SelectContent className="bg-background z-50">
+              {documentTypes.length === 0 ? (
+                <div className="px-4 py-2 text-sm text-muted-foreground">
+                  Nenhum tipo cadastrado. Cadastre tipos em "Tipos de Documentos"
+                </div>
+              ) : (
+                documentTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.name}>
+                    {type.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
