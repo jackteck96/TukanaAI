@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { Checkbox } from '@/components/ui/checkbox';
+import DocumentPreviewModal from './DocumentPreviewModal';
 
 interface DocumentUploadProps {
   processId: string;
@@ -26,6 +27,8 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
   const [requiresSignature, setRequiresSignature] = useState(false);
   const [documentTypes, setDocumentTypes] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
+  const [previewDocument, setPreviewDocument] = useState<any>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   // Buscar tipos de documentos cadastrados pela empresa
   useEffect(() => {
@@ -158,14 +161,6 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
         process_uuid: processId 
       });
 
-      // Se requer assinatura, apenas criar notificação interna informando que o documento aguarda assinatura do remetente
-      if (requiresSignature && processData && docData) {
-        const isClient = profile?.email === processData.client_email;
-        const senderName = isClient ? 'Cliente' : 'Empresa';
-        
-        toast.info(`Documento enviado! ${senderName} deve assinar primeiro antes de enviar para a outra parte.`);
-      }
-
       toast.success('Documento enviado com sucesso!');
       
       // Limpar formulário
@@ -176,6 +171,17 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
       
       // Callback para atualizar a interface pai
       onUploadComplete?.();
+
+      // Se requer assinatura, abrir automaticamente o modal de assinatura
+      if (requiresSignature && docData) {
+        setPreviewDocument({
+          id: docData.id,
+          file_name: docData.file_name,
+          file_path: docData.file_path,
+          file_type: docData.file_type
+        });
+        setShowPreviewModal(true);
+      }
 
     } catch (error) {
       console.error('Erro no upload:', error);
@@ -284,6 +290,18 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
           )}
         </Button>
       </CardContent>
+      
+      {previewDocument && (
+        <DocumentPreviewModal
+          open={showPreviewModal}
+          onOpenChange={setShowPreviewModal}
+          document={previewDocument}
+          onDownload={() => {}}
+          onApprove={() => {}}
+          onReject={() => {}}
+          onRequestAdjustment={() => {}}
+        />
+      )}
     </Card>
   );
 }
