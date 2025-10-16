@@ -63,11 +63,35 @@ const DocumentPreviewModal = ({
         setDocumentData(docData);
         setProcessId(docData?.process_id || null);
         
-        // Mostrar assinatura se requer assinatura e não está totalmente assinado
-        setShowSignature(
-          docData?.requires_signature === true && 
-          docData?.signature_status !== 'fully_signed'
-        );
+        // Determinar se deve mostrar o campo de assinatura
+        if (docData?.requires_signature === true && docData?.signature_status !== 'fully_signed') {
+          // Buscar informações do processo e do usuário
+          const { data: processData } = await supabase
+            .from('processes')
+            .select('client_email')
+            .eq('id', docData.process_id)
+            .single();
+
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', user?.id)
+            .single();
+
+          const isClient = profileData?.email === processData?.client_email;
+          const isCompany = !isClient;
+
+          // Mostrar assinatura apenas se for a vez do signatário correto
+          const shouldShow = 
+            (docData.signature_status === 'pending_client' && isClient) ||
+            (docData.signature_status === 'pending_company' && isCompany) ||
+            (docData.signature_status === 'partially_signed' && isCompany) ||
+            (docData.signature_status === 'partially_signed' && isClient);
+
+          setShowSignature(shouldShow);
+        } else {
+          setShowSignature(false);
+        }
 
         const { data, error } = await supabase.storage
           .from('documents')
