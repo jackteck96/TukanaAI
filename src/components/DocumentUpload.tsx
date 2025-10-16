@@ -42,6 +42,7 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
 
         if (error) throw error;
         
+        console.log('Tipos de documentos carregados:', data);
         setDocumentTypes(data || []);
       } catch (error) {
         console.error('Erro ao carregar tipos de documentos:', error);
@@ -196,8 +197,12 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
             <SelectTrigger className="bg-background">
               <SelectValue placeholder={loadingTypes ? "Carregando..." : "Selecione o tipo"} />
             </SelectTrigger>
-            <SelectContent className="bg-background z-50">
-              {documentTypes.length === 0 ? (
+            <SelectContent className="bg-background z-50" position="popper">
+              {loadingTypes ? (
+                <div className="px-4 py-2 text-sm text-muted-foreground">
+                  Carregando tipos...
+                </div>
+              ) : documentTypes.length === 0 ? (
                 <div className="px-4 py-2 text-sm text-muted-foreground">
                   Nenhum tipo cadastrado. Cadastre tipos em "Tipos de Documentos"
                 </div>
