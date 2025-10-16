@@ -30,20 +30,36 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
   // Buscar tipos de documentos cadastrados pela empresa
   useEffect(() => {
     const fetchDocumentTypes = async () => {
-      if (!company?.id) return;
-      
       setLoadingTypes(true);
       try {
-        const { data, error } = await supabase
-          .from('document_types')
-          .select('id, name')
-          .eq('company_id', company.id)
-          .order('name');
+        const [{ data: companyData, error: companyError }, { data: globalData, error: globalError }] = await Promise.all([
+          company?.id
+            ? supabase
+                .from('document_types')
+                .select('id, name')
+                .eq('company_id', company.id)
+                .order('name')
+            : Promise.resolve({ data: [], error: null } as any),
+          supabase
+            .from('global_document_types')
+            .select('id, name')
+            .order('name')
+        ]);
 
-        if (error) throw error;
+        if (companyError) throw companyError;
+        if (globalError) throw globalError;
         
-        console.log('Tipos de documentos carregados:', data);
-        setDocumentTypes(data || []);
+        const combined = [
+          ...((companyData as any[]) || []),
+          ...((globalData as any[]) || [])
+        ];
+
+        // Deduplicar por nome (prioriza tipos da empresa)
+        const uniqueByName = Array.from(new Map(combined.map((d: any) => [d.name, d])).values());
+
+        console.info('[DocumentUpload] Tipos de documentos (empresa + globais):', uniqueByName);
+        setDocumentTypes(uniqueByName);
+
       } catch (error) {
         console.error('Erro ao carregar tipos de documentos:', error);
         toast.error('Erro ao carregar tipos de documentos');
