@@ -91,10 +91,12 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
         .single();
 
       // Determinar status de assinatura baseado em quem está enviando
+      // Se requer assinatura, quem envia deve assinar primeiro
       let signatureStatus = 'not_required';
       if (requiresSignature && processData && profile) {
         const isClient = profile.email === processData.client_email;
-        signatureStatus = isClient ? 'pending_company' : 'pending_client';
+        // Quem envia assina primeiro: cliente envia → pending_client, empresa envia → pending_company
+        signatureStatus = isClient ? 'pending_client' : 'pending_company';
       }
 
       // Salvar informações do documento na tabela
@@ -124,18 +126,12 @@ export default function DocumentUpload({ processId, onUploadComplete }: Document
         process_uuid: processId 
       });
 
-      // Se requer assinatura, enviar notificação para a outra parte
+      // Se requer assinatura, apenas criar notificação interna informando que o documento aguarda assinatura do remetente
       if (requiresSignature && processData && docData) {
         const isClient = profile?.email === processData.client_email;
-        await supabase.functions.invoke('send-document-notification', {
-          body: {
-            documentId: docData.id,
-            processId: processId,
-            documentName: newFileName,
-            senderType: isClient ? 'client' : 'company',
-            requiresSignature: true
-          }
-        });
+        const senderName = isClient ? 'Cliente' : 'Empresa';
+        
+        toast.info(`Documento enviado! ${senderName} deve assinar primeiro antes de enviar para a outra parte.`);
       }
 
       toast.success('Documento enviado com sucesso!');
