@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Mail, Lock, User, Building2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -31,6 +33,9 @@ const Auth = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const authError = searchParams.get('auth_error') || sessionStorage.getItem('last_auth_error');
   const errorMessage = authError === 'otp_expired'
@@ -148,6 +153,28 @@ const Auth = () => {
       setLoginError('Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.');
     }
   };
+
+  const handleForgotPassword = async () => {
+    if (!validateEmail(resetEmail)) {
+      toast.error('Por favor, informe um e-mail válido');
+      return;
+    }
+
+    setIsResettingPassword(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+
+    if (error) {
+      toast.error('Erro ao enviar e-mail de recuperação. Tente novamente.');
+    } else {
+      toast.success('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+      setShowForgotPassword(false);
+      setResetEmail('');
+    }
+    setIsResettingPassword(false);
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
@@ -261,7 +288,20 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Senha</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">Senha</Label>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="h-auto p-0 text-xs text-primary"
+                        onClick={() => {
+                          setResetEmail(loginForm.email);
+                          setShowForgotPassword(true);
+                        }}
+                      >
+                        Esqueci minha senha
+                      </Button>
+                    </div>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -311,6 +351,49 @@ const Auth = () => {
           </Card>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Recuperar Senha</DialogTitle>
+            <DialogDescription>
+              Informe seu e-mail e enviaremos um link para redefinir sua senha.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowForgotPassword(false)}
+                disabled={isResettingPassword}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleForgotPassword}
+                disabled={isResettingPassword}
+              >
+                {isResettingPassword ? 'Enviando...' : 'Enviar Link'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
