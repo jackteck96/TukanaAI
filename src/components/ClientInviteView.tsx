@@ -44,8 +44,8 @@ export default function ClientInviteView({
       // Tentar obter usuário autenticado, mas permitir upload via token se não estiver
       const { data: { user } } = await supabase.auth.getUser();
       
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${processData.id}/${requestId}/${Date.now()}.${fileExt}`;
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const fileName = `${processData.id}/${requestId}/${sanitizedFileName}`;
 
       // Upload para o storage
       const { error: uploadError } = await supabase.storage
