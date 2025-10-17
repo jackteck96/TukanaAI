@@ -36,6 +36,10 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const authError = searchParams.get('auth_error') || sessionStorage.getItem('last_auth_error');
   const errorMessage = authError === 'otp_expired'
@@ -46,6 +50,20 @@ const Auth = () => {
 
   useEffect(() => {
     try { sessionStorage.removeItem('last_auth_error'); } catch {}
+  }, []);
+
+  // Detect password recovery from email link
+  useEffect(() => {
+    const checkRecoveryMode = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const type = hashParams.get('type');
+      
+      if (type === 'recovery') {
+        setShowResetPassword(true);
+      }
+    };
+    
+    checkRecoveryMode();
   }, []);
 
   // Prefill email from invite
@@ -173,6 +191,39 @@ const Auth = () => {
       setResetEmail('');
     }
     setIsResettingPassword(false);
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validatePassword(newPassword)) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error('As senhas não coincidem');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      toast.error('Erro ao redefinir senha. Tente novamente.');
+    } else {
+      toast.success('Senha redefinida com sucesso! Faça login com sua nova senha.');
+      setShowResetPassword(false);
+      setNewPassword('');
+      setConfirmNewPassword('');
+      // Limpar o hash da URL
+      window.location.hash = '';
+    }
+
+    setIsUpdatingPassword(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -392,6 +443,71 @@ const Auth = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={showResetPassword} onOpenChange={setShowResetPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir Senha</DialogTitle>
+            <DialogDescription>
+              Digite sua nova senha abaixo.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdatePassword} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Nova Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="Digite sua nova senha"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-new-password">Confirmar Nova Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="confirm-new-password"
+                  type="password"
+                  placeholder="Confirme sua nova senha"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowResetPassword(false);
+                  window.location.hash = '';
+                }}
+                disabled={isUpdatingPassword}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isUpdatingPassword}
+              >
+                {isUpdatingPassword ? 'Atualizando...' : 'Redefinir Senha'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
