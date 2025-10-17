@@ -563,7 +563,8 @@ const AreaCliente = () => {
   const getDocumentsByCategory = (category: string) => {
     switch (category) {
       case "Documentos Enviados":
-        return recentDocuments.filter(doc => doc.status === "Aprovado");
+      case "Enviados":
+        return recentDocuments; // Todos os documentos enviados
       case "Pendentes de Envio":
         return pendingRequests.map(req => ({
           id: req.id,
@@ -578,10 +579,16 @@ const AreaCliente = () => {
           requestedBy: req.requestedBy,
           description: req.description
         }));
+      case "Documentos Aprovados":
       case "Aprovados":
         return recentDocuments.filter(doc => doc.status === "Aprovado");
+      case "Documentos Em Análise":
       case "Em Análise":
-        return recentDocuments.filter(doc => doc.status === "Em Análise");
+        return recentDocuments.filter(doc => 
+          doc.status === "Pendente" || 
+          doc.status === "Em Análise" || 
+          doc.status === "Aguardando Análise"
+        );
       default:
         return recentDocuments;
     }
@@ -1069,7 +1076,7 @@ const AreaCliente = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
                 className="h-12 justify-start"
                 variant="outline"
@@ -1078,46 +1085,13 @@ const AreaCliente = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 Meus Documentos
               </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="h-12 justify-start" variant="outline">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Suporte
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Suporte ao Cliente</DialogTitle>
-                    <DialogDescription>
-                      Entre em contato conosco para qualquer dúvida ou suporte técnico.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Email de Suporte</Label>
-                      <p className="text-sm text-muted-foreground">suporte@fuzen.online</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Telefone</Label>
-                      <p className="text-sm text-muted-foreground">+55 (11) 3333-4444</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Horário de Atendimento</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Segunda a Sexta: 9h às 18h<br />
-                        Sábado: 9h às 12h
-                      </p>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
               <Button
                 className="h-12 justify-start"
                 variant="outline"
-                onClick={() => setIsCollaboratorsModalOpen(true)}
+                onClick={() => setIsEditProfileModalOpen(true)}
               >
                 <User className="h-4 w-4 mr-2" />
-                Gerenciar Colaboradores
+                Gerenciar Perfil
               </Button>
             </div>
           </CardContent>
@@ -1520,6 +1494,57 @@ const AreaCliente = () => {
           }}
         />
       )}
+
+      {/* Documents Modal */}
+      <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedDocumentCategory}</DialogTitle>
+            <DialogDescription>
+              {selectedDocumentCategory === "Pendentes de Envio" 
+                ? "Documentos pendentes de envio"
+                : `Lista de documentos - ${selectedDocumentCategory}`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {getDocumentsByCategory(selectedDocumentCategory).length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhum documento encontrado</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {getDocumentsByCategory(selectedDocumentCategory).map((doc: any) => (
+                  <Card key={doc.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-1">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">{doc.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {doc.type} • {doc.uploadDate}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className={getStatusColor(doc.status)}>
+                          {doc.status}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => setIsDocumentsModalOpen(false)}>
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Collaborators Modal */}
       <CollaboratorsModal
