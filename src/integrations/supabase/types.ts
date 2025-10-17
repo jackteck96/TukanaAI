@@ -908,32 +908,38 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           company_id: string | null
           created_at: string
           email: string
           firm_id: string | null
           full_name: string | null
           id: string
+          phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
+          address?: string | null
           company_id?: string | null
           created_at?: string
           email: string
           firm_id?: string | null
           full_name?: string | null
           id: string
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
+          address?: string | null
           company_id?: string | null
           created_at?: string
           email?: string
           firm_id?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }

@@ -47,6 +47,7 @@ import { TemplateEditor } from "@/components/TemplateEditor";
 import ClientTaskView from "@/components/ClientTaskView";
 import DocumentViewer from "@/components/DocumentViewer";
 import ClientDocumentRequests from "@/components/ClientDocumentRequests";
+import EditProfileModal from "@/components/EditProfileModal";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -393,6 +394,7 @@ const AreaCliente = () => {
   const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
   // Carregar processo via token de convite (acesso público)
   useEffect(() => {
@@ -898,6 +900,12 @@ const AreaCliente = () => {
             }}
           />
         )}
+
+        {/* Edit Profile Modal */}
+        <EditProfileModal
+          open={isEditProfileModalOpen}
+          onOpenChange={setIsEditProfileModalOpen}
+        />
       </div>
     );
   }
@@ -923,37 +931,14 @@ const AreaCliente = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <User className="h-4 w-4 mr-2" />
-                    Perfil
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Meu Perfil</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Nome</Label>
-                      <p className="text-sm text-muted-foreground">{clientInfo.name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Email</Label>
-                      <p className="text-sm text-muted-foreground">{clientInfo.email}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Telefone</Label>
-                      <p className="text-sm text-muted-foreground">{clientInfo.phone}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Status</Label>
-                      <Badge variant="outline">{clientInfo.status}</Badge>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsEditProfileModalOpen(true)}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Perfil
+              </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -1351,6 +1336,12 @@ const AreaCliente = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        open={isEditProfileModalOpen}
+        onOpenChange={setIsEditProfileModalOpen}
+      />
 
       {/* Process Details Modal */}
       <Dialog open={isProcessDetailsModalOpen} onOpenChange={setIsProcessDetailsModalOpen}>

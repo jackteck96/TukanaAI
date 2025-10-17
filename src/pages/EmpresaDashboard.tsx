@@ -34,6 +34,7 @@ import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
 import CompletedTodayModal from "@/components/CompletedTodayModal";
 import DocumentSearchModal from "@/components/DocumentSearchModal";
 import { supabase } from "@/integrations/supabase/client";
+import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -188,6 +189,7 @@ const EmpresaDashboard = () => {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [clientForm, setClientForm] = useState({
     name: "",
@@ -221,6 +223,14 @@ const EmpresaDashboard = () => {
                     Painel Admin
                   </Button>
                 )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsEditProfileModalOpen(true)}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Perfil
+                </Button>
                 <Button variant="hero" onClick={refreshData} disabled={loading}>
                   <Plus className="h-4 w-4 mr-2" />
                   {loading ? 'Atualizando...' : 'Atualizar'}
@@ -577,6 +587,12 @@ const EmpresaDashboard = () => {
       <DocumentSearchModal 
         isOpen={isSearchModalOpen} 
         onClose={() => setIsSearchModalOpen(false)} 
+      />
+
+      {/* Edit Profile Modal */}
+      <EditCompanyProfileModal
+        open={isEditProfileModalOpen}
+        onOpenChange={setIsEditProfileModalOpen}
       />
 
       {/* Completed Today Modal */}

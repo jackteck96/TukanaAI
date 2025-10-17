@@ -93,6 +93,23 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     }
   };
 
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('client_notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      toast.success('Notificação excluída');
+    } catch (error) {
+      console.error('Erro ao excluir notificação:', error);
+      toast.error('Erro ao excluir notificação');
+    }
+  };
+
   const getNotificationIcon = (type: string) => {
     if (type === 'document_rejected') {
       return <X className="h-4 w-4 text-destructive" />;
@@ -200,6 +217,16 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
                               Marcar como lida
                             </Button>
                           )}
+                          <Button 
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setExpandedNotification(null);
+                              deleteNotification(notification.id);
+                            }}
+                          >
+                            Excluir
+                          </Button>
                         </div>
                       </div>
                     ) : (
