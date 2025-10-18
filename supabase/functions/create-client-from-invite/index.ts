@@ -233,8 +233,9 @@ serve(async (req: Request) => {
 
   } catch (err: any) {
     console.error('[create-client-from-invite] Unexpected error:', err);
+    // Return generic error message to client, log details server-side
     return new Response(
-      JSON.stringify({ error: err?.message || 'Erro inesperado' }),
+      JSON.stringify({ error: 'Erro ao criar conta. Por favor, tente novamente ou contate o suporte.' }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

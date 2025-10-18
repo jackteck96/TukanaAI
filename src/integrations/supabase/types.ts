@@ -1282,45 +1282,7 @@ export type Database = {
       }
     }
     Views: {
-      invitations: {
-        Row: {
-          company_id: string | null
-          created_at: string | null
-          email: string | null
-          expires_at: string | null
-          id: string | null
-          invited_by: string | null
-          process_id: string | null
-          status: string | null
-          token: string | null
-          used_at: string | null
-        }
-        Insert: {
-          company_id?: string | null
-          created_at?: string | null
-          email?: string | null
-          expires_at?: string | null
-          id?: string | null
-          invited_by?: string | null
-          process_id?: string | null
-          status?: string | null
-          token?: string | null
-          used_at?: string | null
-        }
-        Update: {
-          company_id?: string | null
-          created_at?: string | null
-          email?: string | null
-          expires_at?: string | null
-          id?: string | null
-          invited_by?: string | null
-          process_id?: string | null
-          status?: string | null
-          token?: string | null
-          used_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       can_access_process: {

@@ -136,9 +136,10 @@ serve(async (req: Request) => {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (err: any) {
-    console.error('verify-invite unexpected error:', err);
+    console.error('[verify-invite] Unexpected error:', err);
+    // Return generic error message to client, log details server-side
     return new Response(
-      JSON.stringify({ error: err?.message || 'Erro inesperado' }),
+      JSON.stringify({ error: 'Erro ao verificar convite. Por favor, tente novamente.' }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

@@ -1,11 +1,20 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const GovBrSignatureSchema = z.object({
+  code: z.string().min(1).max(500),
+  document_id: z.string().uuid(),
+  process_id: z.string().uuid(),
+  signer_email: z.string().email().max(255)
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -19,14 +28,26 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Validate input
+    const body = await req.json();
+    const validationResult = GovBrSignatureSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      console.error('[gov-br-signature] Validation failed:', validationResult.error);
+      return new Response(
+        JSON.stringify({ error: 'Dados inválidos fornecidos' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { 
       code, 
       document_id, 
       process_id, 
       signer_email 
-    } = await req.json();
+    } = validationResult.data;
 
-    console.log('Recebendo callback gov.br:', { code, document_id, process_id, signer_email });
+    console.log('[gov-br-signature] Recebendo callback gov.br validado');
 
     // 1. Trocar código por token de acesso gov.br
     const tokenResponse = await fetch('https://sso.acesso.gov.br/oauth/token', {
@@ -132,9 +153,10 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Erro no processo de assinatura:', error);
+    console.error('[gov-br-signature] Erro no processo de assinatura:', error);
+    // Return generic error message to client, log details server-side
     return new Response(JSON.stringify({ 
-      error: (error as Error)?.message || 'Erro interno do servidor' 
+      error: 'Erro ao processar assinatura digital. Por favor, tente novamente.' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

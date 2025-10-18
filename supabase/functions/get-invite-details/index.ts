@@ -261,8 +261,9 @@ serve(async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('[get-invite-details] Erro interno:', error);
+    // Return generic error message to client, log details server-side
     return new Response(
-      JSON.stringify({ success: false, error: error.message || 'Erro interno do servidor' }),
+      JSON.stringify({ success: false, error: 'Erro ao buscar detalhes do convite. Por favor, tente novamente.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
