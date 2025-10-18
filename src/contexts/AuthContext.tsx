@@ -10,7 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
-  updateProfile: (updates: { full_name?: string; role?: 'admin' | 'lawyer' | 'staff' | 'client' }) => Promise<{ error: any }>;
+  updateProfile: (updates: { full_name?: string }) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -139,10 +139,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const updateProfile = async (updates: { full_name?: string; role?: 'admin' | 'lawyer' | 'staff' | 'client' }) => {
+  const updateProfile = async (updates: { full_name?: string }) => {
     if (!user) return { error: new Error('Usuário não encontrado') };
 
     try {
+      // SECURITY: Never allow users to update their own roles
+      // Roles are managed via user_roles table by platform admins only
       const { error } = await supabase
         .from('profiles')
         .update(updates)
