@@ -40,6 +40,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Validation schema for input security
+const UnifiedEmailSchema = z.object({
+  email: z.string().email().max(255),
+  full_name: z.string().trim().min(1).max(200),
+  processId: z.string().uuid().optional(),
+  processName: z.string().trim().max(300).optional(),
+  companyId: z.string().uuid(),
+  inviteLink: z.string().url().max(1000),
+  inviterName: z.string().trim().min(1).max(200),
+  role: z.string().max(50).optional(),
+  isCollaborator: z.boolean().optional()
+});
+
 interface UnifiedEmailRequest {
   email: string;
   full_name: string;
@@ -59,6 +72,18 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const body = await req.json();
+    
+    // Validate input to prevent injection attacks
+    const validationResult = UnifiedEmailSchema.safeParse(body);
+    if (!validationResult.success) {
+      console.error("Validation failed:", validationResult.error);
+      return new Response(
+        JSON.stringify({ error: "Invalid input parameters" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const { 
       email, 
       full_name, 
@@ -69,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
       inviterName,
       role,
       isCollaborator = false
-    }: UnifiedEmailRequest = await req.json();
+    } = validationResult.data;
 
     const isClientInvite = !isCollaborator && processId;
     const companyName = "Fuzen - Sistema de Gestão Documental";

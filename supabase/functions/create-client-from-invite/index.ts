@@ -1,10 +1,18 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Validation schema for security
+const CreateClientSchema = z.object({
+  token: z.string().min(32).max(100),
+  password: z.string().min(6).max(100),
+  fullName: z.string().trim().min(1).max(200)
+});
 
 interface CreateClientRequest {
   token: string;
@@ -30,7 +38,20 @@ serve(async (req: Request) => {
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { token, password, fullName }: CreateClientRequest = await req.json();
+    
+    // Validate input to prevent attacks
+    const body = await req.json();
+    const validationResult = CreateClientSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      console.error('[create-client-from-invite] Validation failed:', validationResult.error);
+      return new Response(
+        JSON.stringify({ error: "Dados inválidos fornecidos" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    
+    const { token, password, fullName } = validationResult.data;
 
     console.log('[create-client-from-invite] Processing invite token:', token);
 

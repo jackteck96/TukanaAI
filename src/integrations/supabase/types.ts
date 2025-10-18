@@ -1409,6 +1409,10 @@ export type Database = {
         Args: { company_uuid: string }
         Returns: undefined
       }
+      user_belongs_to_company: {
+        Args: { _company_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:

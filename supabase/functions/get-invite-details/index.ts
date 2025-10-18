@@ -1,10 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Validation schema for security
+const GetInviteDetailsSchema = z.object({
+  token: z.string().min(32).max(100)
+});
 
 interface GetInviteDetailsRequest {
   token: string;
@@ -30,14 +36,19 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { token }: GetInviteDetailsRequest = await req.json();
-
-    if (!token) {
+    // Validate input to prevent attacks
+    const body = await req.json();
+    const validationResult = GetInviteDetailsSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      console.error('[get-invite-details] Validation failed:', validationResult.error);
       return new Response(
-        JSON.stringify({ success: false, error: 'Token é obrigatório' }),
+        JSON.stringify({ success: false, error: 'Token inválido fornecido' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { token } = validationResult.data;
 
     console.log('[get-invite-details] Buscando convite com token:', token);
 

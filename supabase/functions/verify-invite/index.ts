@@ -1,11 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+// Validation schema for security
+const VerifyInviteSchema = z.object({
+  token: z.string().min(32).max(100)
+});
 
 interface VerifyInviteRequest {
   token: string;
@@ -39,16 +45,21 @@ serve(async (req: Request) => {
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { token }: VerifyInviteRequest = await req.json();
-
-    console.log('[verify-invite] Checking token:', token);
-
-    if (!token) {
+    
+    // Validate input to prevent attacks
+    const body = await req.json();
+    const validationResult = VerifyInviteSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      console.error('[verify-invite] Validation failed:', validationResult.error);
       return new Response(
-        JSON.stringify({ error: "Token é obrigatório" }),
+        JSON.stringify({ error: "Token inválido fornecido" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
+    const { token } = validationResult.data;
+    console.log('[verify-invite] Checking token:', token);
 
     // Try user_invites first
     const { data: userInvite, error: userErr } = await supabase
