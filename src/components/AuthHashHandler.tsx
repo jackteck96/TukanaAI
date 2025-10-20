@@ -17,6 +17,7 @@ export const AuthHashHandler = () => {
     const hasSupabaseAuthHash =
       hash.includes("access_token=") ||
       hash.includes("type=invite") ||
+      hash.includes("type=recovery") ||
       hash.includes("provider_token=") ||
       hash.includes("error=") ||
       hash.includes("error_code=");
@@ -24,12 +25,33 @@ export const AuthHashHandler = () => {
     if (!hasSupabaseAuthHash) return;
 
     console.log("[AuthHashHandler] Hash de auth detectado, inicializando sessão...");
+    
+    // Verificar se é um link de recuperação de senha
+    const hashParams = new URLSearchParams(hash.slice(1));
+    const type = hashParams.get("type");
+    
+    if (type === "recovery") {
+      console.log("[AuthHashHandler] Link de recuperação detectado, redirecionando...");
+      // Processar sessão antes de redirecionar
+      supabase.auth.getSession()
+        .then(() => {
+          window.location.href = "/reset-password";
+        })
+        .catch(err => {
+          console.error("[AuthHashHandler] Erro ao processar sessão de recuperação:", err);
+          toast({
+            title: "Erro",
+            description: "Não foi possível processar o link de recuperação.",
+            variant: "destructive",
+          });
+        });
+      return;
+    }
 
     // Trate erros de autenticação no hash (ex.: otp_expired)
-    const params = new URLSearchParams(hash.slice(1));
-    if (params.get("error")) {
-      const code = params.get("error_code") || "unknown_error";
-      const description = decodeURIComponent(params.get("error_description") || "");
+    if (hashParams.get("error")) {
+      const code = hashParams.get("error_code") || "unknown_error";
+      const description = decodeURIComponent(hashParams.get("error_description") || "");
       console.warn("[AuthHashHandler] Erro de auth no hash:", code, description);
 
       // Feedback ao usuário
