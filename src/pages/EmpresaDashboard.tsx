@@ -481,20 +481,6 @@ const EmpresaDashboard = () => {
                       <span className="text-sm font-medium">Análise IA</span>
                     </Button>
                   </Link>
-                  {isAdmin && (
-                    <Link to="/treinar-ia" className="w-full">
-                      <Button variant="outline" className="h-24 flex-col w-full">
-                        <Shield className="h-6 w-6 mb-2" />
-                        <span className="text-sm font-medium">Treinar IA</span>
-                      </Button>
-                    </Link>
-                  )}
-                  <Link to="/cadastro-tipos-documentos" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <FileText className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Tipos de Docs</span>
-                    </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>
