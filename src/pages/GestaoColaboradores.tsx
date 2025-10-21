@@ -510,11 +510,10 @@ const GestaoColaboradores = () => {
                                 body: {
                                   email: invite.email,
                                   full_name: invite.full_name,
-                                  processId: '',
-                                  processName: `Convite para ${getRoleLabel(invite.role)}`,
                                   companyId: company.id,
                                   inviteLink,
                                   inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+                                  role: invite.role,
                                   isCollaborator: true
                                 }
                               });
