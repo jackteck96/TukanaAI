@@ -83,8 +83,13 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
 
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
+      console.log('[UserInviteSystem] Sending unified email...');
+      console.log('[UserInviteSystem] Email:', inviteData.email);
+      console.log('[UserInviteSystem] Company ID:', company.id);
+      console.log('[UserInviteSystem] Invite Link:', inviteLink);
+      
       // Usar o edge function unificado para colaborador
-      const { error } = await supabase.functions.invoke('send-unified-email', {
+      const { data: emailResponse, error } = await supabase.functions.invoke('send-unified-email', {
         body: {
           email: inviteData.email,
           full_name: inviteData.full_name,
@@ -96,9 +101,20 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
         }
       });
 
-      if (error) throw error;
+      console.log('[UserInviteSystem] Email response:', emailResponse);
+      console.log('[UserInviteSystem] Email error:', error);
+
+      if (error) {
+        console.error('[UserInviteSystem] Edge function error:', error);
+        throw error;
+      }
+
+      if (emailResponse && !emailResponse.success) {
+        console.error('[UserInviteSystem] Email send failed:', emailResponse);
+        throw new Error(emailResponse.error || 'Failed to send email');
+      }
     } catch (error) {
-      console.error('Erro ao enviar email:', error);
+      console.error('[UserInviteSystem] Erro ao enviar email:', error);
       throw error;
     }
   };

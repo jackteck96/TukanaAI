@@ -236,7 +236,11 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
       // 4. Enviar email unificado (convite + boas-vindas)
       const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-      console.log('Sending unified invite email to:', formData.clientEmail, 'with link:', generatedInviteLink);
+      console.log('[CreateProcessWithInvite] Sending unified invite email...');
+      console.log('[CreateProcessWithInvite] To:', formData.clientEmail);
+      console.log('[CreateProcessWithInvite] Link:', generatedInviteLink);
+      console.log('[CreateProcessWithInvite] Process ID:', processData.id);
+      console.log('[CreateProcessWithInvite] Company ID:', company.id);
       
       try {
         const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-email", {
@@ -253,14 +257,22 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           },
         });
 
+        console.log('[CreateProcessWithInvite] Email response:', emailResponse);
+        console.log('[CreateProcessWithInvite] Email error:', emailError);
+
         if (emailError) {
-          console.error("Erro ao enviar email:", emailError);
+          console.error("[CreateProcessWithInvite] Erro ao enviar email:", emailError);
           throw emailError;
         }
 
-        console.log('Email enviado com sucesso:', emailResponse);
+        if (emailResponse && !emailResponse.success) {
+          console.error("[CreateProcessWithInvite] Email send failed:", emailResponse);
+          throw new Error(emailResponse.error || 'Failed to send email');
+        }
+
+        console.log('[CreateProcessWithInvite] Email enviado com sucesso:', emailResponse);
       } catch (emailError) {
-        console.error("Falha no envio do email:", emailError);
+        console.error("[CreateProcessWithInvite] Falha no envio do email:", emailError);
         // Continuar mesmo se o email falhar
       }
 

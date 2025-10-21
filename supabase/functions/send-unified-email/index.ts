@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // Função para enviar email usando API do Resend diretamente
 const sendEmail = async (emailData: any) => {
@@ -66,23 +67,35 @@ interface UnifiedEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('[send-unified-email] Function invoked at:', new Date().toISOString());
+  console.log('[send-unified-email] Request method:', req.method);
+  console.log('[send-unified-email] Request URL:', req.url);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log('[send-unified-email] Handling CORS preflight');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('[send-unified-email] Parsing request body...');
     const body = await req.json();
+    console.log('[send-unified-email] Body received:', JSON.stringify(body, null, 2));
     
     // Validate input to prevent injection attacks
+    console.log('[send-unified-email] Validating input...');
     const validationResult = UnifiedEmailSchema.safeParse(body);
     if (!validationResult.success) {
-      console.error("Validation failed:", validationResult.error);
+      console.error("[send-unified-email] Validation failed:", JSON.stringify(validationResult.error, null, 2));
       return new Response(
-        JSON.stringify({ error: "Invalid input parameters" }),
+        JSON.stringify({ 
+          error: "Invalid input parameters",
+          details: validationResult.error.errors 
+        }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+    console.log('[send-unified-email] Validation successful');
 
     const { 
       email, 
@@ -303,7 +316,14 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Sending unified email to:", email, "Type:", isClientInvite ? "client" : "collaborator");
+    console.log('[send-unified-email] Email details:');
+    console.log('  - To:', email);
+    console.log('  - Full name:', full_name);
+    console.log('  - Type:', isClientInvite ? 'client' : 'collaborator');
+    console.log('  - Company ID:', companyId);
+    console.log('  - Invite link:', inviteLink);
+    console.log('  - RESEND_API_KEY configured:', !!Deno.env.get("RESEND_API_KEY"));
+    console.log('  - RESEND_FROM value:', fromEmail);
 
     // Build base payload
     const payload = {
@@ -337,14 +357,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Final error handling
     if (emailResponse.error) {
-      console.error('Resend returned an error:', emailResponse.error);
+      console.error('[send-unified-email] ❌ Resend returned an error:', JSON.stringify(emailResponse.error, null, 2));
       return new Response(
-        JSON.stringify({ success: false, emailed: false, error: emailResponse.error }),
+        JSON.stringify({ 
+          success: false, 
+          emailed: false, 
+          error: emailResponse.error,
+          details: 'Failed to send email after trying all FROM addresses'
+        }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    console.log('Email sent successfully:', emailResponse);
+    console.log('[send-unified-email] ✅ Email sent successfully:', JSON.stringify(emailResponse, null, 2));
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -360,12 +385,14 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error in send-unified-email function:", error);
+    console.error("[send-unified-email] ❌ Unexpected error:", error);
+    console.error("[send-unified-email] Error stack:", error.stack);
     return new Response(
       JSON.stringify({ 
         error: error.message,
         success: false,
-        emailed: false 
+        emailed: false,
+        stack: error.stack
       }),
       {
         status: 500,
