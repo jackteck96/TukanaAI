@@ -116,7 +116,8 @@ const handler = async (req: Request): Promise<Response> => {
       ? `🎉 Bem-vindo! Acesse seu processo: ${processName}`
       : `🤝 Convite para fazer parte da equipe - ${companyName}`;
 
-    const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
+    // ALWAYS use verified domain in production
+    const fromEmail = "convites@fuzen.online";
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -333,12 +334,8 @@ const handler = async (req: Request): Promise<Response> => {
       html: emailHtml,
     };
 
-    // Attempt send with multiple from addresses based on error type
-    const fromCandidates = [`Fuzen <${fromEmail}>`];
-    if (!String(fromEmail).toLowerCase().endsWith('@fuzen.online')) {
-      fromCandidates.push('Fuzen <convites@fuzen.online>');
-    }
-    fromCandidates.push('Fuzen <onboarding@resend.dev>');
+    // Use only verified domain address
+    const fromCandidates = ['Fuzen <convites@fuzen.online>'];
 
     let emailResponse = { data: null as any, error: null as any };
     for (const from of fromCandidates) {
