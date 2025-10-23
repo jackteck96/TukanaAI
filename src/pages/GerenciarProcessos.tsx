@@ -519,9 +519,6 @@ const GerenciarProcessos = () => {
             </Card>
           </div>
 
-          {/* Reports Section */}
-          <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
-
           {/* Process Description/Notes */}
           {currentProcess.description && (
             <Card>
@@ -533,6 +530,9 @@ const GerenciarProcessos = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Reports Section */}
+          <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
 
           {/* Timeline */}
           <ProcessTimeline currentStatus={currentProcess.status} />
