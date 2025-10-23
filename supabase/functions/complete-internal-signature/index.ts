@@ -134,6 +134,18 @@ Deno.serve(async (req) => {
 
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
 
+    // Obter localização aproximada via IP (geolocalização)
+    let location = 'Não especificado';
+    try {
+      const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+      if (geoResponse.ok) {
+        const geoData = await geoResponse.json();
+        location = `${geoData.city || ''}, ${geoData.region || ''} - ${geoData.country_name || ''}`.trim();
+      }
+    } catch (e) {
+      console.warn('[complete-internal-signature] Não foi possível obter localização:', e);
+    }
+
     const signatureMetadata: any = {
       timestamp: signatureTimestamp.toISOString(),
       method: 'internal_otp',
@@ -141,6 +153,7 @@ Deno.serve(async (req) => {
       ip_address: ip,
       browser: userAgent || 'unknown',
       device: 'unknown',
+      location: location,
       signature_position: placement || null,
     };
 

@@ -111,7 +111,21 @@ serve(async (req) => {
       yPos += 6;
       doc.text(`Contato: ${sig.authentication_contact}`, 25, yPos);
       yPos += 6;
-      doc.text(`Data/Hora: ${new Date(sig.created_at).toLocaleString('pt-BR')}`, 25, yPos);
+      const sigDate = new Date(sig.created_at).toLocaleString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      doc.text(`Data/Hora (Horário de Brasília): ${sigDate}`, 25, yPos);
+      yPos += 6;
+      
+      const metadata = sig.signature_metadata || {};
+      const location = metadata.location || 'Não especificado';
+      doc.text(`Local: ${location}`, 25, yPos);
       yPos += 6;
 
       if (sig.signature_ip) {

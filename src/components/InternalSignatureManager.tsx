@@ -191,12 +191,25 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         const signatureHash = await sha256Hex(`${documentId}|${userId}|${signatureTimestamp.toISOString()}`);
         const documentHash = await sha256Hex(`${documentId}|${doc?.file_path || ''}`);
 
+        // Obter localização aproximada via IP (geolocalização)
+        let location = 'Não especificado';
+        try {
+          const geoResponse = await fetch('https://ipapi.co/json/');
+          if (geoResponse.ok) {
+            const geoData = await geoResponse.json();
+            location = `${geoData.city || ''}, ${geoData.region || ''} - ${geoData.country_name || ''}`.trim();
+          }
+        } catch (e) {
+          console.warn('Não foi possível obter localização:', e);
+        }
+
         const signatureMetadata: any = {
           timestamp: signatureTimestamp.toISOString(),
           method: 'internal_otp',
           verification_id: verificationId,
           browser: navigator.userAgent,
           device: 'unknown',
+          location: location,
           signature_position: placement ? { x_percent: placement.x, y_percent: placement.y, page: 1 } : null,
         };
 

@@ -121,7 +121,22 @@ const handler = async (req: Request): Promise<Response> => {
     
     doc.setFont("helvetica", "normal");
     const signatureDate = new Date(signature.created_at);
-    doc.text(`Data e Hora (UTC): ${signatureDate.toUTCString()}`, 20, y);
+    // Converter para horário de Brasília (UTC-3)
+    const brasiliaTime = signatureDate.toLocaleString('pt-BR', { 
+      timeZone: 'America/Sao_Paulo',
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    doc.text(`Data e Hora (Horário de Brasília): ${brasiliaTime}`, 20, y);
+    y += 6;
+    
+    const metadata = signature.signature_metadata || {};
+    const location = metadata.location || 'Não especificado';
+    doc.text(`Local da Assinatura: ${location}`, 20, y);
     y += 6;
     doc.text(`Método de Autenticação: ${signature.authentication_method === "email" ? "E-mail" : "SMS"}`, 20, y);
     y += 6;
@@ -129,8 +144,6 @@ const handler = async (req: Request): Promise<Response> => {
     y += 6;
     doc.text(`Endereço IP: ${signature.signature_ip || "N/A"}`, 20, y);
     y += 6;
-    
-    const metadata = signature.signature_metadata || {};
     doc.text(`Navegador: ${metadata.browser || "N/A"}`, 20, y);
     y += 6;
     doc.text(`Dispositivo: ${metadata.device || "N/A"}`, 20, y);
@@ -192,7 +205,16 @@ const handler = async (req: Request): Promise<Response> => {
     y += 5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(`Data de emissão: ${new Date().toLocaleString("pt-BR")}`, 105, y, { align: "center" });
+    const emissionDate = new Date().toLocaleString("pt-BR", { 
+      timeZone: 'America/Sao_Paulo',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    doc.text(`Data de emissão: ${emissionDate}`, 105, y, { align: "center" });
     y += 4;
     doc.text("Este documento possui validade jurídica conforme MP 2.200-2/2001", 105, y, { align: "center" });
     
