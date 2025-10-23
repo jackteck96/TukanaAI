@@ -48,10 +48,14 @@ const UnifiedEmailSchema = z.object({
   processId: z.string().uuid().optional(),
   processName: z.string().trim().max(300).optional(),
   companyId: z.string().uuid(),
-  inviteLink: z.string().url().max(1000),
+  inviteLink: z.string().url().max(1000).optional(),
+  directAccessLink: z.string().url().max(1000).optional(),
   inviterName: z.string().trim().min(1).max(200),
   role: z.string().max(50).optional(),
-  isCollaborator: z.boolean().optional()
+  isCollaborator: z.boolean().optional(),
+  isExistingClient: z.boolean().optional()
+}).refine(data => data.inviteLink || data.directAccessLink, {
+  message: "Either inviteLink or directAccessLink must be provided"
 });
 
 interface UnifiedEmailRequest {
@@ -60,10 +64,12 @@ interface UnifiedEmailRequest {
   processId?: string;
   processName?: string;
   companyId: string;
-  inviteLink: string;
+  inviteLink?: string;
+  directAccessLink?: string;
   inviterName: string;
   role?: string;
   isCollaborator?: boolean;
+  isExistingClient?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -103,16 +109,22 @@ const handler = async (req: Request): Promise<Response> => {
       processId, 
       processName, 
       companyId, 
-      inviteLink, 
+      inviteLink,
+      directAccessLink,
       inviterName,
       role,
-      isCollaborator = false
+      isCollaborator = false,
+      isExistingClient = false
     } = validationResult.data;
 
+    const accessLink = directAccessLink || inviteLink || "";
     const isClientInvite = !isCollaborator && processId;
+    const isDirectAccess = isExistingClient && directAccessLink;
     const companyName = "Fuzen - Sistema de Gestão Documental";
     
-    const subject = isClientInvite 
+    const subject = isDirectAccess
+      ? `🔔 Novo processo criado: ${processName}`
+      : isClientInvite 
       ? `🎉 Bem-vindo! Acesse seu processo: ${processName}`
       : `🤝 Convite para fazer parte da equipe - ${companyName}`;
 
@@ -233,8 +245,8 @@ const handler = async (req: Request): Promise<Response> => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>${isClientInvite ? '🎉 Bem-vindo!' : '🤝 Você foi convidado!'}</h1>
-            <p>${isClientInvite ? 'Seu processo foi criado com sucesso' : 'Para fazer parte da nossa equipe'}</p>
+            <h1>${isDirectAccess ? '🔔 Novo Processo' : isClientInvite ? '🎉 Bem-vindo!' : '🤝 Você foi convidado!'}</h1>
+            <p>${isDirectAccess ? 'Um novo processo foi criado para você' : isClientInvite ? 'Seu processo foi criado com sucesso' : 'Para fazer parte da nossa equipe'}</p>
           </div>
           
           <div class="content">
@@ -242,7 +254,18 @@ const handler = async (req: Request): Promise<Response> => {
               Olá <strong>${full_name}</strong>,
             </div>
             
-            ${isClientInvite ? `
+            ${isDirectAccess ? `
+              <p>Informamos que um novo processo foi criado para você em nosso sistema!</p>
+              
+              <div class="process-info">
+                <h3>📋 Detalhes do Processo</h3>
+                <p><strong>Processo:</strong> ${processName}</p>
+                <p><strong>Responsável:</strong> ${inviterName}</p>
+                <p><strong>Empresa:</strong> ${companyName}</p>
+              </div>
+              
+              <p>Clique no botão abaixo para acessar o processo e acompanhar o andamento:</p>
+            ` : isClientInvite ? `
               <p>É com grande satisfação que informamos que seu processo foi criado com sucesso em nosso sistema!</p>
               
               <div class="process-info">
@@ -267,15 +290,20 @@ const handler = async (req: Request): Promise<Response> => {
             `}
             
             <div style="text-align: center;">
-              <a href="${inviteLink}" class="cta-button">
-                ${isClientInvite ? '🔗 Acessar Minha Área' : '✅ Aceitar Convite'}
+              <a href="${accessLink}" class="cta-button">
+                ${isDirectAccess ? '🔗 Ver Processo' : isClientInvite ? '🔗 Acessar Minha Área' : '✅ Aceitar Convite'}
               </a>
             </div>
             
             <div class="steps">
               <h3>📝 Próximos passos:</h3>
               <ol>
-                ${isClientInvite ? `
+                ${isDirectAccess ? `
+                  <li>Clique no botão acima para acessar o processo</li>
+                  <li>Faça login com suas credenciais</li>
+                  <li>Acompanhe o andamento em tempo real</li>
+                  <li>Envie documentos e receba notificações automáticas</li>
+                ` : isClientInvite ? `
                   <li>Clique no botão acima para acessar sua área exclusiva</li>
                   <li>Complete seu cadastro com suas informações</li>
                   <li>Acompanhe o andamento do seu processo em tempo real</li>
@@ -290,8 +318,8 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div class="security-note">
-              🔒 <strong>Segurança:</strong> Este link é único e pessoal. Não compartilhe com terceiros. 
-              ${isClientInvite ? 'Ele expira em 7 dias.' : 'Válido por 7 dias.'}
+              🔒 <strong>Segurança:</strong> ${isDirectAccess ? 'Use suas credenciais para acessar.' : 'Este link é único e pessoal. Não compartilhe com terceiros.'} 
+              ${!isDirectAccess && (isClientInvite ? 'Ele expira em 7 dias.' : 'Válido por 7 dias.')}
             </div>
             
             <p style="margin-top: 30px;">
@@ -320,9 +348,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('[send-unified-email] Email details:');
     console.log('  - To:', email);
     console.log('  - Full name:', full_name);
-    console.log('  - Type:', isClientInvite ? 'client' : 'collaborator');
+    console.log('  - Type:', isDirectAccess ? 'existing_client' : isClientInvite ? 'new_client' : 'collaborator');
+    console.log('  - Is existing client:', isExistingClient);
     console.log('  - Company ID:', companyId);
-    console.log('  - Invite link:', inviteLink);
+    console.log('  - Access link:', accessLink);
     console.log('  - RESEND_API_KEY configured:', !!Deno.env.get("RESEND_API_KEY"));
     console.log('  - RESEND_FROM value:', fromEmail);
 
@@ -373,7 +402,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailed: true, 
       messageId: emailResponse.data?.id,
       to: email,
-      type: isClientInvite ? 'client_welcome' : 'collaborator_invite'
+      type: isDirectAccess ? 'existing_client_process' : isClientInvite ? 'client_welcome' : 'collaborator_invite'
     }), {
       status: 200,
       headers: {

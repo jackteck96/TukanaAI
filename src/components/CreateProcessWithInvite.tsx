@@ -234,27 +234,54 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         throw inviteError;
       }
 
-      // 4. Enviar email unificado (convite + boas-vindas)
-      const generatedInviteLink = `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
-      console.log('[CreateProcessWithInvite] Sending unified invite email...');
-      console.log('[CreateProcessWithInvite] To:', formData.clientEmail);
-      console.log('[CreateProcessWithInvite] Link:', generatedInviteLink);
-      console.log('[CreateProcessWithInvite] Process ID:', processData.id);
-      console.log('[CreateProcessWithInvite] Company ID:', company.id);
+      // 4. Verificar se o cliente já existe no sistema
+      console.log('[CreateProcessWithInvite] Checking if client already exists...');
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('email', formData.clientEmail)
+        .maybeSingle();
+
+      if (userCheckError) {
+        console.error('[CreateProcessWithInvite] Error checking user:', userCheckError);
+      }
+
+      const isExistingClient = !!existingUser;
+      console.log('[CreateProcessWithInvite] Is existing client:', isExistingClient);
+
+      // 5. Determinar o link correto (convite de cadastro ou acesso direto)
+      const accessLink = isExistingClient
+        ? `${window.location.origin}/cliente?id=${processData.id}`
+        : `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+
+      console.log('[CreateProcessWithInvite] Access link type:', isExistingClient ? 'direct' : 'invite');
+      console.log('[CreateProcessWithInvite] Link:', accessLink);
       
+      // 6. Enviar email apropriado
       try {
+        const emailBody = isExistingClient ? {
+          email: formData.clientEmail,
+          full_name: formData.clientName,
+          processId: processData.id,
+          processName: formData.projectName || `Processo - ${formData.clientName}`,
+          companyId: company.id,
+          directAccessLink: accessLink,
+          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+          isExistingClient: true
+        } : {
+          email: formData.clientEmail,
+          full_name: formData.clientName,
+          processId: processData.id,
+          processName: formData.projectName || `Processo - ${formData.clientName}`,
+          companyId: company.id,
+          inviteLink: accessLink,
+          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+          role: 'client',
+          isCollaborator: false
+        };
+
         const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-email", {
-          body: {
-            email: formData.clientEmail,
-            full_name: formData.clientName,
-            processId: processData.id,
-            processName: formData.projectName || `Processo - ${formData.clientName}`,
-            companyId: company.id,
-            inviteLink: generatedInviteLink,
-            inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-            role: 'client',
-            isCollaborator: false
-          },
+          body: emailBody
         });
 
         console.log('[CreateProcessWithInvite] Email response:', emailResponse);
@@ -277,13 +304,17 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       }
 
       // Sempre mostrar modal com link
-      setInviteLink(generatedInviteLink);
+      setInviteLink(accessLink);
       setClientName(formData.clientName);
       setShowInviteLink(true);
 
+      const messageType = isExistingClient 
+        ? "Email enviado com link de acesso direto ao processo."
+        : "Email enviado com convite de cadastro.";
+
       toast({
         title: "Processo criado com sucesso!",
-        description: `Processo criado. Email enviado para ${formData.clientEmail}. Link disponível para compartilhar.`,
+        description: `Processo criado. ${messageType} Link disponível para compartilhar.`,
       });
 
       // Refresh data if callback provided

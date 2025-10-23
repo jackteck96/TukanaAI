@@ -23,7 +23,8 @@ import {
   Edit,
   Brain,
   Settings,
-  BarChart3
+  BarChart3,
+  Copy
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
@@ -456,6 +457,29 @@ const GerenciarProcessos = () => {
                     clientEmail={currentProcess.client_email}
                     processName={currentProcess.project_name || currentProcess.process_type}
                   />
+                  <div className="mt-2 p-3 bg-muted/30 rounded-lg border">
+                    <Label className="text-xs font-medium text-muted-foreground">Link de Acesso do Cliente</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        value={`${window.location.origin}/cliente?id=${currentProcess.id}`}
+                        readOnly
+                        className="text-xs"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/cliente?id=${currentProcess.id}`);
+                          toast({ title: "Link copiado!", description: "Link de acesso copiado para a área de transferência." });
+                        }}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Compartilhe este link com o cliente para acesso direto ao processo
+                    </p>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">CPF/CNPJ</Label>
