@@ -391,8 +391,8 @@ const EmpresaDashboard = () => {
                     <p className="text-sm">Crie seu primeiro processo</p>
                   </div>
                 ) : (
-                  recentProcesses
-                    .filter((process) => {
+                  (() => {
+                    const filteredProcesses = recentProcesses.filter((process) => {
                       if (!processSearchTerm) return true;
                       const searchLower = processSearchTerm.toLowerCase();
                       return (
@@ -400,8 +400,19 @@ const EmpresaDashboard = () => {
                         process.client_name.toLowerCase().includes(searchLower) ||
                         process.cpf_cnpj?.toLowerCase().includes(searchLower)
                       );
-                    })
-                    .map((process) => (
+                    });
+
+                    if (filteredProcesses.length === 0) {
+                      return (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                          <p>Nenhum processo encontrado</p>
+                          <p className="text-sm">Tente outro termo de busca</p>
+                        </div>
+                      );
+                    }
+
+                    return filteredProcesses.map((process) => (
                   <div
                     key={process.id}
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -437,7 +448,8 @@ const EmpresaDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  ))
+                  ));
+                  })()
                 )}
               </div>
             </CardContent>
