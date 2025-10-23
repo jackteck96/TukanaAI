@@ -555,19 +555,18 @@ const GerenciarProcessos = () => {
             </Card>
           )}
 
-          {/* Reports Section - Below Notes */}
-          <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
-
           {/* Timeline */}
           <ProcessTimeline currentStatus={currentProcess.status} />
 
-          {/* Documents, Notes and Email Log Section */}
+          {/* Documentos, Anotações e Relatórios */}
           <div className="space-y-6">
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
             <ProcessNotes 
               processId={currentProcess.id} 
               companyId={currentProcess.company_id || ''}
             />
+            {/* Relatórios de Documentos - agora abaixo das anotações */}
+            <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
           </div>
         </div>
 
