@@ -18,6 +18,8 @@ import {
   Zap,
   Globe
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState } from "react";
 import heroImage from "@/assets/hero-bg.jpg";
 
 const Landing = () => {
@@ -199,33 +201,39 @@ const Landing = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="group relative overflow-hidden border-2 hover:border-primary/20 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                <CardHeader className="text-center relative z-10">
-                  <div className="relative mb-6 inline-block mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
-                    <div className="relative w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <feature.icon className="h-8 w-8 text-white" />
-                    </div>
-                  </div>
-                  <CardTitle className="text-xl md:text-2xl mb-2 group-hover:text-primary transition-colors duration-300">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center relative z-10">
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <TooltipProvider>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {features.map((feature, index) => (
+                <Tooltip key={index} delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <Card 
+                      className="group relative overflow-hidden border-2 hover:border-primary/20 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl cursor-pointer"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <CardHeader className="text-center relative z-10 pb-8 pt-8">
+                        <div className="relative mb-6 inline-block mx-auto">
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
+                          <div className="relative w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <feature.icon className="h-10 w-10 text-white" />
+                          </div>
+                        </div>
+                        <CardTitle className="text-xl md:text-2xl group-hover:text-primary transition-colors duration-300 px-4">
+                          {feature.title}
+                        </CardTitle>
+                      </CardHeader>
+                    </Card>
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="bottom" 
+                    className="max-w-xs p-4 bg-card border-2 border-primary/20 shadow-elegant rounded-2xl"
+                  >
+                    <p className="text-base leading-relaxed">{feature.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
         </div>
       </section>
 
@@ -239,8 +247,7 @@ const Landing = () => {
                   Por que escolher a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Fuzen?</span>
                 </h2>
                 <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-                  Mais de 1.000 empresas já confiam na Fuzen para gerenciar 
-                  seus documentos com segurança e eficiência.
+                  A solução completa para gerenciar seus documentos com segurança e eficiência.
                 </p>
               </div>
               
