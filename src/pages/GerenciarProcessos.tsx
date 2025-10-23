@@ -22,7 +22,8 @@ import {
   FileIcon,
   Edit,
   Brain,
-  Settings
+  Settings,
+  BarChart3
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
@@ -31,6 +32,7 @@ import DocumentProgressBattery from "@/components/DocumentProgressBattery";
 import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
 import EmailResendButton from "@/components/EmailResendButton";
+import DocumentReport from "@/components/DocumentReport";
 
 import ProcessNotes from "@/components/ProcessNotes";
 import { BusinessDocumentAnalyzer } from "@/components/BusinessDocumentAnalyzer";
@@ -516,6 +518,9 @@ const GerenciarProcessos = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Reports Section */}
+          <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
 
           {/* Process Description/Notes */}
           {currentProcess.description && (
