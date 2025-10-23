@@ -392,13 +392,29 @@ const EmpresaDashboard = () => {
                   </div>
                 ) : (
                   (() => {
+                    // Normalizar a busca removendo caracteres especiais
+                    const normalizeSearch = (text: string) => {
+                      return text.replace(/[.\-/]/g, '').toLowerCase();
+                    };
+
                     const filteredProcesses = recentProcesses.filter((process) => {
                       if (!processSearchTerm) return true;
-                      const searchLower = processSearchTerm.toLowerCase();
+                      const searchLower = normalizeSearch(processSearchTerm);
+                      
+                      console.log('[EmpresaDashboard] Filtering:', {
+                        searchTerm: processSearchTerm,
+                        normalized: searchLower,
+                        process: {
+                          project_name: process.project_name,
+                          client_name: process.client_name,
+                          cpf_cnpj: process.cpf_cnpj
+                        }
+                      });
+                      
                       return (
-                        process.project_name?.toLowerCase().includes(searchLower) ||
-                        process.client_name.toLowerCase().includes(searchLower) ||
-                        process.cpf_cnpj?.toLowerCase().includes(searchLower)
+                        normalizeSearch(process.project_name || '').includes(searchLower) ||
+                        normalizeSearch(process.client_name || '').includes(searchLower) ||
+                        normalizeSearch(process.cpf_cnpj || '').includes(searchLower)
                       );
                     });
 

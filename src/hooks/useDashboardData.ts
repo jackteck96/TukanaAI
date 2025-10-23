@@ -121,6 +121,13 @@ export const useDashboardData = () => {
 
       if (error) throw error;
 
+      console.log('[useDashboardData] Recent processes:', data?.map(p => ({
+        id: p.id,
+        client_name: p.client_name,
+        project_name: p.project_name,
+        cpf_cnpj: p.cpf_cnpj
+      })));
+
       setRecentProcesses(data?.map(process => ({
         id: process.id,
         client_name: process.client_name,
