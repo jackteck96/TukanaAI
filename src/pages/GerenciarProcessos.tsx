@@ -531,7 +531,7 @@ const GerenciarProcessos = () => {
             </Card>
           )}
 
-          {/* Reports Section */}
+          {/* Reports Section - Below Notes */}
           <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
 
           {/* Timeline */}
