@@ -38,6 +38,7 @@ import AnaliseIA from "./pages/AnaliseIA";
 import VerifySignature from "./pages/VerifySignature";
 import ApproveAdmin from "./pages/ApproveAdmin";
 import ResetPassword from "./pages/ResetPassword";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cadastro-cliente" element={<CadastroCliente />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/termos-de-uso" element={<TermsOfService />} />
                 <Route path="/verify-signature/:signatureHash" element={<VerifySignature />} />
               <Route path="/gestao-colaboradores" element={
                 <ProtectedRoute>

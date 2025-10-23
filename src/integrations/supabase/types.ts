@@ -710,7 +710,7 @@ export type Database = {
           id: string
           process_id: string
           signature_hash: string
-          signature_ip: unknown | null
+          signature_ip: unknown
           signature_metadata: Json
           signature_order: number
           signer_email: string
@@ -729,7 +729,7 @@ export type Database = {
           id?: string
           process_id: string
           signature_hash: string
-          signature_ip?: unknown | null
+          signature_ip?: unknown
           signature_metadata?: Json
           signature_order?: number
           signer_email: string
@@ -748,7 +748,7 @@ export type Database = {
           id?: string
           process_id?: string
           signature_hash?: string
-          signature_ip?: unknown | null
+          signature_ip?: unknown
           signature_metadata?: Json
           signature_order?: number
           signer_email?: string
@@ -1123,6 +1123,71 @@ export type Database = {
         }
         Relationships: []
       }
+      terms_acceptances: {
+        Row: {
+          accepted_at: string
+          id: string
+          ip_address: unknown
+          terms_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          id?: string
+          ip_address?: unknown
+          terms_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          id?: string
+          ip_address?: unknown
+          terms_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_acceptances_terms_id_fkey"
+            columns: ["terms_id"]
+            isOneToOne: false
+            referencedRelation: "terms_of_service"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terms_of_service: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       time_records: {
         Row: {
           company_id: string
@@ -1285,10 +1350,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_access_process: {
-        Args: { process_uuid: string }
-        Returns: boolean
-      }
+      can_access_process: { Args: { process_uuid: string }; Returns: boolean }
       can_manage_company: {
         Args: { comp_id: string; user_uuid: string }
         Returns: boolean
@@ -1297,10 +1359,7 @@ export type Database = {
         Args: { document_uuid: string; signer_email_param: string }
         Returns: boolean
       }
-      can_view_company: {
-        Args: { comp_id: string }
-        Returns: boolean
-      }
+      can_view_company: { Args: { comp_id: string }; Returns: boolean }
       check_plan_limits: {
         Args: { company_uuid: string; limit_type: string }
         Returns: Json
@@ -1313,10 +1372,7 @@ export type Database = {
         Args: { process_uuid: string }
         Returns: string
       }
-      generate_invite_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_invite_token: { Args: never; Returns: string }
       generate_signature_hash: {
         Args: {
           document_uuid: string
@@ -1326,13 +1382,10 @@ export type Database = {
         Returns: string
       }
       get_current_user_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
-      get_user_company_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_user_company_id: { Args: never; Returns: string }
       get_user_role_details: {
         Args: { user_uuid: string }
         Returns: {
@@ -1359,10 +1412,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_platform_admin: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
+      is_platform_admin: { Args: { user_uuid: string }; Returns: boolean }
       log_process_access: {
         Args: { access_type: string; process_uuid: string }
         Returns: undefined

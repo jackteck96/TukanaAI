@@ -29,7 +29,8 @@ const Signup = () => {
     confirmPassword: '',
     hasLegalRepresentative: false,
     legalRepresentativeName: '',
-    legalRepresentativeQualification: ''
+    legalRepresentativeQualification: '',
+    acceptedTerms: false
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -101,6 +102,10 @@ const Signup = () => {
       newErrors.confirmPassword = 'Senhas não coincidem';
     }
 
+    if (!formData.acceptedTerms) {
+      newErrors.acceptedTerms = 'Você deve aceitar os termos de uso para prosseguir';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -137,6 +142,15 @@ const Signup = () => {
       if (authError) throw authError;
 
       if (authData.user) {
+        // Get active terms
+        const { data: activeTerms } = await supabase
+          .from('terms_of_service')
+          .select('id')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
         // Create company
         const companySlug = generateSlug(formData.companyName);
         const { data: companyData, error: companyError } = await supabase
@@ -161,6 +175,18 @@ const Signup = () => {
           .eq('id', authData.user.id);
 
         if (profileError) throw profileError;
+
+        // Record terms acceptance
+        if (activeTerms) {
+          await supabase
+            .from('terms_acceptances')
+            .insert({
+              user_id: authData.user.id,
+              terms_id: activeTerms.id,
+              ip_address: null,
+              user_agent: navigator.userAgent
+            });
+        }
 
         // Create trial subscription
         const { error: subscriptionError } = await supabase
@@ -566,6 +592,34 @@ const Signup = () => {
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword}</p>
                 )}
+              </div>
+
+              <div className="space-y-3 pt-4">
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="acceptedTerms"
+                    checked={formData.acceptedTerms}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, acceptedTerms: !!checked }))
+                    }
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor="acceptedTerms" className="text-sm font-medium cursor-pointer">
+                      Li e aceito os{' '}
+                      <Link 
+                        to="/termos-de-uso" 
+                        target="_blank"
+                        className="text-primary hover:underline"
+                      >
+                        Termos de Uso
+                      </Link>
+                      {' '}da plataforma
+                    </Label>
+                    {errors.acceptedTerms && (
+                      <p className="text-sm text-destructive">{errors.acceptedTerms}</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

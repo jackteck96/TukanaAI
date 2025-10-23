@@ -76,6 +76,15 @@ interface AITrainingCase {
   feedback: string;
 }
 
+interface TermsOfService {
+  id: string;
+  version: string;
+  content: string;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -89,6 +98,15 @@ const AdminDashboard = () => {
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
   const [sendingAdminInvite, setSendingAdminInvite] = useState(false);
+  
+  // States for terms of service
+  const [termsOfService, setTermsOfService] = useState<TermsOfService[]>([]);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [editingTerms, setEditingTerms] = useState<TermsOfService | null>(null);
+  const [termsForm, setTermsForm] = useState({
+    version: "",
+    content: ""
+  });
   
   // States for document types
   const [documentTypes, setDocumentTypes] = useState<GlobalDocumentType[]>([]);
@@ -161,6 +179,7 @@ const AdminDashboard = () => {
     try {
       await Promise.all([
         fetchPlatformAdmins(),
+        fetchTermsOfService(),
         fetchDocumentTypes(),
         fetchTemplates(),
         fetchTrainingData(),
@@ -286,6 +305,68 @@ const AdminDashboard = () => {
       toast({ title: "Erro", description: error.message || "Erro ao criar convite", variant: "destructive" });
     } finally {
       setSendingAdminInvite(false);
+    }
+  };
+
+  const fetchTermsOfService = async () => {
+    const { data, error } = await supabase
+      .from('terms_of_service')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    setTermsOfService(data || []);
+  };
+
+  const handleTermsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingTerms) {
+        const { error } = await supabase
+          .from('terms_of_service')
+          .update(termsForm)
+          .eq('id', editingTerms.id);
+        
+        if (error) throw error;
+        toast({ title: "Sucesso", description: "Termos de uso atualizados" });
+      } else {
+        const { error } = await supabase
+          .from('terms_of_service')
+          .insert({ ...termsForm, is_active: false });
+        
+        if (error) throw error;
+        toast({ title: "Sucesso", description: "Termos de uso criados" });
+      }
+      
+      setIsTermsModalOpen(false);
+      setEditingTerms(null);
+      setTermsForm({ version: "", content: "" });
+      fetchTermsOfService();
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleActivateTerms = async (id: string) => {
+    try {
+      // Deactivate all terms first
+      await supabase
+        .from('terms_of_service')
+        .update({ is_active: false })
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      // Activate selected term
+      const { error } = await supabase
+        .from('terms_of_service')
+        .update({ is_active: true })
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Termos ativados com sucesso" });
+      fetchTermsOfService();
+    } catch (error: any) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
     }
   };
 
@@ -556,10 +637,14 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="admins" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="admins" className="flex items-center gap-2">
               <Crown className="w-4 h-4" />
               Administradores
+            </TabsTrigger>
+            <TabsTrigger value="terms" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Termos de Uso
             </TabsTrigger>
             <TabsTrigger value="document-types" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -665,6 +750,131 @@ const AdminDashboard = () => {
                 <CardContent>
                   <p className="text-muted-foreground">
                     Nenhum administrador cadastrado ainda.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Terms of Service Tab */}
+          <TabsContent value="terms" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Termos de Uso da Plataforma</h2>
+              <Dialog open={isTermsModalOpen} onOpenChange={setIsTermsModalOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => {
+                    setEditingTerms(null);
+                    setTermsForm({ version: "", content: "" });
+                  }}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nova Versão
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingTerms ? 'Editar' : 'Criar'} Termos de Uso
+                    </DialogTitle>
+                    <DialogDescription>
+                      Crie ou edite os termos de uso da plataforma. Use Markdown para formatação.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleTermsSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="version">Versão</Label>
+                      <Input
+                        id="version"
+                        value={termsForm.version}
+                        onChange={(e) => setTermsForm({ ...termsForm, version: e.target.value })}
+                        placeholder="1.0, 2.0, etc."
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="content">Conteúdo (Markdown)</Label>
+                      <Textarea
+                        id="content"
+                        value={termsForm.content}
+                        onChange={(e) => setTermsForm({ ...termsForm, content: e.target.value })}
+                        placeholder="# TERMOS DE USO&#10;&#10;## 1. ACEITAÇÃO DOS TERMOS&#10;..."
+                        className="min-h-[400px] font-mono text-sm"
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Use Markdown para formatação: # para títulos, ## para subtítulos, - para listas, etc.
+                      </p>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button type="submit" className="flex-1">
+                        {editingTerms ? 'Atualizar' : 'Criar'} Termos
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsTermsModalOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid gap-4">
+              {termsOfService.map((terms) => (
+                <Card key={terms.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          Versão {terms.version}
+                          {terms.is_active && (
+                            <Badge variant="default" className="bg-success">Ativa</Badge>
+                          )}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Criado em: {new Date(terms.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {!terms.is_active && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleActivateTerms(terms.id)}
+                          >
+                            Ativar
+                          </Button>
+                        )}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingTerms(terms);
+                            setTermsForm({ version: terms.version, content: terms.content });
+                            setIsTermsModalOpen(true);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-sm max-w-none line-clamp-3 text-muted-foreground">
+                      {terms.content.substring(0, 200)}...
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {termsOfService.length === 0 && (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Nenhum termo de uso cadastrado ainda.
                   </p>
                 </CardContent>
               </Card>
