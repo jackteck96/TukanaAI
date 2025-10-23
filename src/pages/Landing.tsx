@@ -281,28 +281,42 @@ const Landing = () => {
                 
                 <CardContent className="p-8 md:p-10 relative z-10">
                   <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl md:text-2xl font-bold">Dashboard de Controle</h3>
-                    <Badge className="px-3 py-1 bg-success/10 text-success border-success/20 animate-pulse">
-                      Em tempo real
+                    <h3 className="text-xl md:text-2xl font-bold">Controle Total</h3>
+                    <Badge className="px-3 py-1 bg-success/10 text-success border-success/20">
+                      <Clock className="h-4 w-4 mr-1 inline" />
+                      Sempre disponível
                     </Badge>
                   </div>
                   
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors duration-300">
-                      <span className="text-muted-foreground text-lg">Documentos processados</span>
-                      <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">2.847</span>
+                    <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/20">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                          <FileCheck className="h-5 w-5 text-primary" />
+                        </div>
+                        <h4 className="text-lg font-semibold">Gestão Completa</h4>
+                      </div>
+                      <p className="text-muted-foreground">Acompanhe todos os documentos em um único lugar</p>
                     </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors duration-300">
-                      <span className="text-muted-foreground text-lg">Clientes ativos</span>
-                      <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">156</span>
+                    
+                    <div className="p-6 rounded-2xl bg-gradient-to-br from-accent/10 to-primary/10 border-2 border-accent/20">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                          <Shield className="h-5 w-5 text-accent" />
+                        </div>
+                        <h4 className="text-lg font-semibold">Segurança Garantida</h4>
+                      </div>
+                      <p className="text-muted-foreground">Proteção de dados com criptografia avançada</p>
                     </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors duration-300">
-                      <span className="text-muted-foreground text-lg">Taxa de aprovação</span>
-                      <span className="text-2xl font-bold text-success">98.5%</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors duration-300">
-                      <span className="text-muted-foreground text-lg">Tempo médio</span>
-                      <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">2.3h</span>
+                    
+                    <div className="p-6 rounded-2xl bg-gradient-to-br from-success/10 to-primary/10 border-2 border-success/20">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
+                          <BarChart3 className="h-5 w-5 text-success" />
+                        </div>
+                        <h4 className="text-lg font-semibold">Relatórios Inteligentes</h4>
+                      </div>
+                      <p className="text-muted-foreground">Análises detalhadas para melhores decisões</p>
                     </div>
                   </div>
                   
@@ -311,7 +325,7 @@ const Landing = () => {
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
                         <Zap className="h-5 w-5 text-success" />
                       </div>
-                      <span className="text-success font-medium">Sistema funcionando perfeitamente</span>
+                      <span className="text-success font-medium">Plataforma otimizada e eficiente</span>
                     </div>
                   </div>
                 </CardContent>
