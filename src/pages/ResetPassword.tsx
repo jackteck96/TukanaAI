@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 const passwordSchema = z.object({
   password: z.string()
@@ -104,12 +103,11 @@ export default function ResetPassword() {
               <CardTitle>Sessão Inválida</CardTitle>
               <CardDescription>
                 O link de recuperação expirou ou é inválido. Você será redirecionado para solicitar um novo link.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </main>
-        <Footer />
-      </div>
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
+    </div>
     );
   }
 
@@ -194,11 +192,10 @@ export default function ResetPassword() {
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Redefinir Senha
               </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </main>
-      <Footer />
-    </div>
+          </form>
+        </CardContent>
+      </Card>
+    </main>
+  </div>
   );
 }

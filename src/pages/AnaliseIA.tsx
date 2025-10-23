@@ -3,7 +3,6 @@ import { BusinessDocumentAnalyzer } from '@/components/BusinessDocumentAnalyzer'
 import { Card } from '@/components/ui/card';
 import { Brain } from 'lucide-react';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 export default function AnaliseIA() {
   const { company } = useCompany();
@@ -15,12 +14,11 @@ export default function AnaliseIA() {
         <main className="container mx-auto px-4 py-8">
           <Card className="p-6">
             <p className="text-center text-muted-foreground">
-              Carregando informações da empresa...
-            </p>
-          </Card>
-        </main>
-        <Footer />
-      </div>
+            Carregando informações da empresa...
+          </p>
+        </Card>
+      </main>
+    </div>
     );
   }
 
@@ -41,11 +39,10 @@ export default function AnaliseIA() {
         <BusinessDocumentAnalyzer 
           companyId={company.id}
           onAnalysisComplete={(result) => {
-            console.log('Análise concluída:', result);
-          }}
-        />
-      </main>
-      <Footer />
-    </div>
+          console.log('Análise concluída:', result);
+        }}
+      />
+    </main>
+  </div>
   );
 }
