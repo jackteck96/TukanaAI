@@ -191,6 +191,7 @@ const EmpresaDashboard = () => {
   const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [processSearchTerm, setProcessSearchTerm] = useState("");
   const [clientForm, setClientForm] = useState({
     name: "",
     email: "",
@@ -361,6 +362,17 @@ const EmpresaDashboard = () => {
                   </Link>
                 </Button>
               </div>
+              <div className="mt-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome do processo, cliente ou CNPJ..."
+                    value={processSearchTerm}
+                    onChange={(e) => setProcessSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -379,7 +391,17 @@ const EmpresaDashboard = () => {
                     <p className="text-sm">Crie seu primeiro processo</p>
                   </div>
                 ) : (
-                  recentProcesses.map((process) => (
+                  recentProcesses
+                    .filter((process) => {
+                      if (!processSearchTerm) return true;
+                      const searchLower = processSearchTerm.toLowerCase();
+                      return (
+                        process.project_name?.toLowerCase().includes(searchLower) ||
+                        process.client_name.toLowerCase().includes(searchLower) ||
+                        process.cpf_cnpj?.toLowerCase().includes(searchLower)
+                      );
+                    })
+                    .map((process) => (
                   <div
                     key={process.id}
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -387,7 +409,7 @@ const EmpresaDashboard = () => {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-foreground text-sm">
-                        {process.process_type}
+                        {process.project_name || process.process_type}
                       </h3>
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}

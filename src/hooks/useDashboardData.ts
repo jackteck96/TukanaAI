@@ -22,10 +22,12 @@ export interface RecentClient {
 export interface RecentProcess {
   id: string;
   client_name: string;
+  project_name: string;
   process_type: string;
   status: string;
   progress: number;
   due_date: string | null;
+  cpf_cnpj: string | null;
 }
 
 export const useDashboardData = () => {
@@ -122,10 +124,12 @@ export const useDashboardData = () => {
       setRecentProcesses(data?.map(process => ({
         id: process.id,
         client_name: process.client_name,
+        project_name: process.project_name || process.process_type,
         process_type: process.process_type,
         status: process.status,
         progress: process.progress,
-        due_date: process.due_date
+        due_date: process.due_date,
+        cpf_cnpj: process.cpf_cnpj
       })) || []);
     } catch (error) {
       console.error('Error fetching recent processes:', error);
