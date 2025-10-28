@@ -36,7 +36,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 interface GlobalDocumentType {
   id: string;
   name: string;
-  has_validity_date: boolean;
+  has_issue_date: boolean;
   has_expiration_date: boolean;
   requires_issuing_location: boolean;
   notes: string;
@@ -114,7 +114,7 @@ const AdminDashboard = () => {
   const [editingDocType, setEditingDocType] = useState<GlobalDocumentType | null>(null);
   const [docTypeForm, setDocTypeForm] = useState({
     name: "",
-    has_validity_date: false,
+    has_issue_date: false,
     has_expiration_date: false,
     requires_issuing_location: false,
     notes: ""
@@ -437,7 +437,7 @@ const AdminDashboard = () => {
       
       setIsDocTypeModalOpen(false);
       setEditingDocType(null);
-      setDocTypeForm({ name: "", has_validity_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "" });
+      setDocTypeForm({ name: "", has_issue_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "" });
       fetchDocumentTypes();
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -889,7 +889,7 @@ const AdminDashboard = () => {
                 <DialogTrigger asChild>
                   <Button onClick={() => {
                     setEditingDocType(null);
-                    setDocTypeForm({ name: "", has_validity_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "" });
+                    setDocTypeForm({ name: "", has_issue_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "" });
                   }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Novo Tipo
@@ -919,13 +919,13 @@ const AdminDashboard = () => {
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <Checkbox
-                          id="has_validity_date"
-                          checked={docTypeForm.has_validity_date}
+                          id="has_issue_date"
+                          checked={docTypeForm.has_issue_date}
                           onCheckedChange={(checked) => 
-                            setDocTypeForm(prev => ({ ...prev, has_validity_date: checked as boolean }))
+                            setDocTypeForm(prev => ({ ...prev, has_issue_date: checked as boolean }))
                           }
                         />
-                        <Label htmlFor="has_validity_date">Possui data de validade</Label>
+                        <Label htmlFor="has_issue_date">Possui data de emissão</Label>
                       </div>
 
                       <div className="flex items-center space-x-2">
@@ -993,7 +993,7 @@ const AdminDashboard = () => {
                             setEditingDocType(type);
                             setDocTypeForm({
                               name: type.name,
-                              has_validity_date: type.has_validity_date,
+                              has_issue_date: type.has_issue_date,
                               has_expiration_date: type.has_expiration_date,
                               requires_issuing_location: type.requires_issuing_location,
                               notes: type.notes
@@ -1018,8 +1018,8 @@ const AdminDashboard = () => {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {type.has_validity_date && (
-                          <Badge variant="secondary">Data de Validade</Badge>
+                        {type.has_issue_date && (
+                          <Badge variant="secondary">Data de Emissão</Badge>
                         )}
                         {type.has_expiration_date && (
                           <Badge variant="secondary">Data de Expiração</Badge>

@@ -147,8 +147,8 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
           pdf.text(`   Enviado por: ${doc.uploaded_by} em ${new Date(doc.created_at).toLocaleDateString('pt-BR')}`, 20, yPos + 16);
           
           let extraLines = 0;
-          if (doc.validity_date) {
-            pdf.text(`   Data de Validade: ${new Date(doc.validity_date).toLocaleDateString('pt-BR')}`, 20, yPos + 24);
+          if (doc.issue_date) {
+            pdf.text(`   Data de Emissão: ${new Date(doc.issue_date).toLocaleDateString('pt-BR')}`, 20, yPos + 24);
             extraLines += 8;
           }
           if (doc.expiration_date) {
@@ -195,7 +195,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         ['Documentos Aprovados', report.approved_documents],
         [''],
         ['Lista de Documentos'],
-        ['Nome do Arquivo', 'Tipo', 'Status', 'Enviado por', 'Data de Criação', 'Data de Validade', 'Data de Expiração', 'Local de Emissão', 'Tamanho (KB)']
+        ['Nome do Arquivo', 'Tipo', 'Status', 'Enviado por', 'Data de Criação', 'Data de Emissão', 'Data de Expiração', 'Local de Emissão', 'Tamanho (KB)']
       ];
       
       // Adicionar documentos
@@ -207,7 +207,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
             doc.status,
             doc.uploaded_by,
             new Date(doc.created_at).toLocaleDateString('pt-BR'),
-            doc.validity_date ? new Date(doc.validity_date).toLocaleDateString('pt-BR') : 'N/A',
+            doc.issue_date ? new Date(doc.issue_date).toLocaleDateString('pt-BR') : 'N/A',
             doc.expiration_date ? new Date(doc.expiration_date).toLocaleDateString('pt-BR') : 'N/A',
             doc.issuing_location || 'N/A',
             doc.file_size ? (doc.file_size / 1024).toFixed(1) : 'N/A'
@@ -431,10 +431,10 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
                       <div className="text-xs text-muted-foreground mt-1">
                         Adicionado em {new Date(doc.created_at).toLocaleDateString('pt-BR')} às {new Date(doc.created_at).toLocaleTimeString('pt-BR')}
                       </div>
-                      {(doc.validity_date || doc.expiration_date || doc.issuing_location) && (
+                      {(doc.issue_date || doc.expiration_date || doc.issuing_location) && (
                         <div className="text-xs text-muted-foreground mt-1 space-y-1">
-                          {doc.validity_date && (
-                            <div>📅 Válido até: {new Date(doc.validity_date).toLocaleDateString('pt-BR')}</div>
+                          {doc.issue_date && (
+                            <div>📅 Emitido em: {new Date(doc.issue_date).toLocaleDateString('pt-BR')}</div>
                           )}
                           {doc.expiration_date && (
                             <div>⏰ Expira em: {new Date(doc.expiration_date).toLocaleDateString('pt-BR')}</div>

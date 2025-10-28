@@ -16,7 +16,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 interface TipoDocumento {
   id: string;
   name: string;
-  has_validity_date: boolean;
+  has_issue_date: boolean;
   has_expiration_date: boolean;
   requires_issuing_location: boolean;
   notes: string;
@@ -33,7 +33,7 @@ const CadastroTiposDocumentos = () => {
   const [editingTipo, setEditingTipo] = useState<TipoDocumento | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    has_validity_date: false,
+    has_issue_date: false,
     has_expiration_date: false,
     requires_issuing_location: false,
     notes: ""
@@ -101,7 +101,7 @@ const CadastroTiposDocumentos = () => {
           .from('document_types')
           .update({
             name: formData.name,
-            has_validity_date: formData.has_validity_date,
+            has_issue_date: formData.has_issue_date,
             has_expiration_date: formData.has_expiration_date,
             requires_issuing_location: formData.requires_issuing_location,
             notes: formData.notes
@@ -119,7 +119,7 @@ const CadastroTiposDocumentos = () => {
           .from('document_types')
           .insert({
             name: formData.name,
-            has_validity_date: formData.has_validity_date,
+            has_issue_date: formData.has_issue_date,
             has_expiration_date: formData.has_expiration_date,
             requires_issuing_location: formData.requires_issuing_location,
             notes: formData.notes,
@@ -136,7 +136,7 @@ const CadastroTiposDocumentos = () => {
 
       setFormData({
         name: "",
-        has_validity_date: false,
+        has_issue_date: false,
         has_expiration_date: false,
         requires_issuing_location: false,
         notes: ""
@@ -158,7 +158,7 @@ const CadastroTiposDocumentos = () => {
     setEditingTipo(tipo);
     setFormData({
       name: tipo.name,
-      has_validity_date: tipo.has_validity_date,
+      has_issue_date: tipo.has_issue_date,
       has_expiration_date: tipo.has_expiration_date,
       requires_issuing_location: tipo.requires_issuing_location,
       notes: tipo.notes
@@ -194,7 +194,7 @@ const CadastroTiposDocumentos = () => {
     setEditingTipo(null);
     setFormData({
       name: "",
-      has_validity_date: false,
+      has_issue_date: false,
       has_expiration_date: false,
       requires_issuing_location: false,
       notes: ""
@@ -270,13 +270,13 @@ const CadastroTiposDocumentos = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="has_validity_date"
-                      checked={formData.has_validity_date}
+                      id="has_issue_date"
+                      checked={formData.has_issue_date}
                       onCheckedChange={(checked) => 
-                        handleInputChange('has_validity_date', checked as boolean)
+                        handleInputChange('has_issue_date', checked as boolean)
                       }
                     />
-                    <Label htmlFor="has_validity_date">Possui data de validade</Label>
+                    <Label htmlFor="has_issue_date">Possui data de emissão</Label>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -359,9 +359,9 @@ const CadastroTiposDocumentos = () => {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {tipo.has_validity_date && (
+                    {tipo.has_issue_date && (
                       <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
-                        Data de Validade
+                        Data de Emissão
                       </span>
                     )}
                     {tipo.has_expiration_date && (

@@ -451,7 +451,7 @@ export type Database = {
           company_id: string
           created_at: string
           has_expiration_date: boolean
-          has_validity_date: boolean
+          has_issue_date: boolean
           id: string
           name: string
           notes: string | null
@@ -462,7 +462,7 @@ export type Database = {
           company_id: string
           created_at?: string
           has_expiration_date?: boolean
-          has_validity_date?: boolean
+          has_issue_date?: boolean
           id?: string
           name: string
           notes?: string | null
@@ -473,7 +473,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           has_expiration_date?: boolean
-          has_validity_date?: boolean
+          has_issue_date?: boolean
           id?: string
           name?: string
           notes?: string | null
@@ -557,6 +557,7 @@ export type Database = {
           file_size: number
           file_type: string
           id: string
+          issue_date: string | null
           issuing_location: string | null
           process_id: string
           rejection_reason: string | null
@@ -565,7 +566,6 @@ export type Database = {
           status: string
           updated_at: string
           uploaded_by: string
-          validity_date: string | null
         }
         Insert: {
           adjustment_comments?: string | null
@@ -581,6 +581,7 @@ export type Database = {
           file_size: number
           file_type: string
           id?: string
+          issue_date?: string | null
           issuing_location?: string | null
           process_id: string
           rejection_reason?: string | null
@@ -589,7 +590,6 @@ export type Database = {
           status?: string
           updated_at?: string
           uploaded_by: string
-          validity_date?: string | null
         }
         Update: {
           adjustment_comments?: string | null
@@ -605,6 +605,7 @@ export type Database = {
           file_size?: number
           file_type?: string
           id?: string
+          issue_date?: string | null
           issuing_location?: string | null
           process_id?: string
           rejection_reason?: string | null
@@ -613,7 +614,6 @@ export type Database = {
           status?: string
           updated_at?: string
           uploaded_by?: string
-          validity_date?: string | null
         }
         Relationships: [
           {
@@ -669,7 +669,7 @@ export type Database = {
         Row: {
           created_at: string
           has_expiration_date: boolean
-          has_validity_date: boolean
+          has_issue_date: boolean
           id: string
           name: string
           notes: string | null
@@ -679,7 +679,7 @@ export type Database = {
         Insert: {
           created_at?: string
           has_expiration_date?: boolean
-          has_validity_date?: boolean
+          has_issue_date?: boolean
           id?: string
           name: string
           notes?: string | null
@@ -689,7 +689,7 @@ export type Database = {
         Update: {
           created_at?: string
           has_expiration_date?: boolean
-          has_validity_date?: boolean
+          has_issue_date?: boolean
           id?: string
           name?: string
           notes?: string | null
@@ -1393,6 +1393,21 @@ export type Database = {
         Returns: boolean
       }
       can_view_company: { Args: { comp_id: string }; Returns: boolean }
+      check_expiring_documents: {
+        Args: { days_ahead?: number }
+        Returns: {
+          client_email: string
+          client_name: string
+          company_id: string
+          days_until_expiration: number
+          document_id: string
+          document_name: string
+          document_type: string
+          expiration_date: string
+          process_id: string
+          status: string
+        }[]
+      }
       check_plan_limits: {
         Args: { company_uuid: string; limit_type: string }
         Returns: Json
