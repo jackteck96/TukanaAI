@@ -114,12 +114,21 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     if (type === 'document_rejected') {
       return <X className="h-4 w-4 text-destructive" />;
     }
+    if (type === 'document_expired') {
+      return <AlertTriangle className="h-4 w-4 text-destructive" />;
+    }
+    if (type === 'document_expiring') {
+      return <AlertTriangle className="h-4 w-4 text-warning" />;
+    }
     return <AlertTriangle className="h-4 w-4 text-warning" />;
   };
 
   const getNotificationColor = (type: string) => {
-    if (type === 'document_rejected') {
+    if (type === 'document_rejected' || type === 'document_expired') {
       return 'border-l-destructive bg-destructive/5';
+    }
+    if (type === 'document_expiring') {
+      return 'border-l-warning bg-warning/5';
     }
     return 'border-l-warning bg-warning/5';
   };
