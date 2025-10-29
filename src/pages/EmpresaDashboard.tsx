@@ -35,6 +35,7 @@ import CompletedTodayModal from "@/components/CompletedTodayModal";
 import DocumentSearchModal from "@/components/DocumentSearchModal";
 import { supabase } from "@/integrations/supabase/client";
 import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
+import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -248,6 +249,9 @@ const EmpresaDashboard = () => {
       </header>
 
       <div className="p-6 space-y-6">
+        {/* Expiring Documents Alert */}
+        <ExpiringDocumentsAlert />
+        
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (

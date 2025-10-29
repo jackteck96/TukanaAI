@@ -48,3 +48,6 @@ verify_jwt = false
 [functions.complete-internal-signature]
 verify_jwt = false
 
+[functions.process-expiring-documents]
+verify_jwt = false
+
