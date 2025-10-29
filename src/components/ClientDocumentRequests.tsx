@@ -317,9 +317,22 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     }
   };
 
-  const handleFileUpload = async (request: DocumentRequest, file: File) => {
+  const handleFileUpload = async (request: DocumentRequest, files: FileList) => {
     try {
       setUploadingDocId(request.id);
+
+      if (files.length === 0) {
+        toast.error("Nenhum arquivo selecionado");
+        return;
+      }
+
+      // Validar tamanho dos arquivos
+      for (let i = 0; i < files.length; i++) {
+        if (files[i].size > 10 * 1024 * 1024) {
+          toast.error(`${files[i].name}: Arquivo muito grande. Máximo de 10MB`);
+          return;
+        }
+      }
 
       // Antes de tudo, garantir que exista um document_request real para este documento
       try {
@@ -355,20 +368,6 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         }
       }
 
-      // Upload para o storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${processId}/${documentRequestId}/${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Erro no upload:', uploadError);
-        toast.error("Erro ao fazer upload do arquivo");
-        return;
-      }
-
       // Obter dados do perfil para company_id e client info
       const { data: profileData } = await supabase
         .from('profiles')
@@ -382,24 +381,53 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         .eq('id', processId)
         .single();
 
-      // Registrar upload no banco
-      const { error: dbError } = await supabase
-        .from('document_uploads')
-        .insert({
-          process_id: processId,
-          document_request_id: documentRequestId,
-          company_id: processData?.company_id || profileData?.company_id,
-          client_email: processData?.client_email || profileData?.email,
-          file_path: fileName,
-          file_type: file.type,
-          file_size: file.size,
-          status: 'enviado'
-        });
+      let successCount = 0;
+      let errorCount = 0;
 
-      if (dbError) {
-        console.error('Erro ao registrar upload:', dbError);
-        toast.error("Erro ao registrar documento");
-        return;
+      // Upload de cada arquivo
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        try {
+          // Upload para o storage
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${processId}/${documentRequestId}/${Date.now()}_${i}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('Erro no upload:', uploadError);
+            errorCount++;
+            continue;
+          }
+
+          // Registrar upload no banco
+          const { error: dbError } = await supabase
+            .from('document_uploads')
+            .insert({
+              process_id: processId,
+              document_request_id: documentRequestId,
+              company_id: processData?.company_id || profileData?.company_id,
+              client_email: processData?.client_email || profileData?.email,
+              file_path: fileName,
+              file_type: file.type,
+              file_size: file.size,
+              status: 'enviado'
+            });
+
+          if (dbError) {
+            console.error('Erro ao registrar upload:', dbError);
+            errorCount++;
+            continue;
+          }
+
+          successCount++;
+        } catch (fileError) {
+          console.error(`Erro ao processar ${file.name}:`, fileError);
+          errorCount++;
+        }
       }
 
       // Apagar notificações relacionadas a este documento ao reenviar
@@ -428,11 +456,19 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         console.warn('Erro ao processar notificações:', notifError);
       }
 
-      toast.success("Documento enviado com sucesso!");
+      // Mostrar resultado
+      if (successCount > 0 && errorCount === 0) {
+        toast.success(`${successCount} documento(s) enviado(s) com sucesso!`);
+      } else if (successCount > 0 && errorCount > 0) {
+        toast.warning(`${successCount} enviado(s), ${errorCount} com erro`);
+      } else {
+        toast.error("Erro ao enviar documentos");
+      }
+
       loadDocumentRequests(); // Recarregar lista
     } catch (err) {
       console.error('Erro inesperado no upload:', err);
-      toast.error("Erro ao enviar documento");
+      toast.error("Erro ao enviar documentos");
     } finally {
       setUploadingDocId(null);
     }
@@ -567,14 +603,22 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                       </div>
                     )}
 
-                    {request.document_uploads && request.document_uploads.length > 0 && (
+                     {request.document_uploads && request.document_uploads.length > 0 && (
                       <div className="mt-3 space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">Histórico de envios:</p>
-                        {request.document_uploads.map((upload) => (
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Histórico de envios ({request.document_uploads.length}):
+                        </p>
+                        {request.document_uploads.map((upload, index) => (
                           <div key={upload.id} className="flex items-center gap-2 text-xs bg-muted/20 p-2 rounded">
-                            <Clock className="w-3 h-3" />
+                            <FileText className="w-3 h-3" />
                             <span className="flex-1">
-                              {new Date(upload.created_at).toLocaleDateString('pt-BR')}
+                              Arquivo {index + 1} • {new Date(upload.created_at).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit', 
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </span>
                             <Badge variant="outline" className="text-xs">{upload.status}</Badge>
                           </div>
@@ -585,7 +629,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`file-${request.id}`} className="cursor-pointer">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-1">
                         <Button
                           type="button"
                           size="sm"
@@ -594,23 +638,27 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                         >
                           <span>
                             <Upload className="w-4 h-4 mr-2" />
-                            {request.document_uploads && request.document_uploads.length > 0 ? 'Reenviar' : 'Enviar'}
+                            {uploadingDocId === request.id 
+                              ? 'Enviando...' 
+                              : request.document_uploads && request.document_uploads.length > 0 
+                                ? 'Adicionar mais' 
+                                : 'Enviar'}
                           </span>
                         </Button>
+                        <span className="text-xs text-muted-foreground">
+                          Pode selecionar múltiplos arquivos
+                        </span>
                       </div>
                     </Label>
                     <Input
                       id={`file-${request.id}`}
                       type="file"
+                      multiple
                       className="hidden"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          if (file.size > 10 * 1024 * 1024) {
-                            toast.error("Arquivo muito grande. Máximo de 10MB");
-                            return;
-                          }
-                          handleFileUpload(request, file);
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                          handleFileUpload(request, files);
                         }
                       }}
                       disabled={uploadingDocId === request.id}
