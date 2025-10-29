@@ -797,6 +797,62 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_documents: {
+        Row: {
+          address_proof_path: string | null
+          address_proof_uploaded_at: string | null
+          client_email: string
+          company_id: string
+          cpf_path: string | null
+          cpf_uploaded_at: string | null
+          created_at: string
+          id: string
+          rg_path: string | null
+          rg_uploaded_at: string | null
+          social_contract_path: string | null
+          social_contract_uploaded_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_proof_path?: string | null
+          address_proof_uploaded_at?: string | null
+          client_email: string
+          company_id: string
+          cpf_path?: string | null
+          cpf_uploaded_at?: string | null
+          created_at?: string
+          id?: string
+          rg_path?: string | null
+          rg_uploaded_at?: string | null
+          social_contract_path?: string | null
+          social_contract_uploaded_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_proof_path?: string | null
+          address_proof_uploaded_at?: string | null
+          client_email?: string
+          company_id?: string
+          cpf_path?: string | null
+          cpf_uploaded_at?: string | null
+          created_at?: string
+          id?: string
+          rg_path?: string | null
+          rg_uploaded_at?: string | null
+          social_contract_path?: string | null
+          social_contract_uploaded_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       process_notes: {
         Row: {
           company_id: string

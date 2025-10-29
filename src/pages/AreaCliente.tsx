@@ -48,6 +48,7 @@ import ClientTaskView from "@/components/ClientTaskView";
 import DocumentViewer from "@/components/DocumentViewer";
 import ClientDocumentRequests from "@/components/ClientDocumentRequests";
 import EditProfileModal from "@/components/EditProfileModal";
+import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -1069,6 +1070,9 @@ const AreaCliente = () => {
 
         {/* Client Notifications */}
         <ClientNotifications className="mb-8" />
+
+        {/* Partner Documents Upload */}
+        <PartnerDocumentsUpload />
 
         {/* Quick Actions */}
         <Card className="mb-8">

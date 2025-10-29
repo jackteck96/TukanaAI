@@ -19,6 +19,8 @@ import {
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import PartnerDocumentsViewer from "@/components/PartnerDocumentsViewer";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ClientProcess {
   id: string;
@@ -43,7 +45,9 @@ interface ClientInfo {
 const ClientInfo = () => {
   const { email } = useParams<{ email: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [clientData, setClientData] = useState<ClientInfo | null>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -52,6 +56,28 @@ const ClientInfo = () => {
       fetchClientData(decodeURIComponent(email));
     }
   }, [email]);
+
+  // Fetch company_id from user profile
+  useEffect(() => {
+    const fetchUserCompany = async () => {
+      if (!user?.id) return;
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user company:', error);
+        return;
+      }
+      
+      setCompanyId(profile?.company_id);
+    };
+    
+    fetchUserCompany();
+  }, [user]);
 
   const fetchClientData = async (clientEmail: string) => {
     try {
@@ -258,6 +284,14 @@ const ClientInfo = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Partner Documents Viewer - Only show if company and client data are available */}
+        {companyId && clientData && (
+          <PartnerDocumentsViewer
+            clientEmail={clientData.client_email}
+            companyId={companyId}
+          />
+        )}
 
         {/* Processes List */}
         <Card>
