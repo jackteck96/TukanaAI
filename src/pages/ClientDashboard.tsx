@@ -14,6 +14,7 @@ import {
   User
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PdfConverter } from "@/components/PdfConverter";
 
 const ClientDashboard = () => {
   const clientInfo = {
@@ -390,6 +391,7 @@ const ClientDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <PdfConverter />
               <Button variant="outline" className="h-20 flex-col">
                 <Upload className="h-6 w-6 mb-2" />
                 <span className="text-xs">Enviar Documento</span>
@@ -403,10 +405,6 @@ const ClientDashboard = () => {
               <Button variant="outline" className="h-20 flex-col">
                 <MessageSquare className="h-6 w-6 mb-2" />
                 <span className="text-xs">Suporte</span>
-              </Button>
-              <Button variant="outline" className="h-20 flex-col">
-                <User className="h-6 w-6 mb-2" />
-                <span className="text-xs">Meu Perfil</span>
               </Button>
             </div>
           </CardContent>

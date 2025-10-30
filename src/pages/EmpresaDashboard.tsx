@@ -36,6 +36,7 @@ import DocumentSearchModal from "@/components/DocumentSearchModal";
 import { supabase } from "@/integrations/supabase/client";
 import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
 import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
+import { PdfConverter } from "@/components/PdfConverter";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -491,6 +492,7 @@ const EmpresaDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                  <PdfConverter />
                   <Button variant="outline" className="h-24 flex-col w-full" onClick={() => setIsClientModalOpen(true)}>
                     <Plus className="h-6 w-6 mb-2" />
                     <span className="text-sm font-medium">Novo Cliente</span>
