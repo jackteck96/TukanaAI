@@ -176,29 +176,61 @@ export default function PartnerDocumentsUpload() {
                   )}
                 </Label>
                 
-                <div className="flex items-center gap-2">
-                  <Input
-                    id={field.key}
-                    type="file"
-                    accept={field.accept}
-                    disabled={loading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleFileUpload(field, file);
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  {uploadingField === field.key && (
-                    <span className="text-sm text-muted-foreground">Enviando...</span>
-                  )}
-                </div>
-
-                {isUploaded && uploadDate && (
-                  <p className="text-sm text-muted-foreground">
-                    Enviado em: {uploadDate}
-                  </p>
+                {isUploaded ? (
+                  <div className="space-y-2">
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <span className="text-sm text-green-700 dark:text-green-300">
+                            Documento enviado em: {uploadDate}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id={`${field.key}-update`}
+                        type="file"
+                        accept={field.accept}
+                        disabled={loading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleFileUpload(field, file);
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById(`${field.key}-update`)?.click()}
+                        disabled={loading || uploadingField === field.key}
+                      >
+                        {uploadingField === field.key ? "Enviando..." : "Atualizar"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id={field.key}
+                      type="file"
+                      accept={field.accept}
+                      disabled={loading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleFileUpload(field, file);
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    {uploadingField === field.key && (
+                      <span className="text-sm text-muted-foreground">Enviando...</span>
+                    )}
+                  </div>
                 )}
               </div>
             );

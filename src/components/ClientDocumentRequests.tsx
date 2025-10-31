@@ -526,17 +526,114 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     .filter(req => req.required)
     .every(req => req.document_uploads && req.document_uploads.length > 0);
 
+  // Separar documentos pendentes de enviados
+  const pendingDocuments = documentRequests.filter(req => 
+    (!req.document_uploads || req.document_uploads.length === 0) &&
+    (!req.related_documents || req.related_documents.length === 0)
+  );
+
+  const uploadedDocuments = documentRequests.filter(req => 
+    (req.document_uploads && req.document_uploads.length > 0) ||
+    (req.related_documents && req.related_documents.length > 0)
+  );
+
   return (
     <div className="space-y-6">
-      <Card>
+      {/* Documentos Pendentes - Destaque Laranja */}
+      {pendingDocuments.length > 0 && (
+        <Card className="border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-950/10">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <div>
+                <CardTitle className="text-orange-900 dark:text-orange-100">
+                  Pendentes de Envio
+                </CardTitle>
+                <CardDescription className="text-orange-700 dark:text-orange-300">
+                  {pendingDocuments.length} {pendingDocuments.length === 1 ? 'documento aguardando' : 'documentos aguardando'} envio
+                  {companyName && ` • Solicitado por ${companyName}`}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {pendingDocuments.map((request) => (
+              <Card key={request.id} className="border-l-4 border-l-orange-500 bg-white dark:bg-gray-900">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(request.current_status)}
+                        <h3 className="font-semibold">{request.document_name}</h3>
+                        {request.required && (
+                          <Badge variant="destructive" className="text-xs">Obrigatório</Badge>
+                        )}
+                        {getStatusBadge(request.current_status)}
+                      </div>
+                      
+                      {request.instructions && (
+                        <Alert>
+                          <Info className="h-4 w-4" />
+                          <AlertDescription>
+                            {request.instructions}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor={`file-${request.id}`} className="cursor-pointer">
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={uploadingDocId === request.id}
+                            className="bg-orange-600 hover:bg-orange-700"
+                            asChild
+                          >
+                            <span>
+                              <Upload className="w-4 h-4 mr-2" />
+                              {uploadingDocId === request.id ? 'Enviando...' : 'Enviar Agora'}
+                            </span>
+                          </Button>
+                          <span className="text-xs text-muted-foreground">
+                            Múltiplos arquivos permitidos
+                          </span>
+                        </div>
+                      </Label>
+                      <Input
+                        id={`file-${request.id}`}
+                        type="file"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        className="hidden"
+                        disabled={uploadingDocId === request.id}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleFileUpload(request, e.target.files);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Documentos Enviados/Aprovados */}
+      {uploadedDocuments.length > 0 && (
+        <Card>
         <CardHeader>
-          <CardTitle>Documentos Solicitados</CardTitle>
+          <CardTitle>Documentos Enviados</CardTitle>
           <CardDescription>
-            {companyName ? `Solicitados por ${companyName}` : 'Faça upload dos documentos necessários'}
+            {companyName ? `Solicitados por ${companyName}` : 'Documentos que você já enviou'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {documentRequests.map((request) => (
+          {uploadedDocuments.map((request) => (
             <Card key={request.id} className="border-l-4 border-l-primary/20">
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between gap-4">
@@ -670,6 +767,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
           ))}
         </CardContent>
       </Card>
+      )}
 
       {allRequiredUploaded && (
         <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
