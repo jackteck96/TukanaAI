@@ -1,5 +1,8 @@
 project_id = "devnkdyfzlgspdlfuyam"
 
+[functions.documentConverter]
+verify_jwt = false
+
 [functions.analyze-document-process]
 verify_jwt = true
 

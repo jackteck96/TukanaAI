@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileText, Download, Eye, Send, Shield } from "lucide-react";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -38,69 +37,6 @@ export const PdfConverter = () => {
     }
   };
 
-  const convertImageToPdf = async (file: File): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          try {
-            const pdf = new jsPDF({
-              orientation: img.width > img.height ? 'landscape' : 'portrait',
-              unit: 'px',
-              format: [img.width, img.height]
-            });
-            
-            pdf.addImage(img.src, 'JPEG', 0, 0, img.width, img.height);
-            const pdfBlob = pdf.output('blob');
-            resolve(pdfBlob);
-          } catch (error) {
-            reject(error);
-          }
-        };
-        img.onerror = reject;
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const convertTextToPdf = async (file: File): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target?.result as string;
-          const pdf = new jsPDF();
-          const pageWidth = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-          const margin = 20;
-          const maxWidth = pageWidth - 2 * margin;
-          
-          const lines = pdf.splitTextToSize(text, maxWidth);
-          let y = margin;
-          
-          lines.forEach((line: string) => {
-            if (y > pageHeight - margin) {
-              pdf.addPage();
-              y = margin;
-            }
-            pdf.text(line, margin, y);
-            y += 7;
-          });
-          
-          const pdfBlob = pdf.output('blob');
-          resolve(pdfBlob);
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
-  };
-
   const handleConvert = async () => {
     if (!file) {
       toast.error("Por favor, selecione um arquivo");
@@ -108,34 +44,56 @@ export const PdfConverter = () => {
     }
 
     setIsConverting(true);
+    toast.info("Convertendo arquivo...");
 
     try {
-      const fileType = file.type.toLowerCase();
-      const fileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-      let pdfBlob: Blob;
+      // Read file as base64
+      const reader = new FileReader();
+      const fileBase64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]); // Remove data URL prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
-      if (fileType.includes('image') && (fileType.includes('jpeg') || fileType.includes('jpg') || fileType.includes('png'))) {
-        pdfBlob = await convertImageToPdf(file);
-        toast.success("Imagem convertida para PDF com sucesso!");
-      } else if (fileType.includes('text/plain')) {
-        pdfBlob = await convertTextToPdf(file);
-        toast.success("Texto convertido para PDF com sucesso!");
-      } else {
-        toast.error("Formato não suportado para conversão local. Formatos suportados: JPG, PNG, TXT");
+      // Call edge function
+      const { data, error } = await supabase.functions.invoke('documentConverter', {
+        body: {
+          file: fileBase64,
+          fileName: file.name,
+          fileType: file.type
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        toast.error(data.error);
         setIsConverting(false);
         return;
       }
 
+      // Convert base64 back to Blob
+      const pdfBytes = atob(data.pdfBase64);
+      const pdfArray = new Uint8Array(pdfBytes.length);
+      for (let i = 0; i < pdfBytes.length; i++) {
+        pdfArray[i] = pdfBytes.charCodeAt(i);
+      }
+      const pdfBlob = new Blob([pdfArray], { type: 'application/pdf' });
+
       setConvertedPdf(pdfBlob);
-      setConvertedFileName(`${fileName} (PDF).pdf`);
+      setConvertedFileName(data.fileName);
       
       const url = URL.createObjectURL(pdfBlob);
       setPreviewUrl(url);
-
+      
+      toast.success(data.conversionNote || "Conversão concluída com sucesso!");
       await fetchProcesses();
     } catch (error) {
-      console.error("Erro na conversão:", error);
-      toast.error("Erro ao converter arquivo para PDF");
+      console.error("Erro ao converter arquivo:", error);
+      toast.error("Erro ao converter arquivo");
     } finally {
       setIsConverting(false);
     }
@@ -319,11 +277,11 @@ export const PdfConverter = () => {
             <Input
               type="file"
               onChange={handleFileChange}
-              accept=".jpg,.jpeg,.png,.txt"
+              accept=".docx,.doc,.jpg,.jpeg,.png,.txt,image/*,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               className="cursor-pointer"
             />
             <p className="text-xs text-muted-foreground mt-2">
-              Formatos suportados: JPG, PNG, TXT
+              Formatos suportados: DOCX, JPG, PNG, TXT
             </p>
           </div>
 
