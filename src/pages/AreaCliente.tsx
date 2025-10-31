@@ -49,6 +49,7 @@ import DocumentViewer from "@/components/DocumentViewer";
 import ClientDocumentRequests from "@/components/ClientDocumentRequests";
 import EditProfileModal from "@/components/EditProfileModal";
 import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
+import { PdfConverter } from "@/components/PdfConverter";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -1080,22 +1081,23 @@ const AreaCliente = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <PdfConverter />
               <Button
-                className="h-12 justify-start"
+                className="h-20 flex-col"
                 variant="outline"
                 onClick={() => handleViewDocuments("Pendentes de Envio")}
               >
-                <FileText className="h-4 w-4 mr-2" />
-                Meus Documentos
+                <FileText className="h-6 w-6 mb-2" />
+                <span className="text-xs font-semibold">Meus Documentos</span>
               </Button>
               <Button
-                className="h-12 justify-start"
+                className="h-20 flex-col"
                 variant="outline"
                 onClick={() => setIsEditProfileModalOpen(true)}
               >
-                <User className="h-4 w-4 mr-2" />
-                Gerenciar Perfil
+                <User className="h-6 w-6 mb-2" />
+                <span className="text-xs font-semibold">Gerenciar Perfil</span>
               </Button>
             </div>
           </CardContent>
