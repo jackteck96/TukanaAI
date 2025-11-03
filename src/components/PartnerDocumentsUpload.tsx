@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface DocumentField {
   key: 'social_contract' | 'rg' | 'cpf' | 'address_proof';
@@ -55,6 +56,7 @@ export default function PartnerDocumentsUpload() {
   const [loading, setLoading] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [documents, setDocuments] = useState<any>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     if (user?.email && company?.id) {
@@ -142,18 +144,48 @@ export default function PartnerDocumentsUpload() {
     return new Date(documents[field.dateField]).toLocaleDateString('pt-BR');
   };
 
+  const areAllDocumentsUploaded = () => {
+    return DOCUMENT_FIELDS.every(field => isDocumentUploaded(field));
+  };
+
+  const uploadedCount = DOCUMENT_FIELDS.filter(field => isDocumentUploaded(field)).length;
+
+  // Auto-colapsar quando todos os documentos foram enviados
+  useEffect(() => {
+    if (areAllDocumentsUploaded()) {
+      setIsOpen(false);
+    }
+  }, [documents]);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Documentos do Sócio Administrador
-        </CardTitle>
-        <CardDescription>
-          Para agilizar futuros processos e garantir segurança, envie os documentos do sócio administrador da sua empresa.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Documentos do Sócio Administrador
+                {areAllDocumentsUploaded() && (
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                )}
+              </CardTitle>
+              <CardDescription>
+                {areAllDocumentsUploaded() 
+                  ? `Todos os documentos enviados! Clique para visualizar ou atualizar.`
+                  : `${uploadedCount} de ${DOCUMENT_FIELDS.length} documentos enviados`
+                }
+              </CardDescription>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="space-y-6">
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -236,7 +268,9 @@ export default function PartnerDocumentsUpload() {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }

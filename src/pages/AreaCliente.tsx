@@ -143,7 +143,7 @@ const AreaCliente = () => {
   const [loadingProcesses, setLoadingProcesses] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
 
-  // Carregar estatísticas reais
+  // Carregar estatísticas reais e documentos pendentes
   useEffect(() => {
     const loadStats = async () => {
       if (!user?.email) return;
@@ -152,7 +152,7 @@ const AreaCliente = () => {
         // Buscar todos os processos do cliente
         const { data: processesData } = await supabase
           .from('processes')
-          .select('id')
+          .select('id, project_name')
           .eq('client_email', user.email);
         
         if (!processesData || processesData.length === 0) return;
@@ -165,21 +165,47 @@ const AreaCliente = () => {
           .select('status')
           .in('process_id', processIds);
         
-        // Buscar tarefas pendentes
-        const { data: tasks } = await supabase
-          .from('tasks')
-          .select('id, status')
+        // Buscar solicitações de documentos pendentes
+        const { data: docRequests } = await supabase
+          .from('document_requests')
+          .select(`
+            id,
+            document_name,
+            instructions,
+            required,
+            current_status,
+            process_id,
+            created_at
+          `)
           .in('process_id', processIds)
-          .eq('status', 'pending');
+          .eq('current_status', 'pendente');
+        
+        // Mapear as solicitações pendentes com informações do processo
+        const mappedPendingRequests = (docRequests || []).map((req: any) => {
+          const process = processesData.find(p => p.id === req.process_id);
+          return {
+            id: req.id,
+            title: req.document_name,
+            description: req.instructions || `Documento solicitado: ${req.document_name}`,
+            priority: req.required ? 'Alta' : 'Média',
+            requestedBy: 'Empresa',
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
+            processId: req.process_id,
+            processTitle: process?.project_name || 'Processo',
+            status: 'pendente'
+          };
+        });
+        
+        setPendingRequests(mappedPendingRequests);
         
         const totalDocs = documents?.length || 0;
         const approved = documents?.filter(d => d.status === 'Aprovado').length || 0;
         const inReview = documents?.filter(d => d.status === 'Pendente').length || 0;
-        const pendingTasks = tasks?.length || 0;
+        const pendingCount = mappedPendingRequests.length;
         
         setRealStats({
           totalDocuments: totalDocs,
-          pendingTasks,
+          pendingTasks: pendingCount,
           approvedDocuments: approved,
           inReview
         });
@@ -380,8 +406,8 @@ const AreaCliente = () => {
   // Usar apenas documentos reais do processo selecionado
   const recentDocuments = selectedProcess ? (processDocuments[selectedProcess.id] || []) : [];
 
-  // Remover dados mockados de solicitações pendentes - será implementado futuramente
-  const pendingRequests: any[] = [];
+  // Buscar documentos pendentes reais de todos os processos
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
 
   const [isCollaboratorsModalOpen, setIsCollaboratorsModalOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([
