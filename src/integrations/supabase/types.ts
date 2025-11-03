@@ -800,46 +800,58 @@ export type Database = {
       partner_documents: {
         Row: {
           address_proof_path: string | null
+          address_proof_status: string | null
           address_proof_uploaded_at: string | null
           client_email: string
           company_id: string
           cpf_path: string | null
+          cpf_status: string | null
           cpf_uploaded_at: string | null
           created_at: string
           id: string
           rg_path: string | null
+          rg_status: string | null
           rg_uploaded_at: string | null
           social_contract_path: string | null
+          social_contract_status: string | null
           social_contract_uploaded_at: string | null
           updated_at: string
         }
         Insert: {
           address_proof_path?: string | null
+          address_proof_status?: string | null
           address_proof_uploaded_at?: string | null
           client_email: string
           company_id: string
           cpf_path?: string | null
+          cpf_status?: string | null
           cpf_uploaded_at?: string | null
           created_at?: string
           id?: string
           rg_path?: string | null
+          rg_status?: string | null
           rg_uploaded_at?: string | null
           social_contract_path?: string | null
+          social_contract_status?: string | null
           social_contract_uploaded_at?: string | null
           updated_at?: string
         }
         Update: {
           address_proof_path?: string | null
+          address_proof_status?: string | null
           address_proof_uploaded_at?: string | null
           client_email?: string
           company_id?: string
           cpf_path?: string | null
+          cpf_status?: string | null
           cpf_uploaded_at?: string | null
           created_at?: string
           id?: string
           rg_path?: string | null
+          rg_status?: string | null
           rg_uploaded_at?: string | null
           social_contract_path?: string | null
+          social_contract_status?: string | null
           social_contract_uploaded_at?: string | null
           updated_at?: string
         }
@@ -849,6 +861,47 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_documents_history: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_path: string
+          id: string
+          partner_document_id: string
+          replaced_at: string
+          replaced_by: string | null
+          uploaded_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          file_path: string
+          id?: string
+          partner_document_id: string
+          replaced_at?: string
+          replaced_by?: string | null
+          uploaded_at: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_path?: string
+          id?: string
+          partner_document_id?: string
+          replaced_at?: string
+          replaced_by?: string | null
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_documents_history_partner_document_id_fkey"
+            columns: ["partner_document_id"]
+            isOneToOne: false
+            referencedRelation: "partner_documents"
             referencedColumns: ["id"]
           },
         ]

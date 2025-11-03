@@ -49,6 +49,7 @@ import DocumentViewer from "@/components/DocumentViewer";
 import ClientDocumentRequests from "@/components/ClientDocumentRequests";
 import EditProfileModal from "@/components/EditProfileModal";
 import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
+import PartnerDocumentsCard from "@/components/PartnerDocumentsCard";
 import { PdfConverter } from "@/components/PdfConverter";
 
 const AreaCliente = () => {
@@ -1098,7 +1099,10 @@ const AreaCliente = () => {
         {/* Client Notifications */}
         <ClientNotifications className="mb-8" />
 
-        {/* Partner Documents Upload */}
+        {/* Partner Documents Card - Shows when documents are pending */}
+        <PartnerDocumentsCard />
+
+        {/* Partner Documents Upload - Shows discrete button when complete */}
         <PartnerDocumentsUpload />
 
         {/* Quick Actions */}
