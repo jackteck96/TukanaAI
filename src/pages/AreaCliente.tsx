@@ -802,23 +802,8 @@ const AreaCliente = () => {
             </TabsContent>
 
             <TabsContent value="documents" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Documentos do Processo</CardTitle>
-                  <CardDescription>
-                    Todos os documentos relacionados a este processo (exceto solicitações específicas)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-medium">Documentos gerais do processo</p>
-                    <p className="text-sm mt-2">
-                      Os documentos solicitados pela empresa estão na aba "Solicitações"
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <DocumentList processId={currentProcess.id} refreshKey={refreshKey} />
+              <DocumentReport processId={currentProcess.id} refreshKey={refreshKey} />
             </TabsContent>
 
             <TabsContent value="templates" className="space-y-4">
