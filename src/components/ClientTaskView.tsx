@@ -292,7 +292,7 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
                                     <FileText className="h-3 w-3 flex-shrink-0" />
-                                    <span className="text-xs truncate">{doc.file_name}</span>
+                                    <span className="text-xs break-words flex-1">{doc.file_name}</span>
                                   </div>
                                   <Badge 
                                     variant="outline" 

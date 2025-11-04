@@ -98,9 +98,12 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
     setIsUploading(true);
 
     try {
-      // Usar nome original do arquivo
-      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const filePath = `${processId}/${sanitizedFileName}`;
+      // Renomear o arquivo com o tipo do documento
+      const fileExtension = file.name.split('.').pop();
+      const timestamp = Date.now();
+      const sanitizedDocumentType = documentType.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+      const newFileName = `${sanitizedDocumentType}_${timestamp}.${fileExtension}`;
+      const filePath = `${processId}/${newFileName}`;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documents')
@@ -139,7 +142,7 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
         .insert({
           process_id: processId,
           company_id: company?.id,
-          file_name: file.name,
+          file_name: newFileName,
           file_path: uploadData.path,
           file_type: file.type,
           file_size: file.size,

@@ -404,14 +404,14 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
           documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between p-4 border rounded-lg bg-gradient-card"
+              className="flex items-center justify-between p-4 border rounded-lg bg-gradient-card gap-4"
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <h4 className="font-medium">{doc.file_name}</h4>
-                    <p className="text-sm text-muted-foreground">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-3 mb-2">
+                  <FileText className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium break-words">{doc.file_name}</h4>
+                    <p className="text-sm text-muted-foreground break-words">
                       {doc.document_type} • {(doc.file_size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -419,7 +419,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-warning border-warning/30 hover:bg-warning/10"
+                      className="text-warning border-warning/30 hover:bg-warning/10 flex-shrink-0"
                       onClick={() => {
                         setSelectedDocForComments(doc);
                         setIsCommentsDialogOpen(true);

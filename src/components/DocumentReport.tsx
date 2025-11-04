@@ -452,15 +452,15 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
           ) : (
             <div className="space-y-2">
               {Array.isArray(report.report_data) && report.report_data.map((doc: any) => (
-                <div
+                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 border rounded-lg bg-gradient-card"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg bg-gradient-card"
                 >
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-4 w-4 text-primary" />
-                    <div className="flex-1">
-                      <div className="font-medium">{doc.file_name}</div>
-                      <div className="text-sm text-muted-foreground">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <FileText className="h-4 w-4 text-primary flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium break-words">{doc.file_name}</div>
+                      <div className="text-sm text-muted-foreground break-words">
                         {doc.document_type} • Enviado por {doc.uploaded_by}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
@@ -469,13 +469,13 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
                       {(doc.issue_date || doc.expiration_date || doc.issuing_location) && (
                         <div className="text-xs text-muted-foreground mt-1 space-y-1">
                           {doc.issue_date && (
-                            <div>📅 Emitido em: {new Date(doc.issue_date).toLocaleDateString('pt-BR')}</div>
+                            <div className="break-words">📅 Emitido em: {new Date(doc.issue_date).toLocaleDateString('pt-BR')}</div>
                           )}
                           {doc.expiration_date && (
-                            <div>⏰ Expira em: {new Date(doc.expiration_date).toLocaleDateString('pt-BR')}</div>
+                            <div className="break-words">⏰ Expira em: {new Date(doc.expiration_date).toLocaleDateString('pt-BR')}</div>
                           )}
                           {doc.issuing_location && (
-                            <div>📍 Local: {doc.issuing_location}</div>
+                            <div className="break-words">📍 Local: {doc.issuing_location}</div>
                           )}
                         </div>
                       )}
@@ -484,7 +484,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
                       </div>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(doc.status)}>
+                  <Badge className={`${getStatusColor(doc.status)} flex-shrink-0`}>
                     {getStatusIcon(doc.status)}
                     {doc.status}
                   </Badge>
