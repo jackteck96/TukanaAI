@@ -216,19 +216,16 @@ const ProcessEditDialog = ({
     try {
       setLoading(true);
       
-      // Criar um "documento" pendente para solicitar ao cliente
+      // Criar solicitação na tabela document_requests para que o cliente veja
       const { error } = await supabase
-        .from('documents')
+        .from('document_requests')
         .insert({
           process_id: processId,
           company_id: processData.company_id,
-          document_type: newDocumentType,
-          file_name: `Solicitação: ${newDocumentType}`,
-          file_path: '', // Vazio pois ainda não foi enviado
-          file_size: 0,
-          file_type: 'request',
-          status: 'Pendente',
-          uploaded_by: 'Sistema'
+          document_name: newDocumentType,
+          instructions: null,
+          required: true,
+          current_status: 'pendente'
         });
 
       if (error) throw error;
@@ -238,7 +235,7 @@ const ProcessEditDialog = ({
       
       toast({
         title: "Sucesso",
-        description: "Solicitação de documento adicionada",
+        description: "Solicitação enviada ao cliente",
       });
 
     } catch (error) {
