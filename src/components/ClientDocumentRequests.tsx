@@ -389,9 +389,10 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         const file = files[i];
         
         try {
-          // Upload para o storage
+          // Upload para o storage com nome padronizado pelo tipo de documento
           const fileExt = file.name.split('.').pop();
-          const fileName = `${processId}/${documentRequestId}/${Date.now()}_${i}.${fileExt}`;
+          const sanitizedDocName = request.document_name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+          const fileName = `${processId}/${documentRequestId}/${sanitizedDocName}_${Date.now()}_${i}.${fileExt}`;
           
           const { error: uploadError } = await supabase.storage
             .from('documents')
