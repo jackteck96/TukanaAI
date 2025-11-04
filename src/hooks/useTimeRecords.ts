@@ -129,16 +129,35 @@ export const useTimeRecords = () => {
 
   const fetchAllEmployeeRecords = async (startDate: Date, endDate: Date) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Verificar role do usuário - pode ser admin na tabela profiles ou company_admin na user_roles
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, company_id')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('id', user.id)
         .single();
 
-      if (!profile || profile.role !== 'admin') {
-        throw new Error('Acesso não autorizado');
+      if (!profile) throw new Error('Perfil não encontrado');
+
+      // Verificar se é admin da plataforma
+      const isPlatformAdmin = profile.role === 'admin';
+
+      // Verificar se é admin da empresa
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'company_admin');
+
+      const isCompanyAdmin = userRoles && userRoles.length > 0;
+
+      if (!isPlatformAdmin && !isCompanyAdmin) {
+        throw new Error('Acesso não autorizado. Apenas administradores podem gerar relatórios.');
       }
 
+      // Buscar registros da empresa
       const { data, error } = await supabase
         .from('time_records')
         .select('*')

@@ -35,7 +35,7 @@ const RelatoriosPonto = () => {
       if (user) {
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, id')
           .eq('id', user.id)
           .single();
         
@@ -45,8 +45,25 @@ const RelatoriosPonto = () => {
           return;
         }
         
-        console.log('User role:', profile?.role); // Debug log
-        setIsAdmin(profile?.role === 'admin');
+        // Verificar se é admin da plataforma
+        const isPlatformAdmin = profile?.role === 'admin';
+
+        // Verificar se é admin da empresa
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'company_admin');
+
+        const isCompanyAdmin = userRoles && userRoles.length > 0;
+
+        console.log('User role check:', { 
+          platformAdmin: isPlatformAdmin, 
+          companyAdmin: isCompanyAdmin,
+          profileRole: profile?.role 
+        });
+        
+        setIsAdmin(isPlatformAdmin || isCompanyAdmin);
       }
     };
 
