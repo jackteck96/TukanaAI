@@ -52,6 +52,7 @@ import EditProfileModal from "@/components/EditProfileModal";
 import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
 import PartnerDocumentsCard from "@/components/PartnerDocumentsCard";
 import { PdfConverter } from "@/components/PdfConverter";
+import { updateProcessProgress } from "@/utils/processProgressUpdater";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -273,12 +274,26 @@ const AreaCliente = () => {
             console.log('[AreaCliente] Empresa do processo:', companyName);
           }
           
+          // Recalcular progresso/status com base nas solicitações
+          try {
+            await updateProcessProgress(processData.id);
+          } catch (e) {
+            console.warn('[AreaCliente] Falha ao recalcular progresso (não crítico):', e);
+          }
+
+          // Buscar valores atualizados
+          const { data: refreshed } = await supabase
+            .from('processes')
+            .select('status, progress')
+            .eq('id', processData.id)
+            .single();
+
           const mappedProcess = {
             id: processData.id,
             title: processData.project_name || 'Processo',
             description: processData.description || '',
-            status: processData.status,
-            progress: Number(processData.progress || 0),
+            status: refreshed?.status || processData.status,
+            progress: Number(refreshed?.progress ?? processData.progress ?? 0),
             dueDate: processData.due_date,
             documents: 0,
             pending: 0,

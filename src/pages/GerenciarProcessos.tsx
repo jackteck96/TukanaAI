@@ -41,7 +41,7 @@ import ProcessEditDialog from "@/components/ProcessEditDialog";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
+import { updateProcessProgress } from "@/utils/processProgressUpdater";
 const GerenciarProcessos = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -100,92 +100,39 @@ const GerenciarProcessos = () => {
 
       if (error) throw error;
 
-      // Calcular progresso baseado nos documentos
-      const docs = processData.documents || [];
-      const total = docs.length;
-      
-      if (total === 0) {
-        setCurrentProcess({
-          id: processData.id,
-          project_name: processData.project_name,
-          client_name: processData.client_name,
-          client_email: processData.client_email,
-          cpf_cnpj: processData.cpf_cnpj,
-          process_type: processData.process_type,
-          description: processData.description,
-          status: processData.status,
-          priority: processData.priority,
-          progress: 0,
-          due_date: processData.due_date,
-          created_at: processData.created_at,
-          updated_at: processData.updated_at,
-          company_id: processData.company_id,
-          documents: docs
-        });
-      } else {
-        // Calcular progresso baseado nos status dos documentos
-        const progressSum = docs.reduce((sum: number, doc: any) => {
-          let docProgress = 0;
-          
-          // Se requer assinatura, considerar status de assinatura
-          if (doc.requires_signature) {
-            switch (doc.signature_status) {
-              case 'fully_signed':
-                docProgress = 100;
-                break;
-              case 'partially_signed':
-                docProgress = 50;
-                break;
-              case 'pending_client':
-              case 'pending_company':
-                docProgress = 25;
-                break;
-              default:
-                docProgress = 0;
-            }
-          } else {
-            // Documentos sem assinatura, usar status normal
-            switch (doc.status) {
-              case 'Aprovado':
-                docProgress = 100;
-                break;
-              case 'Pendente':
-                docProgress = 30;
-                break;
-              case 'Em Análise':
-                docProgress = 60;
-                break;
-              case 'Rejeitado':
-                docProgress = 0;
-                break;
-              default:
-                docProgress = 0;
-            }
-          }
-          
-          return sum + docProgress;
-        }, 0);
-        
-        const calculatedProgress = Math.round(progressSum / total);
-
-        setCurrentProcess({
-          id: processData.id,
-          project_name: processData.project_name,
-          client_name: processData.client_name,
-          client_email: processData.client_email,
-          cpf_cnpj: processData.cpf_cnpj,
-          process_type: processData.process_type,
-          description: processData.description,
-          status: processData.status,
-          priority: processData.priority,
-          progress: calculatedProgress,
-          due_date: processData.due_date,
-          created_at: processData.created_at,
-          updated_at: processData.updated_at,
-          company_id: processData.company_id,
-          documents: docs
-        });
+      // Garantir progresso correto baseado em solicitações e atualizar processo
+      try {
+        await updateProcessProgress(id);
+      } catch (e) {
+        console.warn('[GerenciarProcessos] Falha ao recalcular progresso (não crítico):', e);
       }
+
+      // Buscar status e progresso atualizados
+      const { data: procStatus } = await supabase
+        .from('processes')
+        .select('status, progress')
+        .eq('id', id)
+        .single();
+
+      const docs = processData.documents || [];
+
+      setCurrentProcess({
+        id: processData.id,
+        project_name: processData.project_name,
+        client_name: processData.client_name,
+        client_email: processData.client_email,
+        cpf_cnpj: processData.cpf_cnpj,
+        process_type: processData.process_type,
+        description: processData.description,
+        status: procStatus?.status || processData.status,
+        priority: processData.priority,
+        progress: procStatus?.progress ?? processData.progress ?? 0,
+        due_date: processData.due_date,
+        created_at: processData.created_at,
+        updated_at: processData.updated_at,
+        company_id: processData.company_id,
+        documents: docs
+      });
       
       setNotes(processData.description || "");
     } catch (error) {
@@ -311,7 +258,7 @@ const GerenciarProcessos = () => {
           dueDate: process.due_date ? new Date(process.due_date).toLocaleDateString('pt-BR') : 'Sem prazo',
           priority: process.priority?.toLowerCase() || 'medium',
           status: process.status,
-          progress: calculatedProgress,
+          progress: Number(process.progress || 0),
           receivedDocuments: receivedDocuments.map((doc: any) => ({
             name: doc.document_type,
             status: "recebido",

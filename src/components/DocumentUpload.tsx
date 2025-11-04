@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import DocumentPreviewModal from './DocumentPreviewModal';
+import { updateProcessProgress } from '@/utils/processProgressUpdater';
 
 interface DocumentType {
   id: string;
@@ -203,6 +204,13 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
       }
 
       toast.success('Documento enviado com sucesso!');
+      
+      // Atualizar progresso do processo
+      try {
+        await updateProcessProgress(processId);
+      } catch (e) {
+        console.warn('[DocumentUpload] Falha ao atualizar progresso (não crítico):', e);
+      }
       
       // Limpar formulário
       setFile(null);

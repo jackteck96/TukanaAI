@@ -6,6 +6,15 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export const updateProcessProgress = async (processId: string): Promise<void> => {
   try {
+    // Garanta que as solicitações estejam sincronizadas antes de calcular
+    try {
+      await supabase.functions.invoke('ensure-requests-for-process', {
+        body: { processId }
+      });
+    } catch (e) {
+      console.warn('[ProcessProgress] ensure-requests-for-process falhou (não crítico):', e);
+    }
+
     // Buscar todas as solicitações de documentos para este processo
     const { data: requests, error: requestsError } = await supabase
       .from('document_requests')
@@ -55,7 +64,6 @@ export const updateProcessProgress = async (processId: string): Promise<void> =>
     // Calcular progresso baseado nas solicitações
     const totalRequests = requests.length;
     const approvedRequests = requests.filter(r => r.current_status === 'aprovado').length;
-    const rejectedRequests = requests.filter(r => r.current_status === 'rejeitado').length;
     const pendingRequests = requests.filter(r => r.current_status === 'pendente').length;
     const sentRequests = requests.filter(r => r.current_status === 'enviado').length;
 
