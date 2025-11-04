@@ -155,10 +155,15 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
         throw dbError;
       }
 
-      // Gerar relatório atualizado
-      await supabase.rpc('generate_document_report', { 
-        process_uuid: processId 
-      });
+      // Tentar gerar relatório atualizado, mas não falhar se der erro
+      try {
+        console.log('Gerando relatório atualizado após upload de documento');
+        await supabase.rpc('generate_document_report', { 
+          process_uuid: processId 
+        });
+      } catch (reportError) {
+        console.error('Erro ao gerar relatório (não crítico):', reportError);
+      }
 
       toast.success('Documento enviado com sucesso!');
       

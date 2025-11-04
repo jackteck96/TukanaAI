@@ -43,6 +43,8 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
 
   const loadReportData = async () => {
     try {
+      console.log('Carregando relatório para processo:', processId);
+      
       // Carregar dados do processo
       const { data: process, error: processError } = await supabase
         .from('processes')
@@ -50,7 +52,10 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         .eq('id', processId)
         .maybeSingle();
 
-      if (processError) throw processError;
+      if (processError) {
+        console.error('Erro ao buscar processo:', processError);
+        throw processError;
+      }
       
       if (!process) {
         toast.error('Processo não encontrado');
@@ -58,6 +63,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         return;
       }
       
+      console.log('Processo encontrado:', process.client_name);
       setProcessData(process);
 
       // Carregar último relatório
@@ -68,12 +74,30 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         .order('generated_at', { ascending: false })
         .limit(1);
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        console.error('Erro ao buscar relatório:', reportError);
+        throw reportError;
+      }
 
+      console.log('Relatórios encontrados:', reportData?.length || 0);
+      
       if (reportData && reportData.length > 0) {
-        setReport(reportData[0]);
+        const latestReport = reportData[0];
+        console.log('Usando relatório existente:', latestReport.id);
+        console.log('Report data type:', typeof latestReport.report_data);
+        console.log('Report data is array:', Array.isArray(latestReport.report_data));
+        
+        // Validar formato do report_data
+        if (!Array.isArray(latestReport.report_data)) {
+          console.warn('Formato de relatório incompatível, regenerando...');
+          await generateNewReport();
+          return;
+        }
+        
+        setReport(latestReport);
       } else {
         // Se não há relatório, gerar um novo
+        console.log('Nenhum relatório encontrado, gerando novo...');
         await generateNewReport();
       }
     } catch (error) {
@@ -86,18 +110,29 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
 
   const generateNewReport = async () => {
     try {
+      console.log('Gerando novo relatório para processo:', processId);
+      
       const { data, error } = await supabase.rpc('generate_document_report', { 
         process_uuid: processId 
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na RPC generate_document_report:', error);
+        throw error;
+      }
+
+      console.log('Relatório gerado com ID:', data);
+
+      // Pequeno delay para garantir que o relatório foi salvo
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Recarregar dados após gerar relatório
       await loadReportData();
       toast.success('Relatório gerado com sucesso!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao gerar relatório:', error);
-      toast.error('Erro ao gerar relatório');
+      const errorMessage = error?.message || 'Erro desconhecido ao gerar relatório';
+      toast.error(`Erro ao gerar relatório: ${errorMessage}`);
     }
   };
 

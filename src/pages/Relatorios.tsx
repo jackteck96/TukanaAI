@@ -87,23 +87,33 @@ const Relatorios = () => {
 
   const generateReport = async (processId: string) => {
     try {
+      console.log('Gerando relatório para processo:', processId);
+      
       const { data, error } = await supabase.rpc('generate_document_report', {
         process_uuid: processId
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na RPC generate_document_report:', error);
+        throw error;
+      }
+
+      console.log('Relatório gerado com ID:', data);
 
       toast({
         title: "Sucesso",
         description: "Relatório gerado com sucesso!",
       });
 
-      loadData();
+      // Pequeno delay antes de recarregar
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await loadData();
     } catch (error: any) {
       console.error('Erro ao gerar relatório:', error);
+      const errorMessage = error?.message || 'Erro desconhecido';
       toast({
         title: "Erro",
-        description: "Não foi possível gerar o relatório.",
+        description: `Não foi possível gerar o relatório: ${errorMessage}`,
         variant: "destructive",
       });
     }
