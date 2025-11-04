@@ -12,6 +12,7 @@ import { ArrowLeft, Mail, Lock, User, Building2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import logo from '@/assets/logo.png';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -278,8 +279,7 @@ const Auth = () => {
             Voltar para o início
           </Link>
           <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-semibold text-lg">Fuzen</span>
+            <img src={logo} alt="Fuzen Logo" className="h-8 w-auto" />
           </div>
         </div>
 
@@ -311,6 +311,9 @@ const Auth = () => {
         <div className="max-w-md mx-auto">
           <Card className="shadow-xl border-border/50">
             <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <img src={logo} alt="Fuzen Logo" className="h-16 w-auto" />
+              </div>
               <CardTitle className="text-2xl font-bold">
                 Entrar na Plataforma
               </CardTitle>

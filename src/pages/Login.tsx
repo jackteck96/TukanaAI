@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Building2, User, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import logo from "@/assets/logo.png";
 
 const Login = () => {
   const [userType, setUserType] = useState<"empresa" | "cliente" | null>(null);
@@ -78,6 +79,9 @@ const Login = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-6">
           <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <img src={logo} alt="Fuzen Logo" className="h-16 w-auto" />
+            </div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Fazer Login</h1>
             <p className="text-muted-foreground">Selecione o tipo de acesso</p>
           </div>
@@ -135,6 +139,9 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-4">
+            <img src={logo} alt="Fuzen Logo" className="h-12 w-auto" />
+          </div>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl">
               Login - {userType === "empresa" ? "Empresa" : "Cliente"}
