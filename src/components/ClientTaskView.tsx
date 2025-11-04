@@ -7,11 +7,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, Clock, AlertCircle, Upload, FileText, Loader2, XCircle, MessageSquare, Info } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CheckCircle, Clock, AlertCircle, Upload, FileText, Loader2, XCircle, MessageSquare, Info, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface Task {
   id: string;
@@ -31,6 +34,14 @@ interface Document {
   created_at: string;
   rejection_reason?: string;
   adjustment_comments?: string;
+}
+
+interface DocumentTypeConfig {
+  id: string;
+  name: string;
+  has_issue_date?: boolean;
+  has_expiration_date?: boolean;
+  requires_issuing_location?: boolean;
 }
 
 interface ClientTaskViewProps {
@@ -63,10 +74,50 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
   const [isUploading, setIsUploading] = useState(false);
   const [selectedDocForComments, setSelectedDocForComments] = useState<Document | null>(null);
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
+  const [documentTypeConfig, setDocumentTypeConfig] = useState<DocumentTypeConfig | null>(null);
+  const [issueDate, setIssueDate] = useState<Date | undefined>(undefined);
+  const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined);
+  const [issuingLocation, setIssuingLocation] = useState('');
 
   useEffect(() => {
     loadData();
   }, [processId]);
+
+  // Carregar configuração do tipo de documento quando uma task for selecionada
+  useEffect(() => {
+    if (selectedTask && companyId) {
+      loadDocumentTypeConfig(selectedTask.document_type);
+    }
+  }, [selectedTask, companyId]);
+
+  const loadDocumentTypeConfig = async (documentTypeName: string) => {
+    try {
+      // Tentar buscar primeiro da empresa
+      const { data: companyType } = await supabase
+        .from('document_types')
+        .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
+        .eq('company_id', companyId)
+        .eq('name', documentTypeName)
+        .maybeSingle();
+
+      if (companyType) {
+        setDocumentTypeConfig(companyType);
+        return;
+      }
+
+      // Se não encontrou, buscar dos tipos globais
+      const { data: globalType } = await supabase
+        .from('global_document_types')
+        .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
+        .eq('name', documentTypeName)
+        .maybeSingle();
+
+      setDocumentTypeConfig(globalType || null);
+    } catch (error) {
+      console.error('Erro ao carregar configuração do tipo de documento:', error);
+      setDocumentTypeConfig(null);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -140,6 +191,20 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
       return;
     }
 
+    // Validar campos obrigatórios baseado no tipo de documento
+    if (documentTypeConfig?.has_issue_date && !issueDate) {
+      toast.error('Por favor, informe a data de emissão');
+      return;
+    }
+    if (documentTypeConfig?.has_expiration_date && !expirationDate) {
+      toast.error('Por favor, informe a data de validade');
+      return;
+    }
+    if (documentTypeConfig?.requires_issuing_location && !issuingLocation.trim()) {
+      toast.error('Por favor, informe o local de emissão');
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -166,7 +231,10 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
           file_size: file.size,
           document_type: selectedTask.document_type,
           uploaded_by: uploaderName,
-          status: 'Pendente'
+          status: 'Pendente',
+          issue_date: issueDate ? issueDate.toISOString().split('T')[0] : null,
+          expiration_date: expirationDate ? expirationDate.toISOString().split('T')[0] : null,
+          issuing_location: issuingLocation.trim() || null
         });
 
       if (dbError) throw dbError;
@@ -185,8 +253,12 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
       
       setFile(null);
       setUploaderName('');
+      setIssueDate(undefined);
+      setExpirationDate(undefined);
+      setIssuingLocation('');
       setIsUploadOpen(false);
       setSelectedTask(null);
+      setDocumentTypeConfig(null);
       
       loadData();
     } catch (error) {
@@ -374,6 +446,77 @@ export default function ClientTaskView({ processId, companyId }: ClientTaskViewP
                 </p>
               )}
             </div>
+
+            {/* Campos condicionais baseados no tipo de documento */}
+            {documentTypeConfig?.has_issue_date && (
+              <div>
+                <Label htmlFor="issue-date">Data de Emissão *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !issueDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {issueDate ? format(issueDate, "dd/MM/yyyy") : "Selecione a data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={issueDate}
+                      onSelect={setIssueDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {documentTypeConfig?.has_expiration_date && (
+              <div>
+                <Label htmlFor="expiration-date">Data de Validade *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !expirationDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {expirationDate ? format(expirationDate, "dd/MM/yyyy") : "Selecione a data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={expirationDate}
+                      onSelect={setExpirationDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {documentTypeConfig?.requires_issuing_location && (
+              <div>
+                <Label htmlFor="issuing-location">Local de Emissão *</Label>
+                <Input
+                  id="issuing-location"
+                  value={issuingLocation}
+                  onChange={(e) => setIssuingLocation(e.target.value)}
+                  placeholder="Digite o local de emissão"
+                />
+              </div>
+            )}
 
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setIsUploadOpen(false)}>

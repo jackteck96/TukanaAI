@@ -4,13 +4,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Upload, FileText, Loader2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Upload, FileText, Loader2, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { Checkbox } from '@/components/ui/checkbox';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import DocumentPreviewModal from './DocumentPreviewModal';
+
+interface DocumentType {
+  id: string;
+  name: string;
+  has_issue_date?: boolean;
+  has_expiration_date?: boolean;
+  requires_issuing_location?: boolean;
+}
 
 interface DocumentUploadProps {
   processId: string;
@@ -27,10 +39,13 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
   const [uploaderName, setUploaderName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [requiresSignature, setRequiresSignature] = useState(false);
-  const [documentTypes, setDocumentTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [previewDocument, setPreviewDocument] = useState<any>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [issueDate, setIssueDate] = useState<Date | undefined>(undefined);
+  const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined);
+  const [issuingLocation, setIssuingLocation] = useState('');
 
   // Buscar tipos de documentos cadastrados pela empresa
   useEffect(() => {
@@ -41,13 +56,13 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
           company?.id
             ? supabase
                 .from('document_types')
-                .select('id, name')
+                .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
                 .eq('company_id', company.id)
                 .order('name')
             : Promise.resolve({ data: [], error: null } as any),
           supabase
             .from('global_document_types')
-            .select('id, name')
+            .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
             .order('name')
         ]);
 
@@ -89,9 +104,25 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
     }
   };
 
+  const selectedDocType = documentTypes.find(dt => dt.name === documentType);
+
   const handleUpload = async () => {
     if (!file || !documentType || !uploaderName) {
       toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
+    // Validar campos obrigatórios baseado no tipo de documento
+    if (selectedDocType?.has_issue_date && !issueDate) {
+      toast.error('Por favor, informe a data de emissão');
+      return;
+    }
+    if (selectedDocType?.has_expiration_date && !expirationDate) {
+      toast.error('Por favor, informe a data de validade');
+      return;
+    }
+    if (selectedDocType?.requires_issuing_location && !issuingLocation.trim()) {
+      toast.error('Por favor, informe o local de emissão');
       return;
     }
 
@@ -149,7 +180,10 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
           document_type: documentType,
           uploaded_by: uploaderName,
           requires_signature: requiresSignature,
-          signature_status: signatureStatus
+          signature_status: signatureStatus,
+          issue_date: issueDate ? issueDate.toISOString().split('T')[0] : null,
+          expiration_date: expirationDate ? expirationDate.toISOString().split('T')[0] : null,
+          issuing_location: issuingLocation.trim() || null
         })
         .select()
         .single();
@@ -175,6 +209,9 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
       setDocumentType('');
       setUploaderName('');
       setRequiresSignature(false);
+      setIssueDate(undefined);
+      setExpirationDate(undefined);
+      setIssuingLocation('');
       
       // Fechar modal
       onOpenChange(false);
@@ -290,6 +327,77 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
                 </p>
               )}
             </div>
+
+            {/* Campos condicionais baseados no tipo de documento */}
+            {selectedDocType?.has_issue_date && (
+              <div>
+                <Label htmlFor="issue-date">Data de Emissão *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !issueDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {issueDate ? format(issueDate, "dd/MM/yyyy") : "Selecione a data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={issueDate}
+                      onSelect={setIssueDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {selectedDocType?.has_expiration_date && (
+              <div>
+                <Label htmlFor="expiration-date">Data de Validade *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !expirationDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {expirationDate ? format(expirationDate, "dd/MM/yyyy") : "Selecione a data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={expirationDate}
+                      onSelect={setExpirationDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {selectedDocType?.requires_issuing_location && (
+              <div>
+                <Label htmlFor="issuing-location">Local de Emissão *</Label>
+                <Input
+                  id="issuing-location"
+                  value={issuingLocation}
+                  onChange={(e) => setIssuingLocation(e.target.value)}
+                  placeholder="Digite o local de emissão"
+                />
+              </div>
+            )}
 
             <div className="flex items-center space-x-2">
               <Checkbox
