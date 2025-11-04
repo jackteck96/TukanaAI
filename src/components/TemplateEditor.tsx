@@ -87,10 +87,17 @@ export const TemplateEditor = ({
       const blob = new Blob([content], { type: 'text/plain' });
       const file = new File([blob], fileName, { type: 'text/plain' });
 
-      // Generate unique file path
-      const timestamp = Date.now();
+      // Get process name to include in file path
+      const { data: processData } = await supabase
+        .from('processes')
+        .select('project_name, client_name')
+        .eq('id', processId)
+        .single();
+
+      const processName = (processData?.project_name || processData?.client_name || 'Processo').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+      const documentType = (template?.category || 'Documento').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
       const safeFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const filePath = `${processId}/${timestamp}-${safeFileName}`;
+      const filePath = `${processId}/${processName}_${documentType}_${safeFileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -117,7 +124,7 @@ export const TemplateEditor = ({
         .insert({
           process_id: processId,
           company_id: companyId,
-          file_name: fileName,
+          file_name: `${processName}_${documentType}_${safeFileName}`,
           file_path: filePath,
           file_type: 'text/plain',
           file_size: blob.size,

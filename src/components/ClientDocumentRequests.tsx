@@ -377,7 +377,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
 
       const { data: processData } = await supabase
         .from('processes')
-        .select('company_id, client_email')
+        .select('company_id, client_email, project_name, client_name')
         .eq('id', processId)
         .single();
 
@@ -389,10 +389,12 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         const file = files[i];
         
         try {
-          // Upload para o storage com nome padronizado pelo tipo de documento
+          // Upload para o storage com nome padronizado pelo tipo de documento e nome do processo
           const fileExt = file.name.split('.').pop();
           const sanitizedDocName = request.document_name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-          const fileName = `${processId}/${documentRequestId}/${sanitizedDocName}_${Date.now()}_${i}.${fileExt}`;
+          const processName = (processData?.project_name || processData?.client_name || 'Processo').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+          const fileNumber = files.length > 1 ? `_${i + 1}` : '';
+          const fileName = `${processId}/${documentRequestId}/${processName}_${sanitizedDocName}${fileNumber}.${fileExt}`;
           
           const { error: uploadError } = await supabase.storage
             .from('documents')
