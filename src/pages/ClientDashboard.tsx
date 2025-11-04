@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Calendar,
   MessageSquare,
-  User
+  User,
+  PenTool
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PdfConverter } from "@/components/PdfConverter";
@@ -390,8 +391,14 @@ const ClientDashboard = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <PdfConverter />
+              <Link to="/cliente?tab=assinaturas" className="block">
+                <Button variant="outline" className="w-full h-20 flex-col">
+                  <PenTool className="h-6 w-6 mb-2" />
+                  <span className="text-xs">Assinaturas</span>
+                </Button>
+              </Link>
               <Button variant="outline" className="h-20 flex-col">
                 <Upload className="h-6 w-6 mb-2" />
                 <span className="text-xs">Enviar Documento</span>

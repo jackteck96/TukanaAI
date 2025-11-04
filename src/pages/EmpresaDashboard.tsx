@@ -23,7 +23,8 @@ import {
   LogOut,
   Brain,
   UserPlus,
-  Shield
+  Shield,
+  PenTool
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -497,6 +498,12 @@ const EmpresaDashboard = () => {
                     <Plus className="h-6 w-6 mb-2" />
                     <span className="text-sm font-medium">Novo Cliente</span>
                   </Button>
+                  <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <PenTool className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Assinaturas</span>
+                    </Button>
+                  </Link>
                   <Link to="/gerenciar-processos" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">
                       <FileText className="h-6 w-6 mb-2" />
