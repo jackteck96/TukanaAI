@@ -214,38 +214,39 @@ const EmpresaDashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
-              <p className="text-muted-foreground">Visão geral dos processos e clientes</p>
+        <div className="px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">Dashboard - Empresa</h1>
+              <p className="text-sm text-muted-foreground truncate">Visão geral dos processos e clientes</p>
             </div>
-              <div className="flex items-center space-x-4">
-                {isAdmin && (
-                  <Button variant="outline" onClick={() => navigate('/admin')}>
-                    <Shield className="h-4 w-4 mr-2" />
-                    Painel Admin
-                  </Button>
-                )}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setIsEditProfileModalOpen(true)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Perfil
+            <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+              {isAdmin && (
+                <Button variant="outline" size="sm" onClick={() => navigate('/admin')} className="whitespace-nowrap">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Painel Admin
                 </Button>
-                <Button variant="hero" onClick={refreshData} disabled={loading}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {loading ? 'Atualizando...' : 'Atualizar'}
-                </Button>
-                <UserInviteSystem onInviteSent={refreshData} />
-                <CreateProcessWithInvite />
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </div>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsEditProfileModalOpen(true)}
+                className="whitespace-nowrap"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Perfil
+              </Button>
+              <Button variant="hero" size="sm" onClick={refreshData} disabled={loading} className="whitespace-nowrap">
+                <Plus className="h-4 w-4 mr-2" />
+                {loading ? 'Atualizando...' : 'Atualizar'}
+              </Button>
+              <UserInviteSystem onInviteSent={refreshData} />
+              <CreateProcessWithInvite />
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="whitespace-nowrap">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
       </header>
