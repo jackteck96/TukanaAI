@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 interface ProcessData {
   id: string;
   client_name: string;
+  project_name: string;
   process_type: string;
   status: string;
   created_at: string;
@@ -200,7 +201,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
         });
       }
       
-      pdf.save(`relatorio_${processData.client_name}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
+      pdf.save(`relatorio_${processData.project_name || processData.client_name}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
       toast.success('Relatório PDF baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -254,7 +255,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
       
-      XLSX.writeFile(wb, `relatorio_${processData.client_name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      XLSX.writeFile(wb, `relatorio_${(processData.project_name || processData.client_name).replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
       toast.success('Relatório Excel baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar Excel:', error);
@@ -274,7 +275,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
       
-      const processFolder = zip.folder(`${processData?.client_name || 'processo'}-documentos`);
+      const processFolder = zip.folder(`${processData?.project_name || processData?.client_name || 'processo'}-documentos`);
       
       for (const doc of report.report_data) {
         try {
@@ -298,7 +299,7 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${processData?.client_name || 'processo'}-documentos-${new Date().toISOString().split('T')[0]}.zip`;
+      link.download = `${processData?.project_name || processData?.client_name || 'processo'}-documentos-${new Date().toISOString().split('T')[0]}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
