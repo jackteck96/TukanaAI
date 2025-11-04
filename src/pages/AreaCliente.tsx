@@ -25,7 +25,8 @@ import {
   Printer,
   ArrowLeft,
   Mail,
-  FileIcon
+  FileIcon,
+  PenTool
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -1111,7 +1112,7 @@ const AreaCliente = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <PdfConverter />
               <Button
                 className="h-20 flex-col"
@@ -1120,6 +1121,20 @@ const AreaCliente = () => {
               >
                 <FileText className="h-6 w-6 mb-2" />
                 <span className="text-xs font-semibold">Meus Documentos</span>
+              </Button>
+              <Button
+                className="h-20 flex-col"
+                variant="outline"
+                onClick={() => {
+                  if (selectedProcess?.id) {
+                    navigate(`/area-cliente?id=${selectedProcess.id}&tab=assinaturas`);
+                  } else {
+                    toast.error('Selecione um processo primeiro');
+                  }
+                }}
+              >
+                <PenTool className="h-6 w-6 mb-2" />
+                <span className="text-xs font-semibold">Assinaturas</span>
               </Button>
               <Button
                 className="h-20 flex-col"
