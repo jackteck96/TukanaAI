@@ -232,23 +232,35 @@ const ProcessEditDialog = ({
 
       if (error) throw error;
 
+      // Criar notificação interna no sistema
+      try {
+        await supabase
+          .from('client_notifications')
+          .insert({
+            process_id: processId,
+            company_id: processData.company_id,
+            client_email: processData.client_email,
+            document_id: newRequest.id,
+            notification_type: 'document_requested',
+            title: `Novo documento solicitado: ${newDocumentType}`,
+            message: `Foi solicitado o envio do documento "${newDocumentType}" para o processo ${processData.project_name || processData.process_type}. Por favor, acesse sua área do cliente para fazer o upload.`,
+            is_read: false
+          });
+      } catch (notifErr) {
+        console.error('Erro ao criar notificação interna:', notifErr);
+      }
+
       // Enviar notificação por email ao cliente
       try {
-        const { error: emailError } = await supabase.functions.invoke('notify-document-request', {
+        await supabase.functions.invoke('notify-document-request', {
           body: {
             processId: processId,
             documentName: newDocumentType,
             documentRequestId: newRequest.id
           }
         });
-
-        if (emailError) {
-          console.error('Erro ao enviar email:', emailError);
-          // Não falha a operação se o email falhar
-        }
       } catch (emailErr) {
         console.error('Erro ao invocar função de email:', emailErr);
-        // Não falha a operação se o email falhar
       }
 
       setNewDocumentType('');
@@ -256,7 +268,7 @@ const ProcessEditDialog = ({
       
       toast({
         title: "Sucesso",
-        description: "Solicitação enviada ao cliente e notificação enviada por email",
+        description: "Solicitação enviada ao cliente com notificação",
       });
 
     } catch (error) {

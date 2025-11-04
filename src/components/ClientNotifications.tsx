@@ -36,13 +36,26 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
 
   const loadNotifications = async () => {
     try {
+      if (!user?.email) {
+        console.warn('[ClientNotifications] Usuário sem email');
+        return;
+      }
+
+      console.log('[ClientNotifications] Buscando notificações para:', user.email);
+      
       const { data, error } = await supabase
         .from('client_notifications')
         .select('*')
+        .eq('client_email', user.email)
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[ClientNotifications] Erro ao buscar:', error);
+        throw error;
+      }
+      
+      console.log('[ClientNotifications] Notificações encontradas:', data?.length || 0);
       setNotifications(data || []);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
@@ -120,6 +133,9 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     if (type === 'document_expiring') {
       return <AlertTriangle className="h-4 w-4 text-warning" />;
     }
+    if (type === 'document_requested') {
+      return <FileText className="h-4 w-4 text-primary" />;
+    }
     return <AlertTriangle className="h-4 w-4 text-warning" />;
   };
 
@@ -129,6 +145,9 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     }
     if (type === 'document_expiring') {
       return 'border-l-warning bg-warning/5';
+    }
+    if (type === 'document_requested') {
+      return 'border-l-primary bg-primary/5';
     }
     return 'border-l-warning bg-warning/5';
   };
