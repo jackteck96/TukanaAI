@@ -676,23 +676,23 @@ const AreaCliente = () => {
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="bg-card border-b border-border sticky top-0 z-40">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/area-cliente')}>
+          <div className="px-4 sm:px-6 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" onClick={() => navigate('/area-cliente')} className="whitespace-nowrap">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Voltar
                 </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">
-                    {currentProcess.project_name || currentProcess.process_type}
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                    Dashboard {currentProcess.client_name || clientInfo.name}
                   </h1>
-                  <p className="text-muted-foreground">
-                    Meu Processo
+                  <p className="text-sm text-muted-foreground truncate">
+                    {currentProcess.project_name || currentProcess.process_type}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={getStatusColor(currentProcess.status)}>
                   {currentProcess.status}
                 </Badge>
@@ -951,27 +951,28 @@ const AreaCliente = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border">
+      <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-primary-foreground" />
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center shadow-sm">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground">Fuzen</span>
-              </div>
-              <div className="hidden md:block">
-                <span className="text-sm text-muted-foreground">
-                  Área do Cliente - {clientInfo.name}
-                </span>
+                <div>
+                  <span className="text-xl font-bold text-foreground block">Dashboard {clientInfo.name}</span>
+                  <span className="text-sm text-muted-foreground hidden sm:block">
+                    Acompanhe seus processos
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm"
                 onClick={() => setIsEditProfileModalOpen(true)}
+                className="whitespace-nowrap"
               >
                 <User className="h-4 w-4 mr-2" />
                 Perfil
@@ -983,6 +984,7 @@ const AreaCliente = () => {
                   await supabase.auth.signOut();
                   window.location.href = '/';
                 }}
+                className="whitespace-nowrap"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
