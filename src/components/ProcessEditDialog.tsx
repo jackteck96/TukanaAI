@@ -217,7 +217,7 @@ const ProcessEditDialog = ({
       setLoading(true);
       
       // Criar solicitação na tabela document_requests para que o cliente veja
-      const { error } = await supabase
+      const { data: newRequest, error } = await supabase
         .from('document_requests')
         .insert({
           process_id: processId,
@@ -226,16 +226,37 @@ const ProcessEditDialog = ({
           instructions: null,
           required: true,
           current_status: 'pendente'
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Enviar notificação por email ao cliente
+      try {
+        const { error: emailError } = await supabase.functions.invoke('notify-document-request', {
+          body: {
+            processId: processId,
+            documentName: newDocumentType,
+            documentRequestId: newRequest.id
+          }
+        });
+
+        if (emailError) {
+          console.error('Erro ao enviar email:', emailError);
+          // Não falha a operação se o email falhar
+        }
+      } catch (emailErr) {
+        console.error('Erro ao invocar função de email:', emailErr);
+        // Não falha a operação se o email falhar
+      }
 
       setNewDocumentType('');
       fetchDocuments();
       
       toast({
         title: "Sucesso",
-        description: "Solicitação enviada ao cliente",
+        description: "Solicitação enviada ao cliente e notificação enviada por email",
       });
 
     } catch (error) {

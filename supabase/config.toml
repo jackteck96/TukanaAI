@@ -54,3 +54,6 @@ verify_jwt = false
 [functions.process-expiring-documents]
 verify_jwt = false
 
+[functions.notify-document-request]
+verify_jwt = false
+
