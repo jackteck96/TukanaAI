@@ -63,6 +63,7 @@ const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, classN
       case 'pendente':
         (baseSteps[1] as any).status = 'current';
         break;
+      case 'em andamento':
       case 'em análise':
         (baseSteps[1] as any).status = 'completed';
         (baseSteps[2] as any).status = 'current';
@@ -81,6 +82,11 @@ const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, classN
       case 'finalizado':
       case 'concluído':
         baseSteps.forEach(step => (step as any).status = 'completed');
+        break;
+      default:
+        // Para qualquer outro status, considerar "em andamento"
+        (baseSteps[1] as any).status = 'completed';
+        (baseSteps[2] as any).status = 'current';
         break;
     }
 

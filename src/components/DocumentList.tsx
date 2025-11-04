@@ -33,6 +33,8 @@ interface DocumentListProps {
   refreshKey?: number;
 }
 
+import { updateProcessProgress as updateProgress } from '@/utils/processProgressUpdater';
+
 export default function DocumentList({ processId, refreshKey = 0 }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,33 +145,7 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
   const updateProcessProgress = async () => {
     try {
-      const { data: docs, error: docsError } = await supabase
-        .from('documents')
-        .select('status')
-        .eq('process_id', processId);
-
-      if (docsError) throw docsError;
-      if (!docs || docs.length === 0) return;
-
-      const total = docs.length;
-      const approved = docs.filter(d => d.status === 'Aprovado').length;
-      const progress = Math.round((approved / total) * 100);
-
-      let status = 'Em andamento';
-      if (progress === 100) {
-        status = 'Concluído';
-      } else if (progress === 0) {
-        status = 'Pendente';
-      }
-
-      const { error: updateError } = await supabase
-        .from('processes')
-        .update({ progress, status })
-        .eq('id', processId);
-
-      if (updateError) throw updateError;
-      
-      console.log(`[DocumentList] Progresso atualizado: ${progress}%, Status: ${status}`);
+      await updateProgress(processId);
     } catch (error) {
       console.error('Erro ao atualizar progresso do processo:', error);
     }
@@ -277,12 +253,29 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
   const updateDocumentStatus = async (documentId: string, newStatus: string) => {
     try {
+      // Buscar o tipo de documento antes de atualizar
+      const { data: doc } = await supabase
+        .from('documents')
+        .select('document_type')
+        .eq('id', documentId)
+        .single();
+
       const { error } = await supabase
         .from('documents')
         .update({ status: newStatus })
         .eq('id', documentId);
 
       if (error) throw error;
+
+      // Atualizar também o status da solicitação correspondente
+      if (doc?.document_type) {
+        const requestStatus = newStatus === 'Aprovado' ? 'aprovado' : 'enviado';
+        await supabase
+          .from('document_requests')
+          .update({ current_status: requestStatus })
+          .eq('process_id', processId)
+          .eq('document_name', doc.document_type);
+      }
 
       toast.success(`Documento ${newStatus.toLowerCase()} com sucesso`);
       await updateProcessProgress();

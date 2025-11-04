@@ -59,6 +59,22 @@ export default function DocumentActionDialog({
 
       if (docError) throw docError;
 
+      // Atualizar também o status da solicitação correspondente
+      const { data: doc } = await supabase
+        .from('documents')
+        .select('document_type')
+        .eq('id', documentId)
+        .single();
+
+      if (doc?.document_type) {
+        const requestStatus = action === 'reject' ? 'rejeitado' : 'ajuste_solicitado';
+        await supabase
+          .from('document_requests')
+          .update({ current_status: requestStatus })
+          .eq('process_id', processId)
+          .eq('document_name', doc.document_type);
+      }
+
       // Criar notificação para o cliente
       const notificationType = action === 'reject' ? 'document_rejected' : 'document_adjustment_requested';
       const title = action === 'reject' 
