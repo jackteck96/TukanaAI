@@ -76,6 +76,13 @@ export const TemplateEditor = ({
     try {
       setIsSaving(true);
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Usuário não autenticado");
+        return;
+      }
+
       // Create a blob from the content
       const blob = new Blob([content], { type: 'text/plain' });
       const file = new File([blob], fileName, { type: 'text/plain' });
@@ -90,7 +97,19 @@ export const TemplateEditor = ({
         .from('documents')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Erro no upload:', uploadError);
+        throw uploadError;
+      }
+
+      // Get user name for uploaded_by field
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+
+      const uploaderName = profile?.full_name || user.email || 'Sistema';
 
       // Save document record in database
       const { error: dbError } = await supabase
@@ -103,18 +122,21 @@ export const TemplateEditor = ({
           file_type: 'text/plain',
           file_size: blob.size,
           document_type: template?.category || 'Documento',
-          uploaded_by: 'Sistema',
+          uploaded_by: uploaderName,
           status: 'Aprovado'
         });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Erro ao inserir no banco:', dbError);
+        throw dbError;
+      }
 
       toast.success("Documento gerado e anexado com sucesso!");
       onDocumentCreated();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar documento:', error);
-      toast.error('Erro ao salvar documento no processo');
+      toast.error(error?.message || 'Erro ao salvar documento no processo');
     } finally {
       setIsSaving(false);
     }
