@@ -698,6 +698,50 @@ export type Database = {
         }
         Relationships: []
       }
+      google_calendar_tokens: {
+        Row: {
+          access_token: string
+          company_id: string
+          created_at: string | null
+          id: string
+          refresh_token: string | null
+          scope: string
+          token_expiry: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          company_id: string
+          created_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          scope: string
+          token_expiry: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          refresh_token?: string | null
+          scope?: string
+          token_expiry?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_calendar_tokens_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       internal_signatures: {
         Row: {
           auth_report_url: string | null
@@ -962,6 +1006,8 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          meeting_date: string | null
+          meeting_url: string | null
           priority: string
           process_type: string
           progress: number
@@ -980,6 +1026,8 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          meeting_date?: string | null
+          meeting_url?: string | null
           priority?: string
           process_type: string
           progress?: number
@@ -998,6 +1046,8 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          meeting_date?: string | null
+          meeting_url?: string | null
           priority?: string
           process_type?: string
           progress?: number

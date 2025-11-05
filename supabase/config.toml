@@ -1,5 +1,14 @@
 project_id = "devnkdyfzlgspdlfuyam"
 
+[functions.google-auth-init]
+verify_jwt = true
+
+[functions.google-auth-callback]
+verify_jwt = false
+
+[functions.create-calendar-event]
+verify_jwt = true
+
 [functions.documentConverter]
 verify_jwt = false
 
