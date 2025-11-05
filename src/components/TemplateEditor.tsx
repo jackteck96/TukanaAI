@@ -50,15 +50,17 @@ export const TemplateEditor = ({
       // Replace template variables with actual data
       let processedContent = template.content;
       
-      // Replace common variables
-      processedContent = processedContent.replace(/\[CLIENTE_NOME\]/g, processData.client_name || '');
-      processedContent = processedContent.replace(/\[CLIENTE_EMAIL\]/g, processData.client_email || '');
-      processedContent = processedContent.replace(/\[CPF_CNPJ\]/g, processData.cpf_cnpj || '');
-      processedContent = processedContent.replace(/\[PROCESSO_NOME\]/g, processData.project_name || '');
+      // Replace common variables with validation
+      processedContent = processedContent.replace(/\[CLIENTE_NOME\]/g, processData.client_name || '[NOME NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[CLIENTE\]/g, processData.client_name || '[NOME NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[CLIENTE_EMAIL\]/g, processData.client_email || '[EMAIL NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[CPF_CNPJ\]/g, processData.cpf_cnpj || '[CPF/CNPJ NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[PROCESSO_NOME\]/g, processData.project_name || '[PROCESSO SEM NOME]');
       processedContent = processedContent.replace(/\[DATA_ATUAL\]/g, new Date().toLocaleDateString('pt-BR'));
+      processedContent = processedContent.replace(/\[DATA\]/g, new Date().toLocaleDateString('pt-BR'));
       
       setContent(processedContent);
-      setFileName(`${template.title}.txt`);
+      setFileName(`${template.title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`);
     }
   }, [template, processData]);
 

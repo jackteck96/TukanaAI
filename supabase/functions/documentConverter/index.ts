@@ -29,8 +29,8 @@ serve(async (req) => {
     let conversionNote = '';
 
     if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || fileName.endsWith('.docx')) {
-      // DOCX conversion
-      conversionNote = 'Conversão concluída — o PDF pode ter pequenas diferenças visuais em relação ao documento original.';
+      // DOCX conversion with better formatting
+      conversionNote = 'Conversão concluída com sucesso.';
       
       try {
         // Import mammoth dynamically
@@ -40,27 +40,62 @@ serve(async (req) => {
         const result = await mammoth.convertToHtml({ arrayBuffer: fileBuffer.buffer });
         const html = result.value;
         
-        // Use jsPDF to convert HTML to PDF
+        // Use jsPDF to convert HTML to PDF with better formatting
         const jsPDF = (await import('https://esm.sh/jspdf@2.5.1')).default;
-        const doc = new jsPDF();
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
         
-        // Simple HTML to PDF conversion
-        // Split content into lines and add to PDF
-        const tempDiv = html.replace(/<[^>]*>/g, '\n'); // Remove HTML tags
-        const lines = tempDiv.split('\n').filter(line => line.trim());
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 20;
+        const maxWidth = pageWidth - (margin * 2);
         
-        let yPosition = 20;
-        const pageHeight = doc.internal.pageSize.height;
+        let yPosition = margin;
+        const baseFontSize = 11;
         
-        lines.forEach((line) => {
-          if (yPosition > pageHeight - 20) {
+        // Parse HTML and maintain some formatting
+        const cleanHtml = html
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n\n')
+          .replace(/<\/h[1-6]>/gi, '\n\n')
+          .replace(/<li>/gi, '• ')
+          .replace(/<\/li>/gi, '\n');
+        
+        // Remove remaining HTML tags
+        const text = cleanHtml.replace(/<[^>]*>/g, '');
+        
+        // Split into paragraphs
+        const paragraphs = text.split('\n').filter(p => p.trim());
+        
+        doc.setFontSize(baseFontSize);
+        
+        paragraphs.forEach((paragraph: string) => {
+          const trimmed = paragraph.trim();
+          if (!trimmed) return;
+          
+          // Check if new page is needed
+          if (yPosition > pageHeight - margin - 20) {
             doc.addPage();
-            yPosition = 20;
+            yPosition = margin;
           }
           
-          const wrappedLines = doc.splitTextToSize(line, 170);
-          doc.text(wrappedLines, 20, yPosition);
-          yPosition += wrappedLines.length * 7;
+          // Split text to fit page width
+          const lines = doc.splitTextToSize(trimmed, maxWidth);
+          
+          lines.forEach((line: string) => {
+            if (yPosition > pageHeight - margin - 10) {
+              doc.addPage();
+              yPosition = margin;
+            }
+            doc.text(line, margin, yPosition);
+            yPosition += 6;
+          });
+          
+          // Add paragraph spacing
+          yPosition += 3;
         });
         
         pdfBase64 = doc.output('datauristring').split(',')[1];
@@ -114,15 +149,17 @@ serve(async (req) => {
         let yPosition = 20;
         const pageHeight = doc.internal.pageSize.height;
         
+        doc.setFontSize(11);
+        
         lines.forEach((line) => {
           if (yPosition > pageHeight - 20) {
             doc.addPage();
             yPosition = 20;
           }
           
-          const wrappedLines = doc.splitTextToSize(line, 170);
+          const wrappedLines = doc.splitTextToSize(line || ' ', 170);
           doc.text(wrappedLines, 20, yPosition);
-          yPosition += wrappedLines.length * 7;
+          yPosition += wrappedLines.length * 6;
         });
         
         pdfBase64 = doc.output('datauristring').split(',')[1];

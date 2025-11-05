@@ -67,12 +67,19 @@ export const PdfConverter = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na edge function:', error);
+        throw new Error('Erro ao chamar serviço de conversão');
+      }
 
-      if (data.error) {
+      if (data?.error) {
         toast.error(data.error);
         setIsConverting(false);
         return;
+      }
+
+      if (!data?.pdfBase64) {
+        throw new Error('Resposta inválida do servidor');
       }
 
       // Convert base64 back to Blob
@@ -91,9 +98,9 @@ export const PdfConverter = () => {
       
       toast.success(data.conversionNote || "Conversão concluída com sucesso!");
       await fetchProcesses();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao converter arquivo:", error);
-      toast.error("Erro ao converter arquivo");
+      toast.error(error?.message || "Erro ao converter arquivo. Verifique o formato e tente novamente.");
     } finally {
       setIsConverting(false);
     }

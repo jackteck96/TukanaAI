@@ -49,6 +49,13 @@ export const TemplateSelector = ({
     try {
       setLoading(true);
       
+      if (!companyId) {
+        console.error('CompanyId não definido');
+        toast.error('Empresa não identificada. Faça login novamente.');
+        setTemplates([]);
+        return;
+      }
+      
       // Fetch global templates
       const { data: globalTemplates, error: globalError } = await supabase
         .from('global_document_templates')
@@ -56,7 +63,10 @@ export const TemplateSelector = ({
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
-      if (globalError) throw globalError;
+      if (globalError) {
+        console.error('Error fetching global templates:', globalError);
+        // Continue mesmo com erro nos globais
+      }
 
       // Fetch company templates
       const { data: companyTemplates, error: companyError } = await supabase
@@ -66,12 +76,21 @@ export const TemplateSelector = ({
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
-      if (companyError) throw companyError;
+      if (companyError) {
+        console.error('Error fetching company templates:', companyError);
+        toast.error('Erro ao carregar modelos da empresa');
+      }
 
       const global = (globalTemplates || []).map(t => ({ ...t, is_global: true }));
       const company = (companyTemplates || []).map(t => ({ ...t, is_global: false }));
       
-      setTemplates([...company, ...global]);
+      const allTemplates = [...company, ...global];
+      
+      if (allTemplates.length === 0) {
+        toast.info('Nenhum modelo disponível. Crie modelos em "Modelos de Documentos"');
+      }
+      
+      setTemplates(allTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
       toast.error('Erro ao carregar modelos');
