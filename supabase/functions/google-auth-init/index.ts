@@ -11,13 +11,17 @@ serve(async (req) => {
   }
 
   try {
-    const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
+    const clientId = (Deno.env.get('GOOGLE_CLIENT_ID') || '').trim();
     const redirectUri = `https://devnkdyfzlgspdlfuyam.supabase.co/functions/v1/google-auth-callback`;
+    
+    if (!clientId) {
+      throw new Error('GOOGLE_CLIENT_ID não configurado');
+    }
     
     const scope = 'https://www.googleapis.com/auth/calendar.events';
     
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${GOOGLE_CLIENT_ID}&` +
+      `client_id=${encodeURIComponent(clientId)}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `response_type=code&` +
       `scope=${encodeURIComponent(scope)}&` +

@@ -28,9 +28,13 @@ serve(async (req) => {
       throw new Error('Código de autorização não encontrado');
     }
 
-    const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
-    const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
+    const clientId = (Deno.env.get('GOOGLE_CLIENT_ID') || '').trim();
+    const clientSecret = (Deno.env.get('GOOGLE_CLIENT_SECRET') || '').trim();
     const redirectUri = `https://devnkdyfzlgspdlfuyam.supabase.co/functions/v1/google-auth-callback`;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('Configuração do Google OAuth incompleta');
+    }
 
     // Trocar código por tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -38,8 +42,8 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: GOOGLE_CLIENT_ID!,
-        client_secret: GOOGLE_CLIENT_SECRET!,
+        client_id: clientId,
+        client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
