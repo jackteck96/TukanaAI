@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { FileText, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import jsPDF from "jspdf";
 
 interface Template {
   id: string;
@@ -60,7 +61,7 @@ export const TemplateEditor = ({
       processedContent = processedContent.replace(/\[DATA\]/g, new Date().toLocaleDateString('pt-BR'));
       
       setContent(processedContent);
-      setFileName(`${template.title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`);
+      setFileName(`${template.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
     }
   }, [template, processData]);
 
@@ -85,9 +86,60 @@ export const TemplateEditor = ({
         return;
       }
 
-      // Create a blob from the content
-      const blob = new Blob([content], { type: 'text/plain' });
-      const file = new File([blob], fileName, { type: 'text/plain' });
+      // Convert content to PDF
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      
+      let yPosition = margin;
+      const baseFontSize = 11;
+      
+      doc.setFontSize(baseFontSize);
+      
+      // Split content into paragraphs
+      const paragraphs = content.split('\n');
+      
+      paragraphs.forEach((paragraph: string) => {
+        const trimmed = paragraph.trim();
+        
+        // Check if new page is needed
+        if (yPosition > pageHeight - margin - 20) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        
+        if (trimmed) {
+          // Split text to fit page width
+          const lines = doc.splitTextToSize(trimmed, maxWidth);
+          
+          lines.forEach((line: string) => {
+            if (yPosition > pageHeight - margin - 10) {
+              doc.addPage();
+              yPosition = margin;
+            }
+            doc.text(line, margin, yPosition);
+            yPosition += 6;
+          });
+          
+          // Add paragraph spacing
+          yPosition += 4;
+        } else {
+          // Empty line
+          yPosition += 6;
+        }
+      });
+      
+      // Convert PDF to blob
+      const pdfBlob = doc.output('blob');
+      const pdfFileName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+      const file = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
 
       // Get process name to include in file path
       const { data: processData } = await supabase
@@ -98,7 +150,7 @@ export const TemplateEditor = ({
 
       const processName = (processData?.project_name || processData?.client_name || 'Processo').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
       const documentType = (template?.category || 'Documento').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-      const safeFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const safeFileName = pdfFileName.replace(/[^a-zA-Z0-9.-]/g, '_');
       const filePath = `${processId}/${processName}_${documentType}_${safeFileName}`;
 
       // Upload to Supabase Storage
@@ -128,8 +180,8 @@ export const TemplateEditor = ({
           company_id: companyId,
           file_name: `${processName}_${documentType}_${safeFileName}`,
           file_path: filePath,
-          file_type: 'text/plain',
-          file_size: blob.size,
+          file_type: 'application/pdf',
+          file_size: pdfBlob.size,
           document_type: template?.category || 'Documento',
           uploaded_by: uploaderName,
           status: 'Aprovado'
