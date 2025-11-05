@@ -216,14 +216,22 @@ const EmpresaDashboard = () => {
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">Dashboard - Empresa</h1>
-              <p className="text-sm text-muted-foreground truncate">Visão geral dos processos e clientes</p>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
+                <p className="text-sm text-muted-foreground">Visão geral dos processos e clientes</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Sair</span>
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+            <div className="flex items-center flex-wrap gap-2">
               {isAdmin && (
-                <Button variant="outline" size="sm" onClick={() => navigate('/admin')} className="whitespace-nowrap">
+                <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
                   <Shield className="h-4 w-4 mr-2" />
                   Painel Admin
                 </Button>
@@ -232,21 +240,16 @@ const EmpresaDashboard = () => {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setIsEditProfileModalOpen(true)}
-                className="whitespace-nowrap"
               >
                 <Users className="h-4 w-4 mr-2" />
                 Perfil
               </Button>
-              <Button variant="hero" size="sm" onClick={refreshData} disabled={loading} className="whitespace-nowrap">
+              <Button variant="hero" size="sm" onClick={refreshData} disabled={loading}>
                 <Plus className="h-4 w-4 mr-2" />
                 {loading ? 'Atualizando...' : 'Atualizar'}
               </Button>
               <UserInviteSystem onInviteSent={refreshData} />
               <CreateProcessWithInvite />
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="whitespace-nowrap">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
             </div>
           </div>
         </div>
@@ -443,9 +446,14 @@ const EmpresaDashboard = () => {
                     onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-foreground text-sm">
-                        {process.project_name || process.process_type}
-                      </h3>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground text-sm">
+                          {process.project_name || 'Sem nome'}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          Tipo: {process.process_type}
+                        </p>
+                      </div>
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}
                       </Badge>
