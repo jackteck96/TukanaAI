@@ -76,7 +76,7 @@ export const useDashboardData = () => {
         .from('processes')
         .select('*', { count: 'exact', head: true })
         .eq('company_id', profile.company_id)
-        .in('status', ['Em andamento', 'Pendente']);
+        .in('status', ['Em Análise', 'Em andamento', 'Pendente']);
 
       // Count completed today
       const today = new Date().toISOString().split('T')[0];
@@ -115,7 +115,7 @@ export const useDashboardData = () => {
         .from('processes')
         .select('*')
         .eq('company_id', profile.company_id)
-        .in('status', ['Em andamento', 'Pendente'])
+        .in('status', ['Em Análise', 'Em andamento', 'Pendente'])
         .order('updated_at', { ascending: false })
         .limit(5);
 
