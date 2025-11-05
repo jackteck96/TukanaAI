@@ -144,60 +144,104 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
       const jsPDF = (await import('jspdf')).default;
       const pdf = new jsPDF();
       
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPos = 30;
+      
+      const checkNewPage = (requiredSpace: number) => {
+        if (yPos + requiredSpace > 280) {
+          pdf.addPage();
+          yPos = 30;
+        }
+      };
+      
+      const addText = (text: string, fontSize: number = 10, indent: number = 0) => {
+        pdf.setFontSize(fontSize);
+        const lines = pdf.splitTextToSize(text, maxWidth - indent);
+        
+        lines.forEach((line: string) => {
+          checkNewPage(10);
+          pdf.text(line, margin + indent, yPos);
+          yPos += fontSize === 14 ? 8 : fontSize === 20 ? 10 : 6;
+        });
+      };
+      
       // Título
-      pdf.setFontSize(20);
-      pdf.text('Relatório de Documentos', 20, 30);
+      addText('Relatório de Documentos', 20);
+      yPos += 10;
       
       // Informações do processo
-      pdf.setFontSize(14);
-      pdf.text('Dados do Processo', 20, 50);
-      pdf.setFontSize(10);
-      pdf.text(`Cliente: ${processData.client_name}`, 20, 65);
-      pdf.text(`Tipo: ${processData.process_type}`, 20, 75);
-      pdf.text(`Status: ${processData.status}`, 20, 85);
-      pdf.text(`Criado em: ${new Date(processData.created_at).toLocaleDateString('pt-BR')}`, 20, 95);
+      addText('Dados do Processo', 14);
+      yPos += 5;
+      addText(`Cliente: ${processData.client_name}`);
+      
+      const processTypeLines = pdf.splitTextToSize(`Tipo: ${processData.process_type}`, maxWidth);
+      processTypeLines.forEach((line: string) => {
+        checkNewPage(10);
+        pdf.setFontSize(10);
+        pdf.text(line, margin, yPos);
+        yPos += 6;
+      });
+      
+      addText(`Status: ${processData.status}`);
+      addText(`Criado em: ${new Date(processData.created_at).toLocaleDateString('pt-BR')}`);
+      yPos += 10;
       
       // Estatísticas
-      pdf.setFontSize(14);
-      pdf.text('Estatísticas', 20, 115);
-      pdf.setFontSize(10);
-      pdf.text(`Total de Documentos: ${report.total_documents}`, 20, 130);
-      pdf.text(`Documentos Pendentes: ${report.pending_documents}`, 20, 140);
-      pdf.text(`Documentos Aprovados: ${report.approved_documents}`, 20, 150);
+      checkNewPage(40);
+      addText('Estatísticas', 14);
+      yPos += 5;
+      addText(`Total de Documentos: ${report.total_documents}`);
+      addText(`Documentos Pendentes: ${report.pending_documents}`);
+      addText(`Documentos Aprovados: ${report.approved_documents}`);
+      yPos += 10;
       
       // Lista de documentos
       if (Array.isArray(report.report_data) && report.report_data.length > 0) {
-        pdf.setFontSize(14);
-        pdf.text('Documentos', 20, 170);
+        checkNewPage(20);
+        addText('Documentos', 14);
+        yPos += 5;
         
-        let yPos = 185;
         report.report_data.forEach((doc: any, index: number) => {
-          if (yPos > 260) {
-            pdf.addPage();
-            yPos = 30;
-          }
+          checkNewPage(50);
           
           pdf.setFontSize(10);
-          pdf.text(`${index + 1}. ${doc.file_name}`, 20, yPos);
-          pdf.text(`   Tipo: ${doc.document_type} | Status: ${doc.status}`, 20, yPos + 8);
-          pdf.text(`   Enviado por: ${doc.uploaded_by} em ${new Date(doc.created_at).toLocaleDateString('pt-BR')}`, 20, yPos + 16);
+          const fileNameLines = pdf.splitTextToSize(`${index + 1}. ${doc.file_name}`, maxWidth);
+          fileNameLines.forEach((line: string) => {
+            checkNewPage(10);
+            pdf.text(line, margin, yPos);
+            yPos += 6;
+          });
           
-          let extraLines = 0;
+          const typeLines = pdf.splitTextToSize(`   Tipo: ${doc.document_type}`, maxWidth);
+          typeLines.forEach((line: string) => {
+            checkNewPage(10);
+            pdf.text(line, margin, yPos);
+            yPos += 6;
+          });
+          
+          addText(`   Status: ${doc.status}`, 10, 3);
+          addText(`   Enviado por: ${doc.uploaded_by}`, 10, 3);
+          addText(`   Data de envio: ${new Date(doc.created_at).toLocaleDateString('pt-BR')}`, 10, 3);
+          
           if (doc.issue_date) {
-            pdf.text(`   Data de Emissão: ${new Date(doc.issue_date).toLocaleDateString('pt-BR')}`, 20, yPos + 24);
-            extraLines += 8;
+            addText(`   Data de Emissão: ${new Date(doc.issue_date).toLocaleDateString('pt-BR')}`, 10, 3);
           }
           if (doc.expiration_date) {
-            pdf.text(`   Data de Expiração: ${new Date(doc.expiration_date).toLocaleDateString('pt-BR')}`, 20, yPos + 24 + extraLines);
-            extraLines += 8;
+            addText(`   Data de Expiração: ${new Date(doc.expiration_date).toLocaleDateString('pt-BR')}`, 10, 3);
           }
           if (doc.issuing_location) {
-            pdf.text(`   Local de Emissão: ${doc.issuing_location}`, 20, yPos + 24 + extraLines);
-            extraLines += 8;
+            const locationLines = pdf.splitTextToSize(`   Local de Emissão: ${doc.issuing_location}`, maxWidth);
+            locationLines.forEach((line: string) => {
+              checkNewPage(10);
+              pdf.setFontSize(10);
+              pdf.text(line, margin, yPos);
+              yPos += 6;
+            });
           }
-          pdf.text(`   Tamanho: ${(doc.file_size / 1024).toFixed(1)} KB | Tipo: ${doc.file_type}`, 20, yPos + 24 + extraLines);
-          
-          yPos += 40 + extraLines;
+          addText(`   Tamanho: ${(doc.file_size / 1024).toFixed(1)} KB`, 10, 3);
+          yPos += 8;
         });
       }
       
