@@ -38,7 +38,7 @@ import { supabase } from "@/integrations/supabase/client";
 import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
 import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
 import { PdfConverter } from "@/components/PdfConverter";
-import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
+
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -480,10 +480,6 @@ const EmpresaDashboard = () => {
           </Card>
         </div>
 
-        {/* Google Calendar Integration */}
-        <div className="mb-6">
-          <GoogleCalendarConnect />
-        </div>
 
         {/* Ponto Clock and Quick Actions Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
