@@ -47,18 +47,44 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
   const [issueDate, setIssueDate] = useState<Date | undefined>(undefined);
   const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined);
   const [issuingLocation, setIssuingLocation] = useState('');
+  const [processCompanyId, setProcessCompanyId] = useState<string | null>(null);
+
+  // Buscar company_id do processo
+  useEffect(() => {
+    const fetchProcessCompanyId = async () => {
+      if (!processId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('processes')
+          .select('company_id')
+          .eq('id', processId)
+          .single();
+        
+        if (error) throw error;
+        setProcessCompanyId(data?.company_id || null);
+      } catch (error) {
+        console.error('Erro ao buscar company_id do processo:', error);
+      }
+    };
+
+    fetchProcessCompanyId();
+  }, [processId]);
 
   // Buscar tipos de documentos cadastrados pela empresa
   useEffect(() => {
     const fetchDocumentTypes = async () => {
       setLoadingTypes(true);
       try {
+        // Usar company do contexto OU processCompanyId (para clientes)
+        const companyId = company?.id || processCompanyId;
+        
         const [{ data: companyData, error: companyError }, { data: globalData, error: globalError }] = await Promise.all([
-          company?.id
+          companyId
             ? supabase
                 .from('document_types')
                 .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
-                .eq('company_id', company.id)
+                .eq('company_id', companyId)
                 .order('name')
             : Promise.resolve({ data: [], error: null } as any),
           supabase
@@ -90,7 +116,7 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
     };
 
     fetchDocumentTypes();
-  }, [company?.id]);
+  }, [company?.id, processCompanyId]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
