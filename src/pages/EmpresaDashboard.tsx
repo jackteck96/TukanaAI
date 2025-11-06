@@ -24,7 +24,8 @@ import {
   Brain,
   UserPlus,
   Shield,
-  PenTool
+  PenTool,
+  List
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -557,7 +558,7 @@ const EmpresaDashboard = () => {
                   </Link>
                   <Link to="/cadastro-tipos-documentos" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">
-                      <FileText className="h-6 w-6 mb-2" />
+                      <List className="h-6 w-6 mb-2" />
                       <span className="text-sm font-medium">Tipos de Docs</span>
                     </Button>
                   </Link>
