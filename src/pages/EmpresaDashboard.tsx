@@ -397,11 +397,17 @@ const EmpresaDashboard = () => {
                     </div>
                   ))
                 ) : recentProcesses.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum processo ainda</p>
-                    <p className="text-sm">Crie seu primeiro processo</p>
-                  </div>
+                  <Card className="p-6 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <Shield className="h-10 w-10 text-muted-foreground opacity-50" />
+                      <div>
+                        <p className="text-sm font-medium mb-1">Nenhum processo disponível</p>
+                        <p className="text-xs text-muted-foreground">
+                          Aguarde liberação do administrador
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
                 ) : (
                   (() => {
                     // Normalizar a busca removendo caracteres especiais

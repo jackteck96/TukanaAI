@@ -46,20 +46,29 @@ export const useDashboardData = () => {
     if (!user) return;
 
     try {
-      // Get user's company_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.company_id) return;
+      // Buscar IDs de processos acessíveis
+      const { data: accessibleIds, error: accessError } = await supabase
+        .rpc('get_accessible_process_ids');
+      
+      if (accessError) throw accessError;
+      
+      if (!accessibleIds || accessibleIds.length === 0) {
+        setStats({
+          totalClients: 0,
+          totalProcesses: 0,
+          pendingProcesses: 0,
+          completedToday: 0
+        });
+        return;
+      }
+      
+      const processIds = accessibleIds.map((item: any) => item.process_id);
 
       // Count total unique clients (processes with different client_email)
       const { data: clientsData, error: clientsError } = await supabase
         .from('processes')
         .select('client_email')
-        .eq('company_id', profile.company_id);
+        .in('id', processIds);
 
       if (clientsError) throw clientsError;
 
@@ -69,13 +78,13 @@ export const useDashboardData = () => {
       const { count: totalProcesses } = await supabase
         .from('processes')
         .select('*', { count: 'exact', head: true })
-        .eq('company_id', profile.company_id);
+        .in('id', processIds);
 
       // Count pending processes
       const { count: pendingProcesses } = await supabase
         .from('processes')
         .select('*', { count: 'exact', head: true })
-        .eq('company_id', profile.company_id)
+        .in('id', processIds)
         .in('status', ['Em Análise', 'Em andamento', 'Pendente']);
 
       // Count completed today
@@ -83,7 +92,7 @@ export const useDashboardData = () => {
       const { count: completedToday } = await supabase
         .from('processes')
         .select('*', { count: 'exact', head: true })
-        .eq('company_id', profile.company_id)
+        .in('id', processIds)
         .eq('status', 'Concluído')
         .gte('updated_at', today);
 
@@ -102,19 +111,24 @@ export const useDashboardData = () => {
     if (!user) return;
 
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.company_id) return;
+      // Buscar IDs de processos acessíveis
+      const { data: accessibleIds, error: accessError } = await supabase
+        .rpc('get_accessible_process_ids');
+      
+      if (accessError) throw accessError;
+      
+      if (!accessibleIds || accessibleIds.length === 0) {
+        setRecentProcesses([]);
+        return;
+      }
+      
+      const processIds = accessibleIds.map((item: any) => item.process_id);
 
       // Get processes that are "Em andamento" specifically
       const { data, error } = await supabase
         .from('processes')
         .select('*')
-        .eq('company_id', profile.company_id)
+        .in('id', processIds)
         .in('status', ['Em Análise', 'Em andamento', 'Pendente'])
         .order('updated_at', { ascending: false })
         .limit(5);
@@ -147,15 +161,20 @@ export const useDashboardData = () => {
     if (!user) return;
 
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('company_id')
-        .eq('id', user.id)
-        .single();
+      // Buscar IDs de processos acessíveis
+      const { data: accessibleIds, error: accessError } = await supabase
+        .rpc('get_accessible_process_ids');
+      
+      if (accessError) throw accessError;
+      
+      if (!accessibleIds || accessibleIds.length === 0) {
+        setRecentClients([]);
+        return;
+      }
+      
+      const processIds = accessibleIds.map((item: any) => item.process_id);
 
-      if (!profile?.company_id) return;
-
-      // Get recent processes - remove the inner join so we get all processes
+      // Get recent processes
       const { data: processes, error: processesError } = await supabase
         .from('processes')
         .select(`
@@ -166,7 +185,7 @@ export const useDashboardData = () => {
           updated_at,
           priority
         `)
-        .eq('company_id', profile.company_id)
+        .in('id', processIds)
         .order('updated_at', { ascending: false });
 
       if (processesError) throw processesError;
@@ -186,7 +205,6 @@ export const useDashboardData = () => {
           const { count: documentCount } = await supabase
             .from('documents')
             .select('*', { count: 'exact', head: true })
-            .eq('company_id', profile.company_id)
             .in('process_id', clientProcessIds);
 
           clientMap.set(process.client_email, {

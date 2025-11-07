@@ -24,7 +24,8 @@ import {
   Brain,
   Settings,
   BarChart3,
-  Copy
+  Copy,
+  Shield
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
@@ -177,6 +178,21 @@ const GerenciarProcessos = () => {
   const fetchProcesses = async () => {
     try {
       setLoading(true);
+      
+      // Buscar IDs de processos acessíveis
+      const { data: accessibleIds, error: accessError } = await supabase
+        .rpc('get_accessible_process_ids');
+      
+      if (accessError) throw accessError;
+      
+      if (!accessibleIds || accessibleIds.length === 0) {
+        setProcesses([]);
+        setLoading(false);
+        return;
+      }
+      
+      const processIds = accessibleIds.map((item: any) => item.process_id);
+      
       const { data: processesData, error } = await supabase
         .from('processes')
         .select(`
@@ -191,6 +207,7 @@ const GerenciarProcessos = () => {
             created_at
           )
         `)
+        .in('id', processIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -631,9 +648,20 @@ const GerenciarProcessos = () => {
               <p className="text-muted-foreground">Carregando processos...</p>
             </div>
           ) : processes.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Nenhum processo encontrado. Crie seu primeiro processo acima.</p>
-            </div>
+            <Card className="p-8 text-center">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="rounded-full bg-muted p-4">
+                  <Shield className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Nenhum processo disponível</h3>
+                  <p className="text-muted-foreground max-w-md">
+                    Você ainda não tem acesso a nenhum processo. Se você é um colaborador com acesso limitado, 
+                    entre em contato com o administrador para solicitar permissões.
+                  </p>
+                </div>
+              </div>
+            </Card>
           ) : (
             processes.map((process) => (
             <Card key={process.id} className={`border-l-4 ${getPriorityColor(process.priority)} cursor-pointer hover:shadow-md transition-shadow`}

@@ -1666,6 +1666,12 @@ export type Database = {
         }
         Returns: string
       }
+      get_accessible_process_ids: {
+        Args: never
+        Returns: {
+          process_id: string
+        }[]
+      }
       get_current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
