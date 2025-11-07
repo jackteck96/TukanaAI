@@ -26,7 +26,8 @@ import {
   ArrowLeft,
   Mail,
   FileIcon,
-  PenTool
+  PenTool,
+  Shield
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -1114,7 +1115,7 @@ const AreaCliente = () => {
             <CardTitle>Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <PdfConverter />
               <Button
                 className="h-20 flex-col"
@@ -1146,6 +1147,15 @@ const AreaCliente = () => {
                 <User className="h-6 w-6 mb-2" />
                 <span className="text-xs font-semibold">Gerenciar Perfil</span>
               </Button>
+              <Link to="/gestao-permissoes" className="w-full">
+                <Button
+                  className="h-20 flex-col w-full"
+                  variant="outline"
+                >
+                  <Shield className="h-6 w-6 mb-2" />
+                  <span className="text-xs font-semibold">Permissões</span>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

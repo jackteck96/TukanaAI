@@ -215,6 +215,80 @@ export type Database = {
         }
         Relationships: []
       }
+      collaborator_permissions: {
+        Row: {
+          access_type: string
+          client_email: string | null
+          company_id: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_type: string
+          client_email?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_type?: string
+          client_email?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborator_permissions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collaborator_process_access: {
+        Row: {
+          created_at: string
+          id: string
+          permission_id: string
+          process_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission_id: string
+          process_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission_id?: string
+          process_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborator_process_access_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "collaborator_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaborator_process_access_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
@@ -1570,6 +1644,10 @@ export type Database = {
       check_plan_limits: {
         Args: { company_uuid: string; limit_type: string }
         Returns: Json
+      }
+      collaborator_can_access_process: {
+        Args: { _process_id: string; _user_id: string }
+        Returns: boolean
       }
       generate_document_hash: {
         Args: { document_uuid: string; file_path_val: string }

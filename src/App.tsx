@@ -39,6 +39,7 @@ import VerifySignature from "./pages/VerifySignature";
 import ApproveAdmin from "./pages/ApproveAdmin";
 import ResetPassword from "./pages/ResetPassword";
 import TermsOfService from "./pages/TermsOfService";
+import GestaoPermissoes from "./pages/GestaoPermissoes";
 
 const queryClient = new QueryClient();
 
@@ -159,7 +160,12 @@ const App = () => (
                     <TreinarIA />
                   </AdminRoute>
                 } />
-                <Route path="/approve-admin" element={<ApproveAdmin />} />
+              <Route path="/approve-admin" element={<ApproveAdmin />} />
+              <Route path="/gestao-permissoes" element={
+                <ProtectedRoute>
+                  <GestaoPermissoes />
+                </ProtectedRoute>
+              } />
                 
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
