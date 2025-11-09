@@ -159,9 +159,11 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
         admin_full_name: adminFullName || null,
         admin_cpf: adminCpf || null,
         qualification_method: qualificationMethod,
+        email_preference: sendEmailNow ? 'send_now' : 'register_only',
         email_sent: false,
         registration_status: registrationStatus,
         internal_notes: internalNotes || null,
+        created_by: user.id,
       };
 
       const { data: newClient, error: clientError } = await supabase

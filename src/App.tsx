@@ -40,7 +40,7 @@ import ApproveAdmin from "./pages/ApproveAdmin";
 import ResetPassword from "./pages/ResetPassword";
 import TermsOfService from "./pages/TermsOfService";
 import GestaoPermissoes from "./pages/GestaoPermissoes";
-
+import GestaoClientesQualificacao from "./pages/GestaoClientesQualificacao";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -73,6 +73,11 @@ const App = () => (
               <Route path="/gestao-clientes" element={
                 <ProtectedRoute>
                   <GestaoClientes />
+                </ProtectedRoute>
+              } />
+              <Route path="/gestao-clientes-qualificacao" element={
+                <ProtectedRoute>
+                  <GestaoClientesQualificacao />
                 </ProtectedRoute>
               } />
               <Route path="/gestao-usuarios" element={<ProtectedRoute><GestaoUsuarios /></ProtectedRoute>} />
