@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import CreateClientDialog from '@/components/CreateClientDialog';
 
 interface Client {
   client_name: string;
@@ -127,9 +128,12 @@ const GestaoClientes = () => {
             <p className="text-muted-foreground">Visualize todos os clientes vinculados à sua empresa</p>
           </div>
         </div>
-        <Button variant="outline" onClick={fetchClients} disabled={loading}>
-          {loading ? 'Atualizando...' : 'Atualizar'}
-        </Button>
+        <div className="flex items-center gap-3">
+          <CreateClientDialog onClientCreated={fetchClients} />
+          <Button variant="outline" onClick={fetchClients} disabled={loading}>
+            {loading ? 'Atualizando...' : 'Atualizar'}
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
