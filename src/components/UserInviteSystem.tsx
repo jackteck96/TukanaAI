@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Send, UserPlus, Copy } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Mail, Send, UserPlus, Copy, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
@@ -16,6 +19,15 @@ interface InviteFormData {
   email: string;
   role: 'staff';
   full_name: string;
+  access_type: 'full' | 'limited';
+  allowed_process_ids: string[];
+}
+
+interface Process {
+  id: string;
+  client_name: string;
+  process_type: string;
+  status: string;
 }
 
 interface UserInviteSystemProps {
@@ -29,11 +41,42 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
   const [sending, setSending] = useState(false);
   const [showInviteLink, setShowInviteLink] = useState(false);
   const [generatedInviteLink, setGeneratedInviteLink] = useState('');
+  const [loadingProcesses, setLoadingProcesses] = useState(false);
+  const [processes, setProcesses] = useState<Process[]>([]);
   const [inviteData, setInviteData] = useState<InviteFormData>({
     email: '',
     role: 'staff',
-    full_name: ''
+    full_name: '',
+    access_type: 'limited',
+    allowed_process_ids: []
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      loadProcesses();
+    }
+  }, [isOpen]);
+
+  const loadProcesses = async () => {
+    if (!company?.id) return;
+    
+    setLoadingProcesses(true);
+    try {
+      const { data, error } = await supabase
+        .from('processes')
+        .select('id, client_name, process_type, status')
+        .eq('company_id', company.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProcesses(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar processos:', error);
+      toast.error('Erro ao carregar processos');
+    } finally {
+      setLoadingProcesses(false);
+    }
+  };
 
   const generateInviteLink = async () => {
     try {
@@ -63,7 +106,9 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
           company_id: userProfile.company_id,
           invited_by: user?.id,
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 dias
-          status: 'pending'
+          status: 'pending',
+          access_type: inviteData.access_type,
+          allowed_process_ids: inviteData.access_type === 'limited' ? inviteData.allowed_process_ids : []
         });
 
       if (inviteError) throw inviteError;
@@ -176,7 +221,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
       await navigator.clipboard.writeText(inviteLink);
       toast.success('Link de convite copiado para a área de transferência!');
       setIsOpen(false);
-      setInviteData({ email: '', role: 'staff', full_name: '' });
+      setInviteData({ email: '', role: 'staff', full_name: '', access_type: 'limited', allowed_process_ids: [] });
       onInviteSent?.();
     } catch (error) {
       console.error('Erro ao copiar link:', error);
@@ -256,6 +301,87 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
               </p>
             </div>
           </div>
+
+          <div className="space-y-4">
+            <Label>Tipo de Acesso</Label>
+            <RadioGroup 
+              value={inviteData.access_type} 
+              onValueChange={(value: 'full' | 'limited') => {
+                setInviteData({ 
+                  ...inviteData, 
+                  access_type: value,
+                  allowed_process_ids: value === 'full' ? [] : inviteData.allowed_process_ids
+                });
+              }}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="full" id="full" />
+                <Label htmlFor="full" className="font-normal cursor-pointer">
+                  🔓 Acesso total (vê todos os processos)
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="limited" id="limited" />
+                <Label htmlFor="limited" className="font-normal cursor-pointer">
+                  🔒 Acesso limitado (selecionar processos)
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {inviteData.access_type === 'limited' && (
+            <div className="space-y-4">
+              <Label>Processos Autorizados ({inviteData.allowed_process_ids.length} selecionados)</Label>
+              {loadingProcesses ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <ScrollArea className="h-[200px] rounded-md border p-4">
+                  {processes.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Nenhum processo ativo encontrado
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {processes.map(process => (
+                        <div key={process.id} className="flex items-start space-x-3">
+                          <Checkbox
+                            id={`process-${process.id}`}
+                            checked={inviteData.allowed_process_ids.includes(process.id)}
+                            onCheckedChange={(checked) => {
+                              setInviteData(prev => ({
+                                ...prev,
+                                allowed_process_ids: checked
+                                  ? [...prev.allowed_process_ids, process.id]
+                                  : prev.allowed_process_ids.filter(id => id !== process.id)
+                              }));
+                            }}
+                          />
+                          <Label
+                            htmlFor={`process-${process.id}`}
+                            className="font-normal cursor-pointer flex-1"
+                          >
+                            <div>
+                              <div className="font-medium">{process.client_name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {process.process_type} - {process.status}
+                              </div>
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              )}
+              {inviteData.allowed_process_ids.length === 0 && (
+                <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-200">
+                  ⚠️ Nenhum processo selecionado. O colaborador não terá acesso a processos até que você configure as permissões.
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="pt-4 space-y-3">
             <Button 
@@ -364,7 +490,7 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
               onClick={() => {
                 setShowInviteLink(false);
                 setIsOpen(false);
-                setInviteData({ email: '', role: 'staff', full_name: '' });
+                setInviteData({ email: '', role: 'staff', full_name: '', access_type: 'limited', allowed_process_ids: [] });
                 onInviteSent?.();
               }}
             >

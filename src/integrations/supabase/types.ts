@@ -1530,7 +1530,10 @@ export type Database = {
       }
       user_invites: {
         Row: {
-          company_id: string
+          access_type: string | null
+          allowed_process_ids: string[] | null
+          client_email: string | null
+          company_id: string | null
           created_at: string
           email: string
           expires_at: string
@@ -1544,7 +1547,10 @@ export type Database = {
           used_at: string | null
         }
         Insert: {
-          company_id: string
+          access_type?: string | null
+          allowed_process_ids?: string[] | null
+          client_email?: string | null
+          company_id?: string | null
           created_at?: string
           email: string
           expires_at?: string
@@ -1558,7 +1564,10 @@ export type Database = {
           used_at?: string | null
         }
         Update: {
-          company_id?: string
+          access_type?: string | null
+          allowed_process_ids?: string[] | null
+          client_email?: string | null
+          company_id?: string | null
           created_at?: string
           email?: string
           expires_at?: string
