@@ -60,17 +60,51 @@ const GestaoColaboradores = () => {
     if (!user || !company) return;
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, role, created_at')
+      // 1) Buscar vínculos na user_roles para esta empresa
+      const { data: roleLinks, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role, created_at')
         .eq('company_id', company.id)
-        .in('role', ['admin', 'lawyer', 'staff']) // Filtrar apenas colaboradores
-        .order('created_at', { ascending: false });
+        .in('role', ['company_admin', 'company_collaborator']);
 
-      if (error) throw error;
-      
-      console.log('Colaboradores carregados:', data); // Debug
-      setTeamMembers(data || []);
+      if (rolesError) throw rolesError;
+
+      if (!roleLinks || roleLinks.length === 0) {
+        setTeamMembers([]);
+        return;
+      }
+
+      const userIds = roleLinks.map((r) => r.user_id);
+
+      // 2) Buscar perfis correspondentes
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, created_at')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // 3) Montar a lista de membros com mapeamento de cargos
+      const members: TeamMember[] = roleLinks
+        .map((link) => {
+          const profile = profilesData?.find((p) => p.id === link.user_id);
+          if (!profile) return null;
+
+          const mappedRole: TeamMember['role'] =
+            link.role === 'company_admin' ? 'admin' : 'staff';
+
+          return {
+            id: profile.id,
+            full_name: profile.full_name,
+            email: profile.email,
+            role: mappedRole,
+            created_at: profile.created_at || link.created_at,
+          } as TeamMember;
+        })
+        .filter(Boolean) as TeamMember[];
+
+      console.log('Colaboradores carregados (via user_roles):', members); // Debug
+      setTeamMembers(members);
     } catch (error) {
       console.error('Error fetching team members:', error);
       toast.error('Erro ao carregar membros da equipe');
@@ -125,17 +159,23 @@ const GestaoColaboradores = () => {
 
     try {
       // Remove o vínculo do colaborador com a empresa na tabela user_roles
-      const { error } = await supabase
+      const { data: deleted, error } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', memberId)
-        .eq('company_id', company.id);
+        .eq('company_id', company.id)
+        .select('id');
 
       if (error) throw error;
 
+      if (!deleted || deleted.length === 0) {
+        toast.error('Sem permissão para remover ou membro não encontrado');
+        return;
+      }
+
       toast.success(`${memberEmail} foi removido da equipe`);
-      fetchTeamMembers();
-      refreshMetrics();
+      await fetchTeamMembers();
+      await refreshMetrics();
     } catch (error) {
       console.error('Error removing team member:', error);
       toast.error('Erro ao remover membro da equipe');
