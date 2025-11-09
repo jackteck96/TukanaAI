@@ -816,6 +816,44 @@ export type Database = {
           },
         ]
       }
+      internal_process_chat: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          message: string
+          process_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          message: string
+          process_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          process_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_process_chat_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       internal_signatures: {
         Row: {
           auth_report_url: string | null

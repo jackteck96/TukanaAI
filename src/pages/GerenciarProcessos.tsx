@@ -39,6 +39,7 @@ import DocumentReport from "@/components/DocumentReport";
 import ProcessNotes from "@/components/ProcessNotes";
 import { BusinessDocumentAnalyzer } from "@/components/BusinessDocumentAnalyzer";
 import ProcessEditDialog from "@/components/ProcessEditDialog";
+import { InternalProcessChat } from "@/components/InternalProcessChat";
 import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -527,6 +528,11 @@ const GerenciarProcessos = () => {
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
             <ProcessNotes 
               processId={currentProcess.id} 
+              companyId={currentProcess.company_id || ''}
+            />
+            {/* Chat Interno da Empresa */}
+            <InternalProcessChat 
+              processId={currentProcess.id}
               companyId={currentProcess.company_id || ''}
             />
             {/* Relatórios de Documentos - agora abaixo das anotações */}
