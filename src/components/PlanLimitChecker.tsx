@@ -32,11 +32,18 @@ const PlanLimitChecker: React.FC<PlanLimitCheckerProps> = ({
 
   if (loading || !limits) return null;
 
-  const { current_usage, limit, plan, can_add } = limits;
+  const { limit, plan } = limits;
   const isUnlimited = limit === -1;
-  const usage_percentage = isUnlimited ? 0 : (current_usage / limit) * 100;
+
+  // Ajuste: usar métricas atuais do contexto para usuários (fonte da verdade pós-exclusão)
+  const effectiveCurrent = limitType === 'users' && usageMetrics
+    ? usageMetrics.user_count
+    : limits.current_usage;
+
+  const usage_percentage = isUnlimited ? 0 : (effectiveCurrent / limit) * 100;
   const isNearLimit = usage_percentage >= 80;
   const isAtLimit = usage_percentage >= 100;
+  const effectiveCanAdd = isUnlimited || effectiveCurrent < limit;
 
   const getPlanIcon = () => {
     switch (plan) {
@@ -64,12 +71,12 @@ const PlanLimitChecker: React.FC<PlanLimitCheckerProps> = ({
 
   const getLimitText = () => {
     if (isUnlimited) {
-      return `${current_usage} ${limitType === 'users' ? 'usuários' : 'documentos'} (ilimitado)`;
+      return `${effectiveCurrent} ${limitType === 'users' ? 'usuários' : 'documentos'} (ilimitado)`;
     }
-    return `${current_usage} de ${limit} ${limitType === 'users' ? 'usuários' : 'documentos'}`;
+    return `${effectiveCurrent} de ${limit} ${limitType === 'users' ? 'usuários' : 'documentos'}`;
   };
 
-  if (!showProgress && can_add) return null;
+  if (!showProgress && effectiveCanAdd) return null;
 
   return (
     <div className={className}>
