@@ -328,7 +328,7 @@ const GestaoColaboradores = () => {
       </div>
 
       {/* Plan Limits Card */}
-      <PlanLimitChecker limitType="users" showProgress className="mb-6" />
+      <PlanLimitChecker limitType="users" showProgress className="mb-6" currentOverride={teamMembers.length} />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2">

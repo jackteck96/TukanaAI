@@ -8,12 +8,14 @@ interface PlanLimitCheckerProps {
   limitType: 'users' | 'documents';
   showProgress?: boolean;
   className?: string;
+  currentOverride?: number; // quando fornecido, usa este valor como uso atual
 }
 
 const PlanLimitChecker: React.FC<PlanLimitCheckerProps> = ({ 
   limitType, 
   showProgress = false,
-  className = ''
+  className = '',
+  currentOverride,
 }) => {
   const { checkPlanLimits, subscription, usageMetrics } = useCompany();
   const [limits, setLimits] = useState<any>(null);
@@ -36,9 +38,8 @@ const PlanLimitChecker: React.FC<PlanLimitCheckerProps> = ({
   const isUnlimited = limit === -1;
 
   // Ajuste: usar métricas atuais do contexto para usuários (fonte da verdade pós-exclusão)
-  const effectiveCurrent = limitType === 'users' && usageMetrics
-    ? usageMetrics.user_count
-    : limits.current_usage;
+  const effectiveCurrent =
+    currentOverride ?? (limitType === 'users' && usageMetrics ? usageMetrics.user_count : limits.current_usage);
 
   const usage_percentage = isUnlimited ? 0 : (effectiveCurrent / limit) * 100;
   const isNearLimit = usage_percentage >= 80;
