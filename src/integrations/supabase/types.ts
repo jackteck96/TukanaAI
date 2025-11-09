@@ -215,6 +215,89 @@ export type Database = {
         }
         Relationships: []
       }
+      clients: {
+        Row: {
+          address_city: string | null
+          address_complement: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_state: string | null
+          address_street: string | null
+          address_zipcode: string | null
+          admin_cpf: string | null
+          admin_full_name: string | null
+          cnpj: string | null
+          company_id: string
+          company_name: string
+          created_at: string
+          email: string
+          email_sent: boolean
+          email_sent_at: string | null
+          id: string
+          internal_notes: string | null
+          phone: string
+          qualification_method: string
+          registration_status: string
+          updated_at: string
+        }
+        Insert: {
+          address_city?: string | null
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zipcode?: string | null
+          admin_cpf?: string | null
+          admin_full_name?: string | null
+          cnpj?: string | null
+          company_id: string
+          company_name: string
+          created_at?: string
+          email: string
+          email_sent?: boolean
+          email_sent_at?: string | null
+          id?: string
+          internal_notes?: string | null
+          phone: string
+          qualification_method?: string
+          registration_status?: string
+          updated_at?: string
+        }
+        Update: {
+          address_city?: string | null
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zipcode?: string | null
+          admin_cpf?: string | null
+          admin_full_name?: string | null
+          cnpj?: string | null
+          company_id?: string
+          company_name?: string
+          created_at?: string
+          email?: string
+          email_sent?: boolean
+          email_sent_at?: string | null
+          id?: string
+          internal_notes?: string | null
+          phone?: string
+          qualification_method?: string
+          registration_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collaborator_permissions: {
         Row: {
           access_type: string
