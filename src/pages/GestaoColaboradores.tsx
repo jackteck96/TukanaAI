@@ -121,11 +121,15 @@ const GestaoColaboradores = () => {
       return;
     }
 
+    if (!company) return;
+
     try {
+      // Remove o vínculo do colaborador com a empresa na tabela user_roles
       const { error } = await supabase
-        .from('profiles')
+        .from('user_roles')
         .delete()
-        .eq('id', memberId);
+        .eq('user_id', memberId)
+        .eq('company_id', company.id);
 
       if (error) throw error;
 
