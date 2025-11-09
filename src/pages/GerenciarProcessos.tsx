@@ -530,15 +530,16 @@ const GerenciarProcessos = () => {
               processId={currentProcess.id} 
               companyId={currentProcess.company_id || ''}
             />
-            {/* Chat Interno da Empresa */}
-            <InternalProcessChat 
-              processId={currentProcess.id}
-              companyId={currentProcess.company_id || ''}
-            />
             {/* Relatórios de Documentos - agora abaixo das anotações */}
             <DocumentReport processId={currentProcess.id} refreshKey={Date.now()} />
           </div>
         </div>
+
+        {/* Chat Interno Flutuante */}
+        <InternalProcessChat 
+          processId={currentProcess.id}
+          companyId={currentProcess.company_id || ''}
+        />
 
         {/* Notes Edit Modal */}
         <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
