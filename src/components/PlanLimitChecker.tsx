@@ -15,7 +15,7 @@ const PlanLimitChecker: React.FC<PlanLimitCheckerProps> = ({
   showProgress = false,
   className = ''
 }) => {
-  const { checkPlanLimits, subscription } = useCompany();
+  const { checkPlanLimits, subscription, usageMetrics } = useCompany();
   const [limits, setLimits] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,7 @@ const PlanLimitChecker: React.FC<PlanLimitCheckerProps> = ({
     };
 
     fetchLimits();
-  }, [limitType, checkPlanLimits]);
+  }, [limitType, checkPlanLimits, usageMetrics]);
 
   if (loading || !limits) return null;
 
