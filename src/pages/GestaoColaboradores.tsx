@@ -60,12 +60,12 @@ const GestaoColaboradores = () => {
     if (!user || !company) return;
 
     try {
-      // 1) Buscar vínculos na user_roles para esta empresa
+      // Buscar apenas colaboradores (company_collaborator), excluindo administradores
       const { data: roleLinks, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role, created_at')
         .eq('company_id', company.id)
-        .in('role', ['company_admin', 'company_collaborator']);
+        .eq('role', 'company_collaborator');
 
       if (rolesError) throw rolesError;
 
@@ -76,7 +76,7 @@ const GestaoColaboradores = () => {
 
       const userIds = roleLinks.map((r) => r.user_id);
 
-      // 2) Buscar perfis correspondentes
+      // Buscar perfis dos colaboradores
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name, email, created_at')
@@ -84,26 +84,23 @@ const GestaoColaboradores = () => {
 
       if (profilesError) throw profilesError;
 
-      // 3) Montar a lista de membros com mapeamento de cargos
+      // Montar a lista apenas com colaboradores
       const members: TeamMember[] = roleLinks
         .map((link) => {
           const profile = profilesData?.find((p) => p.id === link.user_id);
           if (!profile) return null;
 
-          const mappedRole: TeamMember['role'] =
-            link.role === 'company_admin' ? 'admin' : 'staff';
-
           return {
             id: profile.id,
             full_name: profile.full_name,
             email: profile.email,
-            role: mappedRole,
+            role: 'staff', // Todos são colaboradores
             created_at: profile.created_at || link.created_at,
           } as TeamMember;
         })
         .filter(Boolean) as TeamMember[];
 
-      console.log('Colaboradores carregados (via user_roles):', members); // Debug
+      console.log('Colaboradores carregados:', members);
       setTeamMembers(members);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -322,7 +319,7 @@ const GestaoColaboradores = () => {
       <PlanLimitChecker limitType="users" showProgress className="mb-6" />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Colaboradores</CardTitle>
@@ -345,18 +342,6 @@ const GestaoColaboradores = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Administradores</CardTitle>
-            <Crown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {teamMembers.filter(m => m.role === 'admin').length}
-            </div>
-            <p className="text-xs text-muted-foreground">Com acesso total</p>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
