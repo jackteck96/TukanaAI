@@ -271,7 +271,7 @@ const GerenciarProcessos = () => {
         return {
           id: process.id,
           client: process.client_name,
-          processType: process.process_type,
+          processType: process.project_name || process.process_type,
           description: process.description,
           dueDate: process.due_date ? new Date(process.due_date).toLocaleDateString('pt-BR') : 'Sem prazo',
           priority: process.priority?.toLowerCase() || 'medium',
