@@ -32,7 +32,8 @@ interface TeamMember {
   id: string;
   full_name: string;
   email: string;
-  role: 'admin' | 'lawyer' | 'staff' | 'client'; // Keep temporarily to handle existing data
+  role: 'admin' | 'lawyer' | 'staff' | 'client';
+  access_type?: 'full' | 'restricted';
   created_at: string;
 }
 
@@ -54,7 +55,7 @@ const GestaoColaboradores = () => {
   const [invites, setInvites] = useState<UserInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState<string>('all');
+  const [filterPermission, setFilterPermission] = useState<string>('all');
 
   const fetchTeamMembers = async () => {
     if (!user || !company) return;
@@ -84,17 +85,29 @@ const GestaoColaboradores = () => {
 
       if (profilesError) throw profilesError;
 
+      // Buscar permissões dos colaboradores
+      const { data: permissionsData, error: permissionsError } = await supabase
+        .from('collaborator_permissions')
+        .select('user_id, access_type')
+        .eq('company_id', company.id)
+        .in('user_id', userIds);
+
+      if (permissionsError) throw permissionsError;
+
       // Montar a lista apenas com colaboradores
       const members: TeamMember[] = roleLinks
         .map((link) => {
           const profile = profilesData?.find((p) => p.id === link.user_id);
           if (!profile) return null;
 
+          const permission = permissionsData?.find((p) => p.user_id === link.user_id);
+
           return {
             id: profile.id,
             full_name: profile.full_name,
             email: profile.email,
-            role: 'staff', // Todos são colaboradores
+            role: 'staff',
+            access_type: permission?.access_type as 'full' | 'restricted' | undefined,
             created_at: profile.created_at || link.created_at,
           } as TeamMember;
         })
@@ -253,15 +266,14 @@ const GestaoColaboradores = () => {
   const filteredMembers = teamMembers.filter(member => {
     const matchesSearch = member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || member.role === filterRole;
-    return matchesSearch && matchesRole;
+    const matchesPermission = filterPermission === 'all' || member.access_type === filterPermission;
+    return matchesSearch && matchesPermission;
   });
 
   const filteredInvites = invites.filter(invite => {
     const matchesSearch = invite.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          invite.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || invite.role === filterRole;
-    return matchesSearch && matchesRole && invite.status === 'pending';
+    return matchesSearch && invite.status === 'pending';
   });
 
   const refreshData = async () => {
@@ -345,12 +357,12 @@ const GestaoColaboradores = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Funcionários</CardTitle>
+            <CardTitle className="text-sm font-medium">Colaboradores</CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {teamMembers.filter(m => m.role === 'staff').length}
+              {teamMembers.length}
             </div>
             <p className="text-xs text-muted-foreground">Membros da equipe</p>
           </CardContent>
@@ -370,14 +382,13 @@ const GestaoColaboradores = () => {
             />
           </div>
           <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            value={filterPermission}
+            onChange={(e) => setFilterPermission(e.target.value)}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
           >
-            <option value="all">Todos os cargos</option>
-            <option value="admin">Administrador</option>
-            <option value="lawyer">Advogado</option>
-            <option value="staff">Funcionário</option>
+            <option value="all">Todas as permissões</option>
+            <option value="full">Acesso Total</option>
+            <option value="restricted">Acesso Restrito</option>
           </select>
         </div>
         <UserInviteSystem onInviteSent={refreshData} />
@@ -407,7 +418,7 @@ const GestaoColaboradores = () => {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Cargo</TableHead>
+                  <TableHead>Tipo de Permissão</TableHead>
                   <TableHead>Membro desde</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -420,12 +431,13 @@ const GestaoColaboradores = () => {
                     </TableCell>
                     <TableCell>{member.email}</TableCell>
                     <TableCell>
-                      <Badge className={getRoleColor(member.role)}>
-                        <div className="flex items-center gap-1">
-                          {getRoleIcon(member.role)}
-                          {getRoleLabel(member.role)}
-                        </div>
-                      </Badge>
+                      {member.access_type ? (
+                        <Badge variant={member.access_type === 'full' ? 'default' : 'secondary'}>
+                          {member.access_type === 'full' ? 'Acesso Total' : 'Acesso Restrito'}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Não definido</Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       {new Date(member.created_at).toLocaleDateString('pt-BR')}
@@ -484,7 +496,6 @@ const GestaoColaboradores = () => {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Cargo</TableHead>
                   <TableHead>Enviado em</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -495,14 +506,6 @@ const GestaoColaboradores = () => {
                   <TableRow key={invite.id}>
                     <TableCell className="font-medium">{invite.full_name}</TableCell>
                     <TableCell>{invite.email}</TableCell>
-                    <TableCell>
-                      <Badge className={getRoleColor(invite.role)}>
-                        <div className="flex items-center gap-1">
-                          {getRoleIcon(invite.role)}
-                          {getRoleLabel(invite.role)}
-                        </div>
-                      </Badge>
-                    </TableCell>
                     <TableCell>
                       {new Date(invite.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
