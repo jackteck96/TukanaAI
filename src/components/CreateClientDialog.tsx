@@ -258,7 +258,12 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                   1️⃣ Método de Qualificação do Cliente
                 </Label>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                  <div 
+                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      qualificationMethod === 'company_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                    }`}
+                    onClick={() => setQualificationMethod('company_fills')}
+                  >
                     <Checkbox
                       id="company-fills"
                       checked={qualificationMethod === 'company_fills'}
@@ -272,7 +277,12 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     </Label>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                  <div 
+                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      qualificationMethod === 'client_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                    }`}
+                    onClick={() => setQualificationMethod('client_fills')}
+                  >
                     <Checkbox
                       id="client-fills"
                       checked={qualificationMethod === 'client_fills'}
@@ -296,11 +306,16 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                       2️⃣ Envio de E-mail Automático
                     </Label>
                     <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                      <div 
+                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                        }`}
+                        onClick={() => setSendEmailNow(true)}
+                      >
                         <Checkbox
                           id="send-now"
                           checked={sendEmailNow}
-                          onCheckedChange={(checked) => setSendEmailNow(checked as boolean)}
+                          onCheckedChange={() => setSendEmailNow(true)}
                         />
                         <Label htmlFor="send-now" className="cursor-pointer flex-1">
                           <span className="font-medium">Enviar e-mail automático agora</span>
@@ -310,11 +325,16 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                         </Label>
                       </div>
 
-                      <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                      <div 
+                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          !sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                        }`}
+                        onClick={() => setSendEmailNow(false)}
+                      >
                         <Checkbox
                           id="send-later"
                           checked={!sendEmailNow}
-                          onCheckedChange={(checked) => setSendEmailNow(!(checked as boolean))}
+                          onCheckedChange={() => setSendEmailNow(false)}
                         />
                         <Label htmlFor="send-later" className="cursor-pointer flex-1">
                           <span className="font-medium">Apenas cadastrar (sem enviar e-mail agora)</span>
