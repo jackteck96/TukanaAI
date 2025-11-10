@@ -907,6 +907,9 @@ export type Database = {
       }
       internal_process_chat: {
         Row: {
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_url: string | null
           company_id: string
           created_at: string
           id: string
@@ -916,6 +919,9 @@ export type Database = {
           user_name: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
           company_id: string
           created_at?: string
           id?: string
@@ -925,6 +931,9 @@ export type Database = {
           user_name: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
           company_id?: string
           created_at?: string
           id?: string

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Send, X, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageSquare, Send, X, Minimize2, Maximize2, Paperclip, FileIcon, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -23,6 +23,9 @@ interface ChatMessage {
   message: string;
   created_at: string;
   user_id: string;
+  attachment_url?: string;
+  attachment_name?: string;
+  attachment_size?: number;
 }
 
 export function InternalProcessChat({ processId, companyId }: InternalProcessChatProps) {
@@ -34,7 +37,9 @@ export function InternalProcessChat({ processId, companyId }: InternalProcessCha
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -104,7 +109,7 @@ export function InternalProcessChat({ processId, companyId }: InternalProcessCha
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user) return;
+    if ((!newMessage.trim() && !selectedFile) || !user) return;
 
     setSending(true);
     try {
@@ -115,6 +120,27 @@ export function InternalProcessChat({ processId, companyId }: InternalProcessCha
         .eq('id', user.id)
         .single();
 
+      let attachmentUrl: string | undefined;
+      let attachmentName: string | undefined;
+      let attachmentSize: number | undefined;
+
+      // Upload file if selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${processId}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('internal-chat-attachments')
+          .upload(filePath, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        attachmentUrl = filePath;
+        attachmentName = selectedFile.name;
+        attachmentSize = selectedFile.size;
+      }
+
       const { error } = await supabase
         .from('internal_process_chat')
         .insert({
@@ -122,18 +148,65 @@ export function InternalProcessChat({ processId, companyId }: InternalProcessCha
           company_id: companyId,
           user_id: user.id,
           user_name: profile?.full_name || user.email || 'Usuário',
-          message: newMessage.trim()
+          message: newMessage.trim() || '📎 Anexo',
+          attachment_url: attachmentUrl,
+          attachment_name: attachmentName,
+          attachment_size: attachmentSize
         });
 
       if (error) throw error;
 
       setNewMessage('');
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Erro ao enviar mensagem');
     } finally {
       setSending(false);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Limit to 20MB
+      if (file.size > 20 * 1024 * 1024) {
+        toast.error('Arquivo muito grande. Máximo: 20MB');
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const downloadAttachment = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('internal-chat-attachments')
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error('Erro ao baixar arquivo');
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   if (!user) return null;
@@ -240,6 +313,27 @@ export function InternalProcessChat({ processId, companyId }: InternalProcessCha
                           >
                             <p className="text-xs font-semibold mb-1">{message.user_name}</p>
                             <p className="text-sm whitespace-pre-wrap break-words">{message.message}</p>
+                            
+                            {message.attachment_url && message.attachment_name && (
+                              <div 
+                                className={cn(
+                                  "mt-2 p-2 rounded border flex items-center gap-2 cursor-pointer hover:bg-background/10 transition-colors",
+                                  message.user_id === user?.id
+                                    ? "border-primary-foreground/20"
+                                    : "border-border"
+                                )}
+                                onClick={() => downloadAttachment(message.attachment_url!, message.attachment_name!)}
+                              >
+                                <FileIcon className="h-4 w-4 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium truncate">{message.attachment_name}</p>
+                                  {message.attachment_size && (
+                                    <p className="text-xs opacity-70">{formatFileSize(message.attachment_size)}</p>
+                                  )}
+                                </div>
+                                <Download className="h-3 w-3 flex-shrink-0" />
+                              </div>
+                            )}
                           </div>
                           <p className={cn(
                             "text-xs text-muted-foreground px-1",
@@ -255,31 +349,76 @@ export function InternalProcessChat({ processId, companyId }: InternalProcessCha
                 </ScrollArea>
 
                 <div className="border-t p-4">
+                  {selectedFile && (
+                    <div className="mb-2 p-2 bg-muted rounded flex items-center gap-2">
+                      <FileIcon className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{selectedFile.name}</p>
+                        <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  
                   <form onSubmit={sendMessage} className="flex gap-2">
-                    <Textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Digite sua mensagem..."
-                      className="resize-none min-h-[60px]"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          sendMessage(e);
-                        }
-                      }}
-                      disabled={sending}
-                    />
-                    <Button
-                      type="submit"
-                      size="icon"
-                      disabled={!newMessage.trim() || sending}
-                      className="shrink-0"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                    <div className="flex-1 space-y-2">
+                      <Textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Digite sua mensagem..."
+                        className="resize-none min-h-[60px]"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendMessage(e);
+                          }
+                        }}
+                        disabled={sending}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        disabled={sending}
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={sending}
+                        className="shrink-0"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="submit"
+                        size="icon"
+                        disabled={(!newMessage.trim() && !selectedFile) || sending}
+                        className="shrink-0"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </form>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Enter para enviar, Shift+Enter para nova linha
+                    Enter para enviar, Shift+Enter para nova linha. Máx: 20MB por arquivo
                   </p>
                 </div>
               </CardContent>
