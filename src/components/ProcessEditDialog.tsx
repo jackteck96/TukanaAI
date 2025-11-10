@@ -29,6 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ProcessClientsManager, ProcessClient } from "./ProcessClientsManager";
 
 interface ProcessEditDialogProps {
   isOpen: boolean;
@@ -65,13 +66,11 @@ const ProcessEditDialog = ({
   const [newDocumentType, setNewDocumentType] = useState('');
   const [showDeleteProcessDialog, setShowDeleteProcessDialog] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [processClients, setProcessClients] = useState<ProcessClient[]>([]);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     project_name: '',
-    client_name: '',
-    client_email: '',
-    cpf_cnpj: '',
     process_type: '',
     description: '',
     status: '',
@@ -101,15 +100,41 @@ const ProcessEditDialog = ({
       setProcessData(data);
       setFormData({
         project_name: data.project_name || '',
-        client_name: data.client_name || '',
-        client_email: data.client_email || '',
-        cpf_cnpj: data.cpf_cnpj || '',
         process_type: data.process_type || '',
         description: data.description || '',
         status: data.status || '',
         priority: data.priority || '',
         due_date: data.due_date ? data.due_date.split('T')[0] : ''
       });
+
+      // Carregar clientes do processo
+      const { data: clients, error: clientsError } = await supabase
+        .from('process_clients')
+        .select('*')
+        .eq('process_id', processId)
+        .order('is_primary', { ascending: false });
+
+      if (clientsError) {
+        console.error('Error fetching process clients:', clientsError);
+      } else if (clients && clients.length > 0) {
+        setProcessClients(clients.map(c => ({
+          id: c.id,
+          client_name: c.client_name,
+          client_email: c.client_email,
+          cpf_cnpj: c.cpf_cnpj || undefined,
+          is_primary: c.is_primary
+        })));
+      } else {
+        // Se não houver clientes na nova tabela, usar dados legados
+        if (data.client_email) {
+          setProcessClients([{
+            client_name: data.client_name || '',
+            client_email: data.client_email,
+            cpf_cnpj: data.cpf_cnpj || undefined,
+            is_primary: true
+          }]);
+        }
+      }
     } catch (error) {
       console.error('Error fetching process:', error);
       toast({
@@ -160,7 +185,7 @@ const ProcessEditDialog = ({
   };
 
   const handleUpdateProcess = async () => {
-    if (!formData.client_name || !formData.client_email || !formData.process_type) {
+    if (!formData.process_type) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios",
@@ -169,11 +194,26 @@ const ProcessEditDialog = ({
       return;
     }
 
+    if (processClients.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos um cliente ao processo",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       
+      // Pegar cliente primário para manter compatibilidade com campos legados
+      const primaryClient = processClients.find(c => c.is_primary) || processClients[0];
+      
       const updateData: any = {
         ...formData,
+        client_name: primaryClient.client_name,
+        client_email: primaryClient.client_email,
+        cpf_cnpj: primaryClient.cpf_cnpj || null,
         due_date: formData.due_date ? new Date(formData.due_date).toISOString() : null,
         updated_at: new Date().toISOString()
       };
@@ -184,6 +224,45 @@ const ProcessEditDialog = ({
         .eq('id', processId);
 
       if (error) throw error;
+
+      // Atualizar clientes na tabela process_clients
+      // Primeiro, remover clientes que foram removidos
+      const existingClientsIds = processClients.filter(c => c.id).map(c => c.id);
+      
+      if (existingClientsIds.length > 0) {
+        await supabase
+          .from('process_clients')
+          .delete()
+          .eq('process_id', processId)
+          .not('id', 'in', `(${existingClientsIds.join(',')})`);
+      }
+
+      // Atualizar ou inserir clientes
+      for (const client of processClients) {
+        if (client.id) {
+          // Atualizar cliente existente
+          await supabase
+            .from('process_clients')
+            .update({
+              client_name: client.client_name,
+              client_email: client.client_email,
+              cpf_cnpj: client.cpf_cnpj || null,
+              is_primary: client.is_primary
+            })
+            .eq('id', client.id);
+        } else {
+          // Inserir novo cliente
+          await supabase
+            .from('process_clients')
+            .insert({
+              process_id: processId,
+              client_name: client.client_name,
+              client_email: client.client_email,
+              cpf_cnpj: client.cpf_cnpj || null,
+              is_primary: client.is_primary
+            });
+        }
+      }
 
       toast({
         title: "Sucesso",
@@ -408,34 +487,13 @@ const ProcessEditDialog = ({
                       placeholder="Digite o nome do projeto"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_name">Nome do Cliente</Label>
-                    <Input
-                      id="client_name"
-                      value={formData.client_name}
-                      onChange={(e) => setFormData({...formData, client_name: e.target.value})}
-                      placeholder="Digite o nome do cliente"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_email">Email do Cliente</Label>
-                    <Input
-                      id="client_email"
-                      type="email"
-                      value={formData.client_email}
-                      onChange={(e) => setFormData({...formData, client_email: e.target.value})}
-                      placeholder="Digite o email do cliente"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cpf_cnpj">CPF/CNPJ</Label>
-                    <Input
-                      id="cpf_cnpj"
-                      value={formData.cpf_cnpj}
-                      onChange={(e) => setFormData({...formData, cpf_cnpj: e.target.value})}
-                      placeholder="Digite o CPF ou CNPJ"
-                    />
-                  </div>
+
+                  <ProcessClientsManager
+                    clients={processClients}
+                    onChange={setProcessClients}
+                    companyId={processData?.company_id}
+                  />
+
                   <div className="space-y-2">
                     <Label htmlFor="process_type">Tipo de Processo</Label>
                     <Select

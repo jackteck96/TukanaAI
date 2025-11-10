@@ -11,12 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
 import { ClientAutocomplete } from "./ClientAutocomplete";
+import { ProcessClientsManager, ProcessClient } from "./ProcessClientsManager";
 
 interface CreateProcessForm {
   projectName: string;
-  clientName: string;
-  clientEmail: string;
-  cpfCnpj: string;
   description: string;
   priority: string;
   dueDate: string;
@@ -36,15 +34,13 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const [clientName, setClientName] = useState("");
   const [availableDocuments, setAvailableDocuments] = useState<string[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [processClients, setProcessClients] = useState<ProcessClient[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
 
   const [formData, setFormData] = useState<CreateProcessForm>({
     projectName: "",
-    clientName: "",
-    clientEmail: "",
-    cpfCnpj: "",
     description: "",
     priority: "Média",
     dueDate: "",
@@ -120,32 +116,14 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     fetchDocumentTypes();
   }, [company?.id]);
 
-  const handleClientSelect = (client: { client_name: string; client_email: string; cpf_cnpj: string }) => {
-    console.log('Preenchendo dados do cliente:', client); // Debug
-    
-    setFormData(prev => ({
-      ...prev,
-      clientName: client.client_name,
-      clientEmail: client.client_email,
-      cpfCnpj: client.cpf_cnpj || "",
-    }));
-    
-    toast({
-      title: "Cliente selecionado",
-      description: `Dados preenchidos: ${client.client_name} - ${client.client_email}`,
-    });
-  };
-
   const resetForm = () => {
     setFormData({
       projectName: "",
-      clientName: "",
-      clientEmail: "",
-      cpfCnpj: "",
       description: "",
       priority: "Média",
       dueDate: "",
     });
+    setProcessClients([]);
     setRequiredDocuments([]);
     setSearchTerm("");
   };
@@ -179,19 +157,31 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
       return;
     }
 
+    if (processClients.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos um cliente ao processo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      console.log('Creating process with company_id:', company?.id); // Debug log
+      console.log('Creating process with company_id:', company?.id);
       
-      // 1. Criar o processo
-      const { data: processData, error: processError } = await supabase
+      // Pegar cliente primário
+      const primaryClient = processClients.find(c => c.is_primary) || processClients[0];
+      
+      // 1. Criar o processo (ainda usa campos legados para compatibilidade)
+      const { data: processData, error: processError} = await supabase
         .from("processes")
         .insert({
           project_name: formData.projectName,
-          client_name: formData.clientName,
-          client_email: formData.clientEmail,
-          cpf_cnpj: formData.cpfCnpj,
+          client_name: primaryClient.client_name,
+          client_email: primaryClient.client_email,
+          cpf_cnpj: primaryClient.cpf_cnpj || null,
           process_type: requiredDocuments.length > 0 ? `Documentação: ${requiredDocuments.join(", ")}` : "Processo Documental",
           description: formData.description,
           priority: formData.priority,
@@ -203,127 +193,118 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         .select()
         .single();
       
-      console.log('Process created:', processData); // Debug log
+      console.log('Process created:', processData);
 
       if (processError) {
         throw processError;
       }
 
-      // 2. Gerar token de convite
-      const { data: tokenData, error: tokenError } = await supabase
-        .rpc("generate_invite_token");
+      // 2. Inserir todos os clientes na tabela process_clients
+      const clientsToInsert = processClients.map(client => ({
+        process_id: processData.id,
+        client_name: client.client_name,
+        client_email: client.client_email,
+        cpf_cnpj: client.cpf_cnpj || null,
+        is_primary: client.is_primary
+      }));
 
-      if (tokenError) {
-        throw tokenError;
+      const { error: clientsError } = await supabase
+        .from('process_clients')
+        .insert(clientsToInsert);
+
+      if (clientsError) {
+        console.error('Error inserting process clients:', clientsError);
+        throw clientsError;
       }
 
-      // 3. Criar convite
-      const { error: inviteError } = await supabase
-        .from("client_invites")
-        .insert({
-          email: formData.clientEmail,
-          token: tokenData,
-          company_id: company.id,
-          process_id: processData.id,
-          invited_by: user.id,
-          status: 'pending',
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        });
+      // 3. Enviar convites para todos os clientes
+      for (const client of processClients) {
+        try {
+          // Gerar token de convite
+          const { data: tokenData, error: tokenError } = await supabase
+            .rpc("generate_invite_token");
 
-      if (inviteError) {
-        throw inviteError;
-      }
+          if (tokenError) {
+            console.error('Token generation error for', client.client_email, tokenError);
+            continue;
+          }
 
-      // 4. Verificar se o cliente já existe no sistema
-      console.log('[CreateProcessWithInvite] Checking if client already exists...');
-      const { data: existingUser, error: userCheckError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('email', formData.clientEmail)
-        .maybeSingle();
+          // Criar convite
+          const { error: inviteError } = await supabase
+            .from("client_invites")
+            .insert({
+              email: client.client_email,
+              token: tokenData,
+              company_id: company.id,
+              process_id: processData.id,
+              invited_by: user.id,
+              status: 'pending',
+              expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            });
 
-      if (userCheckError) {
-        console.error('[CreateProcessWithInvite] Error checking user:', userCheckError);
-      }
+          if (inviteError) {
+            console.error('Invite creation error for', client.client_email, inviteError);
+            continue;
+          }
 
-      const isExistingClient = !!existingUser;
-      console.log('[CreateProcessWithInvite] Is existing client:', isExistingClient);
+          // Verificar se cliente já existe
+          const { data: existingUser } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .eq('email', client.client_email)
+            .maybeSingle();
 
-      // 5. Determinar o link correto (convite de cadastro ou acesso direto)
-      const accessLink = isExistingClient
-        ? `${window.location.origin}/cliente?id=${processData.id}`
-        : `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
+          const isExistingClient = !!existingUser;
+          const accessLink = isExistingClient
+            ? `${window.location.origin}/cliente?id=${processData.id}`
+            : `${window.location.origin}/cadastro-via-convite?token=${tokenData}`;
 
-      console.log('[CreateProcessWithInvite] Access link type:', isExistingClient ? 'direct' : 'invite');
-      console.log('[CreateProcessWithInvite] Link:', accessLink);
-      
-      // 6. Enviar email apropriado
-      try {
-        const emailBody = isExistingClient ? {
-          email: formData.clientEmail,
-          full_name: formData.clientName,
-          processId: processData.id,
-          processName: formData.projectName || `Processo - ${formData.clientName}`,
-          companyId: company.id,
-          directAccessLink: accessLink,
-          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-          isExistingClient: true
-        } : {
-          email: formData.clientEmail,
-          full_name: formData.clientName,
-          processId: processData.id,
-          processName: formData.projectName || `Processo - ${formData.clientName}`,
-          companyId: company.id,
-          inviteLink: accessLink,
-          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-          role: 'client',
-          isCollaborator: false
-        };
+          // Enviar email
+          const emailBody = isExistingClient ? {
+            email: client.client_email,
+            full_name: client.client_name,
+            processId: processData.id,
+            processName: formData.projectName || `Processo - ${client.client_name}`,
+            companyId: company.id,
+            directAccessLink: accessLink,
+            inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+            isExistingClient: true
+          } : {
+            email: client.client_email,
+            full_name: client.client_name,
+            processId: processData.id,
+            processName: formData.projectName || `Processo - ${client.client_name}`,
+            companyId: company.id,
+            inviteLink: accessLink,
+            inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+            role: 'client',
+            isCollaborator: false
+          };
 
-        const { data: emailResponse, error: emailError } = await supabase.functions.invoke("send-unified-email", {
-          body: emailBody
-        });
-
-        console.log('[CreateProcessWithInvite] Email response:', emailResponse);
-        console.log('[CreateProcessWithInvite] Email error:', emailError);
-
-        if (emailError) {
-          console.error("[CreateProcessWithInvite] Erro ao enviar email:", emailError);
-          throw emailError;
+          await supabase.functions.invoke("send-unified-email", {
+            body: emailBody
+          });
+        } catch (emailError) {
+          console.error(`Erro ao enviar email para ${client.client_email}:`, emailError);
         }
-
-        if (emailResponse && !emailResponse.success) {
-          console.error("[CreateProcessWithInvite] Email send failed:", emailResponse);
-          throw new Error(emailResponse.error || 'Failed to send email');
-        }
-
-        console.log('[CreateProcessWithInvite] Email enviado com sucesso:', emailResponse);
-      } catch (emailError) {
-        console.error("[CreateProcessWithInvite] Falha no envio do email:", emailError);
-        // Continuar mesmo se o email falhar
       }
 
-      // Sempre mostrar modal com link
-      setInviteLink(accessLink);
-      setClientName(formData.clientName);
+      // Mostrar link do cliente primário
+      const primaryAccessLink = `${window.location.origin}/cliente?id=${processData.id}`;
+      setInviteLink(primaryAccessLink);
+      setClientName(primaryClient.client_name);
       setShowInviteLink(true);
-
-      const messageType = isExistingClient 
-        ? "Email enviado com link de acesso direto ao processo."
-        : "Email enviado com convite de cadastro.";
 
       toast({
         title: "Processo criado com sucesso!",
-        description: `Processo criado. ${messageType} Link disponível para compartilhar.`,
+        description: `Processo criado com ${processClients.length} cliente(s). Convites enviados por email.`,
       });
 
-      // Refresh data if callback provided
       if (onProcessCreated) {
         onProcessCreated();
       }
       
       resetForm();
-      // NÃO fechar o dialog aqui - ele será fechado quando o usuário fechar o modal do link
     } catch (error: any) {
       console.error("Erro ao criar processo:", error);
       toast({
@@ -368,42 +349,12 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
               Digite o nome que identifica este processo/projeto
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <ClientAutocomplete
-                companyId={company?.id || ""}
-                value={formData.clientName}
-                onChange={(value) => setFormData({ ...formData, clientName: value })}
-                onClientSelect={handleClientSelect}
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="clientEmail">Email do Cliente</Label>
-              <Input
-                id="clientEmail"
-                type="email"
-                value={formData.clientEmail}
-                onChange={(e) =>
-                  setFormData({ ...formData, clientEmail: e.target.value })
-                }
-                required
-              />
-            </div>
-          </div>
 
-          <div>
-            <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
-            <Input
-              id="cpfCnpj"
-              value={formData.cpfCnpj}
-              onChange={(e) =>
-                setFormData({ ...formData, cpfCnpj: e.target.value })
-              }
-              placeholder="Digite o CPF ou CNPJ do cliente"
-              required
-            />
-          </div>
+          <ProcessClientsManager
+            clients={processClients}
+            onChange={setProcessClients}
+            companyId={company?.id}
+          />
 
           <div>
             <Label htmlFor="description">Descrição</Label>
@@ -516,9 +467,9 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
                   Convite por Email
                 </h4>
                 <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                  Após criar o processo, um email de convite será automaticamente 
-                  enviado para {formData.clientEmail || "o cliente"} com as instruções 
-                  para criar sua conta e acessar o processo.
+                  Após criar o processo, emails de convite serão automaticamente 
+                  enviados para {processClients.length > 0 ? 'os clientes' : 'o(s) cliente(s)'} com as instruções 
+                  para criar conta e acessar o processo.
                 </p>
               </div>
             </div>

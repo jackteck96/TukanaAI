@@ -1252,6 +1252,47 @@ export type Database = {
           },
         ]
       }
+      process_clients: {
+        Row: {
+          client_email: string
+          client_name: string
+          cpf_cnpj: string | null
+          created_at: string
+          id: string
+          is_primary: boolean
+          process_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_email: string
+          client_name: string
+          cpf_cnpj?: string | null
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          process_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string
+          client_name?: string
+          cpf_cnpj?: string | null
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          process_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_clients_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       process_notes: {
         Row: {
           company_id: string
