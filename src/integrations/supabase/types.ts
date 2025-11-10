@@ -1866,6 +1866,14 @@ export type Database = {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
       }
+      user_has_client_role: {
+        Args: { _client_email: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_company_admin_role: {
+        Args: { _company_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
