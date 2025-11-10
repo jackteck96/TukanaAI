@@ -269,7 +269,6 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       qualificationMethod === 'company_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                     }`}
-                    onClick={() => setQualificationMethod('company_fills')}
                   >
                     <RadioGroupItem id="company-fills" value="company_fills" />
                     <Label htmlFor="company-fills" className="cursor-pointer flex-1">
@@ -284,7 +283,6 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       qualificationMethod === 'client_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                     }`}
-                    onClick={() => setQualificationMethod('client_fills')}
                   >
                     <RadioGroupItem id="client-fills" value="client_fills" />
                     <Label htmlFor="client-fills" className="cursor-pointer flex-1">
@@ -313,7 +311,6 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                         className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                           sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                         }`}
-                        onClick={() => setSendEmailNow(true)}
                       >
                         <RadioGroupItem id="send-now" value="send_now" />
                         <Label htmlFor="send-now" className="cursor-pointer flex-1">
