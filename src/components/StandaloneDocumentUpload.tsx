@@ -189,8 +189,10 @@ export const StandaloneDocumentUpload = ({
       });
 
       // Guardar o ID do documento criado e mostrar o passo de sucesso
+      console.log('Documento criado com ID:', newDocument.id);
       setCreatedDocumentId(newDocument.id);
       setShowSuccessStep(true);
+      console.log('showSuccessStep definido como true');
     } catch (error) {
       console.error('Erro ao enviar documento:', error);
       toast({
@@ -226,6 +228,7 @@ export const StandaloneDocumentUpload = ({
   };
 
   const handleContinueToSignature = () => {
+    console.log('handleContinueToSignature chamado, documentId:', createdDocumentId);
     // Não fechar o modal principal ainda - o modal de assinatura abrirá por cima
     setShowSignatureModal(true);
   };
@@ -379,7 +382,10 @@ export const StandaloneDocumentUpload = ({
               >
                 Cancelar
               </Button>
-              <Button onClick={handleContinueToSignature}>
+              <Button 
+                onClick={handleContinueToSignature}
+                disabled={!createdDocumentId}
+              >
                 Seguinte: Assinar Documento
               </Button>
             </>
