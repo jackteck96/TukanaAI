@@ -142,6 +142,7 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (loading) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -161,13 +162,6 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
 
   return (
     <div className="space-y-4">
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-12 space-y-3">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-sm text-muted-foreground">Carregando documento...</p>
-        </div>
-      )}
-
       {error && (
         <div className="flex flex-col items-center justify-center py-12 space-y-3">
           <div className="rounded-full bg-destructive/10 p-4">
@@ -187,13 +181,15 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
         </div>
       )}
 
-      {!loading && !error && (
+      {!error && (
         <>
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">
-              {value ? 'Posição selecionada ✓' : 'Clique no documento onde deseja posicionar a assinatura'}
+              {loading
+                ? 'Carregando documento...'
+                : (value ? 'Posição selecionada ✓' : 'Clique no documento onde deseja posicionar a assinatura')}
             </p>
-            {value && (
+            {value && !loading && (
               <Button variant="outline" size="sm" onClick={handleClear}>
                 <X className="h-4 w-4 mr-2" />
                 Limpar seleção
@@ -208,12 +204,19 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
-              className="cursor-crosshair mx-auto block"
+              className={`cursor-crosshair mx-auto block ${loading ? 'pointer-events-none opacity-50' : ''}`}
               style={{ maxWidth: '100%', height: 'auto' }}
             />
+
+            {loading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm space-y-3">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                <p className="text-sm text-muted-foreground">Carregando documento...</p>
+              </div>
+            )}
             
             {/* Preview da caixa de assinatura */}
-            {value && pdfDimensions.width > 0 && (
+            {value && pdfDimensions.width > 0 && !loading && (
               <div
                 className="absolute border-2 border-primary bg-primary/20 pointer-events-none"
                 style={{
