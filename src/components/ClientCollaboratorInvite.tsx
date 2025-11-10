@@ -95,10 +95,40 @@ const ClientCollaboratorInvite = ({ clientEmail, onInviteSent }: ClientCollabora
 
       if (inviteError) throw inviteError;
 
-      toast({
-        title: "Convite enviado",
-        description: "O colaborador receberá um email com o link de convite.",
-      });
+      // Enviar email de convite
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+      
+      try {
+        // Buscar o email do cliente atual para incluir no email
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+
+        await supabase.functions.invoke('send-unified-email', {
+          body: {
+            email: formData.email,
+            full_name: formData.full_name,
+            inviteLink: inviteLink,
+            inviterName: profileData?.full_name || user.email || 'Cliente',
+            role: 'client_collaborator',
+            isCollaborator: true
+          }
+        });
+        
+        toast({
+          title: "Convite enviado",
+          description: "O colaborador receberá um email com o link de convite.",
+        });
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        toast({
+          title: "Convite criado",
+          description: "Não foi possível enviar o email, mas você pode compartilhar o link: " + inviteLink,
+          variant: "default"
+        });
+      }
 
       setIsOpen(false);
       setFormData({ email: '', full_name: '', access_type: 'limited', allowed_process_ids: [] });

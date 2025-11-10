@@ -194,14 +194,22 @@ export default function CadastroViaConvite() {
             console.warn('Erro ao atualizar perfil:', profileError);
           }
 
-          // Marcar convite como usado
-          await supabase
-            .from('user_invites')
-            .update({
-              status: 'accepted',
-              used_at: new Date().toISOString()
-            })
-            .eq('token', token);
+          // Processar aceitação do convite e configurar permissões
+          const { data: permissionData, error: permissionError } = await supabase
+            .rpc('process_collaborator_invite_acceptance', {
+              p_user_id: signUpData.user.id,
+              p_token: token
+            });
+
+          if (permissionError) {
+            console.error('Erro ao configurar permissões:', permissionError);
+            toast.warning('Conta criada, mas as permissões podem estar incompletas');
+          } else if (permissionData && typeof permissionData === 'object' && 'success' in permissionData && !permissionData.success) {
+            console.warn('Falha ao processar permissões:', permissionData);
+            toast.warning('Conta criada, mas as permissões podem estar incompletas');
+          } else {
+            console.log('Permissões configuradas com sucesso:', permissionData);
+          }
         }
 
         toast.success("Cadastro realizado com sucesso!", {

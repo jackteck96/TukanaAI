@@ -1844,6 +1844,10 @@ export type Database = {
         Args: { access_type: string; process_uuid: string }
         Returns: undefined
       }
+      process_collaborator_invite_acceptance: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: Json
+      }
       update_usage_metrics: {
         Args: { company_uuid: string }
         Returns: undefined
