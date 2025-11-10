@@ -194,7 +194,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                 email: email,
                 full_name: companyName,
                 companyId: company.id,
-                inviteLink: `${window.location.origin}/client-registration?id=${newClient.id}`,
+                inviteLink: `${window.location.origin}/cadastro-via-convite?id=${newClient.id}`,
                 inviterName: user?.user_metadata?.full_name || user?.email || company.name,
                 role: 'client',
                 isCollaborator: false,

@@ -140,7 +140,7 @@ const GestaoClientesQualificacao = () => {
           email: client.email,
           full_name: client.company_name,
           companyId: company.id,
-          inviteLink: `${window.location.origin}/client-registration?id=${client.id}`,
+          inviteLink: `${window.location.origin}/cadastro-via-convite?id=${client.id}`,
           inviterName: user?.user_metadata?.full_name || user?.email || company.name,
           role: 'client',
           isCollaborator: false,
