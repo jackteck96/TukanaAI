@@ -13,6 +13,9 @@ interface Document {
   name: string;
   type: string;
   content?: string;
+  file?: File;
+  description?: string;
+  observations?: string;
 }
 
 interface AnalysisResult {
@@ -44,6 +47,9 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
   const [documents, setDocuments] = useState<Document[]>([]);
   const [newDocName, setNewDocName] = useState('');
   const [newDocType, setNewDocType] = useState('');
+  const [newDocDescription, setNewDocDescription] = useState('');
+  const [newDocObservations, setNewDocObservations] = useState('');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
@@ -96,18 +102,52 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
   };
 
   const addDocument = () => {
-    if (!newDocName.trim() || !newDocType.trim()) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Preencha o nome e tipo do documento",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!processId) {
+      // Para análise rápida, exigir upload de arquivo
+      if (!uploadedFile) {
+        toast({
+          title: "Arquivo obrigatório",
+          description: "Faça upload do documento para análise",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!newDocType.trim()) {
+        toast({
+          title: "Tipo obrigatório",
+          description: "Preencha o tipo do documento",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setDocuments([...documents, { name: newDocName, type: newDocType }]);
-    setNewDocName('');
-    setNewDocType('');
+      setDocuments([...documents, { 
+        name: uploadedFile.name,
+        type: newDocType,
+        file: uploadedFile,
+        description: newDocDescription,
+        observations: newDocObservations
+      }]);
+      
+      setUploadedFile(null);
+      setNewDocType('');
+      setNewDocDescription('');
+      setNewDocObservations('');
+    } else {
+      // Comportamento original para processo existente
+      if (!newDocName.trim() || !newDocType.trim()) {
+        toast({
+          title: "Campos obrigatórios",
+          description: "Preencha o nome e tipo do documento",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setDocuments([...documents, { name: newDocName, type: newDocType }]);
+      setNewDocName('');
+      setNewDocType('');
+    }
   };
 
   const removeDocument = (index: number) => {
@@ -232,7 +272,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
 
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Documentos {processId ? '(Carregados automaticamente do processo)' : '(Opcional - Adicione manualmente)'}
+              Documentos {processId ? '(Carregados automaticamente do processo)' : ''}
             </label>
             
             {loadingDocuments ? (
@@ -250,23 +290,90 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
                   </div>
                 )}
                 
-                <div className="flex gap-2 mb-3">
-                  <Input
-                    placeholder="Nome do documento"
-                    value={newDocName}
-                    onChange={(e) => setNewDocName(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addDocument()}
-                  />
-                  <Input
-                    placeholder="Tipo"
-                    value={newDocType}
-                    onChange={(e) => setNewDocType(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addDocument()}
-                  />
-                  <Button onClick={addDocument} size="icon" variant="outline" title="Adicionar documento complementar">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                {/* Formulário diferente para análise rápida vs processo */}
+                {!processId ? (
+                  <div className="space-y-4 mb-4 p-4 border rounded-lg bg-card">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Upload do Documento *
+                      </label>
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) setUploadedFile(file);
+                        }}
+                        className="cursor-pointer"
+                      />
+                      {uploadedFile && (
+                        <p className="text-sm text-primary mt-1">
+                          Arquivo selecionado: {uploadedFile.name}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Tipo de Documento *
+                      </label>
+                      <Input
+                        placeholder="Ex: Contrato Social, RG, CPF, Procuração..."
+                        value={newDocType}
+                        onChange={(e) => setNewDocType(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Descrição do Documento
+                      </label>
+                      <Textarea
+                        placeholder="Descreva brevemente o documento..."
+                        value={newDocDescription}
+                        onChange={(e) => setNewDocDescription(e.target.value)}
+                        rows={2}
+                        className="resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Observações
+                      </label>
+                      <Textarea
+                        placeholder="O que é pertinente ao documento e ao caso? O que você quer que seja analisado?"
+                        value={newDocObservations}
+                        onChange={(e) => setNewDocObservations(e.target.value)}
+                        rows={3}
+                        className="resize-none"
+                      />
+                    </div>
+
+                    <Button onClick={addDocument} className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Documento para Análise
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      placeholder="Nome do documento"
+                      value={newDocName}
+                      onChange={(e) => setNewDocName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addDocument()}
+                    />
+                    <Input
+                      placeholder="Tipo"
+                      value={newDocType}
+                      onChange={(e) => setNewDocType(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addDocument()}
+                    />
+                    <Button onClick={addDocument} size="icon" variant="outline" title="Adicionar documento complementar">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
 
                 {documents.length > 0 && (
                   <div className="space-y-2">
@@ -275,10 +382,22 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
                         key={index}
                         className="flex items-center justify-between p-3 bg-muted rounded-lg"
                       >
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{doc.name}</span>
-                          <Badge variant="secondary">{doc.type}</Badge>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{doc.name}</span>
+                            <Badge variant="secondary">{doc.type}</Badge>
+                          </div>
+                          {doc.description && (
+                            <p className="text-xs text-muted-foreground mt-1 ml-6">
+                              Descrição: {doc.description}
+                            </p>
+                          )}
+                          {doc.observations && (
+                            <p className="text-xs text-muted-foreground mt-1 ml-6">
+                              Observações: {doc.observations}
+                            </p>
+                          )}
                         </div>
                         <Button
                           onClick={() => removeDocument(index)}
@@ -297,7 +416,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
             <p className="text-xs text-muted-foreground mt-2">
               {processId 
                 ? 'Os documentos do processo foram carregados automaticamente. Você pode adicionar documentos complementares se necessário.'
-                : 'Adicione documentos manualmente para complementar a análise (opcional).'}
+                : 'Adicione documentos com upload de arquivo para análise pela IA.'}
             </p>
           </div>
 
