@@ -68,7 +68,7 @@ export default function GestaoPermissoes() {
 
   useEffect(() => {
     loadData();
-  }, [user, companyId, primaryRole]);
+  }, [user, companyId, primaryRole, company?.id]);
 
   const loadData = async () => {
     if (!user) return;
@@ -83,37 +83,23 @@ export default function GestaoPermissoes() {
         // Carregar colaboradores da empresa via user_roles e collaborator_permissions
         contextCompanyId = effectiveCompanyId;
 
-        // 1) Buscar colaboradores via user_roles (admins e colaboradores)
+        // 1) Buscar colaboradores via user_roles (apenas company_collaborator)
         const { data: rolesData, error: rolesError } = await supabase
           .from('user_roles')
           .select('user_id, role')
           .eq('company_id', effectiveCompanyId)
-          .in('role', ['company_admin', 'company_collaborator']);
+          .eq('role', 'company_collaborator');
 
         if (rolesError) throw rolesError;
 
-        // Mapa de roles por usuário
+        // Mapa de roles por usuário e conjunto de IDs
         const rolesByUser: Record<string, string[]> = {};
-        const userIdsFromRoles = (rolesData || []).map((r: any) => {
+        const uniqueUserIds = (rolesData || []).map((r: any) => {
           rolesByUser[r.user_id] = rolesByUser[r.user_id]
             ? [...rolesByUser[r.user_id], r.role]
             : [r.role];
           return r.user_id as string;
         });
-
-        // 2) Buscar usuários que já possuem registros em collaborator_permissions
-        const { data: permsUsersData, error: permsUsersError } = await supabase
-          .from('collaborator_permissions')
-          .select('user_id')
-          .eq('company_id', effectiveCompanyId);
-        if (permsUsersError) throw permsUsersError;
-        const userIdsFromPerms = (permsUsersData || []).map((p: any) => p.user_id as string);
-
-        // 3) Unificar IDs (user_roles ∪ collaborator_permissions)
-        const uniqueUserIds = Array.from(new Set([...
-          userIdsFromRoles,
-          ...userIdsFromPerms
-        ]));
 
         if (uniqueUserIds.length > 0) {
           const { data: profilesData, error: profilesError } = await supabase
@@ -425,7 +411,7 @@ export default function GestaoPermissoes() {
           open={modalOpen}
           onOpenChange={setModalOpen}
           collaborator={selectedCollaborator}
-          companyId={isCompanyAdmin ? companyId || undefined : undefined}
+          companyId={isCompanyAdmin ? effectiveCompanyId : undefined}
           clientEmail={isClient ? clientEmail || undefined : undefined}
           onSuccess={loadData}
         />
