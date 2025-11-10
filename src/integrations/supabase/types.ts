@@ -1373,7 +1373,6 @@ export type Database = {
           company_id: string | null
           created_at: string
           email: string
-          firm_id: string | null
           full_name: string | null
           id: string
           phone: string | null
@@ -1385,7 +1384,6 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           email: string
-          firm_id?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
@@ -1397,7 +1395,6 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           email?: string
-          firm_id?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
