@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, BellRing, X, FileText, AlertTriangle } from 'lucide-react';
+import { Bell, BellRing, X, FileText, AlertTriangle, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,6 +28,7 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
   const [loading, setLoading] = useState(true);
   const [expandedNotification, setExpandedNotification] = useState<string | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -152,6 +154,18 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     return 'border-l-warning bg-warning/5';
   };
 
+  const handleNotificationClick = async (notification: Notification) => {
+    // Marcar como lida ao clicar
+    if (!notification.is_read) {
+      await markAsRead(notification.id);
+    }
+
+    // Navegar para o processo
+    if (notification.process_id) {
+      navigate(`/cliente?id=${notification.process_id}`);
+    }
+  };
+
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   if (loading) {
@@ -201,23 +215,30 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`border-l-4 rounded-lg p-4 transition-all ${getNotificationColor(notification.notification_type)} ${
+              className={`border-l-4 rounded-lg transition-all ${getNotificationColor(notification.notification_type)} ${
                 !notification.is_read ? 'shadow-sm' : 'opacity-75'
               }`}
             >
-              <div className="flex items-start justify-between">
+              <Button
+                variant="ghost"
+                className="w-full h-auto p-4 justify-start hover:bg-background/50 text-left"
+                onClick={() => handleNotificationClick(notification)}
+              >
                 <div className="flex items-start gap-3 flex-1">
                   {getNotificationIcon(notification.notification_type)}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className={`font-medium ${!notification.is_read ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {notification.title}
                       </h4>
                       {!notification.is_read && (
-                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-sm text-muted-foreground mb-1 line-clamp-2">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
                       {new Date(notification.created_at).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: '2-digit',
@@ -226,51 +247,23 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
                         minute: '2-digit'
                       })}
                     </p>
-                    {expandedNotification === notification.id ? (
-                      <div className="bg-background rounded p-3 border">
-                        <p className="text-sm whitespace-pre-wrap">{notification.message}</p>
-                        <div className="flex gap-2 mt-3">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => setExpandedNotification(null)}
-                          >
-                            Fechar
-                          </Button>
-                          {!notification.is_read && (
-                            <Button 
-                              size="sm"
-                              onClick={() => markAsRead(notification.id)}
-                            >
-                              Marcar como lida
-                            </Button>
-                          )}
-                          <Button 
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setExpandedNotification(null);
-                              deleteNotification(notification.id);
-                            }}
-                          >
-                            Excluir
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-0 h-auto font-normal justify-start"
-                        onClick={() => setExpandedNotification(notification.id)}
-                      >
-                        <FileText className="h-3 w-3 mr-1" />
-                        Ver detalhes
-                      </Button>
-                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notification.id);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </Button>
             </div>
           ))
         )}
