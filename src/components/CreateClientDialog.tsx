@@ -262,20 +262,17 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                   1️⃣ Método de Qualificação do Cliente
                 </Label>
                 <RadioGroup
+                  name="qualification"
                   value={qualificationMethod}
                   onValueChange={(v) => { console.log('[CreateClientDialog] onValueChange qualificationMethod', v); setQualificationMethod(v as 'company_fills' | 'client_fills') }}
                   className="space-y-3"
                 >
                   <div 
-                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors pointer-events-auto ${
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                       qualificationMethod === 'company_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                     }`}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => { console.log('[CreateClientDialog] click company_fills'); setQualificationMethod('company_fills') }}
-                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('company_fills')}
                   >
-                    <RadioGroupItem id={`${uid}-company-fills`} value="company_fills" onClick={() => setQualificationMethod('company_fills')} className="pointer-events-auto" />
+                    <RadioGroupItem id={`${uid}-company-fills`} value="company_fills" />
                     <Label htmlFor={`${uid}-company-fills`} className="cursor-pointer flex-1">
                       <span className="font-medium">A empresa vai qualificar o cliente</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -285,15 +282,11 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                   </div>
 
                   <div 
-                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                       qualificationMethod === 'client_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                     }`}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setQualificationMethod('client_fills')}
-                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('client_fills')}
                   >
-                    <RadioGroupItem id={`${uid}-client-fills`} value="client_fills" onClick={() => setQualificationMethod('client_fills')} />
+                    <RadioGroupItem id={`${uid}-client-fills`} value="client_fills" />
                     <Label htmlFor={`${uid}-client-fills`} className="cursor-pointer flex-1">
                       <span className="font-medium">O cliente deve preencher seus próprios dados</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -312,20 +305,17 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                       2️⃣ Envio de E-mail Automático
                     </Label>
                     <RadioGroup
+                      name="emailPreference"
                       value={sendEmailNow ? 'send_now' : 'register_only'}
                       onValueChange={(v) => { console.log('[CreateClientDialog] onValueChange sendEmailNow', v); setSendEmailNow(v === 'send_now') }}
                       className="space-y-3"
                     >
                       <div 
-                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                           sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                         }`}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSendEmailNow(true)}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSendEmailNow(true)}
                       >
-                        <RadioGroupItem id={`${uid}-send-now`} value="send_now" onClick={() => setSendEmailNow(true)} />
+                        <RadioGroupItem id={`${uid}-send-now`} value="send_now" />
                         <Label htmlFor={`${uid}-send-now`} className="cursor-pointer flex-1">
                           <span className="font-medium">Enviar e-mail automático agora</span>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -335,13 +325,9 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                       </div>
 
                       <div 
-                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                           !sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                         }`}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSendEmailNow(false)}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSendEmailNow(false)}
                       >
                          <RadioGroupItem id={`${uid}-send-later`} value="register_only" />
                          <Label htmlFor={`${uid}-send-later`} className="cursor-pointer flex-1">
