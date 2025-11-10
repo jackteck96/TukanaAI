@@ -104,21 +104,24 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
       const page = await pdf.getPage(1);
       console.log('[SignaturePlacement] Primeira página obtida');
 
-      const scale = 1.5;
+      const scale = 1.2;
       const viewport = page.getViewport({ scale });
       console.log('[SignaturePlacement] Viewport calculado:', viewport.width, 'x', viewport.height);
 
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        console.error('[SignaturePlacement] Canvas ref não disponível');
-        throw new Error('Canvas não disponível');
-      }
+      // Garantir que o canvas e o contexto 2D estão prontos (tenta algumas vezes)
+      const getCanvasContext = async (attempts = 5): Promise<{ canvas: HTMLCanvasElement; context: CanvasRenderingContext2D }> => {
+        for (let i = 0; i < attempts; i++) {
+          const c = canvasRef.current;
+          if (c) {
+            const ctx = c.getContext('2d');
+            if (ctx) return { canvas: c, context: ctx };
+          }
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        throw new Error('Contexto 2D indisponível após tentativas');
+      };
 
-      const context = canvas.getContext('2d');
-      if (!context) {
-        console.error('[SignaturePlacement] Contexto 2D não disponível');
-        throw new Error('Contexto 2D não disponível');
-      }
+      const { canvas, context } = await getCanvasContext();
 
       console.log('[SignaturePlacement] Configurando canvas...');
       canvas.width = viewport.width;
@@ -133,7 +136,7 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
       setLoading(false);
     } catch (e: any) {
       console.error('[SignaturePlacement] erro ao carregar PDF:', e);
-      setError('Falha ao carregar o documento');
+      setError(`Falha ao carregar o documento${e?.message ? ': ' + String(e.message) : ''}`);
       setLoading(false);
     }
   };
