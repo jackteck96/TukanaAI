@@ -187,10 +187,14 @@ export const StandaloneDocumentUpload = ({
         description: 'Agora você precisa assinar o documento antes de enviá-lo ao cliente',
       });
 
-      // Guardar o ID do documento criado e abrir modal de assinatura
+      // Guardar o ID do documento criado
       setCreatedDocumentId(newDocument.id);
-      setShowSignatureModal(true);
       onOpenChange(false);
+      
+      // Pequeno delay para garantir que o documento foi propagado no banco
+      setTimeout(() => {
+        setShowSignatureModal(true);
+      }, 300);
     } catch (error) {
       console.error('Erro ao enviar documento:', error);
       toast({

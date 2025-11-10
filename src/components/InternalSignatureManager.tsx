@@ -516,26 +516,31 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
   if (step === 'placement') {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <PenTool className="h-5 w-5" />
-            <span>Posicionar Assinatura</span>
+      <Card className="border-primary">
+        <CardHeader className="bg-primary/5">
+          <CardTitle className="flex items-center space-x-2 text-xl">
+            <PenTool className="h-6 w-6 text-primary" />
+            <span>1. Posicionar Assinatura</span>
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Clique no documento onde deseja que sua assinatura apareça
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           <SignaturePlacement
             documentId={documentId}
             value={placement}
             onChange={setPlacement}
+            isStandalone={isStandalone}
           />
           
           <div className="flex gap-2">
             <Button 
               onClick={() => setStep('form')}
               className="flex-1"
+              size="lg"
             >
-              Continuar
+              Continuar para Dados da Assinatura
             </Button>
             <Button 
               variant="outline"
@@ -558,8 +563,11 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
-            <span>Verificação de Código</span>
+            <span>3. Verificação de Código</span>
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Digite o código de 6 dígitos enviado para o email
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
@@ -613,9 +621,12 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <PenTool className="h-5 w-5" />
-          <span>Assinatura Digital Interna</span>
+          <Mail className="h-5 w-5" />
+          <span>2. Dados da Assinatura</span>
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-2">
+          Informe os dados do signatário para autenticação
+        </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <Alert>
@@ -650,7 +661,6 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
           <Separator />
 
         <div className="space-y-4">
-          <Label>Email para verificação</Label>
           <div className="space-y-2">
             <Label htmlFor="authContact">Email para verificação *</Label>
             <Input
@@ -664,19 +674,28 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         </div>
         </div>
 
-        <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+        <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg border">
+          <Badge variant="secondary">
             Documento: {documentName}
           </Badge>
         </div>
 
-        <Button 
-          onClick={handleSendOTP}
-          disabled={loading || !signatureData.signerName || !signatureData.signerEmail || !signatureData.authContact}
-          className="w-full"
-        >
-          {loading ? 'Enviando código...' : 'Enviar Código de Verificação'}
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setStep('placement')}
+            disabled={loading}
+          >
+            Voltar
+          </Button>
+          <Button 
+            onClick={handleSendOTP}
+            disabled={loading || !signatureData.signerName || !signatureData.signerEmail || !signatureData.authContact}
+            className="flex-1"
+          >
+            {loading ? 'Enviando código...' : 'Enviar Código de Verificação'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

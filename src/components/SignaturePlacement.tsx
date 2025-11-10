@@ -12,9 +12,10 @@ interface SignaturePlacementProps {
   documentId: string;
   onChange?: (pos: { x: number; y: number } | null) => void;
   value?: { x: number; y: number } | null;
+  isStandalone?: boolean;
 }
 
-const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onChange, value }) => {
+const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onChange, value, isStandalone = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
@@ -29,27 +30,59 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
     setLoading(true);
     setError(null);
     try {
-      // Buscar documento
-      const { data: docData } = await supabase
-        .from('documents')
-        .select('file_path')
-        .eq('id', documentId)
-        .single();
+      // Buscar documento da tabela correta
+      let filePath: string | null = null;
+      
+      if (isStandalone) {
+        const { data: standaloneDoc, error: fetchError } = await supabase
+          .from('standalone_signature_documents')
+          .select('file_path')
+          .eq('id', documentId)
+          .maybeSingle();
 
-      if (!docData?.file_path) {
-        setError('Documento não encontrado');
+        if (fetchError) {
+          console.error('[SignaturePlacement] Erro ao buscar documento standalone:', fetchError);
+          setError('Erro ao buscar documento');
+          return;
+        }
+
+        filePath = standaloneDoc?.file_path || null;
+      } else {
+        const { data: docData, error: fetchError } = await supabase
+          .from('documents')
+          .select('file_path')
+          .eq('id', documentId)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('[SignaturePlacement] Erro ao buscar documento:', fetchError);
+          setError('Erro ao buscar documento');
+          return;
+        }
+
+        filePath = docData?.file_path || null;
+      }
+
+      if (!filePath) {
+        console.error('[SignaturePlacement] Documento não encontrado. ID:', documentId, 'isStandalone:', isStandalone);
+        setError('Documento não encontrado. Aguarde um momento e tente novamente.');
         return;
       }
+
+      console.log('[SignaturePlacement] Carregando documento:', filePath);
 
       // Buscar URL assinada do storage
-      const { data: urlData } = await supabase.storage
+      const { data: urlData, error: urlError } = await supabase.storage
         .from('documents')
-        .createSignedUrl(docData.file_path, 3600);
+        .createSignedUrl(filePath, 3600);
 
-      if (!urlData?.signedUrl) {
-        setError('Erro ao carregar documento');
+      if (urlError || !urlData?.signedUrl) {
+        console.error('[SignaturePlacement] Erro ao gerar URL:', urlError);
+        setError('Erro ao carregar documento do storage');
         return;
       }
+
+      console.log('[SignaturePlacement] URL gerada com sucesso');
 
       // Baixar PDF
       const response = await fetch(urlData.signedUrl);
@@ -105,36 +138,50 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Clique no documento onde deseja posicionar a assinatura
-        </p>
-        {value && (
-          <Button variant="outline" size="sm" onClick={handleClear}>
-            <X className="h-4 w-4 mr-2" />
-            Limpar seleção
-          </Button>
-        )}
-      </div>
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-12 space-y-3">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-sm text-muted-foreground">Carregando documento...</p>
+        </div>
+      )}
 
-      <div 
-        ref={containerRef}
-        className="relative w-full h-[60vh] overflow-auto border border-border rounded-lg bg-muted/30"
-      >
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-            Carregando documento...
+      {error && (
+        <div className="flex flex-col items-center justify-center py-12 space-y-3">
+          <div className="rounded-full bg-destructive/10 p-4">
+            <X className="h-8 w-8 text-destructive" />
           </div>
-        )}
-        
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center text-destructive">
-            {error}
+          <div className="text-center space-y-1">
+            <p className="text-sm font-medium text-destructive">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={loadAndRenderPdf}
+              className="mt-2"
+            >
+              Tentar novamente
+            </Button>
           </div>
-        )}
+        </div>
+      )}
 
-        {!loading && !error && (
-          <>
+      {!loading && !error && (
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">
+              {value ? 'Posição selecionada ✓' : 'Clique no documento onde deseja posicionar a assinatura'}
+            </p>
+            {value && (
+              <Button variant="outline" size="sm" onClick={handleClear}>
+                <X className="h-4 w-4 mr-2" />
+                Limpar seleção
+              </Button>
+            )}
+          </div>
+
+          <div 
+            ref={containerRef}
+            className="relative w-full h-[60vh] overflow-auto border border-border rounded-lg bg-muted/30"
+          >
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
@@ -159,9 +206,9 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
                 </div>
               </div>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
