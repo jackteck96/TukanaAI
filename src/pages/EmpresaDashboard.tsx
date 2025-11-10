@@ -41,6 +41,8 @@ import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
 import { PdfConverter } from "@/components/PdfConverter";
 import CreateClientDialog from "@/components/CreateClientDialog";
 import { CompanyLegalDataCard } from "@/components/CompanyLegalDataCard";
+import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificationButton";
+import { LegalData } from "@/utils/legalQualification";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -48,6 +50,8 @@ const EmpresaDashboard = () => {
   const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
   const [isAdmin, setIsAdmin] = useState(false);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyLegalData, setCompanyLegalData] = useState<LegalData | null>(null);
+  const [isCompanyDataComplete, setIsCompanyDataComplete] = useState(false);
   
   useEffect(() => {
     console.log('[EmpresaDashboard] mounted', { user: user?.email });
@@ -72,7 +76,7 @@ const EmpresaDashboard = () => {
     checkRoleAndRedirect();
   }, [user, navigate]);
 
-  // Check if user is admin
+  // Check if user is admin and fetch company legal data
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user) return;
@@ -85,7 +89,47 @@ const EmpresaDashboard = () => {
           .single();
         
         setIsAdmin(profile?.role === 'admin');
-        setCompanyId(profile?.company_id || null);
+        const fetchedCompanyId = profile?.company_id || null;
+        setCompanyId(fetchedCompanyId);
+
+        // Fetch company legal data if company_id exists
+        if (fetchedCompanyId) {
+          const { data: companyData } = await supabase
+            .from('companies')
+            .select('*')
+            .eq('id', fetchedCompanyId)
+            .single();
+
+          if (companyData) {
+            // Check if data is complete
+            const isComplete = !!(
+              companyData.cnpj &&
+              companyData.name &&
+              companyData.address &&
+              companyData.legal_representative_name &&
+              companyData.legal_representative_cpf &&
+              companyData.email &&
+              companyData.phone
+            );
+
+            setIsCompanyDataComplete(isComplete);
+
+            if (isComplete) {
+              // Prepare legal data for copy button
+              const legalData: LegalData = {
+                person_type: 'pj',
+                company_name: companyData.name,
+                cnpj: companyData.cnpj,
+                address: companyData.address,
+                legal_representative_name: companyData.legal_representative_name,
+                legal_representative_cpf: companyData.legal_representative_cpf,
+                email: companyData.email,
+                phone: companyData.phone
+              };
+              setCompanyLegalData(legalData);
+            }
+          }
+        }
       } catch (error) {
         console.error('Error checking admin role:', error);
       }
@@ -241,6 +285,13 @@ const EmpresaDashboard = () => {
               </Button>
               <UserInviteSystem onInviteSent={refreshData} />
               <CreateProcessWithInvite />
+              {isCompanyDataComplete && companyLegalData && (
+                <CopyLegalQualificationButton 
+                  data={companyLegalData}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
             </div>
           </div>
         </div>
@@ -250,8 +301,8 @@ const EmpresaDashboard = () => {
         {/* Expiring Documents Alert */}
         <ExpiringDocumentsAlert />
         
-        {/* Company Legal Data Card */}
-        {companyId && (
+        {/* Company Legal Data Card - Only show if data is incomplete */}
+        {companyId && !isCompanyDataComplete && (
           <CompanyLegalDataCard companyId={companyId} />
         )}
         
