@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -229,7 +229,13 @@ export const StandaloneDocumentUpload = ({
 
   const handleContinueToSignature = () => {
     console.log('handleContinueToSignature chamado, documentId:', createdDocumentId);
-    // Não fechar o modal principal ainda - o modal de assinatura abrirá por cima
+    if (!createdDocumentId) {
+      toast({
+        title: 'Preparando documento...',
+        description: 'Aguarde alguns segundos e tente novamente.',
+      });
+      return;
+    }
     setShowSignatureModal(true);
   };
 
@@ -242,6 +248,9 @@ export const StandaloneDocumentUpload = ({
             <FileText className="h-5 w-5" />
             Enviar Documento para Assinatura
           </DialogTitle>
+          <DialogDescription>
+            Posicione sua assinatura antes de enviar ao cliente. Você poderá revisar antes de confirmar.
+          </DialogDescription>
         </DialogHeader>
 
         {loadingClients ? (
@@ -382,10 +391,7 @@ export const StandaloneDocumentUpload = ({
               >
                 Cancelar
               </Button>
-              <Button 
-                onClick={handleContinueToSignature}
-                disabled={!createdDocumentId}
-              >
+              <Button onClick={handleContinueToSignature}>
                 Seguinte: Assinar Documento
               </Button>
             </>
