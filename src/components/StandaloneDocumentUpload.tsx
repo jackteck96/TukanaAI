@@ -44,6 +44,7 @@ export const StandaloneDocumentUpload = ({
   });
   const [createdDocumentId, setCreatedDocumentId] = useState<string | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [showSuccessStep, setShowSuccessStep] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -183,18 +184,13 @@ export const StandaloneDocumentUpload = ({
       if (insertError) throw insertError;
 
       toast({
-        title: 'Documento criado',
-        description: 'Agora você precisa assinar o documento antes de enviá-lo ao cliente',
+        title: 'Documento criado com sucesso',
+        description: 'Clique em "Seguinte" para posicionar e assinar o documento',
       });
 
-      // Guardar o ID do documento criado
+      // Guardar o ID do documento criado e mostrar o passo de sucesso
       setCreatedDocumentId(newDocument.id);
-      onOpenChange(false);
-      
-      // Pequeno delay para garantir que o documento foi propagado no banco
-      setTimeout(() => {
-        setShowSignatureModal(true);
-      }, 300);
+      setShowSuccessStep(true);
     } catch (error) {
       console.error('Erro ao enviar documento:', error);
       toast({
@@ -224,7 +220,16 @@ export const StandaloneDocumentUpload = ({
     });
     setCreatedDocumentId(null);
     setShowSignatureModal(false);
+    setShowSuccessStep(false);
     onSuccess?.();
+  };
+
+  const handleContinueToSignature = () => {
+    onOpenChange(false);
+    // Pequeno delay para garantir que o documento foi propagado no banco
+    setTimeout(() => {
+      setShowSignatureModal(true);
+    }, 300);
   };
 
   return (
@@ -241,6 +246,35 @@ export const StandaloneDocumentUpload = ({
         {loadingClients ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : showSuccessStep ? (
+          <div className="space-y-6 py-6">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="rounded-full bg-green-100 p-4">
+                <svg className="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Documento Criado com Sucesso!</h3>
+                <p className="text-muted-foreground">
+                  Documento: <span className="font-medium">{formData.document_name}</span>
+                </p>
+                <p className="text-muted-foreground">
+                  Cliente: <span className="font-medium">{formData.client_name}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Próximos Passos:</h4>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                <li>Posicione sua assinatura no documento</li>
+                <li>Preencha seus dados para autenticação</li>
+                <li>Confirme com o código enviado por email</li>
+                <li>Após sua assinatura, o cliente será notificado</li>
+              </ol>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -334,14 +368,35 @@ export const StandaloneDocumentUpload = ({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} disabled={loading || loadingClients}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Upload className="mr-2 h-4 w-4" />
-            Enviar para Assinatura
-          </Button>
+          {showSuccessStep ? (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowSuccessStep(false);
+                  setCreatedDocumentId(null);
+                  onOpenChange(false);
+                  onSuccess?.();
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleContinueToSignature}>
+                Seguinte: Assinar Documento
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSubmit} disabled={loading || loadingClients}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Upload className="mr-2 h-4 w-4" />
+                Criar Documento
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

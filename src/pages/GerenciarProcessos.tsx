@@ -45,6 +45,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { updateProcessProgress } from "@/utils/processProgressUpdater";
 import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
+import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocuments";
+import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
 
 const GerenciarProcessos = () => {
   const location = useLocation();
@@ -658,6 +660,11 @@ const GerenciarProcessos = () => {
       </header>
 
       <div className="p-6 space-y-6">
+        {/* Documentos Pendentes de Assinatura */}
+        <PendingSignatureDocuments />
+
+        {/* Documentos Assinados */}
+        <StandaloneSignedDocuments />
         
         {/* Processes List */}
         <div className="space-y-6">

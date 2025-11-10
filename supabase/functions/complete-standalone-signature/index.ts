@@ -63,15 +63,15 @@ serve(async (req) => {
         .eq('id', document.company_id)
         .single();
 
-      // Notificar cliente
+      // Notificar cliente com detalhes sobre o documento assinado
       await supabaseClient
         .from('client_notifications')
         .insert({
           company_id: document.company_id,
           client_email: document.client_email,
           notification_type: 'signatures_complete',
-          title: `Documento totalmente assinado`,
-          message: `O documento "${document.document_name}" foi assinado por todas as partes e está disponível para download.`
+          title: `✅ Documento Totalmente Assinado`,
+          message: `O documento "${document.document_name}" foi assinado por todas as partes e está disponível para download na aba de Assinaturas.`
         });
 
       // Enviar emails para ambas as partes
@@ -119,8 +119,8 @@ serve(async (req) => {
             company_id: document.company_id,
             client_email: document.client_email,
             notification_type: 'signature_request',
-            title: `Documento aguardando sua assinatura`,
-            message: `O documento "${document.document_name}" foi enviado por ${company?.name || 'Empresa'} e aguarda sua assinatura.`
+            title: `📝 Documento Aguardando Sua Assinatura`,
+            message: `O documento "${document.document_name}" foi enviado por ${company?.name || 'Empresa'} e aguarda sua assinatura. Acesse a aba de Assinaturas para assinar.`
           });
 
         await supabaseClient.functions.invoke('send-unified-email', {
