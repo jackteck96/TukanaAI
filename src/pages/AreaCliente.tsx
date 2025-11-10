@@ -422,7 +422,10 @@ const AreaCliente = () => {
   const activeProcesses = loadedProcesses;
 
   // Usar apenas documentos reais do processo selecionado
-  const recentDocuments = selectedProcess ? (processDocuments[selectedProcess.id] || []) : [];
+  // Se não há processo selecionado, mostrar documentos de todos os processos
+  const recentDocuments = selectedProcess 
+    ? (processDocuments[selectedProcess.id] || []) 
+    : Object.values(processDocuments).flat();
 
   // Buscar documentos pendentes reais de todos os processos
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
@@ -597,13 +600,14 @@ const AreaCliente = () => {
   };
 
   const handleViewDocuments = (category: string) => {
-    if (category === "Pendentes de Envio") {
-      setSelectedDocumentCategory(category);
-      setIsDocumentsModalOpen(true);
-    } else {
-      setSelectedDocumentCategory(category);
-      setIsDocumentsModalOpen(true);
+    // Verificar se há processos carregados
+    if (loadedProcesses.length === 0) {
+      toast.error('Nenhum processo encontrado. Aguarde os processos serem atribuídos.');
+      return;
     }
+    
+    setSelectedDocumentCategory(category);
+    setIsDocumentsModalOpen(true);
   };
 
   const getDocumentsByCategory = (category: string) => {
