@@ -230,7 +230,9 @@ export type Database = {
           company_id: string
           company_name: string
           created_at: string
+          created_by: string | null
           email: string
+          email_preference: string | null
           email_sent: boolean
           email_sent_at: string | null
           id: string
@@ -254,7 +256,9 @@ export type Database = {
           company_id: string
           company_name: string
           created_at?: string
+          created_by?: string | null
           email: string
+          email_preference?: string | null
           email_sent?: boolean
           email_sent_at?: string | null
           id?: string
@@ -278,7 +282,9 @@ export type Database = {
           company_id?: string
           company_name?: string
           created_at?: string
+          created_by?: string | null
           email?: string
+          email_preference?: string | null
           email_sent?: boolean
           email_sent_at?: string | null
           id?: string
