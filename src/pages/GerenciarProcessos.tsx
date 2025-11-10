@@ -643,23 +643,21 @@ const GerenciarProcessos = () => {
                 <p className="text-muted-foreground">Acompanhe o status dos documentos e comunique-se com os clientes</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsStandaloneUploadOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Documento para Assinatura
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="p-6 space-y-6">
-        {/* Ações Rápidas */}
-        <div className="flex items-center gap-3">
-          <CreateProcessWithInvite onProcessCreated={fetchProcesses} />
-          <Button
-            variant="outline"
-            onClick={() => setIsStandaloneUploadOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Documento para Assinatura
-          </Button>
-        </div>
         
         {/* Processes List */}
         <div className="space-y-6">
