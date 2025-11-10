@@ -459,15 +459,15 @@ const ProcessEditDialog = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
               Editar Processo
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="flex-1 overflow-y-auto space-y-6 pr-2">
             {/* Informações Básicas */}
             <Card>
               <CardHeader>
@@ -477,23 +477,25 @@ const ProcessEditDialog = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="project_name">Nome do Projeto</Label>
-                    <Input
-                      id="project_name"
-                      value={formData.project_name}
-                      onChange={(e) => setFormData({...formData, project_name: e.target.value})}
-                      placeholder="Digite o nome do projeto"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="project_name">Nome do Projeto</Label>
+                  <Input
+                    id="project_name"
+                    value={formData.project_name}
+                    onChange={(e) => setFormData({...formData, project_name: e.target.value})}
+                    placeholder="Digite o nome do projeto"
+                  />
+                </div>
 
+                <div className="w-full">
                   <ProcessClientsManager
                     clients={processClients}
                     onChange={setProcessClients}
                     companyId={processData?.company_id}
                   />
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="process_type">Tipo de Processo</Label>
                     <Select
@@ -675,7 +677,7 @@ const ProcessEditDialog = ({
             </Card>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
               Cancelar
             </Button>
