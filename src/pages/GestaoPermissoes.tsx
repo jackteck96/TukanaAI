@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Loader2, Shield } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, Shield, Users } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import UserInviteSystem from '@/components/UserInviteSystem';
 import { CollaboratorPermissionsModal } from '@/components/CollaboratorPermissionsModal';
 
 interface Collaborator {
@@ -38,6 +40,7 @@ export default function GestaoPermissoes() {
   const [selectedCollaborator, setSelectedCollaborator] = useState<Collaborator | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [clientEmail, setClientEmail] = useState<string | null>(null);
+  const [quickSelectedId, setQuickSelectedId] = useState<string | null>(null);
 
   const isCompanyAdmin = primaryRole === 'company_admin';
   const isClient = primaryRole === 'client';
@@ -164,6 +167,7 @@ export default function GestaoPermissoes() {
       }
 
       setCollaborators(collaboratorsData);
+      console.log('[GestaoPermissoes] colaboradores:', collaboratorsData.length);
 
       // Carregar permissões para cada colaborador
       const permissionsMap: Record<string, PermissionData> = {};
@@ -270,6 +274,61 @@ export default function GestaoPermissoes() {
             </p>
           </div>
         </div>
+
+        {/* Ações Rápidas */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+            <CardDescription>Convide, gerencie e edite permissões rapidamente</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Convidar Colaborador */}
+              <UserInviteSystem onInviteSent={loadData} />
+
+              {/* Gerenciar Colaboradores */}
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" onClick={() => navigate('/gestao-colaboradores')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Gerenciar Colaboradores
+                </Button>
+              </div>
+
+              {/* Selecionar colaborador para editar permissões */}
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Selecionar Colaborador</div>
+                <Select value={quickSelectedId || undefined} onValueChange={(v) => setQuickSelectedId(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={collaborators.length === 0 ? 'Nenhum colaborador' : 'Escolha um colaborador'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {collaborators.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        Nenhum colaborador encontrado
+                      </div>
+                    ) : (
+                      collaborators.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.full_name || c.email}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  disabled={!quickSelectedId}
+                  onClick={() => {
+                    const collab = collaborators.find((c) => c.id === quickSelectedId);
+                    if (collab) handleEditPermissions(collab);
+                  }}
+                >
+                  Editar Permissões
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
