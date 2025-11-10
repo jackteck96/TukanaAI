@@ -1,11 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
@@ -31,12 +39,21 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/auth">
-              <Button variant="outline">Login</Button>
-            </Link>
-            <a href="#precos">
-              <Button variant="hero">Começar Agora</Button>
-            </a>
+            {user ? (
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="outline">Login</Button>
+                </Link>
+                <a href="#precos">
+                  <Button variant="hero">Começar Agora</Button>
+                </a>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -62,12 +79,21 @@ const Header = () => {
                 Preços
               </a>
               <div className="flex flex-col space-y-2 pt-4">
-                <Link to="/auth">
-                  <Button variant="outline" className="w-full">Login</Button>
-                </Link>
-                <a href="#precos">
-                  <Button variant="hero" className="w-full">Começar Agora</Button>
-                </a>
+                {user ? (
+                  <Button variant="outline" className="w-full" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </Button>
+                ) : (
+                  <>
+                    <Link to="/auth">
+                      <Button variant="outline" className="w-full">Login</Button>
+                    </Link>
+                    <a href="#precos">
+                      <Button variant="hero" className="w-full">Começar Agora</Button>
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           </nav>
