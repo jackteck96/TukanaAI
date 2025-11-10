@@ -1522,6 +1522,71 @@ export type Database = {
         }
         Relationships: []
       }
+      standalone_signature_documents: {
+        Row: {
+          client_email: string
+          client_name: string
+          company_id: string
+          created_at: string
+          document_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          notes: string | null
+          signature_deadline: string | null
+          signature_hash: string | null
+          signature_status: string
+          signed_at: string | null
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          client_email: string
+          client_name: string
+          company_id: string
+          created_at?: string
+          document_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          notes?: string | null
+          signature_deadline?: string | null
+          signature_hash?: string | null
+          signature_status?: string
+          signed_at?: string | null
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          client_email?: string
+          client_name?: string
+          company_id?: string
+          created_at?: string
+          document_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          notes?: string | null
+          signature_deadline?: string | null
+          signature_hash?: string | null
+          signature_status?: string
+          signed_at?: string | null
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standalone_signature_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           company_id: string

@@ -44,6 +44,8 @@ import { calculateProgressFromStatus } from "@/utils/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { updateProcessProgress } from "@/utils/processProgressUpdater";
+import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
+
 const GerenciarProcessos = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,6 +66,7 @@ const GerenciarProcessos = () => {
   const [selectedProcessForAnalysis, setSelectedProcessForAnalysis] = useState<any>(null);
   const [isEditProcessModalOpen, setIsEditProcessModalOpen] = useState(false);
   const [selectedProcessForEdit, setSelectedProcessForEdit] = useState<string | null>(null);
+  const [isStandaloneUploadOpen, setIsStandaloneUploadOpen] = useState(false);
   const { toast } = useToast();
 
   // Check if we have a specific process ID in the URL
@@ -640,6 +643,16 @@ const GerenciarProcessos = () => {
                 <p className="text-muted-foreground">Acompanhe o status dos documentos e comunique-se com os clientes</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsStandaloneUploadOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Documento para Assinatura
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -832,6 +845,18 @@ const GerenciarProcessos = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Standalone Document Upload Modal */}
+        <StandaloneDocumentUpload
+          open={isStandaloneUploadOpen}
+          onOpenChange={setIsStandaloneUploadOpen}
+          onSuccess={() => {
+            toast({
+              title: 'Sucesso',
+              description: 'Documento enviado para assinatura'
+            });
+          }}
+        />
       </div>
     </div>
   );
