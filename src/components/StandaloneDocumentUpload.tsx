@@ -209,7 +209,7 @@ export const StandaloneDocumentUpload = ({
       description: 'Documento assinado e enviado para o cliente com sucesso'
     });
     
-    // Reset form
+    // Reset form e fechar todos os modais
     setFormData({
       client_email: '',
       client_name: '',
@@ -221,15 +221,13 @@ export const StandaloneDocumentUpload = ({
     setCreatedDocumentId(null);
     setShowSignatureModal(false);
     setShowSuccessStep(false);
+    onOpenChange(false); // Fechar o modal principal também
     onSuccess?.();
   };
 
   const handleContinueToSignature = () => {
-    onOpenChange(false);
-    // Pequeno delay para garantir que o documento foi propagado no banco
-    setTimeout(() => {
-      setShowSignatureModal(true);
-    }, 300);
+    // Não fechar o modal principal ainda - o modal de assinatura abrirá por cima
+    setShowSignatureModal(true);
   };
 
   return (
