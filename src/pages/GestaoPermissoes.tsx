@@ -56,27 +56,56 @@ export default function GestaoPermissoes() {
       let contextClientEmail: string | undefined;
 
       if (isCompanyAdmin && companyId) {
-        // Carregar colaboradores da empresa via user_roles
+        // Carregar colaboradores da empresa via user_roles e collaborator_permissions
         contextCompanyId = companyId;
-        
-        // Buscar colaboradores via user_roles
+
+        // 1) Buscar colaboradores via user_roles (admins e colaboradores)
         const { data: rolesData, error: rolesError } = await supabase
           .from('user_roles')
-          .select('user_id')
-          .eq('role', 'company_collaborator')
-          .eq('company_id', companyId);
+          .select('user_id, role')
+          .eq('company_id', companyId)
+          .in('role', ['company_admin', 'company_collaborator']);
 
         if (rolesError) throw rolesError;
 
-        if (rolesData && rolesData.length > 0) {
-          const userIds = rolesData.map(r => r.user_id);
+        // Mapa de roles por usuário
+        const rolesByUser: Record<string, string[]> = {};
+        const userIdsFromRoles = (rolesData || []).map((r: any) => {
+          rolesByUser[r.user_id] = rolesByUser[r.user_id]
+            ? [...rolesByUser[r.user_id], r.role]
+            : [r.role];
+          return r.user_id as string;
+        });
+
+        // 2) Buscar usuários que já possuem registros em collaborator_permissions
+        const { data: permsUsersData, error: permsUsersError } = await supabase
+          .from('collaborator_permissions')
+          .select('user_id')
+          .eq('company_id', companyId);
+        if (permsUsersError) throw permsUsersError;
+        const userIdsFromPerms = (permsUsersData || []).map((p: any) => p.user_id as string);
+
+        // 3) Unificar IDs (user_roles ∪ collaborator_permissions)
+        const uniqueUserIds = Array.from(new Set([...
+          userIdsFromRoles,
+          ...userIdsFromPerms
+        ]));
+
+        if (uniqueUserIds.length > 0) {
           const { data: profilesData, error: profilesError } = await supabase
             .from('profiles')
-            .select('id, email, full_name, role')
-            .in('id', userIds);
+            .select('id, email, full_name')
+            .in('id', uniqueUserIds);
 
           if (profilesError) throw profilesError;
-          collaboratorsData = profilesData || [];
+
+          // Anexar informação de roles (para decidir acesso total por padrão para admins)
+          collaboratorsData = (profilesData || []).map((p: any) => ({
+            id: p.id,
+            email: p.email,
+            full_name: p.full_name,
+            role: (rolesByUser[p.id] || []).join(',')
+          }));
         } else {
           collaboratorsData = [];
         }
@@ -153,16 +182,17 @@ export default function GestaoPermissoes() {
         if (permData) {
           permissionsMap[collab.id] = {
             access_type: permData.access_type as 'full' | 'limited',
-            process_count: permData.access_type === 'full' 
+            process_count: (permData.access_type as 'full' | 'limited') === 'full'
               ? (totalCount || 0)
               : (permData.collaborator_process_access?.[0]?.count || 0),
             total_processes: totalCount || 0
           };
         } else {
-          // Sem permissão configurada
+          // Sem permissão configurada: admins da empresa têm acesso total por padrão
+          const isAdminCollab = (collab.role || '').includes('company_admin');
           permissionsMap[collab.id] = {
-            access_type: 'limited',
-            process_count: 0,
+            access_type: isAdminCollab && contextCompanyId ? 'full' : 'limited',
+            process_count: isAdminCollab && contextCompanyId ? (totalCount || 0) : 0,
             total_processes: totalCount || 0
           };
         }
