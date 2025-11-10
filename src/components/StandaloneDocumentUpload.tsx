@@ -54,23 +54,33 @@ export const StandaloneDocumentUpload = ({
     setLoadingClients(true);
     try {
       // Buscar company_id do usuário
-      const { data: userData } = await supabase
+      const { data: userData, error: userError } = await supabase
         .from('user_roles')
         .select('company_id')
         .eq('user_id', user.id)
         .in('role', ['company_admin', 'company_collaborator'])
         .single();
 
+      if (userError) {
+        console.error('Erro ao buscar company_id:', userError);
+        throw userError;
+      }
+
       if (userData?.company_id) {
         setCompanyId(userData.company_id);
 
         // Buscar clientes únicos dos processos da empresa
-        const { data: processData } = await supabase
+        const { data: processData, error: processError } = await supabase
           .from('processes')
           .select('client_email, client_name')
           .eq('company_id', userData.company_id);
 
-        if (processData) {
+        if (processError) {
+          console.error('Erro ao buscar processos:', processError);
+          throw processError;
+        }
+
+        if (processData && processData.length > 0) {
           // Remover duplicatas por email
           const uniqueClients = Array.from(
             new Map(
@@ -78,6 +88,14 @@ export const StandaloneDocumentUpload = ({
             ).values()
           );
           setClients(uniqueClients);
+          console.log('Clientes carregados:', uniqueClients.length);
+        } else {
+          setClients([]);
+          toast({
+            title: 'Aviso',
+            description: 'Nenhum cliente encontrado. Você precisa ter processos cadastrados com clientes primeiro.',
+            variant: 'default'
+          });
         }
       }
     } catch (error) {
@@ -206,18 +224,34 @@ export const StandaloneDocumentUpload = ({
               <Select
                 value={formData.client_email}
                 onValueChange={handleClientChange}
+                disabled={clients.length === 0}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um cliente" />
+                  <SelectValue placeholder={
+                    clients.length === 0 
+                      ? "Nenhum cliente disponível" 
+                      : "Selecione um cliente"
+                  } />
                 </SelectTrigger>
                 <SelectContent>
-                  {clients.map(client => (
-                    <SelectItem key={client.client_email} value={client.client_email}>
-                      {client.client_name} ({client.client_email})
-                    </SelectItem>
-                  ))}
+                  {clients.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground text-center">
+                      Nenhum cliente encontrado
+                    </div>
+                  ) : (
+                    clients.map(client => (
+                      <SelectItem key={client.client_email} value={client.client_email}>
+                        {client.client_name} ({client.client_email})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              {clients.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Para enviar documentos, você precisa ter pelo menos um processo cadastrado com um cliente.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
