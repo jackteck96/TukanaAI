@@ -79,60 +79,45 @@ export default function GestaoPermissoes() {
       let contextCompanyId: string | undefined;
       let contextClientEmail: string | undefined;
 
-      if (isCompanyAdmin && effectiveCompanyId) {
+      if (effectiveCompanyId) {
         // Carregar colaboradores da empresa via user_roles e collaborator_permissions
         contextCompanyId = effectiveCompanyId;
 
-        // 1) Buscar colaboradores via user_roles (apenas company_collaborator)
-        const { data: rolesData, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('user_id, role')
-          .eq('company_id', effectiveCompanyId)
-          .eq('role', 'company_collaborator');
+        // 1) Buscar todos os colaboradores da empresa a partir de profiles (igual Gestão de Colaboradores)
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .eq('company_id', contextCompanyId)
+          .neq('id', user.id);
 
-        if (rolesError) throw rolesError;
+        if (profilesError) throw profilesError;
 
-        // Mapa de roles por usuário e conjunto de IDs
-        const rolesByUser: Record<string, string[]> = {};
-        const uniqueUserIds = (rolesData || []).map((r: any) => {
-          rolesByUser[r.user_id] = rolesByUser[r.user_id]
-            ? [...rolesByUser[r.user_id], r.role]
-            : [r.role];
-          return r.user_id as string;
-        });
+        const listedUserIds = (profilesData || []).map((p: any) => p.id as string);
 
-        if (uniqueUserIds.length > 0) {
-          const { data: profilesData, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, email, full_name')
-            .in('id', uniqueUserIds);
-
-          if (profilesError) throw profilesError;
-
-          // Anexar informação de roles (para decidir acesso total por padrão para admins)
-          collaboratorsData = (profilesData || []).map((p: any) => ({
-            id: p.id,
-            email: p.email,
-            full_name: p.full_name,
-            role: (rolesByUser[p.id] || []).join(',')
-          }));
-        } else {
-          // Fallback: incluir perfis vinculados à empresa (casos legados sem user_roles/perms)
-          const { data: profilesData, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, email, full_name')
+        // 2) Carregar roles para esses usuários (admin e collaborator) para manter compatibilidade
+        let rolesByUser: Record<string, string[]> = {};
+        if (listedUserIds.length > 0) {
+          const { data: rolesData, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('user_id, role')
             .eq('company_id', contextCompanyId)
-            .neq('id', user.id);
+            .in('role', ['company_admin', 'company_collaborator'])
+            .in('user_id', listedUserIds);
 
-          if (profilesError) throw profilesError;
+          if (rolesError) throw rolesError;
 
-          collaboratorsData = (profilesData || []).map((p: any) => ({
-            id: p.id,
-            email: p.email,
-            full_name: p.full_name,
-            role: (rolesByUser[p.id] || []).join(',')
-          }));
+          rolesByUser = (rolesData || []).reduce((acc: Record<string, string[]>, r: any) => {
+            acc[r.user_id] = acc[r.user_id] ? [...acc[r.user_id], r.role] : [r.role];
+            return acc;
+          }, {});
         }
+
+        collaboratorsData = (profilesData || []).map((p: any) => ({
+          id: p.id,
+          email: p.email,
+          full_name: p.full_name,
+          role: (rolesByUser[p.id] || []).join(',')
+        }));
       } else if (isClient) {
         // Carregar email do cliente e seus colaboradores
         const { data: profileData } = await supabase
