@@ -56,16 +56,30 @@ export default function GestaoPermissoes() {
       let contextClientEmail: string | undefined;
 
       if (isCompanyAdmin && companyId) {
-        // Carregar colaboradores da empresa
+        // Carregar colaboradores da empresa via user_roles
         contextCompanyId = companyId;
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, role')
-          .eq('company_id', companyId)
-          .in('role', ['staff', 'lawyer']);
+        
+        // Buscar colaboradores via user_roles
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'company_collaborator')
+          .eq('company_id', companyId);
 
-        if (error) throw error;
-        collaboratorsData = data || [];
+        if (rolesError) throw rolesError;
+
+        if (rolesData && rolesData.length > 0) {
+          const userIds = rolesData.map(r => r.user_id);
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, role')
+            .in('id', userIds);
+
+          if (profilesError) throw profilesError;
+          collaboratorsData = profilesData || [];
+        } else {
+          collaboratorsData = [];
+        }
       } else if (isClient) {
         // Carregar email do cliente e seus colaboradores
         const { data: profileData } = await supabase
