@@ -43,9 +43,23 @@ export default function GestaoPermissoes() {
   const isClient = primaryRole === 'client';
 
   const getDashboardRoute = () => {
-    if (primaryRole === 'platform_admin') return '/admin';
-    if (primaryRole === 'client' || primaryRole === 'client_collaborator') return '/cliente';
-    return '/empresa'; // company_admin, company_collaborator, etc.
+    // Se é admin da empresa ou colaborador E tem company_id, vai para /empresa
+    if ((primaryRole === 'company_admin' || primaryRole === 'company_collaborator') && companyId) {
+      return '/empresa';
+    }
+    // Se é cliente ou colaborador de cliente, vai para /cliente
+    if (primaryRole === 'client' || primaryRole === 'client_collaborator') {
+      return '/cliente';
+    }
+    // Se é admin da plataforma (sem company_id), vai para /admin
+    if (primaryRole === 'platform_admin' && !companyId) {
+      return '/admin';
+    }
+    // Fallback: se não se encaixa em nenhum, tenta decidir com base no contexto
+    if (companyId) return '/empresa';
+    if (clientEmail) return '/cliente';
+    // Último fallback
+    return '/empresa';
   };
 
   useEffect(() => {
