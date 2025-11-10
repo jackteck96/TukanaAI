@@ -43,7 +43,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   documentName,
   onSigned
 }) => {
-  const [step, setStep] = useState<'form' | 'otp' | 'success'>('form');
+  const [step, setStep] = useState<'placement' | 'form' | 'otp' | 'success'>('placement');
   const [loading, setLoading] = useState(false);
   const [signatureData, setSignatureData] = useState<SignatureData>({
     signerName: '',
@@ -347,7 +347,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   };
 
   const handleNewSignature = () => {
-    setStep('form');
+    setStep('placement');
     setSignatureData({
       signerName: '',
       signerEmail: '',
@@ -437,6 +437,44 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
     );
   }
 
+  if (step === 'placement') {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <PenTool className="h-5 w-5" />
+            <span>Posicionar Assinatura</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SignaturePlacement
+            documentId={documentId}
+            value={placement}
+            onChange={setPlacement}
+          />
+          
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setStep('form')}
+              className="flex-1"
+            >
+              Continuar
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setPlacement(null);
+                setStep('form');
+              }}
+            >
+              Pular (usar posição padrão)
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (step === 'otp') {
     return (
       <Card>
@@ -478,7 +516,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => setStep('form')}
+              onClick={() => setStep('placement')}
               disabled={loading}
             >
               Voltar
