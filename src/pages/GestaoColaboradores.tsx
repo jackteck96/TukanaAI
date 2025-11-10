@@ -168,22 +168,65 @@ const GestaoColaboradores = () => {
     if (!company) return;
 
     try {
-      // Remove o vínculo do colaborador com a empresa na tabela user_roles
-      const { data: deleted, error } = await supabase
+      // 1. Deletar permissões do colaborador
+      const { error: permError } = await supabase
+        .from('collaborator_permissions')
+        .delete()
+        .eq('user_id', memberId)
+        .eq('company_id', company.id);
+
+      if (permError) {
+        console.error('Erro ao deletar permissões:', permError);
+      }
+
+      // 2. Deletar acessos a processos específicos
+      const { data: permissions } = await supabase
+        .from('collaborator_permissions')
+        .select('id')
+        .eq('user_id', memberId)
+        .eq('company_id', company.id);
+
+      if (permissions && permissions.length > 0) {
+        const permissionIds = permissions.map(p => p.id);
+        await supabase
+          .from('collaborator_process_access')
+          .delete()
+          .in('permission_id', permissionIds);
+      }
+
+      // 3. Deletar vínculo na tabela user_roles
+      const { error: roleError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', memberId)
-        .eq('company_id', company.id)
-        .select('id');
+        .eq('company_id', company.id);
 
-      if (error) throw error;
+      if (roleError) throw roleError;
 
-      if (!deleted || deleted.length === 0) {
-        toast.error('Sem permissão para remover ou membro não encontrado');
-        return;
+      // 4. Verificar se usuário ainda tem outros vínculos
+      const { data: remainingRoles, error: checkError } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', memberId)
+        .limit(1);
+
+      if (checkError) {
+        console.error('Erro ao verificar roles restantes:', checkError);
       }
 
-      toast.success(`${memberEmail} foi removido da equipe`);
+      // 5. Se não tiver outros vínculos, deletar o profile
+      if (!remainingRoles || remainingRoles.length === 0) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', memberId);
+
+        if (profileError) {
+          console.error('Erro ao deletar profile:', profileError);
+        }
+      }
+
+      toast.success(`${memberEmail} foi removido permanentemente`);
       await fetchTeamMembers();
       await refreshMetrics();
     } catch (error) {
