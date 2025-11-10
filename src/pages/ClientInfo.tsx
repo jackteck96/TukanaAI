@@ -21,6 +21,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import PartnerDocumentsViewer from "@/components/PartnerDocumentsViewer";
 import { useAuth } from "@/contexts/AuthContext";
+import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificationButton";
+import { LegalData } from "@/utils/legalQualification";
 
 interface ClientProcess {
   id: string;
@@ -42,11 +44,29 @@ interface ClientInfo {
   processes: ClientProcess[];
 }
 
+interface ClientLegalData {
+  person_type: 'pf' | 'pj';
+  client_name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  cpf?: string;
+  rg?: string;
+  nationality?: string;
+  marital_status?: string;
+  profession?: string;
+  cnpj?: string;
+  company_name?: string;
+  legal_representative_name?: string;
+  legal_representative_cpf?: string;
+}
+
 const ClientInfo = () => {
   const { email } = useParams<{ email: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [clientData, setClientData] = useState<ClientInfo | null>(null);
+  const [legalData, setLegalData] = useState<ClientLegalData | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -82,6 +102,17 @@ const ClientInfo = () => {
   const fetchClientData = async (clientEmail: string) => {
     try {
       setLoading(true);
+      
+      // Fetch legal data for the client
+      const { data: legalDataResult, error: legalError } = await supabase
+        .from('client_legal_data')
+        .select('*')
+        .eq('client_email', clientEmail)
+        .maybeSingle();
+      
+      if (!legalError && legalDataResult) {
+        setLegalData(legalDataResult as ClientLegalData);
+      }
       
       // Fetch all processes for this client
       const { data: processesData, error } = await supabase
@@ -222,10 +253,18 @@ const ClientInfo = () => {
           {/* Personal Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Informações Pessoais
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Informações Pessoais
+                </CardTitle>
+                {legalData && (
+                  <CopyLegalQualificationButton 
+                    data={legalData as LegalData}
+                    size="sm"
+                  />
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -251,6 +290,12 @@ const ClientInfo = () => {
                 </div>
                 <p className="text-sm">{clientData.cpf_cnpj || 'Não informado'}</p>
               </div>
+              
+              {!legalData && (
+                <div className="pt-2 text-xs text-muted-foreground border-t">
+                  <p>💡 Cadastre os dados completos do cliente para habilitar a cópia da qualificação jurídica.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

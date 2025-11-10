@@ -173,6 +173,80 @@ export type Database = {
         }
         Relationships: []
       }
+      client_legal_data: {
+        Row: {
+          address: string | null
+          client_email: string
+          client_name: string
+          cnpj: string | null
+          company_id: string | null
+          company_name: string | null
+          cpf: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          legal_representative_cpf: string | null
+          legal_representative_name: string | null
+          marital_status: string | null
+          nationality: string | null
+          person_type: string
+          phone: string | null
+          profession: string | null
+          rg: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          client_email: string
+          client_name: string
+          cnpj?: string | null
+          company_id?: string | null
+          company_name?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          legal_representative_cpf?: string | null
+          legal_representative_name?: string | null
+          marital_status?: string | null
+          nationality?: string | null
+          person_type?: string
+          phone?: string | null
+          profession?: string | null
+          rg?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          client_email?: string
+          client_name?: string
+          cnpj?: string | null
+          company_id?: string | null
+          company_name?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          legal_representative_cpf?: string | null
+          legal_representative_name?: string | null
+          marital_status?: string | null
+          nationality?: string | null
+          person_type?: string
+          phone?: string | null
+          profession?: string | null
+          rg?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_legal_data_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_notifications: {
         Row: {
           client_email: string
@@ -380,26 +454,44 @@ export type Database = {
       }
       companies: {
         Row: {
+          address: string | null
+          cnpj: string | null
           created_at: string
+          email: string | null
           id: string
+          legal_representative_cpf: string | null
+          legal_representative_name: string | null
           logo_url: string | null
           name: string
+          phone: string | null
           slug: string
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          cnpj?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          legal_representative_cpf?: string | null
+          legal_representative_name?: string | null
           logo_url?: string | null
           name: string
+          phone?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          cnpj?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          legal_representative_cpf?: string | null
+          legal_representative_name?: string | null
           logo_url?: string | null
           name?: string
+          phone?: string | null
           slug?: string
           updated_at?: string
         }

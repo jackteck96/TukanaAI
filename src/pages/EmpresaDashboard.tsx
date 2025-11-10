@@ -40,12 +40,14 @@ import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
 import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
 import { PdfConverter } from "@/components/PdfConverter";
 import CreateClientDialog from "@/components/CreateClientDialog";
+import { CompanyLegalDataCard } from "@/components/CompanyLegalDataCard";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [companyId, setCompanyId] = useState<string | null>(null);
   
   useEffect(() => {
     console.log('[EmpresaDashboard] mounted', { user: user?.email });
@@ -78,11 +80,12 @@ const EmpresaDashboard = () => {
       try {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, company_id')
           .eq('id', user.id)
           .single();
         
         setIsAdmin(profile?.role === 'admin');
+        setCompanyId(profile?.company_id || null);
       } catch (error) {
         console.error('Error checking admin role:', error);
       }
@@ -246,6 +249,11 @@ const EmpresaDashboard = () => {
       <div className="p-6 space-y-6">
         {/* Expiring Documents Alert */}
         <ExpiringDocumentsAlert />
+        
+        {/* Company Legal Data Card */}
+        {companyId && (
+          <CompanyLegalDataCard companyId={companyId} />
+        )}
         
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
