@@ -81,43 +81,45 @@ export default function GestaoPermissoes() {
       let rolesByUser: Record<string, string[]> = {};
 
       if (effectiveCompanyId) {
-        // Carregar colaboradores da empresa via profiles (igual Gestão de Colaboradores)
+        // Carregar colaboradores EXATAMENTE como na Gestão de Colaboradores
         contextCompanyId = effectiveCompanyId;
 
-        // 1) Buscar todos os colaboradores atuais da empresa a partir de profiles
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, email, full_name')
+        // 1) Buscar apenas colaboradores ativos via user_roles
+        const { data: roleLinks, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
           .eq('company_id', contextCompanyId)
-          .neq('id', user.id);
+          .eq('role', 'company_collaborator')
+          .neq('user_id', user.id);
 
-        if (profilesError) throw profilesError;
+        if (rolesError) throw rolesError;
 
-        const listedUserIds = (profilesData || []).map((p: any) => p.id as string);
+        if (!roleLinks || roleLinks.length === 0) {
+          collaboratorsData = [];
+        } else {
+          const listedUserIds = roleLinks.map((r: any) => r.user_id as string);
 
-        // 2) Carregar roles para esses usuários (admin e collaborator) para manter compatibilidade
-        if (listedUserIds.length > 0) {
-          const { data: rolesData, error: rolesError } = await supabase
-            .from('user_roles')
-            .select('user_id, role')
-            .eq('company_id', contextCompanyId)
-            .in('role', ['company_admin', 'company_collaborator'])
-            .in('user_id', listedUserIds);
+          // 2) Buscar profiles apenas dos colaboradores ativos
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, email, full_name')
+            .in('id', listedUserIds);
 
-          if (rolesError) throw rolesError;
+          if (profilesError) throw profilesError;
 
-          rolesByUser = (rolesData || []).reduce((acc: Record<string, string[]>, r: any) => {
-            acc[r.user_id] = acc[r.user_id] ? [...acc[r.user_id], r.role] : [r.role];
+          // 3) Montar rolesByUser para compatibilidade
+          rolesByUser = roleLinks.reduce((acc: Record<string, string[]>, r: any) => {
+            acc[r.user_id] = [r.role];
             return acc;
           }, {});
-        }
 
-        collaboratorsData = (profilesData || []).map((p: any) => ({
-          id: p.id,
-          email: p.email,
-          full_name: p.full_name,
-          role: (rolesByUser[p.id] || []).join(',')
-        }));
+          collaboratorsData = (profilesData || []).map((p: any) => ({
+            id: p.id,
+            email: p.email,
+            full_name: p.full_name,
+            role: (rolesByUser[p.id] || []).join(',')
+          }));
+        }
 
       } else if (isClient) {
         // Carregar email do cliente e seus colaboradores
