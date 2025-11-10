@@ -42,6 +42,12 @@ export default function GestaoPermissoes() {
   const isCompanyAdmin = primaryRole === 'company_admin';
   const isClient = primaryRole === 'client';
 
+  const getDashboardRoute = () => {
+    if (primaryRole === 'platform_admin') return '/admin';
+    if (primaryRole === 'client' || primaryRole === 'client_collaborator') return '/cliente';
+    return '/empresa'; // company_admin, company_collaborator, etc.
+  };
+
   useEffect(() => {
     loadData();
   }, [user, companyId, primaryRole]);
@@ -236,11 +242,12 @@ export default function GestaoPermissoes() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
+            variant="outline"
+            onClick={() => navigate(getDashboardRoute())}
+            className="flex items-center gap-2"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Permissões de Colaboradores</h1>
