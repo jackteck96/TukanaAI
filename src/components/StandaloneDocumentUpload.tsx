@@ -293,6 +293,18 @@ export const StandaloneDocumentUpload = ({
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
+        ) : showSignatureModal && createdDocumentId ? (
+          <div className="py-2">
+            <InternalSignatureManager
+              documentId={createdDocumentId}
+              documentName={formData.document_name}
+              isStandalone={true}
+              onSuccess={handleSignatureComplete}
+              onClose={() => {
+                setShowSignatureModal(false);
+              }}
+            />
+          </div>
         ) : showSuccessStep ? (
           <div className="space-y-6 py-6">
             <div className="flex flex-col items-center text-center space-y-4">
@@ -414,53 +426,40 @@ export const StandaloneDocumentUpload = ({
         )}
 
         <DialogFooter>
-          {showSuccessStep ? (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowSuccessStep(false);
-                  setCreatedDocumentId(null);
-                  onOpenChange(false);
-                  onSuccess?.();
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button onClick={handleContinueToSignature}>
-                Seguinte: Assinar Documento
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSubmit} disabled={loading || loadingClients}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Upload className="mr-2 h-4 w-4" />
-                Criar Documento
-              </Button>
-            </>
+          {showSignatureModal ? null : (
+            showSuccessStep ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowSuccessStep(false);
+                    setCreatedDocumentId(null);
+                    onOpenChange(false);
+                    onSuccess?.();
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={handleContinueToSignature}>
+                  Seguinte: Assinar Documento
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSubmit} disabled={loading || loadingClients}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Upload className="mr-2 h-4 w-4" />
+                  Criar Documento
+                </Button>
+              </>
+            )
           )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
-    {/* Modal de assinatura da empresa */}
-    {showSignatureModal && createdDocumentId && (
-      <InternalSignatureManager
-        documentId={createdDocumentId}
-        documentName={formData.document_name}
-        isStandalone={true}
-        onSuccess={handleSignatureComplete}
-        onClose={() => {
-          setShowSignatureModal(false);
-          setCreatedDocumentId(null);
-          onSuccess?.();
-        }}
-      />
-    )}
     </>
   );
 };
