@@ -206,6 +206,19 @@ export const StandaloneDocumentUpload = ({
 
       if (insertError) throw insertError;
 
+      // Criar notificação para o cliente sobre documento enviado
+      await supabase
+        .from('client_notifications')
+        .insert({
+          company_id: companyId,
+          client_email: formData.client_email,
+          process_id: '', // Standalone document, sem processo
+          document_id: newDocument.id,
+          notification_type: 'document_uploaded',
+          title: `📄 Novo Documento Enviado`,
+          message: `Um documento "${formData.document_name}" foi enviado para você e aguarda assinatura após a empresa assinar primeiro.`
+        });
+
       toast({
         title: 'Documento criado com sucesso',
         description: 'Clique em "Seguinte" para posicionar e assinar o documento',

@@ -43,6 +43,7 @@ import CreateClientDialog from "@/components/CreateClientDialog";
 import { CompanyLegalDataCard } from "@/components/CompanyLegalDataCard";
 import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificationButton";
 import { LegalData } from "@/utils/legalQualification";
+import CompanyNotifications from "@/components/CompanyNotifications";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -298,6 +299,9 @@ const EmpresaDashboard = () => {
       <div className="p-6 space-y-6">
         {/* Expiring Documents Alert */}
         <ExpiringDocumentsAlert />
+        
+        {/* Company Notifications */}
+        <CompanyNotifications />
         
         {/* Company Legal Data Card - Only show if data is incomplete */}
         {companyId && !isCompanyDataComplete && (
