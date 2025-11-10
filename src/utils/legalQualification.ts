@@ -27,78 +27,34 @@ export interface LegalDataPJ {
 export type LegalData = LegalDataPF | LegalDataPJ;
 
 export function formatLegalQualification(data: LegalData): string {
+  const MISSING = '[informação faltante]';
+  
   if (data.person_type === 'pj') {
-    // Formato Pessoa Jurídica
+    // Formato Pessoa Jurídica - todos os campos sempre presentes
     const parts: string[] = [];
     
-    if (data.company_name) {
-      parts.push(data.company_name);
-    }
-    
-    if (data.cnpj) {
-      parts.push(`inscrita no CNPJ sob o nº ${formatCNPJ(data.cnpj)}`);
-    }
-    
-    if (data.address) {
-      parts.push(`com sede em ${data.address}`);
-    }
-    
-    if (data.legal_representative_name) {
-      parts.push(`neste ato representada por ${data.legal_representative_name}`);
-      
-      if (data.legal_representative_cpf) {
-        parts.push(`CPF nº ${formatCPF(data.legal_representative_cpf)}`);
-      }
-    }
-    
-    if (data.email) {
-      parts.push(`e-mail ${data.email}`);
-    }
-    
-    if (data.phone) {
-      parts.push(`telefone ${data.phone}`);
-    }
+    parts.push(data.company_name || MISSING);
+    parts.push(`inscrita no CNPJ sob o nº ${data.cnpj ? formatCNPJ(data.cnpj) : MISSING}`);
+    parts.push(`com sede em ${data.address || MISSING}`);
+    parts.push(`neste ato representada por ${data.legal_representative_name || MISSING}`);
+    parts.push(`CPF nº ${data.legal_representative_cpf ? formatCPF(data.legal_representative_cpf) : MISSING}`);
+    parts.push(`e-mail ${data.email || MISSING}`);
+    parts.push(`telefone ${data.phone || MISSING}`);
     
     return parts.join(', ') + '.';
   } else {
-    // Formato Pessoa Física
+    // Formato Pessoa Física - todos os campos sempre presentes
     const parts: string[] = [];
     
-    if (data.client_name) {
-      parts.push(data.client_name);
-    }
-    
-    if (data.nationality) {
-      parts.push(`nacionalidade ${data.nationality}`);
-    }
-    
-    if (data.marital_status) {
-      parts.push(`estado civil ${data.marital_status}`);
-    }
-    
-    if (data.profession) {
-      parts.push(`profissão ${data.profession}`);
-    }
-    
-    if (data.cpf) {
-      parts.push(`portador do CPF nº ${formatCPF(data.cpf)}`);
-      
-      if (data.rg) {
-        parts.push(`e RG nº ${data.rg}`);
-      }
-    }
-    
-    if (data.address) {
-      parts.push(`residente e domiciliado em ${data.address}`);
-    }
-    
-    if (data.email) {
-      parts.push(`e-mail ${data.email}`);
-    }
-    
-    if (data.phone) {
-      parts.push(`telefone ${data.phone}`);
-    }
+    parts.push(data.client_name || MISSING);
+    parts.push(`nacionalidade ${data.nationality || MISSING}`);
+    parts.push(`estado civil ${data.marital_status || MISSING}`);
+    parts.push(`profissão ${data.profession || MISSING}`);
+    parts.push(`portador do CPF nº ${data.cpf ? formatCPF(data.cpf) : MISSING}`);
+    parts.push(`e RG nº ${data.rg || MISSING}`);
+    parts.push(`residente e domiciliado em ${data.address || MISSING}`);
+    parts.push(`e-mail ${data.email || MISSING}`);
+    parts.push(`telefone ${data.phone || MISSING}`);
     
     return parts.join(', ') + '.';
   }

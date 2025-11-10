@@ -103,17 +103,6 @@ const ClientInfo = () => {
     try {
       setLoading(true);
       
-      // Fetch legal data for the client
-      const { data: legalDataResult, error: legalError } = await supabase
-        .from('client_legal_data')
-        .select('*')
-        .eq('client_email', clientEmail)
-        .maybeSingle();
-      
-      if (!legalError && legalDataResult) {
-        setLegalData(legalDataResult as ClientLegalData);
-      }
-      
       // Fetch all processes for this client
       const { data: processesData, error } = await supabase
         .from('processes')
@@ -148,6 +137,57 @@ const ClientInfo = () => {
         };
         
         setClientData(clientInfo);
+
+        // Fetch legal data for the client or create default structure
+        const { data: legalDataResult } = await supabase
+          .from('client_legal_data')
+          .select('*')
+          .eq('client_email', clientEmail)
+          .maybeSingle();
+        
+        // Always create legal data structure, even if some fields are missing
+        if (legalDataResult) {
+          const legalDataFormatted: LegalData = legalDataResult.person_type === 'pj' 
+            ? {
+                person_type: 'pj',
+                company_name: legalDataResult.company_name || '',
+                cnpj: legalDataResult.cnpj,
+                address: legalDataResult.address,
+                legal_representative_name: legalDataResult.legal_representative_name,
+                legal_representative_cpf: legalDataResult.legal_representative_cpf,
+                email: legalDataResult.email,
+                phone: legalDataResult.phone
+              }
+            : {
+                person_type: 'pf',
+                client_name: legalDataResult.client_name || '',
+                cpf: legalDataResult.cpf,
+                rg: legalDataResult.rg,
+                nationality: legalDataResult.nationality,
+                marital_status: legalDataResult.marital_status,
+                profession: legalDataResult.profession,
+                address: legalDataResult.address,
+                email: legalDataResult.email,
+                phone: legalDataResult.phone
+              };
+          
+          setLegalData(legalDataFormatted as ClientLegalData);
+        } else {
+          // Create default structure with client basic info
+          const defaultLegalData: LegalData = {
+            person_type: 'pf',
+            client_name: clientInfo.client_name || '',
+            email: clientInfo.client_email,
+            cpf: undefined,
+            rg: undefined,
+            nationality: undefined,
+            marital_status: undefined,
+            profession: undefined,
+            address: undefined,
+            phone: undefined
+          };
+          setLegalData(defaultLegalData as ClientLegalData);
+        }
       } else {
         toast({
           title: "Cliente não encontrado",
@@ -290,12 +330,6 @@ const ClientInfo = () => {
                 </div>
                 <p className="text-sm">{clientData.cpf_cnpj || 'Não informado'}</p>
               </div>
-              
-              {!legalData && (
-                <div className="pt-2 text-xs text-muted-foreground border-t">
-                  <p>💡 Cadastre os dados completos do cliente para habilitar a cópia da qualificação jurídica.</p>
-                </div>
-              )}
             </CardContent>
           </Card>
 

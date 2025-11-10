@@ -114,20 +114,18 @@ const EmpresaDashboard = () => {
 
             setIsCompanyDataComplete(isComplete);
 
-            if (isComplete) {
-              // Prepare legal data for copy button
-              const legalData: LegalData = {
-                person_type: 'pj',
-                company_name: companyData.name,
-                cnpj: companyData.cnpj,
-                address: companyData.address,
-                legal_representative_name: companyData.legal_representative_name,
-                legal_representative_cpf: companyData.legal_representative_cpf,
-                email: companyData.email,
-                phone: companyData.phone
-              };
-              setCompanyLegalData(legalData);
-            }
+            // Always prepare legal data for copy button, even if incomplete
+            const legalData: LegalData = {
+              person_type: 'pj',
+              company_name: companyData.name,
+              cnpj: companyData.cnpj,
+              address: companyData.address,
+              legal_representative_name: companyData.legal_representative_name,
+              legal_representative_cpf: companyData.legal_representative_cpf,
+              email: companyData.email,
+              phone: companyData.phone
+            };
+            setCompanyLegalData(legalData);
           }
         }
       } catch (error) {
@@ -285,7 +283,7 @@ const EmpresaDashboard = () => {
               </Button>
               <UserInviteSystem onInviteSent={refreshData} />
               <CreateProcessWithInvite />
-              {isCompanyDataComplete && companyLegalData && (
+              {companyLegalData && (
                 <CopyLegalQualificationButton 
                   data={companyLegalData}
                   variant="outline"
