@@ -44,6 +44,7 @@ export default function GestaoPermissoes() {
 
   const isCompanyAdmin = primaryRole === 'company_admin';
   const isClient = primaryRole === 'client';
+  const effectiveCompanyId = company?.id ?? companyId ?? undefined;
 
   const getDashboardRoute = () => {
     // Se é admin da empresa ou colaborador E tem company_id, vai para /empresa
@@ -78,15 +79,15 @@ export default function GestaoPermissoes() {
       let contextCompanyId: string | undefined;
       let contextClientEmail: string | undefined;
 
-      if (isCompanyAdmin && companyId) {
+      if (isCompanyAdmin && effectiveCompanyId) {
         // Carregar colaboradores da empresa via user_roles e collaborator_permissions
-        contextCompanyId = companyId;
+        contextCompanyId = effectiveCompanyId;
 
         // 1) Buscar colaboradores via user_roles (admins e colaboradores)
         const { data: rolesData, error: rolesError } = await supabase
           .from('user_roles')
           .select('user_id, role')
-          .eq('company_id', companyId)
+          .eq('company_id', effectiveCompanyId)
           .in('role', ['company_admin', 'company_collaborator']);
 
         if (rolesError) throw rolesError;
@@ -104,7 +105,7 @@ export default function GestaoPermissoes() {
         const { data: permsUsersData, error: permsUsersError } = await supabase
           .from('collaborator_permissions')
           .select('user_id')
-          .eq('company_id', companyId);
+          .eq('company_id', effectiveCompanyId);
         if (permsUsersError) throw permsUsersError;
         const userIdsFromPerms = (permsUsersData || []).map((p: any) => p.user_id as string);
 
