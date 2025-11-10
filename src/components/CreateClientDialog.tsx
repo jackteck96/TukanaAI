@@ -262,19 +262,19 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                 </Label>
                 <RadioGroup
                   value={qualificationMethod}
-                  onValueChange={(v) => setQualificationMethod(v as 'company_fills' | 'client_fills')}
+                  onValueChange={(v) => { console.log('[CreateClientDialog] onValueChange qualificationMethod', v); setQualificationMethod(v as 'company_fills' | 'client_fills') }}
                   className="space-y-3"
                 >
                   <div 
-                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors pointer-events-auto ${
                       qualificationMethod === 'company_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                     }`}
                     role="button"
                     tabIndex={0}
-                    onClick={() => setQualificationMethod('company_fills')}
+                    onClick={() => { console.log('[CreateClientDialog] click company_fills'); setQualificationMethod('company_fills') }}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('company_fills')}
                   >
-                    <RadioGroupItem id="company-fills" value="company_fills" onClick={() => setQualificationMethod('company_fills')} />
+                    <RadioGroupItem id="company-fills" value="company_fills" onClick={() => setQualificationMethod('company_fills')} className="pointer-events-auto" />
                     <Label htmlFor="company-fills" className="cursor-pointer flex-1">
                       <span className="font-medium">A empresa vai qualificar o cliente</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -312,7 +312,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     </Label>
                     <RadioGroup
                       value={sendEmailNow ? 'send_now' : 'register_only'}
-                      onValueChange={(v) => setSendEmailNow(v === 'send_now')}
+                      onValueChange={(v) => { console.log('[CreateClientDialog] onValueChange sendEmailNow', v); setSendEmailNow(v === 'send_now') }}
                       className="space-y-3"
                     >
                       <div 
