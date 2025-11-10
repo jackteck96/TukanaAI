@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
   const { toast } = useToast();
   const { company } = useCompany();
   const { user } = useAuth();
+  const uid = useId();
 
   // Checkboxes
   const [qualificationMethod, setQualificationMethod] = useState<'company_fills' | 'client_fills'>('company_fills');
@@ -274,8 +275,8 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     onClick={() => { console.log('[CreateClientDialog] click company_fills'); setQualificationMethod('company_fills') }}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('company_fills')}
                   >
-                    <RadioGroupItem id="company-fills" value="company_fills" onClick={() => setQualificationMethod('company_fills')} className="pointer-events-auto" />
-                    <Label htmlFor="company-fills" className="cursor-pointer flex-1">
+                    <RadioGroupItem id={`${uid}-company-fills`} value="company_fills" onClick={() => setQualificationMethod('company_fills')} className="pointer-events-auto" />
+                    <Label htmlFor={`${uid}-company-fills`} className="cursor-pointer flex-1">
                       <span className="font-medium">A empresa vai qualificar o cliente</span>
                       <p className="text-sm text-muted-foreground mt-1">
                         A empresa preenche todos os dados do cliente
@@ -292,8 +293,8 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     onClick={() => setQualificationMethod('client_fills')}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('client_fills')}
                   >
-                    <RadioGroupItem id="client-fills" value="client_fills" onClick={() => setQualificationMethod('client_fills')} />
-                    <Label htmlFor="client-fills" className="cursor-pointer flex-1">
+                    <RadioGroupItem id={`${uid}-client-fills`} value="client_fills" onClick={() => setQualificationMethod('client_fills')} />
+                    <Label htmlFor={`${uid}-client-fills`} className="cursor-pointer flex-1">
                       <span className="font-medium">O cliente deve preencher seus próprios dados</span>
                       <p className="text-sm text-muted-foreground mt-1">
                         Cliente será convidado a se cadastrar via email
@@ -324,8 +325,8 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                         onClick={() => setSendEmailNow(true)}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSendEmailNow(true)}
                       >
-                        <RadioGroupItem id="send-now" value="send_now" onClick={() => setSendEmailNow(true)} />
-                        <Label htmlFor="send-now" className="cursor-pointer flex-1">
+                        <RadioGroupItem id={`${uid}-send-now`} value="send_now" onClick={() => setSendEmailNow(true)} />
+                        <Label htmlFor={`${uid}-send-now`} className="cursor-pointer flex-1">
                           <span className="font-medium">Enviar e-mail automático agora</span>
                           <p className="text-sm text-muted-foreground mt-1">
                             Cliente receberá convite imediatamente
@@ -342,8 +343,8 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                         onClick={() => setSendEmailNow(false)}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSendEmailNow(false)}
                       >
-                        <RadioGroupItem id="send-later" value="register_only" />
-                        <Label htmlFor="send-later" className="cursor-pointer flex-1">
+                         <RadioGroupItem id={`${uid}-send-later`} value="register_only" />
+                         <Label htmlFor={`${uid}-send-later`} className="cursor-pointer flex-1">
                           <span className="font-medium">Apenas cadastrar (sem enviar e-mail agora)</span>
                           <p className="text-sm text-muted-foreground mt-1">
                             Você poderá enviar o e-mail manualmente depois
