@@ -176,19 +176,32 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
 
       if (clientError) throw clientError;
 
-      // Se deve enviar email agora e o método é que o cliente preenche
-      if (sendEmailNow && qualificationMethod === 'client_fills' && newClient) {
+      // Se deve enviar email agora
+      if (sendEmailNow && newClient) {
         try {
+          const emailBody = qualificationMethod === 'company_fills' 
+            ? {
+                email: email,
+                full_name: companyName,
+                companyId: company.id,
+                confirmationLink: `${window.location.origin}/cliente`,
+                inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+                role: 'client',
+                isCollaborator: false,
+                isConfirmation: true,
+              }
+            : {
+                email: email,
+                full_name: companyName,
+                companyId: company.id,
+                inviteLink: `${window.location.origin}/client-registration?id=${newClient.id}`,
+                inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+                role: 'client',
+                isCollaborator: false,
+              };
+
           const { error: emailError } = await supabase.functions.invoke("send-unified-email", {
-            body: {
-              email: email,
-              full_name: companyName,
-              companyId: company.id,
-              inviteLink: `${window.location.origin}/client-registration?id=${newClient.id}`,
-              inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-              role: 'client',
-              isCollaborator: false,
-            },
+            body: emailBody,
           });
 
           if (emailError) {
@@ -207,7 +220,9 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
 
             toast({
               title: "Cliente criado com sucesso!",
-              description: "Email de cadastro enviado para o cliente.",
+              description: qualificationMethod === 'company_fills'
+                ? "Email de confirmação enviado para o cliente."
+                : "Email de cadastro enviado para o cliente.",
             });
           }
         } catch (emailError) {
@@ -297,50 +312,46 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                 </RadioGroup>
               </div>
 
-              {qualificationMethod === 'client_fills' && (
-                <>
-                  <Separator />
-                  <div>
-                    <Label className="text-base font-semibold mb-3 block">
-                      2️⃣ Envio de E-mail Automático
+              <Separator />
+              <div>
+                <Label className="text-base font-semibold mb-3 block">
+                  2️⃣ Envio de E-mail Automático
+                </Label>
+                <RadioGroup
+                  name="emailPreference"
+                  value={sendEmailNow ? 'send_now' : 'register_only'}
+                  onValueChange={(v) => { console.log('[CreateClientDialog] onValueChange sendEmailNow', v); setSendEmailNow(v === 'send_now') }}
+                  className="space-y-3"
+                >
+                  <div 
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                      sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <RadioGroupItem id={`${uid}-send-now`} value="send_now" />
+                    <Label htmlFor={`${uid}-send-now`} className="cursor-pointer flex-1">
+                      <span className="font-medium">Enviar e-mail automático agora</span>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Cliente receberá {qualificationMethod === 'company_fills' ? 'confirmação de cadastro' : 'convite para cadastro'} imediatamente
+                      </p>
                     </Label>
-                    <RadioGroup
-                      name="emailPreference"
-                      value={sendEmailNow ? 'send_now' : 'register_only'}
-                      onValueChange={(v) => { console.log('[CreateClientDialog] onValueChange sendEmailNow', v); setSendEmailNow(v === 'send_now') }}
-                      className="space-y-3"
-                    >
-                      <div 
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                          sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
-                        }`}
-                      >
-                        <RadioGroupItem id={`${uid}-send-now`} value="send_now" />
-                        <Label htmlFor={`${uid}-send-now`} className="cursor-pointer flex-1">
-                          <span className="font-medium">Enviar e-mail automático agora</span>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Cliente receberá convite imediatamente
-                          </p>
-                        </Label>
-                      </div>
-
-                      <div 
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                          !sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
-                        }`}
-                      >
-                         <RadioGroupItem id={`${uid}-send-later`} value="register_only" />
-                         <Label htmlFor={`${uid}-send-later`} className="cursor-pointer flex-1">
-                          <span className="font-medium">Apenas cadastrar (sem enviar e-mail agora)</span>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Você poderá enviar o e-mail manualmente depois
-                          </p>
-                        </Label>
-                      </div>
-                    </RadioGroup>
                   </div>
-                </>
-              )}
+
+                  <div 
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                      !sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                     <RadioGroupItem id={`${uid}-send-later`} value="register_only" />
+                     <Label htmlFor={`${uid}-send-later`} className="cursor-pointer flex-1">
+                      <span className="font-medium">Apenas cadastrar (sem enviar e-mail agora)</span>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Você poderá enviar o e-mail manualmente depois
+                      </p>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </CardContent>
           </Card>
 
