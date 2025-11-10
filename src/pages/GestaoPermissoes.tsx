@@ -130,7 +130,21 @@ export default function GestaoPermissoes() {
             role: (rolesByUser[p.id] || []).join(',')
           }));
         } else {
-          collaboratorsData = [];
+          // Fallback: incluir perfis vinculados à empresa (casos legados sem user_roles/perms)
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, email, full_name')
+            .eq('company_id', contextCompanyId)
+            .neq('id', user.id);
+
+          if (profilesError) throw profilesError;
+
+          collaboratorsData = (profilesData || []).map((p: any) => ({
+            id: p.id,
+            email: p.email,
+            full_name: p.full_name,
+            role: (rolesByUser[p.id] || []).join(',')
+          }));
         }
       } else if (isClient) {
         // Carregar email do cliente e seus colaboradores
