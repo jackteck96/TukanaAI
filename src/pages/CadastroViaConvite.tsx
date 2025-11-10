@@ -15,11 +15,13 @@ export default function CadastroViaConvite() {
   const [inviteDetails, setInviteDetails] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [isCollaborator, setIsCollaborator] = useState(false);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     async function fetchInviteDetails() {
@@ -167,6 +169,7 @@ export default function CadastroViaConvite() {
           options: {
             data: {
               full_name: fullName.trim(),
+              phone: phone.trim(),
               role: inviteDetails.invite.role || 'staff'
             }
           }
@@ -180,13 +183,14 @@ export default function CadastroViaConvite() {
           return;
         }
 
-        // Atualizar o perfil com company_id
+        // Atualizar o perfil com company_id e telefone
         if (signUpData.user) {
           const { error: profileError } = await supabase
             .from('profiles')
             .update({
               company_id: inviteDetails.invite.company_id,
-              role: inviteDetails.invite.role || 'staff'
+              role: inviteDetails.invite.role || 'staff',
+              phone: phone.trim()
             })
             .eq('id', signUpData.user.id);
 
@@ -212,14 +216,13 @@ export default function CadastroViaConvite() {
           }
         }
 
-        toast.success("Cadastro realizado com sucesso!", {
-          description: "Faça login para acessar o sistema"
-        });
+        // Mostrar mensagem de sucesso e instruções
+        setShowSuccessMessage(true);
 
-        // Redirecionar para login
+        // Redirecionar para landing page após 5 segundos
         setTimeout(() => {
-          navigate('/login');
-        }, 1500);
+          navigate('/', { replace: true });
+        }, 5000);
 
       } else {
         // Criar conta de cliente (fluxo existente)
@@ -298,6 +301,47 @@ export default function CadastroViaConvite() {
     );
   }
 
+  if (showSuccessMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-accent p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <CardTitle className="text-2xl">Cadastro Realizado!</CardTitle>
+            <CardDescription className="text-base mt-4">
+              Enviamos um email de confirmação para <strong>{inviteDetails.invite?.email}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4 text-sm">
+              <p className="font-medium text-blue-900 dark:text-blue-200 mb-2">
+                📧 Verifique sua caixa de entrada
+              </p>
+              <p className="text-blue-700 dark:text-blue-300">
+                Para concluir seu cadastro, clique no link de confirmação que enviamos para o seu email.
+              </p>
+            </div>
+            
+            <div className="text-center text-sm text-muted-foreground">
+              Você será redirecionado em alguns segundos...
+            </div>
+
+            <Button 
+              className="w-full" 
+              onClick={() => navigate('/')}
+            >
+              Ir para a página inicial
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const inviteEmail = inviteDetails.invite?.email || "";
   const companyName = inviteDetails.company?.name || "Empresa";
 
@@ -339,6 +383,30 @@ export default function CadastroViaConvite() {
                   placeholder="Digite seu nome completo"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  required
+                  disabled={isRegistering}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={inviteEmail}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="(00) 00000-0000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   required
                   disabled={isRegistering}
                 />
