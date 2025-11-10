@@ -83,28 +83,41 @@ export default function GestaoPermissoes() {
         // Carregar colaboradores da empresa via user_roles e collaborator_permissions
         contextCompanyId = effectiveCompanyId;
 
-        // 1) Buscar todos os colaboradores da empresa a partir de profiles (igual Gestão de Colaboradores)
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, email, full_name')
+        // 1) Buscar todos os colaboradores da empresa a partir de user_roles (apenas ativos)
+        const { data: rolesDataActive, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id')
           .eq('company_id', contextCompanyId)
-          .neq('id', user.id);
+          .in('role', ['company_admin', 'company_collaborator'])
+          .neq('user_id', user.id);
 
-        if (profilesError) throw profilesError;
+        if (rolesError) throw rolesError;
 
-        const listedUserIds = (profilesData || []).map((p: any) => p.id as string);
+        const listedUserIds = (rolesDataActive || []).map((r: any) => r.user_id as string);
 
-        // 2) Carregar roles para esses usuários (admin e collaborator) para manter compatibilidade
+        // 2) Buscar detalhes dos profiles apenas para usuários com roles ativos
+        let profilesData: any[] = [];
+        if (listedUserIds.length > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, email, full_name')
+            .in('id', listedUserIds);
+
+          if (profilesError) throw profilesError;
+          profilesData = profiles || [];
+        }
+
+        // 3) Carregar roles detalhadas para esses usuários
         let rolesByUser: Record<string, string[]> = {};
         if (listedUserIds.length > 0) {
-          const { data: rolesData, error: rolesError } = await supabase
+          const { data: rolesData, error: rolesDetailError } = await supabase
             .from('user_roles')
             .select('user_id, role')
             .eq('company_id', contextCompanyId)
             .in('role', ['company_admin', 'company_collaborator'])
             .in('user_id', listedUserIds);
 
-          if (rolesError) throw rolesError;
+          if (rolesDetailError) throw rolesDetailError;
 
           rolesByUser = (rolesData || []).reduce((acc: Record<string, string[]>, r: any) => {
             acc[r.user_id] = acc[r.user_id] ? [...acc[r.user_id], r.role] : [r.role];
