@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -259,18 +260,18 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                 <Label className="text-base font-semibold mb-3 block">
                   1️⃣ Método de Qualificação do Cliente
                 </Label>
-                <div className="space-y-3">
+                <RadioGroup
+                  value={qualificationMethod}
+                  onValueChange={(v) => setQualificationMethod(v as 'company_fills' | 'client_fills')}
+                  className="space-y-3"
+                >
                   <div 
                     className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       qualificationMethod === 'company_fills' ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                     }`}
                     onClick={() => setQualificationMethod('company_fills')}
                   >
-                    <Checkbox
-                      id="company-fills"
-                      checked={qualificationMethod === 'company_fills'}
-                      onCheckedChange={() => setQualificationMethod('company_fills')}
-                    />
+                    <RadioGroupItem id="company-fills" value="company_fills" />
                     <Label htmlFor="company-fills" className="cursor-pointer flex-1">
                       <span className="font-medium">A empresa vai qualificar o cliente</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -285,11 +286,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     }`}
                     onClick={() => setQualificationMethod('client_fills')}
                   >
-                    <Checkbox
-                      id="client-fills"
-                      checked={qualificationMethod === 'client_fills'}
-                      onCheckedChange={() => setQualificationMethod('client_fills')}
-                    />
+                    <RadioGroupItem id="client-fills" value="client_fills" />
                     <Label htmlFor="client-fills" className="cursor-pointer flex-1">
                       <span className="font-medium">O cliente deve preencher seus próprios dados</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -297,7 +294,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                       </p>
                     </Label>
                   </div>
-                </div>
+                </RadioGroup>
               </div>
 
               {qualificationMethod === 'client_fills' && (
@@ -307,18 +304,18 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     <Label className="text-base font-semibold mb-3 block">
                       2️⃣ Envio de E-mail Automático
                     </Label>
-                    <div className="space-y-3">
+                    <RadioGroup
+                      value={sendEmailNow ? 'send_now' : 'register_only'}
+                      onValueChange={(v) => setSendEmailNow(v === 'send_now')}
+                      className="space-y-3"
+                    >
                       <div 
                         className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                           sendEmailNow ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
                         }`}
                         onClick={() => setSendEmailNow(true)}
                       >
-                        <Checkbox
-                          id="send-now"
-                          checked={sendEmailNow}
-                          onCheckedChange={() => setSendEmailNow(true)}
-                        />
+                        <RadioGroupItem id="send-now" value="send_now" />
                         <Label htmlFor="send-now" className="cursor-pointer flex-1">
                           <span className="font-medium">Enviar e-mail automático agora</span>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -333,11 +330,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                         }`}
                         onClick={() => setSendEmailNow(false)}
                       >
-                        <Checkbox
-                          id="send-later"
-                          checked={!sendEmailNow}
-                          onCheckedChange={() => setSendEmailNow(false)}
-                        />
+                        <RadioGroupItem id="send-later" value="register_only" />
                         <Label htmlFor="send-later" className="cursor-pointer flex-1">
                           <span className="font-medium">Apenas cadastrar (sem enviar e-mail agora)</span>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -345,7 +338,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                           </p>
                         </Label>
                       </div>
-                    </div>
+                    </RadioGroup>
                   </div>
                 </>
               )}
