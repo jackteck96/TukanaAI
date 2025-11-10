@@ -59,21 +59,23 @@ export const StandaloneDocumentUpload = ({
         .select('company_id')
         .eq('user_id', user.id)
         .in('role', ['company_admin', 'company_collaborator'])
-        .single();
+        .limit(1);
 
       if (userError) {
         console.error('Erro ao buscar company_id:', userError);
         throw userError;
       }
 
-      if (userData?.company_id) {
-        setCompanyId(userData.company_id);
+      const userCompanyId = userData?.[0]?.company_id;
+      
+      if (userCompanyId) {
+        setCompanyId(userCompanyId);
 
         // Buscar clientes únicos dos processos da empresa
         const { data: processData, error: processError } = await supabase
           .from('processes')
           .select('client_email, client_name')
-          .eq('company_id', userData.company_id);
+          .eq('company_id', userCompanyId);
 
         if (processError) {
           console.error('Erro ao buscar processos:', processError);
