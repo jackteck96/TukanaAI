@@ -46,9 +46,32 @@ export const StandaloneDocumentUpload = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showSuccessStep, setShowSuccessStep] = useState(false);
 
+  // Resetar fluxo ao fechar e carregar clientes ao abrir
+  const resetSignatureFlow = () => {
+    setFormData({
+      client_email: '',
+      client_name: '',
+      document_name: '',
+      signature_deadline: '',
+      notes: '',
+      file: null
+    });
+    setCreatedDocumentId(null);
+    setShowSignatureModal(false);
+    setShowSuccessStep(false);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (open) {
+      // Ao abrir, garantir que estamos no passo inicial
+      setShowSuccessStep(false);
+      setShowSignatureModal(false);
+      // Carregar clientes
       loadClients();
+    } else {
+      // Ao fechar, resetar fluxo por completo
+      resetSignatureFlow();
     }
   }, [open]);
 
