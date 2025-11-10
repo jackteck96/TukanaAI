@@ -274,7 +274,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     onClick={() => setQualificationMethod('company_fills')}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('company_fills')}
                   >
-                    <RadioGroupItem id="company-fills" value="company_fills" />
+                    <RadioGroupItem id="company-fills" value="company_fills" onClick={() => setQualificationMethod('company_fills')} />
                     <Label htmlFor="company-fills" className="cursor-pointer flex-1">
                       <span className="font-medium">A empresa vai qualificar o cliente</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -292,7 +292,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                     onClick={() => setQualificationMethod('client_fills')}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQualificationMethod('client_fills')}
                   >
-                    <RadioGroupItem id="client-fills" value="client_fills" />
+                    <RadioGroupItem id="client-fills" value="client_fills" onClick={() => setQualificationMethod('client_fills')} />
                     <Label htmlFor="client-fills" className="cursor-pointer flex-1">
                       <span className="font-medium">O cliente deve preencher seus próprios dados</span>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -324,7 +324,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
                         onClick={() => setSendEmailNow(true)}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSendEmailNow(true)}
                       >
-                        <RadioGroupItem id="send-now" value="send_now" />
+                        <RadioGroupItem id="send-now" value="send_now" onClick={() => setSendEmailNow(true)} />
                         <Label htmlFor="send-now" className="cursor-pointer flex-1">
                           <span className="font-medium">Enviar e-mail automático agora</span>
                           <p className="text-sm text-muted-foreground mt-1">
