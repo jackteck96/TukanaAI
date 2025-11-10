@@ -207,17 +207,21 @@ export const StandaloneDocumentUpload = ({
       if (insertError) throw insertError;
 
       // Criar notificação para o cliente sobre documento enviado
+      const notificationData: any = {
+        company_id: companyId,
+        client_email: formData.client_email,
+        document_id: newDocument.id,
+        notification_type: 'document_uploaded',
+        title: `📄 Novo Documento Enviado`,
+        message: `Um documento "${formData.document_name}" foi enviado para você e aguarda assinatura após a empresa assinar primeiro.`
+      };
+      
+      // process_id é opcional para documentos standalone, então não incluir se não existir
+      // Não enviar string vazia que causa erro de UUID inválido
+      
       await supabase
         .from('client_notifications')
-        .insert({
-          company_id: companyId,
-          client_email: formData.client_email,
-          process_id: '', // Standalone document, sem processo
-          document_id: newDocument.id,
-          notification_type: 'document_uploaded',
-          title: `📄 Novo Documento Enviado`,
-          message: `Um documento "${formData.document_name}" foi enviado para você e aguarda assinatura após a empresa assinar primeiro.`
-        });
+        .insert(notificationData);
 
       toast({
         title: 'Documento criado com sucesso',
@@ -278,7 +282,7 @@ export const StandaloneDocumentUpload = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className={showSignatureModal ? "max-w-[95vw] max-h-[95vh] overflow-y-auto" : "max-w-2xl max-h-[90vh] overflow-y-auto"}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
