@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Upload, FileText } from 'lucide-react';
+import InternalSignatureManager from './InternalSignatureManager';
 
 interface Client {
   client_email: string;
@@ -41,6 +42,8 @@ export const StandaloneDocumentUpload = ({
     notes: '',
     file: null as File | null
   });
+  const [createdDocumentId, setCreatedDocumentId] = useState<string | null>(null);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -159,7 +162,7 @@ export const StandaloneDocumentUpload = ({
       if (uploadError) throw uploadError;
 
       // Inserir registro no banco
-      const { error: insertError } = await supabase
+      const { data: newDocument, error: insertError } = await supabase
         .from('standalone_signature_documents')
         .insert({
           company_id: companyId,
@@ -173,26 +176,20 @@ export const StandaloneDocumentUpload = ({
           signature_status: 'pending',
           uploaded_by: user!.id,
           notes: formData.notes || null
-        });
+        })
+        .select('id')
+        .single();
 
       if (insertError) throw insertError;
 
       toast({
-        title: 'Sucesso',
-        description: 'Documento enviado para assinatura com sucesso'
+        title: 'Documento criado',
+        description: 'Agora você precisa assinar o documento antes de enviá-lo ao cliente',
       });
 
-      // Reset form
-      setFormData({
-        client_email: '',
-        client_name: '',
-        document_name: '',
-        signature_deadline: '',
-        notes: '',
-        file: null
-      });
-
-      onSuccess?.();
+      // Guardar o ID do documento criado e abrir modal de assinatura
+      setCreatedDocumentId(newDocument.id);
+      setShowSignatureModal(true);
       onOpenChange(false);
     } catch (error) {
       console.error('Erro ao enviar documento:', error);
@@ -206,9 +203,30 @@ export const StandaloneDocumentUpload = ({
     }
   };
 
+  const handleSignatureComplete = () => {
+    toast({
+      title: 'Assinatura concluída',
+      description: 'Documento assinado e enviado para o cliente com sucesso'
+    });
+    
+    // Reset form
+    setFormData({
+      client_email: '',
+      client_name: '',
+      document_name: '',
+      signature_deadline: '',
+      notes: '',
+      file: null
+    });
+    setCreatedDocumentId(null);
+    setShowSignatureModal(false);
+    onSuccess?.();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -323,5 +341,21 @@ export const StandaloneDocumentUpload = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Modal de assinatura da empresa */}
+    {showSignatureModal && createdDocumentId && (
+      <InternalSignatureManager
+        documentId={createdDocumentId}
+        documentName={formData.document_name}
+        isStandalone={true}
+        onSuccess={handleSignatureComplete}
+        onClose={() => {
+          setShowSignatureModal(false);
+          setCreatedDocumentId(null);
+          onSuccess?.();
+        }}
+      />
+    )}
+    </>
   );
 };

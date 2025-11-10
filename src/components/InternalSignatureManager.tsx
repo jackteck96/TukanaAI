@@ -25,9 +25,11 @@ async function sha256Hex(input: string): Promise<string> {
 
 interface InternalSignatureManagerProps {
   documentId: string;
-  processId: string;
+  processId?: string;
   documentName: string;
-  onSigned?: () => void;
+  onSuccess?: () => void;
+  onClose?: () => void;
+  isStandalone?: boolean;
 }
 
 interface SignatureData {
@@ -41,7 +43,9 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   documentId,
   processId,
   documentName,
-  onSigned
+  onSuccess,
+  onClose,
+  isStandalone = false
 }) => {
   const [step, setStep] = useState<'placement' | 'form' | 'otp' | 'success'>('placement');
   const [loading, setLoading] = useState(false);
@@ -167,23 +171,56 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         }
 
         // 2) Buscar dados necessários
-        const { data: proc, error: pErr } = await supabase
-          .from('processes')
-          .select('company_id, client_email')
-          .eq('id', processId)
-          .single();
-        if (pErr || !proc?.company_id) {
-          console.error('[clientSideSign] process fetch error', pErr);
-          toast.error('Processo não encontrado');
-          return null;
-        }
-        const { data: doc, error: dErr } = await supabase
-          .from('documents')
-          .select('file_path')
-          .eq('id', documentId)
-          .single();
-        if (dErr) {
-          console.warn('[clientSideSign] document fetch warning', dErr);
+        let proc: any = null;
+        let doc: any = null;
+
+        if (isStandalone) {
+          // Para standalone, buscar da tabela standalone_signature_documents
+          const { data: standaloneDoc, error: sdErr } = await supabase
+            .from('standalone_signature_documents')
+            .select('company_id, client_email, file_path')
+            .eq('id', documentId)
+            .single();
+          
+          if (sdErr || !standaloneDoc?.company_id) {
+            console.error('[clientSideSign] standalone document fetch error', sdErr);
+            toast.error('Documento standalone não encontrado');
+            return null;
+          }
+          
+          proc = { company_id: standaloneDoc.company_id, client_email: standaloneDoc.client_email };
+          doc = { file_path: standaloneDoc.file_path };
+        } else {
+          // Fluxo normal com processo
+          if (!processId) {
+            toast.error('Process ID necessário para assinatura normal');
+            return null;
+          }
+
+          const { data: procData, error: pErr } = await supabase
+            .from('processes')
+            .select('company_id, client_email')
+            .eq('id', processId)
+            .single();
+          
+          if (pErr || !procData?.company_id) {
+            console.error('[clientSideSign] process fetch error', pErr);
+            toast.error('Processo não encontrado');
+            return null;
+          }
+
+          const { data: docData, error: dErr } = await supabase
+            .from('documents')
+            .select('file_path')
+            .eq('id', documentId)
+            .single();
+          
+          if (dErr) {
+            console.warn('[clientSideSign] document fetch warning', dErr);
+          }
+
+          proc = procData;
+          doc = docData;
         }
 
         // 3) Gerar hashes no cliente
@@ -214,23 +251,28 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
         };
 
         // 4) Inserir assinatura (RLS garante acesso)
+        const insertPayload: any = {
+          document_id: documentId,
+          company_id: proc.company_id,
+          signer_id: userId,
+          signer_name: signatureData.signerName,
+          signer_email: signatureData.signerEmail,
+          authentication_method: 'otp_email',
+          authentication_contact: signatureData.authContact,
+          signature_hash: signatureHash,
+          document_hash: documentHash,
+          signature_metadata: signatureMetadata,
+        };
+
+        // Adicionar process_id apenas se não for standalone
+        if (!isStandalone && processId) {
+          insertPayload.process_id = processId;
+        }
+
         const { data: sigRow, error: insertErr } = await supabase
           .from('internal_signatures')
-          .insert({
-            document_id: documentId,
-            process_id: processId,
-            company_id: proc.company_id,
-            signer_id: userId,
-            signer_name: signatureData.signerName,
-            signer_email: signatureData.signerEmail,
-            authentication_method: 'email',
-            authentication_contact: signatureData.authContact,
-            signature_hash: signatureHash,
-            document_hash: documentHash,
-            signature_order: 1,
-            signature_metadata: signatureMetadata,
-          })
-          .select()
+          .insert(insertPayload)
+          .select('id')
           .single();
 
         if (insertErr || !sigRow) {
@@ -308,34 +350,69 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
 
       setStep('success');
 
-      // Determinar tipo de signatário (cliente ou empresa)
-      const { data: processData } = await supabase
-        .from('processes')
-        .select('client_email')
-        .eq('id', processId)
-        .single();
+      if (isStandalone) {
+        // Standalone: buscar dados do documento standalone
+        const { data: standaloneDoc } = await supabase
+          .from('standalone_signature_documents')
+          .select('client_email')
+          .eq('id', documentId)
+          .single();
 
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', user.user.id)
-        .single();
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', user.user.id)
+          .single();
 
-      const isClient = profileData?.email === processData?.client_email;
+        const isClient = profileData?.email === standaloneDoc?.client_email;
 
-      // Invocar edge function para completar fluxo de assinatura dupla
-      await supabase.functions.invoke('complete-dual-signature', {
-        body: {
-          documentId,
-          processId,
-          signerType: isClient ? 'client' : 'company',
-          signatureId
+        // Invocar edge function para completar fluxo de assinatura standalone
+        await supabase.functions.invoke('complete-standalone-signature', {
+          body: {
+            documentId,
+            signerType: isClient ? 'client' : 'company',
+            signatureId
+          }
+        });
+      } else {
+        // Fluxo normal com processo
+        if (!processId) {
+          toast.error('Process ID não fornecido para assinatura normal');
+          return;
         }
-      });
+
+        // Determinar tipo de signatário (cliente ou empresa)
+        const { data: processData } = await supabase
+          .from('processes')
+          .select('client_email')
+          .eq('id', processId)
+          .single();
+
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', user.user.id)
+          .single();
+
+        const isClient = profileData?.email === processData?.client_email;
+
+        // Invocar edge function para completar fluxo de assinatura dupla
+        await supabase.functions.invoke('complete-dual-signature', {
+          body: {
+            documentId,
+            processId,
+            signerType: isClient ? 'client' : 'company',
+            signatureId
+          }
+        });
+      }
 
       // Chamar callback para recarregar dados no componente pai
-      if (onSigned) {
-        onSigned();
+      if (onSuccess) {
+        onSuccess();
+      }
+      if (onClose) {
+        onClose();
       }
     } catch (error: any) {
       console.error('Erro ao verificar e assinar:', error);

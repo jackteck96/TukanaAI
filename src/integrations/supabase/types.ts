@@ -1054,7 +1054,7 @@ export type Database = {
           document_hash: string
           document_id: string
           id: string
-          process_id: string
+          process_id: string | null
           signature_hash: string
           signature_ip: unknown
           signature_metadata: Json
@@ -1073,7 +1073,7 @@ export type Database = {
           document_hash: string
           document_id: string
           id?: string
-          process_id: string
+          process_id?: string | null
           signature_hash: string
           signature_ip?: unknown
           signature_metadata?: Json
@@ -1092,7 +1092,7 @@ export type Database = {
           document_hash?: string
           document_id?: string
           id?: string
-          process_id?: string
+          process_id?: string | null
           signature_hash?: string
           signature_ip?: unknown
           signature_metadata?: Json
@@ -1523,7 +1523,9 @@ export type Database = {
         Row: {
           client_email: string
           client_name: string
+          client_signed_at: string | null
           company_id: string
+          company_signed_at: string | null
           created_at: string
           document_name: string
           file_path: string
@@ -1541,7 +1543,9 @@ export type Database = {
         Insert: {
           client_email: string
           client_name: string
+          client_signed_at?: string | null
           company_id: string
+          company_signed_at?: string | null
           created_at?: string
           document_name: string
           file_path: string
@@ -1559,7 +1563,9 @@ export type Database = {
         Update: {
           client_email?: string
           client_name?: string
+          client_signed_at?: string | null
           company_id?: string
+          company_signed_at?: string | null
           created_at?: string
           document_name?: string
           file_path?: string

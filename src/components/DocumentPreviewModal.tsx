@@ -203,7 +203,7 @@ const DocumentPreviewModal = ({
                 documentId={document.id}
                 processId={processId}
                 documentName={document.file_name}
-                onSigned={() => {
+                onSuccess={() => {
                   // Recarregar dados do documento após assinatura
                   setShowSignature(false);
                 }}

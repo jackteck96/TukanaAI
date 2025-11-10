@@ -211,7 +211,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               documentId={documentId}
               processId={processId}
               documentName={documentName}
-              onSigned={() => {
+              onSuccess={() => {
                 checkSignatures();
               }}
             />
