@@ -71,11 +71,12 @@ export const StandaloneDocumentUpload = ({
       if (userCompanyId) {
         setCompanyId(userCompanyId);
 
-        // Buscar clientes únicos dos processos da empresa
+        // Buscar TODOS os clientes únicos dos processos da empresa (sem limite)
         const { data: processData, error: processError } = await supabase
           .from('processes')
           .select('client_email, client_name')
-          .eq('company_id', userCompanyId);
+          .eq('company_id', userCompanyId)
+          .order('client_name', { ascending: true });
 
         if (processError) {
           console.error('Erro ao buscar processos:', processError);
