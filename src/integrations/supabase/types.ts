@@ -1852,6 +1852,16 @@ export type Database = {
         Args: { company_uuid: string }
         Returns: undefined
       }
+      upsert_collaborator_permissions: {
+        Args: {
+          p_access_type: string
+          p_client_email: string
+          p_company_id: string
+          p_process_ids: string[]
+          p_target_user_id: string
+        }
+        Returns: Json
+      }
       user_belongs_to_company: {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean

@@ -142,67 +142,19 @@ export const CollaboratorPermissionsModal = ({
   const handleSave = async () => {
     setLoading(true);
     try {
-      // 1. Criar ou atualizar permissão principal
-      const permissionData: any = {
-        user_id: collaborator.id,
-        access_type: accessType,
-      };
+      const processIds = accessType === 'limited' ? Array.from(selectedProcesses) : [];
 
-      if (companyId) {
-        permissionData.company_id = companyId;
-      } else if (clientEmail) {
-        permissionData.client_email = clientEmail;
-      }
+      const { data, error } = await supabase.rpc('upsert_collaborator_permissions', {
+        p_target_user_id: collaborator.id,
+        p_company_id: companyId || null,
+        p_client_email: clientEmail || null,
+        p_access_type: accessType,
+        p_process_ids: processIds
+      });
 
-      let currentPermissionId = permissionId;
-
-      if (permissionId) {
-        // Atualizar permissão existente
-        const { error: updateError } = await supabase
-          .from('collaborator_permissions')
-          .update({ access_type: accessType, updated_at: new Date().toISOString() })
-          .eq('id', permissionId);
-
-        if (updateError) throw updateError;
-      } else {
-        // Criar nova permissão
-        const { data: newPermission, error: insertError } = await supabase
-          .from('collaborator_permissions')
-          .insert(permissionData)
-          .select('id')
-          .single();
-
-        if (insertError) throw insertError;
-        currentPermissionId = newPermission.id;
-      }
-
-      // 2. Gerenciar acessos de processos (apenas se for acesso limitado)
-      if (accessType === 'limited' && currentPermissionId) {
-        // Remover todos os acessos existentes
-        await supabase
-          .from('collaborator_process_access')
-          .delete()
-          .eq('permission_id', currentPermissionId);
-
-        // Adicionar os novos acessos selecionados
-        if (selectedProcesses.size > 0) {
-          const accessRecords = Array.from(selectedProcesses).map(processId => ({
-            permission_id: currentPermissionId,
-            process_id: processId
-          }));
-
-          const { error: accessError } = await supabase
-            .from('collaborator_process_access')
-            .insert(accessRecords);
-
-          if (accessError) throw accessError;
-        }
-      } else if (accessType === 'full' && currentPermissionId) {
-        // Remover todos os acessos específicos se for acesso total
-        await supabase
-          .from('collaborator_process_access')
-          .delete()
-          .eq('permission_id', currentPermissionId);
+      if (error) throw error;
+      if (!data || (typeof data === 'object' && 'success' in data && !data.success)) {
+        throw new Error((data as any)?.error || 'Falha ao salvar permissões');
       }
 
       toast({
