@@ -21,6 +21,7 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 });
+  const [canvasOffset, setCanvasOffset] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
   useEffect(() => {
     loadAndRenderPdf();
@@ -144,15 +145,31 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (loading) return;
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const containerRect = container.getBoundingClientRect();
+    
+    // Calcular posição do clique em relação ao canvas
+    const canvasX = e.clientX - rect.left;
+    const canvasY = e.clientY - rect.top;
+    
+    // Converter para porcentagens do canvas
+    const xPercent = (canvasX / rect.width) * 100;
+    const yPercent = (canvasY / rect.height) * 100;
+    
+    // Salvar offset do canvas para o preview
+    setCanvasOffset({
+      left: rect.left - containerRect.left + container.scrollLeft,
+      top: rect.top - containerRect.top + container.scrollTop,
+      width: rect.width,
+      height: rect.height
+    });
     
     onChange?.({ 
-      x: Math.max(0, Math.min(100, x)), 
-      y: Math.max(0, Math.min(100, y)) 
+      x: Math.max(0, Math.min(100, xPercent)), 
+      y: Math.max(0, Math.min(100, yPercent)) 
     });
   };
 
@@ -216,12 +233,12 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
             )}
             
             {/* Preview da caixa de assinatura */}
-            {value && pdfDimensions.width > 0 && !loading && (
+            {value && canvasOffset.width > 0 && !loading && (
               <div
-                className="absolute border-2 border-primary bg-primary/20 pointer-events-none"
+                className="absolute border-2 border-primary bg-primary/20 pointer-events-none rounded"
                 style={{
-                  left: `${value.x}%`,
-                  top: `${value.y}%`,
+                  left: `${canvasOffset.left + (value.x / 100) * canvasOffset.width}px`,
+                  top: `${canvasOffset.top + (value.y / 100) * canvasOffset.height}px`,
                   width: '200px',
                   height: '50px',
                   transform: 'translate(-50%, -50%)',
