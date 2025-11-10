@@ -94,7 +94,7 @@ const AreaCliente = () => {
 
   // Estatísticas reais calculadas
   const [realStats, setRealStats] = useState({
-    totalDocuments: 0,
+    pendingSignatures: 0,
     pendingTasks: 0,
     approvedDocuments: 0,
     inReview: 0
@@ -153,13 +153,37 @@ const AreaCliente = () => {
       if (!user?.email) return;
       
       try {
+        // Buscar perfil do usuário para pegar o email
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', user.id)
+          .single();
+
+        if (!profile?.email) return;
+
+        // Buscar documentos standalone aguardando assinatura do cliente
+        const { data: pendingSigs } = await supabase
+          .from('standalone_signature_documents')
+          .select('id')
+          .eq('client_email', profile.email)
+          .eq('signature_status', 'company_signed');
+
         // Buscar todos os processos do cliente
         const { data: processesData } = await supabase
           .from('processes')
           .select('id, project_name')
           .eq('client_email', user.email);
         
-        if (!processesData || processesData.length === 0) return;
+        if (!processesData || processesData.length === 0) {
+          setRealStats({
+            pendingSignatures: pendingSigs?.length || 0,
+            pendingTasks: 0,
+            approvedDocuments: 0,
+            inReview: 0
+          });
+          return;
+        }
         
         const processIds = processesData.map(p => p.id);
         
@@ -202,13 +226,12 @@ const AreaCliente = () => {
         
         setPendingRequests(mappedPendingRequests);
         
-        const totalDocs = documents?.length || 0;
         const approved = documents?.filter(d => d.status === 'Aprovado').length || 0;
         const inReview = documents?.filter(d => d.status === 'Pendente').length || 0;
         const pendingCount = mappedPendingRequests.length;
         
         setRealStats({
-          totalDocuments: totalDocs,
+          pendingSignatures: pendingSigs?.length || 0,
           pendingTasks: pendingCount,
           approvedDocuments: approved,
           inReview
@@ -219,7 +242,7 @@ const AreaCliente = () => {
     };
     
     loadStats();
-  }, [user?.email]);
+  }, [user?.email, user?.id]);
 
   useEffect(() => {
     const load = async () => {
@@ -1042,13 +1065,13 @@ const AreaCliente = () => {
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="flex items-center p-6">
               <div className="flex items-center">
-                <FileText className="h-8 w-8 text-primary" />
+                <PenTool className="h-8 w-8 text-primary" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">
-                    Documentos Enviados
+                    Assinaturas Pendentes
                   </p>
                   <p className="text-2xl font-bold text-foreground">
-                    {realStats.totalDocuments}
+                    {realStats.pendingSignatures}
                   </p>
                 </div>
               </div>
