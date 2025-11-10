@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import CreateClientDialog from "@/components/CreateClientDialog";
 
 const CompanyDashboard = () => {
   const stats = [
@@ -329,12 +330,7 @@ const CompanyDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <Link to="/clientes/novo" className="block">
-                <Button variant="outline" className="w-full h-20 flex-col">
-                  <Plus className="h-6 w-6 mb-2" />
-                  <span className="text-xs">Novo Cliente</span>
-                </Button>
-              </Link>
+              <CreateClientDialog />
               <Link to="/processos/novo" className="block">
                 <Button variant="outline" className="w-full h-20 flex-col">
                   <FileText className="h-6 w-6 mb-2" />

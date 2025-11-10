@@ -39,7 +39,7 @@ import { supabase } from "@/integrations/supabase/client";
 import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
 import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
 import { PdfConverter } from "@/components/PdfConverter";
-
+import CreateClientDialog from "@/components/CreateClientDialog";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -191,26 +191,13 @@ const EmpresaDashboard = () => {
     }
   };
 
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [processSearchTerm, setProcessSearchTerm] = useState("");
-  const [clientForm, setClientForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    status: ""
-  });
 
-  const handleClientSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Novo cliente:", clientForm);
-    setIsClientModalOpen(false);
-    setClientForm({ name: "", email: "", phone: "", company: "", status: "" });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -512,10 +499,7 @@ const EmpresaDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   <PdfConverter />
-                  <Button variant="outline" className="h-24 flex-col w-full" onClick={() => setIsClientModalOpen(true)}>
-                    <Plus className="h-6 w-6 mb-2" />
-                    <span className="text-sm font-medium">Novo Cliente</span>
-                  </Button>
+                  <CreateClientDialog onClientCreated={refreshData} />
                   <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">
                       <PenTool className="h-6 w-6 mb-2" />
@@ -582,74 +566,6 @@ const EmpresaDashboard = () => {
       </div>
 
       {/* Client Modal */}
-      <Dialog open={isClientModalOpen} onOpenChange={setIsClientModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Novo Cliente</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleClientSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="clientName">Nome</Label>
-              <Input
-                id="clientName"
-                value={clientForm.name}
-                onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
-                placeholder="Nome do cliente"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="clientEmail">Email</Label>
-              <Input
-                id="clientEmail"
-                type="email"
-                value={clientForm.email}
-                onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
-                placeholder="email@cliente.com"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="clientPhone">Telefone</Label>
-              <Input
-                id="clientPhone"
-                value={clientForm.phone}
-                onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
-                placeholder="(11) 99999-9999"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="clientCompany">Empresa</Label>
-              <Input
-                id="clientCompany"
-                value={clientForm.company}
-                onChange={(e) => setClientForm({ ...clientForm, company: e.target.value })}
-                placeholder="Empresa do cliente"
-              />
-            </div>
-            <div>
-              <Label htmlFor="clientStatus">Status</Label>
-              <Select value={clientForm.status} onValueChange={(value) => setClientForm({ ...clientForm, status: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ativo">Ativo</SelectItem>
-                  <SelectItem value="inativo">Inativo</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setIsClientModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit">Cadastrar Cliente</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Search Modal */}
       <DocumentSearchModal 
