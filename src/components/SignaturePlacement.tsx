@@ -85,31 +85,51 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
       console.log('[SignaturePlacement] URL gerada com sucesso');
 
       // Baixar PDF
+      console.log('[SignaturePlacement] Iniciando download do PDF...');
       const response = await fetch(urlData.signedUrl);
+      if (!response.ok) {
+        throw new Error(`Falha ao baixar PDF: ${response.status} ${response.statusText}`);
+      }
+      console.log('[SignaturePlacement] PDF baixado, convertendo para blob...');
       const blob = await response.blob();
       const arrayBuffer = await blob.arrayBuffer();
+      console.log('[SignaturePlacement] ArrayBuffer criado, tamanho:', arrayBuffer.byteLength, 'bytes');
 
       // Renderizar primeira página do PDF
+      console.log('[SignaturePlacement] Carregando PDF com pdfjs...');
       const loadingTask = (pdfjsLib as any).getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
+      console.log('[SignaturePlacement] PDF carregado, total de páginas:', pdf.numPages);
+      
       const page = await pdf.getPage(1);
+      console.log('[SignaturePlacement] Primeira página obtida');
 
       const scale = 1.5;
       const viewport = page.getViewport({ scale });
+      console.log('[SignaturePlacement] Viewport calculado:', viewport.width, 'x', viewport.height);
 
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas) {
+        console.error('[SignaturePlacement] Canvas ref não disponível');
+        throw new Error('Canvas não disponível');
+      }
 
       const context = canvas.getContext('2d');
-      if (!context) return;
+      if (!context) {
+        console.error('[SignaturePlacement] Contexto 2D não disponível');
+        throw new Error('Contexto 2D não disponível');
+      }
 
+      console.log('[SignaturePlacement] Configurando canvas...');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       setPdfDimensions({ width: viewport.width, height: viewport.height });
 
+      console.log('[SignaturePlacement] Renderizando página no canvas...');
       const renderContext = { canvasContext: context, viewport };
       await page.render(renderContext as any).promise;
-
+      
+      console.log('[SignaturePlacement] PDF renderizado com sucesso!');
       setLoading(false);
     } catch (e: any) {
       console.error('[SignaturePlacement] erro ao carregar PDF:', e);
