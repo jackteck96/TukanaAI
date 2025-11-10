@@ -78,46 +78,33 @@ export default function GestaoPermissoes() {
       let collaboratorsData: Collaborator[] = [];
       let contextCompanyId: string | undefined;
       let contextClientEmail: string | undefined;
+      let rolesByUser: Record<string, string[]> = {};
 
       if (effectiveCompanyId) {
-        // Carregar colaboradores da empresa via user_roles e collaborator_permissions
+        // Carregar colaboradores da empresa via profiles (igual Gestão de Colaboradores)
         contextCompanyId = effectiveCompanyId;
 
-        // 1) Buscar todos os colaboradores da empresa a partir de user_roles (apenas ativos)
-        const { data: rolesDataActive, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('user_id')
+        // 1) Buscar todos os colaboradores atuais da empresa a partir de profiles
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
           .eq('company_id', contextCompanyId)
-          .in('role', ['company_admin', 'company_collaborator'])
-          .neq('user_id', user.id);
+          .neq('id', user.id);
 
-        if (rolesError) throw rolesError;
+        if (profilesError) throw profilesError;
 
-        const listedUserIds = (rolesDataActive || []).map((r: any) => r.user_id as string);
+        const listedUserIds = (profilesData || []).map((p: any) => p.id as string);
 
-        // 2) Buscar detalhes dos profiles apenas para usuários com roles ativos
-        let profilesData: any[] = [];
+        // 2) Carregar roles para esses usuários (admin e collaborator) para manter compatibilidade
         if (listedUserIds.length > 0) {
-          const { data: profiles, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, email, full_name')
-            .in('id', listedUserIds);
-
-          if (profilesError) throw profilesError;
-          profilesData = profiles || [];
-        }
-
-        // 3) Carregar roles detalhadas para esses usuários
-        let rolesByUser: Record<string, string[]> = {};
-        if (listedUserIds.length > 0) {
-          const { data: rolesData, error: rolesDetailError } = await supabase
+          const { data: rolesData, error: rolesError } = await supabase
             .from('user_roles')
             .select('user_id, role')
             .eq('company_id', contextCompanyId)
             .in('role', ['company_admin', 'company_collaborator'])
             .in('user_id', listedUserIds);
 
-          if (rolesDetailError) throw rolesDetailError;
+          if (rolesError) throw rolesError;
 
           rolesByUser = (rolesData || []).reduce((acc: Record<string, string[]>, r: any) => {
             acc[r.user_id] = acc[r.user_id] ? [...acc[r.user_id], r.role] : [r.role];
@@ -131,13 +118,14 @@ export default function GestaoPermissoes() {
           full_name: p.full_name,
           role: (rolesByUser[p.id] || []).join(',')
         }));
+
       } else if (isClient) {
         // Carregar email do cliente e seus colaboradores
         const { data: profileData } = await supabase
           .from('profiles')
           .select('email')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileData?.email) {
           contextClientEmail = profileData.email;
@@ -168,56 +156,60 @@ export default function GestaoPermissoes() {
       setCollaborators(collaboratorsData);
       console.log('[GestaoPermissoes] colaboradores:', collaboratorsData.length);
 
-      // Carregar permissões para cada colaborador
+      // Carregar permissões em lote para melhor performance
       const permissionsMap: Record<string, PermissionData> = {};
+      const userIds = collaboratorsData.map(c => c.id);
 
-      for (const collab of collaboratorsData) {
-        // Buscar permissão do colaborador
-        let permissionQuery = supabase
+      // Contar total de processos uma única vez
+      let totalProcessesQuery = supabase
+        .from('processes')
+        .select('id', { count: 'exact', head: true });
+
+      if (contextCompanyId) {
+        totalProcessesQuery = totalProcessesQuery.eq('company_id', contextCompanyId);
+      } else if (contextClientEmail) {
+        totalProcessesQuery = totalProcessesQuery.eq('client_email', contextClientEmail);
+      }
+
+      const { count: totalCount } = await totalProcessesQuery;
+
+      if (userIds.length > 0) {
+        let permsQuery = supabase
           .from('collaborator_permissions')
-          .select(`
-            access_type,
-            collaborator_process_access(count)
-          `)
-          .eq('user_id', collab.id);
+          .select('user_id, access_type, id, collaborator_process_access(count)')
+          .in('user_id', userIds);
 
         if (contextCompanyId) {
-          permissionQuery = permissionQuery.eq('company_id', contextCompanyId);
+          permsQuery = permsQuery.eq('company_id', contextCompanyId);
         } else if (contextClientEmail) {
-          permissionQuery = permissionQuery.eq('client_email', contextClientEmail);
+          permsQuery = permsQuery.eq('client_email', contextClientEmail);
         }
 
-        const { data: permData } = await permissionQuery.maybeSingle();
+        const { data: permsData, error: permsError } = await permsQuery;
+        if (permsError) throw permsError;
 
-        // Contar total de processos
-        let totalProcessesQuery = supabase
-          .from('processes')
-          .select('id', { count: 'exact', head: true });
+        const permByUser: Record<string, any> = {};
+        (permsData || []).forEach((p: any) => {
+          permByUser[p.user_id] = p;
+        });
 
-        if (contextCompanyId) {
-          totalProcessesQuery = totalProcessesQuery.eq('company_id', contextCompanyId);
-        } else if (contextClientEmail) {
-          totalProcessesQuery = totalProcessesQuery.eq('client_email', contextClientEmail);
-        }
-
-        const { count: totalCount } = await totalProcessesQuery;
-
-        if (permData) {
-          permissionsMap[collab.id] = {
-            access_type: permData.access_type as 'full' | 'limited',
-            process_count: (permData.access_type as 'full' | 'limited') === 'full'
-              ? (totalCount || 0)
-              : (permData.collaborator_process_access?.[0]?.count || 0),
-            total_processes: totalCount || 0
-          };
-        } else {
-          // Sem permissão configurada: admins da empresa têm acesso total por padrão
-          const isAdminCollab = (collab.role || '').includes('company_admin');
-          permissionsMap[collab.id] = {
-            access_type: isAdminCollab && contextCompanyId ? 'full' : 'limited',
-            process_count: isAdminCollab && contextCompanyId ? (totalCount || 0) : 0,
-            total_processes: totalCount || 0
-          };
+        for (const collab of collaboratorsData) {
+          const p = permByUser[collab.id];
+          if (p) {
+            const access = p.access_type as 'full' | 'limited';
+            permissionsMap[collab.id] = {
+              access_type: access,
+              process_count: access === 'full' ? (totalCount || 0) : (p.collaborator_process_access?.[0]?.count || 0),
+              total_processes: totalCount || 0,
+            };
+          } else {
+            const isAdminCollab = (rolesByUser[collab.id] || []).includes('company_admin');
+            permissionsMap[collab.id] = {
+              access_type: isAdminCollab && !!contextCompanyId ? 'full' : 'limited',
+              process_count: isAdminCollab && !!contextCompanyId ? (totalCount || 0) : 0,
+              total_processes: totalCount || 0,
+            };
+          }
         }
       }
 
