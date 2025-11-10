@@ -439,24 +439,21 @@ const EmpresaDashboard = () => {
                     className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
                     onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-foreground text-sm">
+                        <h3 className="font-semibold text-foreground">
                           {process.project_name || 'Sem nome'}
                         </h3>
-                        <p className="text-xs text-muted-foreground">
-                          Tipo: {process.process_type}
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {process.client_name}
                         </p>
                       </div>
                       <Badge className={getStatusColor(process.status)}>
                         {process.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Cliente: {process.client_name}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 mr-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
                         <div className="w-full bg-muted rounded-full h-2">
                           <div
                             className="bg-primary h-2 rounded-full transition-all duration-300"
@@ -468,7 +465,7 @@ const EmpresaDashboard = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground whitespace-nowrap">
                           Prazo: {formatDueDate(process.due_date)}
                         </p>
                       </div>
