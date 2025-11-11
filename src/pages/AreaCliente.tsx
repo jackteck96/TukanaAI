@@ -1538,7 +1538,12 @@ const AreaCliente = () => {
                   variant="outline" 
                   onClick={() => {
                     setIsProcessDetailsModalOpen(false);
-                    setIsUploadModalOpen(true);
+                    if (selectedProcess?.id) {
+                      setUploadProcessId(String(selectedProcess.id));
+                      setIsUploadModalOpen(true);
+                    } else {
+                      toast.error('Processo inválido');
+                    }
                   }}
                 >
                   <Upload className="h-4 w-4 mr-2" />
