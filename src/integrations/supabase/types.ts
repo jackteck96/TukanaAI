@@ -252,7 +252,7 @@ export type Database = {
           client_email: string
           company_id: string
           created_at: string
-          document_id: string
+          document_id: string | null
           id: string
           is_read: boolean
           message: string
@@ -265,7 +265,7 @@ export type Database = {
           client_email: string
           company_id: string
           created_at?: string
-          document_id: string
+          document_id?: string | null
           id?: string
           is_read?: boolean
           message: string
@@ -278,7 +278,7 @@ export type Database = {
           client_email?: string
           company_id?: string
           created_at?: string
-          document_id?: string
+          document_id?: string | null
           id?: string
           is_read?: boolean
           message?: string

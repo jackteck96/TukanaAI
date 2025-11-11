@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, BellRing, X, FileText, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Bell, BellRing, X, FileText, AlertTriangle, ArrowRight, UserCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -138,6 +138,9 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     if (type === 'document_requested') {
       return <FileText className="h-4 w-4 text-primary" />;
     }
+    if (type === 'information_request') {
+      return <UserCircle className="h-4 w-4 text-blue-600" />;
+    }
     return <AlertTriangle className="h-4 w-4 text-warning" />;
   };
 
@@ -151,6 +154,9 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     if (type === 'document_requested') {
       return 'border-l-primary bg-primary/5';
     }
+    if (type === 'information_request') {
+      return 'border-l-blue-600 bg-blue-50 dark:bg-blue-900/10';
+    }
     return 'border-l-warning bg-warning/5';
   };
 
@@ -158,6 +164,12 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
     // Marcar como lida ao clicar
     if (!notification.is_read) {
       await markAsRead(notification.id);
+    }
+
+    // Solicitação de informações leva ao perfil
+    if (notification.notification_type === 'information_request') {
+      navigate('/cliente?openProfile=true');
+      return;
     }
 
     // Navegar para o processo

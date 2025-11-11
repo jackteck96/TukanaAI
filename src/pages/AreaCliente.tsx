@@ -65,6 +65,7 @@ const AreaCliente = () => {
   const urlParams = new URLSearchParams(location.search);
   const inviteProcessId = urlParams.get('id');
   const inviteToken = urlParams.get('token');
+  const shouldOpenProfile = urlParams.get('openProfile') === 'true';
   
   // Carregar perfil real do cliente
   useEffect(() => {
@@ -84,6 +85,20 @@ const AreaCliente = () => {
     };
     loadProfile();
   }, [user]);
+
+  // Abrir modal de perfil automaticamente se solicitado via URL
+  useEffect(() => {
+    if (shouldOpenProfile) {
+      setIsEditProfileModalOpen(true);
+      // Limpar o parâmetro da URL após abrir
+      const newUrl = window.location.pathname + '?' + 
+        Array.from(urlParams.entries())
+          .filter(([key]) => key !== 'openProfile')
+          .map(([key, value]) => `${key}=${value}`)
+          .join('&');
+      window.history.replaceState({}, '', newUrl.endsWith('?') ? newUrl.slice(0, -1) : newUrl);
+    }
+  }, [shouldOpenProfile]);
 
   const clientInfo = {
     name: userProfile?.full_name || user?.email || "Cliente",

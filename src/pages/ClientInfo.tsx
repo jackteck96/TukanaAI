@@ -69,6 +69,7 @@ const ClientInfo = () => {
   const [legalData, setLegalData] = useState<ClientLegalData | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [requestingSent, setRequestingSent] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -243,6 +244,85 @@ const ClientInfo = () => {
     });
   };
 
+  // Verifica se os dados do cliente estão completos
+  const isDataComplete = () => {
+    if (!legalData) return false;
+    
+    if (legalData.person_type === 'pj') {
+      return !!(
+        legalData.cnpj && 
+        legalData.address && 
+        legalData.legal_representative_name && 
+        legalData.legal_representative_cpf && 
+        legalData.phone
+      );
+    } else {
+      return !!(
+        legalData.cpf && 
+        legalData.rg && 
+        legalData.nationality && 
+        legalData.marital_status && 
+        legalData.profession && 
+        legalData.address && 
+        legalData.phone
+      );
+    }
+  };
+
+  // Envia solicitação de informações ao cliente
+  const handleRequestInformation = async () => {
+    if (!clientData || !companyId) return;
+    
+    try {
+      setRequestingSent(true);
+      
+      // Pegar o primeiro processo do cliente para associar à notificação
+      const firstProcessId = clientData.processes[0]?.id;
+      
+      if (!firstProcessId) {
+        toast({
+          title: "Erro",
+          description: "Cliente não possui processos ativos",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('client_notifications')
+        .insert({
+          process_id: firstProcessId,
+          document_id: null,
+          client_email: clientData.client_email,
+          company_id: companyId,
+          notification_type: 'information_request',
+          title: 'Solicitação de Informações',
+          message: 'Por favor, complete suas informações cadastrais no sistema. Acesse seu perfil e preencha todos os dados necessários.',
+          is_read: false
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Solicitação enviada",
+        description: "O cliente receberá uma notificação para completar suas informações",
+      });
+      
+      // Recarregar dados após envio
+      await fetchClientData(clientData.client_email);
+      
+    } catch (error) {
+      console.error('Erro ao enviar solicitação:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar a solicitação",
+        variant: "destructive",
+      });
+    } finally {
+      setRequestingSent(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -298,12 +378,24 @@ const ClientInfo = () => {
                   <User className="h-5 w-5" />
                   Informações Pessoais
                 </CardTitle>
-                {legalData && (
-                  <CopyLegalQualificationButton 
-                    data={legalData as LegalData}
-                    size="sm"
-                  />
-                )}
+                <div className="flex items-center gap-2">
+                  {legalData && (
+                    <CopyLegalQualificationButton 
+                      data={legalData as LegalData}
+                      size="sm"
+                    />
+                  )}
+                  {!isDataComplete() && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={handleRequestInformation}
+                      disabled={requestingSent}
+                    >
+                      {requestingSent ? "Enviando..." : "Solicitar Informações"}
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
