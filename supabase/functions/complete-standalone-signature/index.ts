@@ -136,10 +136,21 @@ serve(async (req) => {
           }
         });
       } else {
-        // Se o cliente assinou primeiro (raro mas possível), notificar a empresa
+        // Se o cliente assinou primeiro, notificar a empresa
         console.log('Client signed, notifying company');
         
         const companyEmail = await getCompanyAdminEmail(supabaseClient, document.company_id);
+        
+        // Criar notificação para a empresa
+        await supabaseClient
+          .from('client_notifications')
+          .insert({
+            company_id: document.company_id,
+            client_email: document.client_email,
+            notification_type: 'signature_request',
+            title: `📝 Documento Aguardando Assinatura da Empresa`,
+            message: `O cliente "${document.client_name}" assinou o documento "${document.document_name}". Acesse a aba de Assinaturas para assinar.`
+          });
         
         await supabaseClient.functions.invoke('send-unified-email', {
           body: {

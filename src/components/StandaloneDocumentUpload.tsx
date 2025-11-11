@@ -33,6 +33,8 @@ export const StandaloneDocumentUpload = ({
   const [loadingClients, setLoadingClients] = useState(true);
   const [clients, setClients] = useState<Client[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [isClientUser, setIsClientUser] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ email: string; full_name: string } | null>(null);
   
   const [formData, setFormData] = useState({
     client_email: '',
@@ -80,7 +82,39 @@ export const StandaloneDocumentUpload = ({
     
     setLoadingClients(true);
     try {
-      // Buscar company_id do usuário
+      // Primeiro, verificar se o usuário é um cliente
+      const { data: clientRoleData } = await supabase
+        .from('user_roles')
+        .select('role, client_email')
+        .eq('user_id', user.id)
+        .in('role', ['client', 'client_collaborator'])
+        .limit(1);
+
+      // Se for cliente, buscar informações do perfil
+      if (clientRoleData && clientRoleData.length > 0) {
+        setIsClientUser(true);
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          setUserProfile(profile);
+          setFormData(prev => ({
+            ...prev,
+            client_email: profile.email,
+            client_name: profile.full_name
+          }));
+        }
+
+        // Clientes não precisam de company_id para upload standalone
+        setLoadingClients(false);
+        return;
+      }
+
+      // Se não for cliente, é empresa - buscar company_id
       const { data: userData, error: userError } = await supabase
         .from('user_roles')
         .select('company_id')
@@ -163,10 +197,33 @@ export const StandaloneDocumentUpload = ({
   };
 
   const handleSubmit = async () => {
-    if (!formData.client_email || !formData.file || !companyId) {
+    if (!formData.client_email || !formData.file) {
       toast({
         title: 'Erro',
         description: 'Preencha todos os campos obrigatórios e selecione um arquivo',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Para clientes, buscar company_id dos seus processos
+    let targetCompanyId = companyId;
+    
+    if (isClientUser && !companyId) {
+      const { data: processData } = await supabase
+        .from('processes')
+        .select('company_id')
+        .eq('client_email', formData.client_email)
+        .limit(1)
+        .single();
+      
+      targetCompanyId = processData?.company_id || null;
+    }
+
+    if (!targetCompanyId) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível identificar a empresa associada',
         variant: 'destructive'
       });
       return;
@@ -177,7 +234,7 @@ export const StandaloneDocumentUpload = ({
       // Upload do arquivo para o storage
       const fileExt = formData.file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `standalone-signatures/${companyId}/${fileName}`;
+      const filePath = `standalone-signatures/${targetCompanyId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
@@ -189,7 +246,7 @@ export const StandaloneDocumentUpload = ({
       const { data: newDocument, error: insertError } = await supabase
         .from('standalone_signature_documents')
         .insert({
-          company_id: companyId,
+          company_id: targetCompanyId,
           client_email: formData.client_email,
           client_name: formData.client_name,
           document_name: formData.document_name,
@@ -206,22 +263,30 @@ export const StandaloneDocumentUpload = ({
 
       if (insertError) throw insertError;
 
-      // Criar notificação para o cliente sobre documento enviado
-      const notificationData: any = {
-        company_id: companyId,
-        client_email: formData.client_email,
-        document_id: newDocument.id,
-        notification_type: 'document_uploaded',
-        title: `📄 Novo Documento Enviado`,
-        message: `Um documento "${formData.document_name}" foi enviado para você e aguarda assinatura após a empresa assinar primeiro.`
-      };
-      
-      // process_id é opcional para documentos standalone, então não incluir se não existir
-      // Não enviar string vazia que causa erro de UUID inválido
-      
-      await supabase
-        .from('client_notifications')
-        .insert(notificationData);
+      // Criar notificação apropriada
+      if (isClientUser) {
+        // Cliente enviou documento - notificar a empresa
+        await supabase
+          .from('client_notifications')
+          .insert({
+            client_email: formData.client_email,
+            document_id: newDocument.id,
+            notification_type: 'signature_request',
+            title: `📝 Documento Aguardando Assinatura da Empresa`,
+            message: `O cliente "${formData.client_name}" enviou o documento "${formData.document_name}" para assinatura da empresa.`
+          } as any);
+      } else {
+        // Empresa enviou documento - notificar o cliente
+        await supabase
+          .from('client_notifications')
+          .insert({
+            client_email: formData.client_email,
+            document_id: newDocument.id,
+            notification_type: 'document_uploaded',
+            title: `📄 Novo Documento Enviado`,
+            message: `Um documento "${formData.document_name}" foi enviado para você e aguarda assinatura após a empresa assinar primeiro.`
+          } as any);
+      }
 
       toast({
         title: 'Documento criado com sucesso',
@@ -289,7 +354,10 @@ export const StandaloneDocumentUpload = ({
             Enviar Documento para Assinatura
           </DialogTitle>
           <DialogDescription>
-            Posicione sua assinatura antes de enviar ao cliente. Você poderá revisar antes de confirmar.
+            {isClientUser 
+              ? 'Envie um documento para a empresa assinar. Você poderá posicionar sua assinatura após o upload.'
+              : 'Posicione sua assinatura antes de enviar ao cliente. Você poderá revisar antes de confirmar.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -340,40 +408,52 @@ export const StandaloneDocumentUpload = ({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="client">Cliente *</Label>
-              <Select
-                value={formData.client_email}
-                onValueChange={handleClientChange}
-                disabled={clients.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={
-                    clients.length === 0 
-                      ? "Nenhum cliente disponível" 
-                      : "Selecione um cliente"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground text-center">
-                      Nenhum cliente encontrado
-                    </div>
-                  ) : (
-                    clients.map(client => (
-                      <SelectItem key={client.client_email} value={client.client_email}>
-                        {client.client_name} ({client.client_email})
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              {clients.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Para enviar documentos, você precisa ter pelo menos um processo cadastrado com um cliente.
-                </p>
-              )}
-            </div>
+            {/* Mostrar campo de cliente apenas para empresas */}
+            {!isClientUser && (
+              <div className="space-y-2">
+                <Label htmlFor="client">Cliente *</Label>
+                <Select
+                  value={formData.client_email}
+                  onValueChange={handleClientChange}
+                  disabled={clients.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={
+                      clients.length === 0 
+                        ? "Nenhum cliente disponível" 
+                        : "Selecione um cliente"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        Nenhum cliente encontrado
+                      </div>
+                    ) : (
+                      clients.map(client => (
+                        <SelectItem key={client.client_email} value={client.client_email}>
+                          {client.client_name} ({client.client_email})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {clients.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Para enviar documentos, você precisa ter pelo menos um processo cadastrado com um cliente.
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Mostrar informações do cliente para usuários cliente */}
+            {isClientUser && userProfile && (
+              <div className="rounded-lg bg-muted p-4 space-y-2">
+                <p className="text-sm font-medium">Enviando como:</p>
+                <p className="text-sm">{userProfile.full_name}</p>
+                <p className="text-sm text-muted-foreground">{userProfile.email}</p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="document_name">Nome do Documento *</Label>
