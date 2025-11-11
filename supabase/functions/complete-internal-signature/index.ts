@@ -93,8 +93,27 @@ Deno.serve(async (req) => {
 
     // Compare user-provided code with stored code (supporting different possible column names/types)
     const storedCode = otpRow.verification_code ?? otpRow.code ?? otpRow.otp_code ?? null;
+    
+    // Debug logging
+    console.log('[complete-internal-signature] OTP comparison:', {
+      verificationId,
+      storedCode,
+      storedCodeType: typeof storedCode,
+      storedCodeLength: storedCode ? String(storedCode).length : 0,
+      providedCode: otpCode,
+      providedCodeType: typeof otpCode,
+      providedCodeLength: otpCode ? String(otpCode).length : 0,
+      trimmedStored: storedCode ? String(storedCode).trim() : '',
+      trimmedProvided: otpCode ? String(otpCode).trim() : '',
+      match: storedCode && String(storedCode).trim() === String(otpCode).trim()
+    });
+    
     if (!storedCode || String(storedCode).trim() !== String(otpCode).trim()) {
-      console.error('[complete-internal-signature] OTP code mismatch', { verificationId });
+      console.error('[complete-internal-signature] OTP code mismatch', { 
+        verificationId,
+        expected: storedCode ? String(storedCode).trim() : 'null',
+        received: otpCode ? String(otpCode).trim() : 'null'
+      });
       return new Response(JSON.stringify({ error: 'Invalid or expired code', details: 'mismatch' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
