@@ -13,6 +13,7 @@ import { ArrowLeft, Edit, Loader2, Shield, Users } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import UserInviteSystem from '@/components/UserInviteSystem';
 import { CollaboratorPermissionsModal } from '@/components/CollaboratorPermissionsModal';
+import ClientCollaboratorInvite from '@/components/ClientCollaboratorInvite';
 
 interface Collaborator {
   id: string;
@@ -277,7 +278,13 @@ export default function GestaoPermissoes() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Convidar Colaborador */}
-              <UserInviteSystem onInviteSent={loadData} />
+              {isCompanyAdmin || !isClient ? (
+                <UserInviteSystem onInviteSent={loadData} />
+              ) : clientEmail ? (
+                <ClientCollaboratorInvite clientEmail={clientEmail} onInviteSent={loadData} />
+              ) : (
+                <Button variant="outline" disabled>Carregando…</Button>
+              )}
 
               {/* Gerenciar Colaboradores */}
               <div className="flex flex-col gap-2">
