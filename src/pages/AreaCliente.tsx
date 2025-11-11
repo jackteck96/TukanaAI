@@ -89,14 +89,30 @@ const AreaCliente = () => {
   // Abrir modal de perfil automaticamente se solicitado via URL
   useEffect(() => {
     if (shouldOpenProfile) {
-      setIsEditProfileModalOpen(true);
-      // Limpar o parâmetro da URL após abrir
-      const newUrl = window.location.pathname + '?' + 
-        Array.from(urlParams.entries())
-          .filter(([key]) => key !== 'openProfile')
-          .map(([key, value]) => `${key}=${value}`)
-          .join('&');
-      window.history.replaceState({}, '', newUrl.endsWith('?') ? newUrl.slice(0, -1) : newUrl);
+      // Verificar se há fluxo de assinatura ativo no sessionStorage
+      const hasActiveSignature = Object.keys(sessionStorage).some(key => 
+        key.startsWith('signature_flow_')
+      );
+      
+      if (hasActiveSignature) {
+        console.log('[AreaCliente] Fluxo de assinatura ativo detectado, não abrindo modal de perfil');
+        // Remover o parâmetro openProfile da URL sem abrir o modal
+        const newUrl = window.location.pathname + '?' + 
+          Array.from(urlParams.entries())
+            .filter(([key]) => key !== 'openProfile')
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&');
+        window.history.replaceState({}, '', newUrl.endsWith('?') ? newUrl.slice(0, -1) : newUrl);
+      } else {
+        setIsEditProfileModalOpen(true);
+        // Limpar o parâmetro da URL após abrir
+        const newUrl = window.location.pathname + '?' + 
+          Array.from(urlParams.entries())
+            .filter(([key]) => key !== 'openProfile')
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&');
+        window.history.replaceState({}, '', newUrl.endsWith('?') ? newUrl.slice(0, -1) : newUrl);
+      }
     }
   }, [shouldOpenProfile]);
 

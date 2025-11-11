@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, PenTool, Plus, Calendar, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocuments";
 import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
 import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
@@ -13,10 +13,34 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const ClientDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [isStandaloneUploadOpen, setIsStandaloneUploadOpen] = useState(false);
   const [processes, setProcesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Verificar se há fluxo de assinatura ativo no sessionStorage
+  // Se houver, não redirecionar para qualificação
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const shouldOpenProfile = params.get('openProfile') === 'true';
+    
+    if (shouldOpenProfile) {
+      // Verificar se há fluxo de assinatura ativo
+      const hasActiveSignature = Object.keys(sessionStorage).some(key => 
+        key.startsWith('signature_flow_')
+      );
+      
+      if (hasActiveSignature) {
+        console.log('[ClientDashboard] Fluxo de assinatura ativo detectado, removendo openProfile da URL');
+        // Remover o parâmetro openProfile da URL sem redirecionar
+        params.delete('openProfile');
+        const newSearch = params.toString();
+        const newUrl = `${location.pathname}${newSearch ? '?' + newSearch : ''}`;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [location]);
 
   useEffect(() => {
     loadProcesses();
