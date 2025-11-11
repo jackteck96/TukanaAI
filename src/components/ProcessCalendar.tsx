@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Plus, FileText, User, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, FileText, User, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { format, isSameDay, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface ProcessCalendarProps {
   open: boolean;
@@ -26,6 +29,8 @@ export const ProcessCalendar = ({
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDayEvents, setSelectedDayEvents] = useState<any[]>([]);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -38,6 +43,20 @@ export const ProcessCalendar = ({
       loadEvents();
     }
   }, [open, processId]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      filterEventsByDate(selectedDate);
+    }
+  }, [selectedDate, events]);
+
+  const filterEventsByDate = (date: Date) => {
+    const dayEvents = events.filter(event => {
+      const eventDate = parseISO(event.event_date);
+      return isSameDay(eventDate, date);
+    });
+    setSelectedDayEvents(dayEvents);
+  };
 
   const loadEvents = async () => {
     try {
@@ -163,117 +182,162 @@ export const ProcessCalendar = ({
     });
   };
 
+  const hasEventsOnDate = (date: Date) => {
+    return events.some(event => {
+      const eventDate = parseISO(event.event_date);
+      return isSameDay(eventDate, date);
+    });
+  };
+
+  const modifiers = {
+    hasEvents: (date: Date) => hasEventsOnDate(date),
+  };
+
+  const modifiersClassNames = {
+    hasEvents: 'relative after:content-[""] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-primary',
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
+            <CalendarIcon className="h-5 w-5 text-primary" />
             Calendário do Processo
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Adicionar novo evento */}
-          {!isAddingEvent ? (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsAddingEvent(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Evento
-            </Button>
-          ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 py-4 h-full overflow-hidden">
+          {/* Calendário Visual */}
+          <div className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Novo Evento</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Título do Evento</Label>
-                  <Input
-                    id="title"
-                    value={newEvent.title}
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, title: e.target.value })
-                    }
-                    placeholder="Ex: Reunião de acompanhamento"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descrição (opcional)</Label>
-                  <Textarea
-                    id="description"
-                    value={newEvent.description}
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, description: e.target.value })
-                    }
-                    placeholder="Detalhes sobre o evento..."
-                    rows={2}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="event_date">Data</Label>
-                    <Input
-                      id="event_date"
-                      type="date"
-                      value={newEvent.event_date}
-                      onChange={(e) =>
-                        setNewEvent({ ...newEvent, event_date: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="event_time">Horário (opcional)</Label>
-                    <Input
-                      id="event_time"
-                      type="time"
-                      value={newEvent.event_time}
-                      onChange={(e) =>
-                        setNewEvent({ ...newEvent, event_time: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsAddingEvent(false);
-                      setNewEvent({ title: '', description: '', event_date: '', event_time: '' });
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleAddEvent}>Adicionar</Button>
-                </div>
+              <CardContent className="p-4">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  locale={ptBR}
+                  modifiers={modifiers}
+                  modifiersClassNames={modifiersClassNames}
+                  className="rounded-md border-0"
+                />
               </CardContent>
             </Card>
-          )}
 
-          {/* Lista de eventos */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-muted-foreground">
-              Eventos e Atividades
-            </h3>
+            {/* Adicionar novo evento */}
+            {!isAddingEvent ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setIsAddingEvent(true);
+                  setNewEvent({ 
+                    title: '', 
+                    description: '', 
+                    event_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '', 
+                    event_time: '' 
+                  });
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Evento
+              </Button>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Novo Evento</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Título do Evento</Label>
+                    <Input
+                      id="title"
+                      value={newEvent.title}
+                      onChange={(e) =>
+                        setNewEvent({ ...newEvent, title: e.target.value })
+                      }
+                      placeholder="Ex: Reunião de acompanhamento"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Descrição (opcional)</Label>
+                    <Textarea
+                      id="description"
+                      value={newEvent.description}
+                      onChange={(e) =>
+                        setNewEvent({ ...newEvent, description: e.target.value })
+                      }
+                      placeholder="Detalhes sobre o evento..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="event_date">Data</Label>
+                      <Input
+                        id="event_date"
+                        type="date"
+                        value={newEvent.event_date}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, event_date: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="event_time">Horário (opcional)</Label>
+                      <Input
+                        id="event_time"
+                        type="time"
+                        value={newEvent.event_time}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, event_time: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsAddingEvent(false);
+                        setNewEvent({ title: '', description: '', event_date: '', event_time: '' });
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleAddEvent}>Adicionar</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Eventos do dia selecionado */}
+          <div className="space-y-3 overflow-y-auto max-h-[calc(85vh-120px)]">
+            <div className="sticky top-0 bg-background pb-2 border-b">
+              <h3 className="font-semibold text-sm">
+                {selectedDate ? format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione uma data'}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {selectedDayEvents.length} {selectedDayEvents.length === 1 ? 'evento' : 'eventos'}
+              </p>
+            </div>
 
             {loading ? (
               <div className="text-center py-8 text-muted-foreground">
                 Carregando eventos...
               </div>
-            ) : events.length === 0 ? (
+            ) : selectedDayEvents.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Nenhum evento registrado ainda</p>
+                <CalendarIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">Nenhum evento neste dia</p>
               </div>
             ) : (
-              events.map((event) => (
+              selectedDayEvents.map((event) => (
                 <Card key={event.id} className="relative">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -288,7 +352,7 @@ export const ProcessCalendar = ({
                           {event.type === 'document' ? (
                             <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           ) : (
-                            <Calendar className="h-5 w-5 text-primary" />
+                            <CalendarIcon className="h-5 w-5 text-primary" />
                           )}
                         </div>
 
@@ -310,11 +374,12 @@ export const ProcessCalendar = ({
                           )}
 
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {formatDate(event.event_date)}
-                              {event.event_time && ` às ${event.event_time}`}
-                            </div>
+                            {event.event_time && (
+                              <div className="flex items-center gap-1">
+                                <CalendarIcon className="h-3 w-3" />
+                                {event.event_time}
+                              </div>
+                            )}
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
                               {event.uploaded_by}
