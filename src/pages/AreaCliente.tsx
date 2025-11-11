@@ -148,6 +148,7 @@ const AreaCliente = () => {
   const [isProcessDetailsModalOpen, setIsProcessDetailsModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
   const [selectedProcess, setSelectedProcess] = useState<any>(null);
+  const [uploadProcessId, setUploadProcessId] = useState<string | null>(null);
   const [uploadForm, setUploadForm] = useState({
     title: "",
     type: "",
@@ -902,7 +903,11 @@ const AreaCliente = () => {
                     variant="outline" 
                     className="w-full"
                     onClick={() => {
-                      setSelectedProcess(currentProcess);
+                      if (!currentProcess?.id) {
+                        toast.error('Selecione um processo válido');
+                        return;
+                      }
+                      setUploadProcessId(String(currentProcess.id));
                       setIsUploadModalOpen(true);
                     }}
                   >
@@ -1553,11 +1558,14 @@ const AreaCliente = () => {
       </Dialog>
 
       {/* Upload Modal */}
-      {selectedProcess && (
+      {uploadProcessId && (
         <DocumentUpload
-          processId={String(selectedProcess.id)}
+          processId={uploadProcessId}
           open={isUploadModalOpen}
-          onOpenChange={setIsUploadModalOpen}
+          onOpenChange={(open) => {
+            setIsUploadModalOpen(open);
+            if (!open) setUploadProcessId(null);
+          }}
           onUploadComplete={() => {
             // Recarregar documentos
             const load = async () => {
