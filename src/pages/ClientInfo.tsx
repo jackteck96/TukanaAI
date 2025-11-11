@@ -378,24 +378,12 @@ const ClientInfo = () => {
                   <User className="h-5 w-5" />
                   Informações Pessoais
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  {legalData && (
-                    <CopyLegalQualificationButton 
-                      data={legalData as LegalData}
-                      size="sm"
-                    />
-                  )}
-                  {!isDataComplete() && (
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={handleRequestInformation}
-                      disabled={requestingSent}
-                    >
-                      {requestingSent ? "Enviando..." : "Solicitar Informações"}
-                    </Button>
-                  )}
-                </div>
+                {legalData && (
+                  <CopyLegalQualificationButton 
+                    data={legalData as LegalData}
+                    size="sm"
+                  />
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -422,6 +410,20 @@ const ClientInfo = () => {
                 </div>
                 <p className="text-sm">{clientData.cpf_cnpj || 'Não informado'}</p>
               </div>
+
+              {!isDataComplete() && (
+                <div className="pt-4 border-t border-border">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleRequestInformation}
+                    disabled={requestingSent}
+                    className="w-full"
+                  >
+                    {requestingSent ? "Enviando..." : "Solicitar Informações"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
