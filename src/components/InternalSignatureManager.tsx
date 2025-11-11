@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,17 +49,66 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   isStandalone = false,
   filePath
 }) => {
-  const [step, setStep] = useState<'placement' | 'form' | 'otp' | 'success'>('placement');
+  // Chave para sessionStorage específica por documento
+  const storageKey = `signature_flow_${documentId}`;
+
+  // Restaurar estado salvo ao montar
+  const getInitialState = () => {
+    try {
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Erro ao restaurar estado da assinatura:', e);
+    }
+    return {
+      step: 'placement' as const,
+      signatureData: {
+        signerName: '',
+        signerEmail: '',
+        authMethod: 'email' as const,
+        authContact: ''
+      },
+      otpCode: '',
+      verificationId: '',
+      placement: null
+    };
+  };
+
+  const initialState = getInitialState();
+
+  const [step, setStep] = useState<'placement' | 'form' | 'otp' | 'success'>(initialState.step);
   const [loading, setLoading] = useState(false);
-  const [signatureData, setSignatureData] = useState<SignatureData>({
-    signerName: '',
-    signerEmail: '',
-    authMethod: 'email',
-    authContact: ''
-  });
-  const [otpCode, setOtpCode] = useState('');
-  const [verificationId, setVerificationId] = useState<string>('');
-  const [placement, setPlacement] = useState<{ x: number; y: number } | null>(null);
+  const [signatureData, setSignatureData] = useState<SignatureData>(initialState.signatureData);
+  const [otpCode, setOtpCode] = useState(initialState.otpCode);
+  const [verificationId, setVerificationId] = useState<string>(initialState.verificationId);
+  const [placement, setPlacement] = useState<{ x: number; y: number } | null>(initialState.placement);
+
+  // Salvar estado no sessionStorage sempre que mudar
+  useEffect(() => {
+    try {
+      const state = {
+        step,
+        signatureData,
+        otpCode,
+        verificationId,
+        placement
+      };
+      sessionStorage.setItem(storageKey, JSON.stringify(state));
+    } catch (e) {
+      console.error('Erro ao salvar estado da assinatura:', e);
+    }
+  }, [step, signatureData, otpCode, verificationId, placement, storageKey]);
+
+  // Limpar sessionStorage quando completar ou fechar
+  useEffect(() => {
+    return () => {
+      if (step === 'success') {
+        sessionStorage.removeItem(storageKey);
+      }
+    };
+  }, [step, storageKey]);
 
   const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -427,6 +476,9 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   };
 
   const handleNewSignature = () => {
+    // Limpar sessionStorage ao iniciar nova assinatura
+    sessionStorage.removeItem(storageKey);
+    
     setStep('placement');
     setSignatureData({
       signerName: '',
