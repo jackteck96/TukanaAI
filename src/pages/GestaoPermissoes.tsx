@@ -45,6 +45,7 @@ export default function GestaoPermissoes() {
 
   const isCompanyAdmin = primaryRole === 'company_admin';
   const isClient = primaryRole === 'client';
+  const isClientOrClientCollab = primaryRole === 'client' || primaryRole === 'client_collaborator';
   const effectiveCompanyId = company?.id ?? companyId ?? undefined;
 
   const getDashboardRoute = () => {
@@ -278,12 +279,16 @@ export default function GestaoPermissoes() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Convidar Colaborador */}
-              {isCompanyAdmin || !isClient ? (
+              {(primaryRole === 'company_admin' || primaryRole === 'company_collaborator') ? (
                 <UserInviteSystem onInviteSent={loadData} />
-              ) : clientEmail ? (
-                <ClientCollaboratorInvite clientEmail={clientEmail} onInviteSent={loadData} />
+              ) : isClientOrClientCollab ? (
+                clientEmail ? (
+                  <ClientCollaboratorInvite clientEmail={clientEmail} onInviteSent={loadData} />
+                ) : (
+                  <Button variant="outline" disabled>Carregando…</Button>
+                )
               ) : (
-                <Button variant="outline" disabled>Carregando…</Button>
+                <Button variant="outline" disabled>Indisponível</Button>
               )}
 
               {/* Gerenciar Colaboradores */}
