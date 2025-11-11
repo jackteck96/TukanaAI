@@ -155,6 +155,40 @@ export default function GestaoPermissoes() {
             collaboratorsData = profilesData || [];
           }
         }
+      } else if (primaryRole === 'client_collaborator') {
+        // Obter o email do cliente associado a este colaborador
+        const { data: roleLink, error: roleErr } = await supabase
+          .from('user_roles')
+          .select('client_email')
+          .eq('user_id', user.id)
+          .eq('role', 'client_collaborator')
+          .maybeSingle();
+
+        if (roleErr) throw roleErr;
+        if (roleLink?.client_email) {
+          contextClientEmail = roleLink.client_email as string;
+          setClientEmail(contextClientEmail);
+
+          // Carregar colaboradores vinculados ao mesmo cliente
+          const { data: rolesData, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('user_id')
+            .eq('role', 'client_collaborator')
+            .eq('client_email', contextClientEmail);
+
+          if (rolesError) throw rolesError;
+
+          if (rolesData && rolesData.length > 0) {
+            const userIds = rolesData.map(r => r.user_id);
+            const { data: profilesData, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, email, full_name, role')
+              .in('id', userIds);
+
+            if (profilesError) throw profilesError;
+            collaboratorsData = profilesData || [];
+          }
+        }
       }
 
       setCollaborators(collaboratorsData);
@@ -416,7 +450,7 @@ export default function GestaoPermissoes() {
           onOpenChange={setModalOpen}
           collaborator={selectedCollaborator}
           companyId={isCompanyAdmin ? effectiveCompanyId : undefined}
-          clientEmail={isClient ? clientEmail || undefined : undefined}
+          clientEmail={isClientOrClientCollab ? clientEmail || undefined : undefined}
           onSuccess={loadData}
         />
       )}
