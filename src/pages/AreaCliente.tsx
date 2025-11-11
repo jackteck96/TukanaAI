@@ -927,12 +927,17 @@ const AreaCliente = () => {
                     variant="outline" 
                     className="w-full"
                     onClick={() => {
+                      console.log('[AreaCliente] Botão Upload clicado. currentProcess:', currentProcess);
                       if (!currentProcess?.id) {
+                        console.error('[AreaCliente] currentProcess.id não existe');
                         toast.error('Selecione um processo válido');
                         return;
                       }
-                      setUploadProcessId(String(currentProcess.id));
+                      console.log('[AreaCliente] Setando uploadProcessId:', currentProcess.id);
+                      const processIdStr = String(currentProcess.id);
+                      setUploadProcessId(processIdStr);
                       setIsUploadModalOpen(true);
+                      console.log('[AreaCliente] Modal aberto. uploadProcessId:', processIdStr, 'isUploadModalOpen:', true);
                     }}
                   >
                     <Upload className="h-4 w-4 mr-2" />
@@ -1587,15 +1592,18 @@ const AreaCliente = () => {
       </Dialog>
 
       {/* Upload Modal */}
-      {uploadProcessId && (
-        <DocumentUpload
-          processId={uploadProcessId}
-          open={isUploadModalOpen}
-          onOpenChange={(open) => {
-            setIsUploadModalOpen(open);
-            if (!open) setUploadProcessId(null);
-          }}
-          onUploadComplete={() => {
+      <DocumentUpload
+        processId={uploadProcessId || ''}
+        open={isUploadModalOpen && !!uploadProcessId}
+        onOpenChange={(open) => {
+          console.log('[AreaCliente] DocumentUpload onOpenChange:', open);
+          setIsUploadModalOpen(open);
+          if (!open) {
+            console.log('[AreaCliente] Limpando uploadProcessId');
+            setUploadProcessId(null);
+          }
+        }}
+        onUploadComplete={() => {
             // Recarregar documentos
             const load = async () => {
               if (!user?.email) return;
@@ -1629,7 +1637,6 @@ const AreaCliente = () => {
             load();
           }}
         />
-      )}
 
       {/* Documents Modal */}
       <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
