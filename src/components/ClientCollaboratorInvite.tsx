@@ -74,28 +74,21 @@ const ClientCollaboratorInvite = ({ clientEmail, onInviteSent }: ClientCollabora
     setLoading(true);
 
     try {
-      // Gerar token único
-      const token = crypto.randomUUID().replace(/-/g, '');
-      
-      // Criar convite para colaborador de cliente
-      const { error: inviteError } = await supabase
-        .from('user_invites')
-        .insert({
-          token,
+      // Criar convite via Edge Function (bypass RLS com validação)
+      const { data: createRes, error: createErr } = await supabase.functions.invoke('create-client-collaborator-invite', {
+        body: {
           email: formData.email,
           full_name: formData.full_name,
-          role: 'staff',
-          client_email: clientEmail,
-          invited_by: user.id,
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'pending',
           access_type: formData.access_type,
           allowed_process_ids: formData.access_type === 'limited' ? formData.allowed_process_ids : []
-        });
+        }
+      });
 
-      if (inviteError) throw inviteError;
+      if (createErr || !createRes?.success) {
+        throw new Error(createErr?.message || createRes?.error || 'Falha ao criar convite');
+      }
 
-      // Enviar email de convite
+      const token = createRes.token as string;
       const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
       
       try {
