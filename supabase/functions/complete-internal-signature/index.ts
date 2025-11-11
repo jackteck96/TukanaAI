@@ -44,10 +44,19 @@ Deno.serve(async (req) => {
       authContact,
       placement,
       userAgent,
+      isStandalone,
     } = await req.json();
 
-    if (!verificationId || !otpCode || !documentId || !processId || !signerName || !signerEmail || !authContact) {
+    if (!verificationId || !otpCode || !documentId || !signerName || !signerEmail || !authContact) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    // processId é opcional para standalone signatures
+    if (!isStandalone && !processId) {
+      return new Response(JSON.stringify({ error: 'processId required for non-standalone signatures' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
@@ -107,30 +116,62 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch process to get company_id
-    const { data: process, error: processErr } = await supabaseAdmin
-      .from('processes')
-      .select('company_id, client_email')
-      .eq('id', processId)
-      .single();
-    if (processErr || !process?.company_id) {
-      console.error('[complete-internal-signature] Process fetch error', processErr);
-      return new Response(JSON.stringify({ error: 'Process or company not found', details: processErr?.message || processErr }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
+    // Fetch company_id and file_path based on signature type
+    let companyId: string;
+    let clientEmail: string | null = null;
+    let filePath: string | null = null;
 
-    // Fetch document path for hashing context (optional)
-    const { data: docInfo } = await supabaseAdmin
-      .from('documents')
-      .select('file_path')
-      .eq('id', documentId)
-      .single();
+    if (isStandalone) {
+      // Standalone signature: fetch from standalone_signature_documents
+      const { data: standaloneDoc, error: standaloneErr } = await supabaseAdmin
+        .from('standalone_signature_documents')
+        .select('company_id, client_email, file_path')
+        .eq('id', documentId)
+        .single();
+      
+      if (standaloneErr || !standaloneDoc?.company_id) {
+        console.error('[complete-internal-signature] Standalone document fetch error', standaloneErr);
+        return new Response(JSON.stringify({ error: 'Standalone document not found', details: standaloneErr?.message || standaloneErr }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+      
+      companyId = standaloneDoc.company_id;
+      clientEmail = standaloneDoc.client_email;
+      filePath = standaloneDoc.file_path;
+    } else {
+      // Process-based signature: fetch from processes and documents
+      const { data: process, error: processErr } = await supabaseAdmin
+        .from('processes')
+        .select('company_id, client_email')
+        .eq('id', processId!)
+        .single();
+      
+      if (processErr || !process?.company_id) {
+        console.error('[complete-internal-signature] Process fetch error', processErr);
+        return new Response(JSON.stringify({ error: 'Process or company not found', details: processErr?.message || processErr }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+      
+      companyId = process.company_id;
+      clientEmail = process.client_email;
+
+      // Fetch document path
+      const { data: docInfo } = await supabaseAdmin
+        .from('documents')
+        .select('file_path')
+        .eq('id', documentId)
+        .single();
+      
+      filePath = docInfo?.file_path || null;
+    }
 
     const signatureTimestamp = new Date();
     const signatureHash = await sha256Hex(`${documentId}|${userId}|${signatureTimestamp.toISOString()}`);
-    const documentHash = await sha256Hex(`${documentId}|${docInfo?.file_path || ''}`);
+    const documentHash = await sha256Hex(`${documentId}|${filePath || ''}`);
 
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
 
@@ -157,22 +198,28 @@ Deno.serve(async (req) => {
       signature_position: placement || null,
     };
 
+    const insertPayload: any = {
+      document_id: documentId,
+      company_id: companyId,
+      signer_id: userId,
+      signer_name: signerName,
+      signer_email: signerEmail,
+      authentication_method: 'email',
+      authentication_contact: authContact,
+      signature_hash: signatureHash,
+      document_hash: documentHash,
+      signature_order: 1,
+      signature_metadata: signatureMetadata,
+    };
+
+    // Adicionar process_id apenas se não for standalone
+    if (!isStandalone && processId) {
+      insertPayload.process_id = processId;
+    }
+
     const { data: signatureRow, error: insertErr } = await supabaseAdmin
       .from('internal_signatures')
-      .insert({
-        document_id: documentId,
-        process_id: processId,
-        company_id: process.company_id,
-        signer_id: userId,
-        signer_name: signerName,
-        signer_email: signerEmail,
-        authentication_method: 'email',
-        authentication_contact: authContact,
-        signature_hash: signatureHash,
-        document_hash: documentHash,
-        signature_order: 1,
-        signature_metadata: signatureMetadata,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
@@ -186,11 +233,11 @@ Deno.serve(async (req) => {
 
     // Tentar aplicar assinatura visual no PDF e atualizar arquivo
     try {
-      if (docInfo?.file_path) {
-        console.log('[complete-internal-signature] Baixando PDF original', docInfo.file_path);
+      if (filePath) {
+        console.log('[complete-internal-signature] Baixando PDF original', filePath);
         const { data: origBlob, error: dlErr } = await supabaseAdmin.storage
           .from('documents')
-          .download(docInfo.file_path);
+          .download(filePath);
         if (dlErr) {
           console.warn('[complete-internal-signature] Falha ao baixar PDF original', dlErr);
         }
@@ -219,7 +266,7 @@ Deno.serve(async (req) => {
           page.drawText(new Date(signatureTimestamp).toLocaleString('pt-BR'), { x: x + 8, y: y + 6, size: 9, font, color: rgb(0,0,0) });
 
           const stampedBytes = await pdfDoc.save();
-          const signedPath = `signed/${docInfo.file_path}`;
+          const signedPath = `signed/${filePath}`;
           const stampedBlob = new Blob([stampedBytes], { type: 'application/pdf' });
           console.log('[complete-internal-signature] Enviando PDF assinado para', signedPath, 'tamanho', stampedBytes.byteLength);
           const { error: upErr } = await supabaseAdmin.storage
@@ -228,15 +275,28 @@ Deno.serve(async (req) => {
 
           if (!upErr) {
             console.log('[complete-internal-signature] Upload do PDF assinado concluído');
+            
             // Atualizar documento para apontar para a versão assinada
-            const { error: updDocErr } = await supabaseAdmin
-              .from('documents')
-              .update({ file_path: signedPath })
-              .eq('id', documentId);
-            if (updDocErr) {
-              console.warn('[complete-internal-signature] Falha ao atualizar file_path para assinado', updDocErr);
+            if (isStandalone) {
+              const { error: updDocErr } = await supabaseAdmin
+                .from('standalone_signature_documents')
+                .update({ file_path: signedPath })
+                .eq('id', documentId);
+              if (updDocErr) {
+                console.warn('[complete-internal-signature] Falha ao atualizar file_path standalone', updDocErr);
+              } else {
+                console.log('[complete-internal-signature] file_path standalone atualizado para', signedPath);
+              }
             } else {
-              console.log('[complete-internal-signature] file_path do documento atualizado para', signedPath);
+              const { error: updDocErr } = await supabaseAdmin
+                .from('documents')
+                .update({ file_path: signedPath })
+                .eq('id', documentId);
+              if (updDocErr) {
+                console.warn('[complete-internal-signature] Falha ao atualizar file_path para assinado', updDocErr);
+              } else {
+                console.log('[complete-internal-signature] file_path do documento atualizado para', signedPath);
+              }
             }
           } else {
             console.warn('[complete-internal-signature] Falha ao subir PDF assinado', upErr);

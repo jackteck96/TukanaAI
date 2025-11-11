@@ -318,6 +318,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
           authContact: signatureData.authContact,
           placement: placement ? { x_percent: placement.x, y_percent: placement.y, page: 1 } : null,
           userAgent,
+          isStandalone,
         }
       });
 
