@@ -54,6 +54,7 @@ import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
 import PartnerDocumentsCard from "@/components/PartnerDocumentsCard";
 import { PdfConverter } from "@/components/PdfConverter";
 import { updateProcessProgress } from "@/utils/processProgressUpdater";
+import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -144,6 +145,7 @@ const AreaCliente = () => {
   };
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isStandaloneUploadOpen, setIsStandaloneUploadOpen] = useState(false);
   const [isDocumentDetailsModalOpen, setIsDocumentDetailsModalOpen] = useState(false);
   const [isProcessDetailsModalOpen, setIsProcessDetailsModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
@@ -902,8 +904,7 @@ const AreaCliente = () => {
                     variant="outline" 
                     className="w-full"
                     onClick={() => {
-                      setSelectedProcess(currentProcess);
-                      setIsUploadModalOpen(true);
+                      setIsStandaloneUploadOpen(true);
                     }}
                   >
                     <Upload className="h-4 w-4 mr-2" />
@@ -1654,6 +1655,15 @@ const AreaCliente = () => {
         newCollaborator={newCollaborator}
         setNewCollaborator={setNewCollaborator}
         onInvite={handleInviteCollaborator}
+      />
+
+      {/* Standalone Document Upload Modal */}
+      <StandaloneDocumentUpload
+        open={isStandaloneUploadOpen}
+        onOpenChange={setIsStandaloneUploadOpen}
+        onSuccess={() => {
+          setIsStandaloneUploadOpen(false);
+        }}
       />
     </div>
   );
