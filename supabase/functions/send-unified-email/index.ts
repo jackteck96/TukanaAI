@@ -53,9 +53,20 @@ const UnifiedEmailSchema = z.object({
   inviterName: z.string().trim().min(1).max(200),
   role: z.string().max(50).optional(),
   isCollaborator: z.boolean().optional(),
-  isExistingClient: z.boolean().optional()
-}).refine(data => data.inviteLink || data.directAccessLink, {
-  message: "Either inviteLink or directAccessLink must be provided"
+  isExistingClient: z.boolean().optional(),
+  template: z.string().max(100).optional(),
+  subject: z.string().max(300).optional(),
+  data: z.record(z.any()).optional()
+}).refine(data => {
+  // Para notificações (templates de assinatura), links não são obrigatórios
+  const notificationTemplates = ['signatures_complete', 'signature_request', 'pending_signature'];
+  if (data.template && notificationTemplates.includes(data.template)) {
+    return true;
+  }
+  // Para convites, ao menos um link é obrigatório
+  return data.inviteLink || data.directAccessLink;
+}, {
+  message: "Either inviteLink or directAccessLink must be provided for invites"
 });
 
 interface UnifiedEmailRequest {
@@ -70,6 +81,9 @@ interface UnifiedEmailRequest {
   role?: string;
   isCollaborator?: boolean;
   isExistingClient?: boolean;
+  template?: string;
+  subject?: string;
+  data?: Record<string, any>;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -114,7 +128,10 @@ const handler = async (req: Request): Promise<Response> => {
       inviterName,
       role,
       isCollaborator = false,
-      isExistingClient = false
+      isExistingClient = false,
+      template,
+      subject: customSubject,
+      data: customData
     } = validationResult.data;
 
     const accessLink = directAccessLink || inviteLink || "";
@@ -122,16 +139,258 @@ const handler = async (req: Request): Promise<Response> => {
     const isDirectAccess = isExistingClient && directAccessLink;
     const companyName = "Fuzen - Sistema de Gestão Documental";
     
-    const subject = isDirectAccess
+    // Se for um template de notificação, usar o subject customizado
+    const isNotification = template && ['signatures_complete', 'signature_request', 'pending_signature'].includes(template);
+    
+    const subject = customSubject || (isDirectAccess
       ? `🔔 Novo processo criado: ${processName}`
       : isClientInvite 
       ? `🎉 Bem-vindo! Acesse seu processo: ${processName}`
-      : `🤝 Convite para fazer parte da equipe - ${companyName}`;
+      : `🤝 Convite para fazer parte da equipe - ${companyName}`);
 
     // ALWAYS use verified domain in production
     const fromEmail = "convites@fuzen.online";
 
-    const emailHtml = `
+    // Se for notificação de assinatura, usar template específico
+    let emailHtml = '';
+    
+    if (isNotification && template === 'signatures_complete') {
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${subject}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              line-height: 1.6; 
+              color: #333; 
+              margin: 0; 
+              padding: 0; 
+              background-color: #f8fafc;
+            }
+            .container { 
+              max-width: 600px; 
+              margin: 20px auto; 
+              background: white; 
+              border-radius: 12px; 
+              overflow: hidden; 
+              box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            }
+            .header { 
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+              color: white; 
+              padding: 40px 30px; 
+              text-align: center; 
+            }
+            .header h1 { 
+              margin: 0; 
+              font-size: 28px; 
+              font-weight: 600; 
+            }
+            .content { 
+              padding: 40px 30px; 
+            }
+            .success-icon {
+              text-align: center;
+              font-size: 64px;
+              margin: 20px 0;
+            }
+            .document-info { 
+              background: #f1f5f9; 
+              border-left: 4px solid #10b981; 
+              padding: 20px; 
+              margin: 25px 0; 
+              border-radius: 6px; 
+            }
+            .footer { 
+              background: #f9fafb; 
+              padding: 30px; 
+              text-align: center; 
+              border-top: 1px solid #e5e7eb; 
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✅ Documento Totalmente Assinado</h1>
+            </div>
+            <div class="content">
+              <div class="success-icon">🎉</div>
+              <div class="greeting">Olá <strong>${full_name}</strong>,</div>
+              <p>Temos uma ótima notícia! O documento foi assinado por todas as partes envolvidas.</p>
+              <div class="document-info">
+                <h3>📄 ${customData?.documentName || 'Documento'}</h3>
+                <p><strong>Status:</strong> Totalmente assinado</p>
+                <p><strong>Empresa:</strong> ${customData?.companyName || companyName}</p>
+              </div>
+              <p>O documento está disponível para download na sua área de Assinaturas.</p>
+              <p>Atenciosamente,<br><strong>${inviterName}</strong></p>
+            </div>
+            <div class="footer">
+              <p><strong>${companyName}</strong></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    } else if (isNotification && template === 'signature_request') {
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${subject}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              line-height: 1.6; 
+              color: #333; 
+              margin: 0; 
+              padding: 0; 
+              background-color: #f8fafc;
+            }
+            .container { 
+              max-width: 600px; 
+              margin: 20px auto; 
+              background: white; 
+              border-radius: 12px; 
+              overflow: hidden; 
+              box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            }
+            .header { 
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+              color: white; 
+              padding: 40px 30px; 
+              text-align: center; 
+            }
+            .header h1 { 
+              margin: 0; 
+              font-size: 28px; 
+              font-weight: 600; 
+            }
+            .content { 
+              padding: 40px 30px; 
+            }
+            .document-info { 
+              background: #fef3cd; 
+              border-left: 4px solid #f59e0b; 
+              padding: 20px; 
+              margin: 25px 0; 
+              border-radius: 6px; 
+            }
+            .footer { 
+              background: #f9fafb; 
+              padding: 30px; 
+              text-align: center; 
+              border-top: 1px solid #e5e7eb; 
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📝 Documento Aguardando Assinatura</h1>
+            </div>
+            <div class="content">
+              <div class="greeting">Olá <strong>${full_name}</strong>,</div>
+              <p>Um documento foi enviado e aguarda sua assinatura.</p>
+              <div class="document-info">
+                <h3>📄 ${customData?.documentName || 'Documento'}</h3>
+                <p><strong>Enviado por:</strong> ${inviterName}</p>
+                <p><strong>Status:</strong> Aguardando sua assinatura</p>
+              </div>
+              <p>Acesse a aba de <strong>Assinaturas</strong> em seu dashboard para visualizar e assinar o documento.</p>
+              <p>Atenciosamente,<br><strong>${inviterName}</strong></p>
+            </div>
+            <div class="footer">
+              <p><strong>${companyName}</strong></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    } else if (isNotification && template === 'pending_signature') {
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${subject}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              line-height: 1.6; 
+              color: #333; 
+              margin: 0; 
+              padding: 0; 
+              background-color: #f8fafc;
+            }
+            .container { 
+              max-width: 600px; 
+              margin: 20px auto; 
+              background: white; 
+              border-radius: 12px; 
+              overflow: hidden; 
+              box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            }
+            .header { 
+              background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
+              color: white; 
+              padding: 40px 30px; 
+              text-align: center; 
+            }
+            .header h1 { 
+              margin: 0; 
+              font-size: 28px; 
+              font-weight: 600; 
+            }
+            .content { 
+              padding: 40px 30px; 
+            }
+            .document-info { 
+              background: #dbeafe; 
+              border-left: 4px solid #3b82f6; 
+              padding: 20px; 
+              margin: 25px 0; 
+              border-radius: 6px; 
+            }
+            .footer { 
+              background: #f9fafb; 
+              padding: 30px; 
+              text-align: center; 
+              border-top: 1px solid #e5e7eb; 
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✍️ Cliente Assinou o Documento</h1>
+            </div>
+            <div class="content">
+              <div class="greeting">Olá <strong>${full_name}</strong>,</div>
+              <p>O cliente <strong>${inviterName}</strong> assinou o documento. Agora é sua vez!</p>
+              <div class="document-info">
+                <h3>📄 ${customData?.documentName || 'Documento'}</h3>
+                <p><strong>Assinado por:</strong> ${customData?.signerName || inviterName}</p>
+                <p><strong>Status:</strong> Aguardando assinatura da empresa</p>
+              </div>
+              <p>Acesse a aba de <strong>Assinaturas</strong> em seu dashboard para visualizar e assinar o documento.</p>
+              <p>Atenciosamente,<br><strong>${companyName}</strong></p>
+            </div>
+            <div class="footer">
+              <p><strong>${companyName}</strong></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    } else {
+      // Template original para convites
+      emailHtml = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -344,6 +603,7 @@ const handler = async (req: Request): Promise<Response> => {
       </body>
       </html>
     `;
+    }
 
     console.log('[send-unified-email] Email details:');
     console.log('  - To:', email);
