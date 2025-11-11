@@ -47,7 +47,7 @@ const UnifiedEmailSchema = z.object({
   full_name: z.string().trim().min(1).max(200),
   processId: z.string().uuid().optional(),
   processName: z.string().trim().max(300).optional(),
-  companyId: z.string().uuid(),
+  companyId: z.string().uuid().optional(),
   inviteLink: z.string().url().max(1000).optional(),
   directAccessLink: z.string().url().max(1000).optional(),
   inviterName: z.string().trim().min(1).max(200),
@@ -74,7 +74,7 @@ interface UnifiedEmailRequest {
   full_name: string;
   processId?: string;
   processName?: string;
-  companyId: string;
+  companyId?: string;
   inviteLink?: string;
   directAccessLink?: string;
   inviterName: string;
