@@ -100,6 +100,14 @@ const AreaCliente = () => {
     }
   }, [shouldOpenProfile]);
 
+  // Limpar estados ao desmontar
+  useEffect(() => {
+    return () => {
+      setUploadProcessId(null);
+      setIsUploadModalOpen(false);
+    };
+  }, []);
+
   const clientInfo = {
     name: userProfile?.full_name || user?.email || "Cliente",
     email: userProfile?.email || user?.email || "",

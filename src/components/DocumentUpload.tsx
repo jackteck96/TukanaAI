@@ -45,6 +45,14 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
   const [previewDocument, setPreviewDocument] = useState<any>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [issueDate, setIssueDate] = useState<Date | undefined>(undefined);
+
+  // Limpar estados de preview quando o modal principal é fechado
+  useEffect(() => {
+    if (!open) {
+      setShowPreviewModal(false);
+      setPreviewDocument(null);
+    }
+  }, [open]);
   const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined);
   const [issuingLocation, setIssuingLocation] = useState('');
   const [processCompanyId, setProcessCompanyId] = useState<string | null>(null);
@@ -247,7 +255,7 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
       setExpirationDate(undefined);
       setIssuingLocation('');
       
-      // Fechar modal
+      // Fechar modal principal
       onOpenChange(false);
       
       // Callback para atualizar a interface pai
@@ -255,13 +263,16 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
 
       // Se requer assinatura, abrir automaticamente o modal de assinatura
       if (requiresSignature && docData) {
-        setPreviewDocument({
-          id: docData.id,
-          file_name: docData.file_name,
-          file_path: docData.file_path,
-          file_type: docData.file_type
-        });
-        setShowPreviewModal(true);
+        // Pequeno delay para garantir que o modal principal fechou primeiro
+        setTimeout(() => {
+          setPreviewDocument({
+            id: docData.id,
+            file_name: docData.file_name,
+            file_path: docData.file_path,
+            file_type: docData.file_type
+          });
+          setShowPreviewModal(true);
+        }, 100);
 
         // Enviar notificação e email para o destinatário
         try {
