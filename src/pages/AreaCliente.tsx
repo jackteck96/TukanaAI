@@ -1020,6 +1020,23 @@ const AreaCliente = () => {
           open={isEditProfileModalOpen}
           onOpenChange={setIsEditProfileModalOpen}
         />
+
+        {/* Upload Modal */}
+        <DocumentUpload
+          processId={uploadProcessId || ''}
+          open={isUploadModalOpen && !!uploadProcessId}
+          onOpenChange={(open) => {
+            console.log('[AreaCliente] DocumentUpload onOpenChange:', open);
+            setIsUploadModalOpen(open);
+            if (!open) {
+              console.log('[AreaCliente] Limpando uploadProcessId');
+              setUploadProcessId(null);
+            }
+          }}
+          onUploadComplete={() => {
+            setRefreshKey(prev => prev + 1);
+          }}
+        />
       </div>
     );
   }
