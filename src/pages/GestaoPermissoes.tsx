@@ -82,49 +82,53 @@ export default function GestaoPermissoes() {
       let contextClientEmail: string | undefined;
       let rolesByUser: Record<string, string[]> = {};
 
-      if (effectiveCompanyId) {
-        // Carregar colaboradores EXATAMENTE como na Gestão de Colaboradores
+      if (primaryRole === 'company_admin' || primaryRole === 'company_collaborator') {
+        // Contexto de empresa: carregar colaboradores exatamente como na Gestão de Colaboradores
         contextCompanyId = effectiveCompanyId;
 
-        // 1) Buscar apenas colaboradores ativos via user_roles
-        const { data: roleLinks, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('user_id, role')
-          .eq('company_id', contextCompanyId)
-          .eq('role', 'company_collaborator')
-          .neq('user_id', user.id);
-
-        if (rolesError) throw rolesError;
-
-        if (!roleLinks || roleLinks.length === 0) {
+        if (!contextCompanyId) {
           collaboratorsData = [];
         } else {
-          const listedUserIds = roleLinks.map((r: any) => r.user_id as string);
+          // 1) Buscar apenas colaboradores ativos via user_roles
+          const { data: roleLinks, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('user_id, role')
+            .eq('company_id', contextCompanyId)
+            .eq('role', 'company_collaborator')
+            .neq('user_id', user.id);
 
-          // 2) Buscar profiles apenas dos colaboradores ativos
-          const { data: profilesData, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, email, full_name')
-            .in('id', listedUserIds);
+          if (rolesError) throw rolesError;
 
-          if (profilesError) throw profilesError;
+          if (!roleLinks || roleLinks.length === 0) {
+            collaboratorsData = [];
+          } else {
+            const listedUserIds = roleLinks.map((r: any) => r.user_id as string);
 
-          // 3) Montar rolesByUser para compatibilidade
-          rolesByUser = roleLinks.reduce((acc: Record<string, string[]>, r: any) => {
-            acc[r.user_id] = [r.role];
-            return acc;
-          }, {});
+            // 2) Buscar profiles apenas dos colaboradores ativos
+            const { data: profilesData, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, email, full_name')
+              .in('id', listedUserIds);
 
-          collaboratorsData = (profilesData || []).map((p: any) => ({
-            id: p.id,
-            email: p.email,
-            full_name: p.full_name,
-            role: (rolesByUser[p.id] || []).join(',')
-          }));
+            if (profilesError) throw profilesError;
+
+            // 3) Montar rolesByUser para compatibilidade
+            rolesByUser = roleLinks.reduce((acc: Record<string, string[]>, r: any) => {
+              acc[r.user_id] = [r.role];
+              return acc;
+            }, {});
+
+            collaboratorsData = (profilesData || []).map((p: any) => ({
+              id: p.id,
+              email: p.email,
+              full_name: p.full_name,
+              role: (rolesByUser[p.id] || []).join(',')
+            }));
+          }
         }
 
-      } else if (isClient) {
-        // Carregar email do cliente e seus colaboradores
+      } else if (primaryRole === 'client') {
+        // Contexto de cliente: carregar email do cliente e seus colaboradores
         const { data: profileData } = await supabase
           .from('profiles')
           .select('email')
@@ -155,8 +159,9 @@ export default function GestaoPermissoes() {
             collaboratorsData = profilesData || [];
           }
         }
+
       } else if (primaryRole === 'client_collaborator') {
-        // Obter o email do cliente associado a este colaborador
+        // Contexto de colaborador de cliente: obter o email do cliente associado
         const { data: roleLink, error: roleErr } = await supabase
           .from('user_roles')
           .select('client_email')
