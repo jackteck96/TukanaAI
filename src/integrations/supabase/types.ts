@@ -1252,6 +1252,66 @@ export type Database = {
           },
         ]
       }
+      process_calendar_events: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          document_id: string | null
+          event_date: string
+          event_time: string | null
+          event_type: string
+          id: string
+          process_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          document_id?: string | null
+          event_date: string
+          event_time?: string | null
+          event_type?: string
+          id?: string
+          process_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          document_id?: string | null
+          event_date?: string
+          event_time?: string | null
+          event_type?: string
+          id?: string
+          process_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_calendar_events_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_calendar_events_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       process_clients: {
         Row: {
           client_email: string
