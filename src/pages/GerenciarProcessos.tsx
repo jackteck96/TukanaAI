@@ -632,6 +632,14 @@ const GerenciarProcessos = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Process Calendar Modal */}
+        <ProcessCalendar
+          open={isCalendarOpen}
+          onOpenChange={setIsCalendarOpen}
+          processId={currentProcess.id}
+          companyId={currentProcess.company_id}
+        />
       </div>
     );
   }
@@ -871,16 +879,6 @@ const GerenciarProcessos = () => {
             });
           }}
         />
-
-        {/* Process Calendar Modal */}
-        {currentProcess && (
-          <ProcessCalendar
-            open={isCalendarOpen}
-            onOpenChange={setIsCalendarOpen}
-            processId={currentProcess.id}
-            companyId={currentProcess.company_id}
-          />
-        )}
       </div>
     </div>
   );
