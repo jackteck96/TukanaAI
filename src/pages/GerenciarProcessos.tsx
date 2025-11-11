@@ -47,6 +47,7 @@ import { updateProcessProgress } from "@/utils/processProgressUpdater";
 import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
 import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocuments";
 import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
+import { ProcessCalendar } from "@/components/ProcessCalendar";
 
 const GerenciarProcessos = () => {
   const location = useLocation();
@@ -69,6 +70,7 @@ const GerenciarProcessos = () => {
   const [isEditProcessModalOpen, setIsEditProcessModalOpen] = useState(false);
   const [selectedProcessForEdit, setSelectedProcessForEdit] = useState<string | null>(null);
   const [isStandaloneUploadOpen, setIsStandaloneUploadOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { toast } = useToast();
 
   // Check if we have a specific process ID in the URL
@@ -369,6 +371,13 @@ const GerenciarProcessos = () => {
                 <Badge className={getStatusColor(currentProcess.status)}>
                   {currentProcess.status}
                 </Badge>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsCalendarOpen(true)}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Calendário
+                  </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => {
@@ -862,6 +871,16 @@ const GerenciarProcessos = () => {
             });
           }}
         />
+
+        {/* Process Calendar Modal */}
+        {currentProcess && (
+          <ProcessCalendar
+            open={isCalendarOpen}
+            onOpenChange={setIsCalendarOpen}
+            processId={currentProcess.id}
+            companyId={currentProcess.company_id}
+          />
+        )}
       </div>
     </div>
   );
