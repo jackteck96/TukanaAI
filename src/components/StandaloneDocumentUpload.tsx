@@ -269,6 +269,7 @@ export const StandaloneDocumentUpload = ({
         await supabase
           .from('client_notifications')
           .insert({
+            company_id: targetCompanyId,
             client_email: formData.client_email,
             document_id: newDocument.id,
             notification_type: 'signature_request',

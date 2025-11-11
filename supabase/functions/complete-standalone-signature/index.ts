@@ -77,21 +77,40 @@ serve(async (req) => {
       // Enviar emails para ambas as partes
       const companyEmail = await getCompanyAdminEmail(supabaseClient, document.company_id);
       
-      for (const email of [document.client_email, companyEmail]) {
-        console.log('Sending email to:', email);
-        await supabaseClient.functions.invoke('send-unified-email', {
-          body: {
-            to: email,
-            subject: `Documento totalmente assinado - ${document.document_name}`,
-            template: 'signatures_complete',
-            data: {
-              documentName: document.document_name,
-              clientName: document.client_name,
-              companyName: company?.name || 'Empresa'
-            }
+      // Enviar emails individualmente com o schema esperado pela função
+      // 1) Para o cliente
+      await supabaseClient.functions.invoke('send-unified-email', {
+        body: {
+          email: document.client_email,
+          full_name: document.client_name,
+          companyId: document.company_id,
+          inviterName: company?.name || 'Empresa',
+          subject: `Documento totalmente assinado - ${document.document_name}`,
+          template: 'signatures_complete',
+          data: {
+            documentName: document.document_name,
+            clientName: document.client_name,
+            companyName: company?.name || 'Empresa'
           }
-        });
-      }
+        }
+      });
+
+      // 2) Para a empresa (admin)
+      await supabaseClient.functions.invoke('send-unified-email', {
+        body: {
+          email: companyEmail,
+          full_name: company?.name || 'Empresa',
+          companyId: document.company_id,
+          inviterName: document.client_name,
+          subject: `Documento totalmente assinado - ${document.document_name}`,
+          template: 'signatures_complete',
+          data: {
+            documentName: document.document_name,
+            clientName: document.client_name,
+            companyName: company?.name || 'Empresa'
+          }
+        }
+      });
     } else {
       console.log('Only one signature completed, waiting for the other');
       
@@ -125,7 +144,10 @@ serve(async (req) => {
 
         await supabaseClient.functions.invoke('send-unified-email', {
           body: {
-            to: document.client_email,
+            email: document.client_email,
+            full_name: document.client_name,
+            companyId: document.company_id,
+            inviterName: company?.name || 'Empresa',
             subject: `Documento aguardando sua assinatura - ${document.document_name}`,
             template: 'signature_request',
             data: {
@@ -154,7 +176,10 @@ serve(async (req) => {
         
         await supabaseClient.functions.invoke('send-unified-email', {
           body: {
-            to: companyEmail,
+            email: companyEmail,
+            full_name: (await supabaseClient.from('companies').select('name').eq('id', document.company_id).single()).data?.name || 'Empresa',
+            companyId: document.company_id,
+            inviterName: document.client_name,
             subject: `Cliente assinou o documento - ${document.document_name}`,
             template: 'pending_signature',
             data: {

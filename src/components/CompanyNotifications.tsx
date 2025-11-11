@@ -64,7 +64,7 @@ export default function CompanyNotifications({ className }: CompanyNotifications
         .from('client_notifications')
         .select('*')
         .eq('company_id', userRole.company_id)
-        .in('notification_type', ['signatures_complete', 'document_uploaded'])
+        .in('notification_type', ['signatures_complete', 'document_uploaded', 'signature_request'])
         .order('created_at', { ascending: false })
         .limit(10);
 
