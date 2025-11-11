@@ -13,9 +13,10 @@ interface SignaturePlacementProps {
   onChange?: (pos: { x: number; y: number } | null) => void;
   value?: { x: number; y: number } | null;
   isStandalone?: boolean;
+  filePath?: string | null;
 }
 
-const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onChange, value, isStandalone = false }) => {
+const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onChange, value, isStandalone = false, filePath: providedFilePath = null }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(true);
@@ -23,46 +24,48 @@ const SignaturePlacement: React.FC<SignaturePlacementProps> = ({ documentId, onC
   const [pdfDimensions, setPdfDimensions] = useState({ width: 0, height: 0 });
   const [canvasOffset, setCanvasOffset] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
-  useEffect(() => {
-    loadAndRenderPdf();
-  }, [documentId]);
+useEffect(() => {
+  loadAndRenderPdf();
+}, [documentId, providedFilePath, isStandalone]);
 
   const loadAndRenderPdf = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Buscar documento da tabela correta
-      let filePath: string | null = null;
-      
-      if (isStandalone) {
-        const { data: standaloneDoc, error: fetchError } = await supabase
-          .from('standalone_signature_documents')
-          .select('file_path')
-          .eq('id', documentId)
-          .maybeSingle();
+// Buscar documento da tabela correta
+let filePath: string | null = providedFilePath || null;
 
-        if (fetchError) {
-          console.error('[SignaturePlacement] Erro ao buscar documento standalone:', fetchError);
-          setError('Erro ao buscar documento');
-          return;
-        }
+if (!filePath) {
+  if (isStandalone) {
+    const { data: standaloneDoc, error: fetchError } = await supabase
+      .from('standalone_signature_documents')
+      .select('file_path')
+      .eq('id', documentId)
+      .maybeSingle();
 
-        filePath = standaloneDoc?.file_path || null;
-      } else {
-        const { data: docData, error: fetchError } = await supabase
-          .from('documents')
-          .select('file_path')
-          .eq('id', documentId)
-          .maybeSingle();
+    if (fetchError) {
+      console.error('[SignaturePlacement] Erro ao buscar documento standalone:', fetchError);
+      setError('Erro ao buscar documento');
+      return;
+    }
 
-        if (fetchError) {
-          console.error('[SignaturePlacement] Erro ao buscar documento:', fetchError);
-          setError('Erro ao buscar documento');
-          return;
-        }
+    filePath = standaloneDoc?.file_path || null;
+  } else {
+    const { data: docData, error: fetchError } = await supabase
+      .from('documents')
+      .select('file_path')
+      .eq('id', documentId)
+      .maybeSingle();
 
-        filePath = docData?.file_path || null;
-      }
+    if (fetchError) {
+      console.error('[SignaturePlacement] Erro ao buscar documento:', fetchError);
+      setError('Erro ao buscar documento');
+      return;
+    }
+
+    filePath = docData?.file_path || null;
+  }
+}
 
       if (!filePath) {
         console.error('[SignaturePlacement] Documento não encontrado. ID:', documentId, 'isStandalone:', isStandalone);

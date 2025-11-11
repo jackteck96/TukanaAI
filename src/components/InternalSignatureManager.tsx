@@ -30,6 +30,7 @@ interface InternalSignatureManagerProps {
   onSuccess?: () => void;
   onClose?: () => void;
   isStandalone?: boolean;
+  filePath?: string | null;
 }
 
 interface SignatureData {
@@ -45,7 +46,8 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
   documentName,
   onSuccess,
   onClose,
-  isStandalone = false
+  isStandalone = false,
+  filePath
 }) => {
   const [step, setStep] = useState<'placement' | 'form' | 'otp' | 'success'>('placement');
   const [loading, setLoading] = useState(false);
@@ -532,6 +534,7 @@ const InternalSignatureManager: React.FC<InternalSignatureManagerProps> = ({
             value={placement}
             onChange={setPlacement}
             isStandalone={isStandalone}
+            filePath={filePath || undefined}
           />
           
           <div className="flex gap-2">
