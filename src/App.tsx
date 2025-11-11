@@ -41,6 +41,7 @@ import ResetPassword from "./pages/ResetPassword";
 import TermsOfService from "./pages/TermsOfService";
 import GestaoPermissoes from "./pages/GestaoPermissoes";
 import GestaoClientesQualificacao from "./pages/GestaoClientesQualificacao";
+import ClientDashboard from "./pages/ClientDashboard";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -102,6 +103,11 @@ const App = () => (
                 <Route path="/cliente" element={
                   <ProtectedRoute>
                     <AreaCliente />
+                  </ProtectedRoute>
+                } />
+                <Route path="/cliente/assinaturas" element={
+                  <ProtectedRoute>
+                    <ClientDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="/area-cliente" element={

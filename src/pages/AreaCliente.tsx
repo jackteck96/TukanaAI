@@ -1170,13 +1170,7 @@ const AreaCliente = () => {
               <Button
                 className="h-20 flex-col"
                 variant="outline"
-                onClick={() => {
-                  if (selectedProcess?.id) {
-                    navigate(`/area-cliente?id=${selectedProcess.id}&tab=assinaturas`);
-                  } else {
-                    toast.error('Selecione um processo primeiro');
-                  }
-                }}
+                onClick={() => navigate('/cliente/assinaturas')}
               >
                 <PenTool className="h-6 w-6 mb-2" />
                 <span className="text-xs font-semibold">Assinaturas</span>
