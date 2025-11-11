@@ -2023,6 +2023,10 @@ export type Database = {
     }
     Functions: {
       can_access_process: { Args: { process_uuid: string }; Returns: boolean }
+      can_create_client_invite: {
+        Args: { target_client_email: string }
+        Returns: boolean
+      }
       can_manage_company: {
         Args: { comp_id: string; user_uuid: string }
         Returns: boolean
