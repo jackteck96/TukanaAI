@@ -250,18 +250,15 @@ const EmpresaDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-sm">
-        <div className="px-4 sm:px-6 py-6">
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="px-4 sm:px-6 py-4">
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                  Dashboard Empresa
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">Visão geral dos processos e clientes</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
+                <p className="text-sm text-muted-foreground">Visão geral dos processos e clientes</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <CompanyNotifications />
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Sair</span>
@@ -283,7 +280,7 @@ const EmpresaDashboard = () => {
                 <Users className="h-4 w-4 mr-2" />
                 Perfil
               </Button>
-              <Button variant="default" size="sm" onClick={refreshData} disabled={loading}>
+              <Button variant="hero" size="sm" onClick={refreshData} disabled={loading}>
                 <Plus className="h-4 w-4 mr-2" />
                 {loading ? 'Atualizando...' : 'Atualizar'}
               </Button>
@@ -301,9 +298,12 @@ const EmpresaDashboard = () => {
         </div>
       </header>
 
-      <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-background via-background to-muted/10">
+      <div className="p-6 space-y-6">
         {/* Expiring Documents Alert */}
         <ExpiringDocumentsAlert />
+        
+        {/* Company Notifications */}
+        <CompanyNotifications />
         
         {/* Company Legal Data Card - Only show if data is incomplete */}
         {companyId && !isCompanyDataComplete && (
@@ -315,41 +315,38 @@ const EmpresaDashboard = () => {
           {stats.map((stat, index) => (
             <Card 
               key={index} 
-              className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-card to-card/50" 
+              className="hover:shadow-card transition-all duration-300 cursor-pointer hover:scale-105" 
               onClick={() => stat.onClick ? stat.onClick() : navigate(stat.route)}
             >
-              <CardContent className="p-6 relative z-10">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 ${stat.color} transition-transform group-hover:scale-110 duration-300`}>
-                    <stat.icon className="h-8 w-8" />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {stat.value}
+                    </p>
+                    <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                      {stat.change} vs mês anterior
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
+                    <stat.icon className="h-6 w-6" />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                    {stat.title}
-                  </p>
-                  <p className="text-4xl font-bold text-foreground">
-                    {stat.value}
-                  </p>
-                  <p className={`text-xs font-medium ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                    {stat.change} vs mês anterior
-                  </p>
-                </div>
               </CardContent>
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </Card>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Clients */}
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
-            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
+          <Card>
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-3 text-lg">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
                   <span>Clientes Recentes</span>
                 </CardTitle>
                 <div className="flex items-center space-x-2">
@@ -362,7 +359,7 @@ const EmpresaDashboard = () => {
                   <Link to="/gestao-colaboradores">
                     <Button variant="ghost" size="sm">
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Colaboradores
+                      Gerenciar Colaboradores
                     </Button>
                   </Link>
                 </div>
@@ -414,13 +411,11 @@ const EmpresaDashboard = () => {
           </Card>
 
           {/* Recent Processes */}
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
-            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
+          <Card>
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-3 text-lg">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
+                <CardTitle className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5" />
                   <span>Processos em Andamento</span>
                 </CardTitle>
                 <Button variant="ghost" size="sm" asChild>
@@ -436,7 +431,7 @@ const EmpresaDashboard = () => {
                     placeholder="Buscar por nome do processo, cliente ou CNPJ..."
                     value={processSearchTerm}
                     onChange={(e) => setProcessSearchTerm(e.target.value)}
-                    className="pl-10 bg-background/50"
+                    className="pl-10"
                   />
                 </div>
               </div>
@@ -557,96 +552,71 @@ const EmpresaDashboard = () => {
 
           {/* Quick Actions - taking 2 columns */}
           <div className="lg:col-span-2">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/80">
-              <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
-                <CardTitle className="flex items-center space-x-3 text-lg">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Plus className="h-5 w-5 text-primary" />
-                  </div>
-                  <span>Ações Rápidas</span>
-                </CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   <PdfConverter />
                   <CreateClientDialog onClientCreated={refreshData} />
                   <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <PenTool className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Assinaturas</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <PenTool className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Assinaturas</span>
                     </Button>
                   </Link>
                   <Link to="/gerenciar-processos" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Gerenciar Processos</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <FileText className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Gerenciar Processos</span>
                     </Button>
                   </Link>
-                  <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300" onClick={() => setIsSearchModalOpen(true)}>
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                      <Search className="h-6 w-6 text-primary" />
-                    </div>
-                    <span className="text-xs font-medium">Buscar Documentos</span>
+                  <Button variant="outline" className="h-24 flex-col w-full" onClick={() => setIsSearchModalOpen(true)}>
+                    <Search className="h-6 w-6 mb-2" />
+                    <span className="text-sm font-medium">Buscar Documentos</span>
                   </Button>
                   <Link to="/relatorios" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <TrendingUp className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Gerar Relatórios</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <TrendingUp className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Gerar Relatórios</span>
                     </Button>
                   </Link>
                   <Link to="/relatorios-ponto" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <Clock className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Rel. Ponto</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <Clock className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Rel. Ponto</span>
                     </Button>
                   </Link>
                   <Link to="/gestao-colaboradores" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <Users className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Colaboradores</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <Users className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Colaboradores</span>
                     </Button>
                   </Link>
                   <Link to="/modelos-documentos" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Modelos de Docs</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <FileText className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Modelos de Docs</span>
                     </Button>
                   </Link>
                   <Link to="/analise-ia" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <Brain className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Análise IA</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <Brain className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Análise IA</span>
                     </Button>
                   </Link>
                   <Link to="/cadastro-tipos-documentos" className="w-full">
-                    <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                        <List className="h-6 w-6 text-primary" />
-                      </div>
-                      <span className="text-xs font-medium">Tipos de Docs</span>
+                    <Button variant="outline" className="h-24 flex-col w-full">
+                      <List className="h-6 w-6 mb-2" />
+                      <span className="text-sm font-medium">Tipos de Docs</span>
                     </Button>
                   </Link>
                   {hasRole('company_admin') && (
                     <Link to="/gestao-permissoes" className="w-full">
-                      <Button variant="outline" className="h-28 flex-col w-full group hover:bg-primary/5 hover:border-primary/30 transition-all duration-300">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:scale-110 transition-transform duration-300 mb-2">
-                          <Shield className="h-6 w-6 text-primary" />
-                        </div>
-                        <span className="text-xs font-medium">Permissões</span>
+                      <Button variant="outline" className="h-24 flex-col w-full">
+                        <Shield className="h-6 w-6 mb-2" />
+                        <span className="text-sm font-medium">Permissões</span>
                       </Button>
                     </Link>
                   )}
