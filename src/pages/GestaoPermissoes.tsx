@@ -43,7 +43,7 @@ export default function GestaoPermissoes() {
   const [clientEmail, setClientEmail] = useState<string | null>(null);
   const [quickSelectedId, setQuickSelectedId] = useState<string | null>(null);
 
-  const isCompanyAdmin = primaryRole === 'company_admin';
+  const isCompanyAdmin = primaryRole === 'company_admin' || (primaryRole === 'platform_admin' && !!(company?.id ?? companyId));
   const isClient = primaryRole === 'client';
   const isClientOrClientCollab = primaryRole === 'client' || primaryRole === 'client_collaborator';
   const effectiveCompanyId = company?.id ?? companyId ?? undefined;
