@@ -22,7 +22,8 @@ import {
   Clock,
   AlertCircle,
   Copy,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -158,6 +159,29 @@ const GestaoClientesQualificacao = () => {
     if (inviteLink) {
       navigator.clipboard.writeText(inviteLink);
       toast.success('Link copiado para a área de transferência!');
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string, clientName: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o cliente "${clientName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      toast.success('Cliente excluído com sucesso');
+      setSelectedClient(null);
+      setInviteLink('');
+      fetchClients();
+    } catch (error: any) {
+      console.error('Erro ao excluir cliente:', error);
+      toast.error('Erro ao excluir cliente');
     }
   };
 
@@ -452,6 +476,14 @@ const GestaoClientesQualificacao = () => {
                           E-mail Enviado
                         </Badge>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClient(client.id, client.company_name)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -627,26 +659,51 @@ const GestaoClientesQualificacao = () => {
               {selectedClient.qualification_method === 'client_fills' && (
                 <>
                   <Separator />
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-between items-center">
                     <Button
-                      variant="outline"
-                      onClick={copyInviteLink}
-                      disabled={!inviteLink}
+                      variant="destructive"
+                      onClick={() => handleDeleteClient(selectedClient.id, selectedClient.company_name)}
                     >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copiar Link
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir Cliente
                     </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={copyInviteLink}
+                        disabled={!inviteLink}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Link
+                      </Button>
+                      <Button
+                        onClick={() => handleSendEmail(selectedClient)}
+                        disabled={sendingEmail}
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        {sendingEmail 
+                          ? 'Enviando...' 
+                          : selectedClient.email_sent 
+                            ? 'Reenviar E-mail de Cadastro'
+                            : 'Enviar E-mail de Cadastro'
+                        }
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {/* Botão de Exclusão para clientes que a empresa preenche */}
+              {selectedClient.qualification_method === 'company_fills' && (
+                <>
+                  <Separator />
+                  <div className="flex justify-start">
                     <Button
-                      onClick={() => handleSendEmail(selectedClient)}
-                      disabled={sendingEmail}
+                      variant="destructive"
+                      onClick={() => handleDeleteClient(selectedClient.id, selectedClient.company_name)}
                     >
-                      <Send className="h-4 w-4 mr-2" />
-                      {sendingEmail 
-                        ? 'Enviando...' 
-                        : selectedClient.email_sent 
-                          ? 'Reenviar E-mail de Cadastro'
-                          : 'Enviar E-mail de Cadastro'
-                      }
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir Cliente
                     </Button>
                   </div>
                 </>
