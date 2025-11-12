@@ -18,7 +18,9 @@ import {
   Shield,
   User,
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  Copy,
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,24 +37,17 @@ interface TeamMember {
   role: 'admin' | 'lawyer' | 'staff' | 'client';
   access_type?: 'full' | 'restricted';
   created_at: string;
+  status: 'active' | 'pending';
+  invite_token?: string;
+  invite_id?: string;
 }
 
-interface UserInvite {
-  id: string;
-  email: string;
-  full_name: string;
-  role: 'admin' | 'lawyer' | 'staff' | 'client'; // Keep temporarily to handle existing data
-  status: string;
-  created_at: string;
-  expires_at: string;
-}
 
 const GestaoColaboradores = () => {
   const { user } = useAuth();
   const { company, subscription, usageMetrics, refreshMetrics } = useCompany();
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [invites, setInvites] = useState<UserInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPermission, setFilterPermission] = useState<string>('all');
@@ -61,7 +56,7 @@ const GestaoColaboradores = () => {
     if (!user || !company) return;
 
     try {
-      // Buscar apenas colaboradores (company_collaborator), excluindo administradores
+      // 1. Buscar colaboradores ativos (já confirmados)
       const { data: roleLinks, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role, created_at')
@@ -70,96 +65,80 @@ const GestaoColaboradores = () => {
 
       if (rolesError) throw rolesError;
 
-      if (!roleLinks || roleLinks.length === 0) {
-        setTeamMembers([]);
-        return;
-      }
+      const activeMembers: TeamMember[] = [];
 
-      const userIds = roleLinks.map((r) => r.user_id);
+      if (roleLinks && roleLinks.length > 0) {
+        const userIds = roleLinks.map((r) => r.user_id);
 
-      // Buscar perfis dos colaboradores
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, created_at')
-        .in('id', userIds);
+        // Buscar perfis dos colaboradores confirmados
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, created_at')
+          .in('id', userIds);
 
-      if (profilesError) throw profilesError;
+        if (profilesError) throw profilesError;
 
-      // Buscar permissões dos colaboradores
-      const { data: permissionsData, error: permissionsError } = await supabase
-        .from('collaborator_permissions')
-        .select('user_id, access_type')
-        .eq('company_id', company.id)
-        .in('user_id', userIds);
+        // Buscar permissões dos colaboradores
+        const { data: permissionsData, error: permissionsError } = await supabase
+          .from('collaborator_permissions')
+          .select('user_id, access_type')
+          .eq('company_id', company.id)
+          .in('user_id', userIds);
 
-      if (permissionsError) throw permissionsError;
+        if (permissionsError) throw permissionsError;
 
-      // Montar a lista apenas com colaboradores
-      const members: TeamMember[] = roleLinks
-        .map((link) => {
+        // Montar lista de colaboradores ativos
+        roleLinks.forEach((link) => {
           const profile = profilesData?.find((p) => p.id === link.user_id);
-          if (!profile) return null;
+          if (!profile) return;
 
           const permission = permissionsData?.find((p) => p.user_id === link.user_id);
 
-          return {
+          activeMembers.push({
             id: profile.id,
             full_name: profile.full_name,
             email: profile.email,
             role: 'staff',
             access_type: permission?.access_type as 'full' | 'restricted' | undefined,
             created_at: profile.created_at || link.created_at,
-          } as TeamMember;
-        })
-        .filter(Boolean) as TeamMember[];
+            status: 'active',
+          });
+        });
+      }
 
-      console.log('Colaboradores carregados:', members);
-      setTeamMembers(members);
+      // 2. Buscar convites pendentes de colaboradores
+      const { data: invitesData, error: invitesError } = await supabase
+        .from('user_invites')
+        .select('id, email, full_name, token, created_at')
+        .eq('company_id', company.id)
+        .eq('status', 'pending')
+        .in('role', ['admin', 'lawyer', 'staff']);
+
+      if (invitesError) throw invitesError;
+
+      const pendingMembers: TeamMember[] = (invitesData || []).map((invite) => ({
+        id: invite.id,
+        full_name: invite.full_name,
+        email: invite.email,
+        role: 'staff',
+        created_at: invite.created_at,
+        status: 'pending' as const,
+        invite_token: invite.token,
+        invite_id: invite.id,
+      }));
+
+      // 3. Combinar ambas as listas
+      const allMembers = [...activeMembers, ...pendingMembers];
+      console.log('Total de colaboradores (ativos + pendentes):', allMembers.length);
+      setTeamMembers(allMembers);
     } catch (error) {
       console.error('Error fetching team members:', error);
       toast.error('Erro ao carregar membros da equipe');
     }
   };
 
-  const fetchInvites = async () => {
-    if (!user || !company) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('user_invites')
-        .select('*')
-        .eq('company_id', company.id)
-        .in('role', ['admin', 'lawyer', 'staff']) // Filtrar apenas convites de colaboradores
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      console.log('Convites carregados:', data); // Debug
-      setInvites(data || []);
-    } catch (error) {
-      console.error('Error fetching invites:', error);
-      toast.error('Erro ao carregar convites');
-    }
-  };
-
-  const cancelInvite = async (inviteId: string) => {
-    try {
-      const { error } = await supabase
-        .from('user_invites')
-        .update({ status: 'expired' })
-        .eq('id', inviteId);
-
-      if (error) throw error;
-
-      toast.success('Convite cancelado com sucesso');
-      fetchInvites();
-    } catch (error) {
-      console.error('Error canceling invite:', error);
-      toast.error('Erro ao cancelar convite');
-    }
-  };
-
-  const removeTeamMember = async (memberId: string, memberEmail: string) => {
+  const removeTeamMember = async (memberId: string, memberEmail: string, status: 'active' | 'pending', inviteId?: string) => {
     if (memberId === user?.id) {
       toast.error('Você não pode remover a si mesmo');
       return;
@@ -168,70 +147,120 @@ const GestaoColaboradores = () => {
     if (!company) return;
 
     try {
-      // 1. Deletar permissões do colaborador
-      const { error: permError } = await supabase
-        .from('collaborator_permissions')
-        .delete()
-        .eq('user_id', memberId)
-        .eq('company_id', company.id);
-
-      if (permError) {
-        console.error('Erro ao deletar permissões:', permError);
-      }
-
-      // 2. Deletar acessos a processos específicos
-      const { data: permissions } = await supabase
-        .from('collaborator_permissions')
-        .select('id')
-        .eq('user_id', memberId)
-        .eq('company_id', company.id);
-
-      if (permissions && permissions.length > 0) {
-        const permissionIds = permissions.map(p => p.id);
-        await supabase
-          .from('collaborator_process_access')
+      if (status === 'pending' && inviteId) {
+        // Remover convite pendente
+        const { error } = await supabase
+          .from('user_invites')
           .delete()
-          .in('permission_id', permissionIds);
-      }
+          .eq('id', inviteId);
 
-      // 3. Deletar vínculo na tabela user_roles
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', memberId)
-        .eq('company_id', company.id);
-
-      if (roleError) throw roleError;
-
-      // 4. Verificar se usuário ainda tem outros vínculos
-      const { data: remainingRoles, error: checkError } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', memberId)
-        .limit(1);
-
-      if (checkError) {
-        console.error('Erro ao verificar roles restantes:', checkError);
-      }
-
-      // 5. Se não tiver outros vínculos, deletar o profile
-      if (!remainingRoles || remainingRoles.length === 0) {
-        const { error: profileError } = await supabase
-          .from('profiles')
+        if (error) throw error;
+        toast.success(`Convite de ${memberEmail} foi removido`);
+      } else {
+        // Remover colaborador ativo
+        // 1. Deletar permissões do colaborador
+        const { error: permError } = await supabase
+          .from('collaborator_permissions')
           .delete()
-          .eq('id', memberId);
+          .eq('user_id', memberId)
+          .eq('company_id', company.id);
 
-        if (profileError) {
-          console.error('Erro ao deletar profile:', profileError);
+        if (permError) {
+          console.error('Erro ao deletar permissões:', permError);
         }
+
+        // 2. Deletar acessos a processos específicos
+        const { data: permissions } = await supabase
+          .from('collaborator_permissions')
+          .select('id')
+          .eq('user_id', memberId)
+          .eq('company_id', company.id);
+
+        if (permissions && permissions.length > 0) {
+          const permissionIds = permissions.map(p => p.id);
+          await supabase
+            .from('collaborator_process_access')
+            .delete()
+            .in('permission_id', permissionIds);
+        }
+
+        // 3. Deletar vínculo na tabela user_roles
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', memberId)
+          .eq('company_id', company.id);
+
+        if (roleError) throw roleError;
+
+        // 4. Verificar se usuário ainda tem outros vínculos
+        const { data: remainingRoles, error: checkError } = await supabase
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', memberId)
+          .limit(1);
+
+        if (checkError) {
+          console.error('Erro ao verificar roles restantes:', checkError);
+        }
+
+        // 5. Se não tiver outros vínculos, deletar o profile
+        if (!remainingRoles || remainingRoles.length === 0) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', memberId);
+
+          if (profileError) {
+            console.error('Erro ao deletar profile:', profileError);
+          }
+        }
+
+        toast.success(`${memberEmail} foi removido permanentemente`);
       }
 
-      toast.success(`${memberEmail} foi removido permanentemente`);
       await fetchTeamMembers();
       await refreshMetrics();
     } catch (error) {
       console.error('Error removing team member:', error);
       toast.error('Erro ao remover membro da equipe');
+    }
+  };
+
+  const resendInviteEmail = async (email: string, fullName: string, token: string) => {
+    try {
+      if (!user || !company?.id) return;
+
+      const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+
+      const { error } = await supabase.functions.invoke('send-unified-email', {
+        body: {
+          email,
+          full_name: fullName,
+          companyId: company.id,
+          inviteLink,
+          inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+          role: 'staff',
+          isCollaborator: true
+        }
+      });
+
+      if (error) throw error;
+      toast.success('Email de convite reenviado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao reenviar convite:', error);
+      toast.error('Erro ao reenviar email de convite');
+    }
+  };
+
+  const copyInviteLink = async (token: string) => {
+    const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      toast.success('Link de convite copiado!');
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+      toast.error('Erro ao copiar link');
     }
   };
 
@@ -313,17 +342,10 @@ const GestaoColaboradores = () => {
     return matchesSearch && matchesPermission;
   });
 
-  const filteredInvites = invites.filter(invite => {
-    const matchesSearch = invite.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         invite.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch && invite.status === 'pending';
-  });
-
   const refreshData = async () => {
     setLoading(true);
     await Promise.all([
       fetchTeamMembers(),
-      fetchInvites(),
       refreshMetrics()
     ]);
     setLoading(false);
@@ -374,7 +396,7 @@ const GestaoColaboradores = () => {
       <PlanLimitChecker limitType="users" showProgress className="mb-6" currentOverride={teamMembers.length} />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Colaboradores</CardTitle>
@@ -382,7 +404,18 @@ const GestaoColaboradores = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamMembers.length}</div>
-            <p className="text-xs text-muted-foreground">Colaboradores ativos</p>
+            <p className="text-xs text-muted-foreground">Cadastrados na empresa</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Colaboradores Ativos</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{teamMembers.filter(m => m.status === 'active').length}</div>
+            <p className="text-xs text-muted-foreground">Cadastro confirmado</p>
           </CardContent>
         </Card>
 
@@ -392,22 +425,8 @@ const GestaoColaboradores = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredInvites.length}</div>
-            <p className="text-xs text-muted-foreground">Aguardando resposta</p>
-          </CardContent>
-        </Card>
-
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Colaboradores</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {teamMembers.length}
-            </div>
-            <p className="text-xs text-muted-foreground">Membros da equipe</p>
+            <div className="text-2xl font-bold">{teamMembers.filter(m => m.status === 'pending').length}</div>
+            <p className="text-xs text-muted-foreground">Aguardando confirmação</p>
           </CardContent>
         </Card>
       </div>
@@ -461,8 +480,9 @@ const GestaoColaboradores = () => {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Tipo de Permissão</TableHead>
-                  <TableHead>Membro desde</TableHead>
+                  <TableHead>Cadastrado em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -474,44 +494,85 @@ const GestaoColaboradores = () => {
                     </TableCell>
                     <TableCell>{member.email}</TableCell>
                     <TableCell>
-                      {member.access_type ? (
-                        <Badge variant={member.access_type === 'full' ? 'default' : 'secondary'}>
-                          {member.access_type === 'full' ? 'Acesso Total' : 'Acesso Restrito'}
+                      {member.status === 'active' ? (
+                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Confirmado
                         </Badge>
                       ) : (
-                        <Badge variant="outline">Não definido</Badge>
+                        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pendente
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {member.status === 'active' ? (
+                        member.access_type ? (
+                          <Badge variant={member.access_type === 'full' ? 'default' : 'secondary'}>
+                            {member.access_type === 'full' ? 'Acesso Total' : 'Acesso Restrito'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">Não definido</Badge>
+                        )
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell>
                       {new Date(member.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell className="text-right">
-                      {member.id !== user?.id && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
+                      <div className="flex items-center justify-end gap-2">
+                        {member.status === 'pending' && member.invite_token && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => resendInviteEmail(member.email, member.full_name, member.invite_token!)}
+                              title="Reenviar email de convite"
+                            >
+                              <RefreshCw className="h-4 w-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Remover membro</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja remover {member.full_name || member.email} da equipe? 
-                                Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => removeTeamMember(member.id, member.email)}
-                              >
-                                Remover
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyInviteLink(member.invite_token!)}
+                              title="Copiar link de convite"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        {member.id !== user?.id && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" title="Excluir colaborador">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  {member.status === 'pending' ? 'Cancelar convite' : 'Remover colaborador'}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja {member.status === 'pending' ? 'cancelar o convite de' : 'remover'} {member.full_name || member.email}? 
+                                  Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => removeTeamMember(member.id, member.email, member.status, member.invite_id)}
+                                >
+                                  {member.status === 'pending' ? 'Cancelar Convite' : 'Remover'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -521,106 +582,6 @@ const GestaoColaboradores = () => {
         </CardContent>
       </Card>
 
-      {/* Pending Invites */}
-      {filteredInvites.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Convites Pendentes
-            </CardTitle>
-            <CardDescription>
-              Convites enviados aguardando resposta
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Enviado em</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInvites.map((invite) => (
-                  <TableRow key={invite.id}>
-                    <TableCell className="font-medium">{invite.full_name}</TableCell>
-                    <TableCell>{invite.email}</TableCell>
-                    <TableCell>
-                      {new Date(invite.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(invite.status)}>
-                        {getStatusLabel(invite.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            try {
-                              if (!user || !company?.id) return;
-                              
-                              // Buscar o token do convite
-                              const { data: inviteData, error: inviteError } = await supabase
-                                .from('user_invites')
-                                .select('token')
-                                .eq('id', invite.id)
-                                .single();
-                              
-                              if (inviteError || !inviteData) {
-                                toast.error('Erro ao buscar convite');
-                                return;
-                              }
-
-                              const inviteLink = `${window.location.origin}/cadastro-via-convite?token=${inviteData.token}`;
-                              
-                              // Reenviar email usando send-unified-email
-                              const { error: emailError } = await supabase.functions.invoke('send-unified-email', {
-                                body: {
-                                  email: invite.email,
-                                  full_name: invite.full_name,
-                                  companyId: company.id,
-                                  inviteLink,
-                                  inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-                                  role: invite.role,
-                                  isCollaborator: true
-                                }
-                              });
-
-                              if (emailError) throw emailError;
-
-                              toast.success('Convite reenviado com sucesso!');
-                            } catch (error) {
-                              console.error('Erro ao reenviar convite:', error);
-                              toast.error('Erro ao reenviar convite');
-                            }
-                          }}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          Reenviar
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => cancelInvite(invite.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
