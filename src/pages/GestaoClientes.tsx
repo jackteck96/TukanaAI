@@ -21,11 +21,14 @@ import { useNavigate } from 'react-router-dom';
 import CreateClientDialog from '@/components/CreateClientDialog';
 
 interface Client {
+  id: string;
   client_name: string;
   client_email: string;
   cpf_cnpj: string;
   process_count: number;
   last_update: string;
+  registration_status: string;
+  email_sent: boolean;
 }
 
 const GestaoClientes = () => {
@@ -40,39 +43,54 @@ const GestaoClientes = () => {
     if (!user || !company) return;
 
     try {
-      // Buscar todos os processos da empresa e agrupar por cliente
-      const { data: processes, error } = await supabase
-        .from('processes')
-        .select('client_name, client_email, cpf_cnpj, updated_at')
+      // Buscar todos os clientes cadastrados pela empresa
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('clients')
+        .select('id, company_name, email, phone, cnpj, created_at, registration_status, email_sent')
         .eq('company_id', company.id)
-        .order('updated_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (clientsError) throw clientsError;
 
-      // Agrupar por email do cliente
-      const clientsMap = new Map<string, Client>();
-      
+      // Buscar contagem de processos por cliente
+      const { data: processes, error: processesError } = await supabase
+        .from('processes')
+        .select('client_email, updated_at')
+        .eq('company_id', company.id);
+
+      if (processesError) throw processesError;
+
+      // Mapear processos por email
+      const processCountMap = new Map<string, { count: number; lastUpdate: string }>();
       processes?.forEach(process => {
         const email = process.client_email;
-        if (!clientsMap.has(email)) {
-          clientsMap.set(email, {
-            client_name: process.client_name,
-            client_email: process.client_email,
-            cpf_cnpj: process.cpf_cnpj || 'Não informado',
-            process_count: 1,
-            last_update: process.updated_at
-          });
+        if (!processCountMap.has(email)) {
+          processCountMap.set(email, { count: 1, lastUpdate: process.updated_at });
         } else {
-          const client = clientsMap.get(email)!;
-          client.process_count += 1;
-          // Manter a data mais recente
-          if (new Date(process.updated_at) > new Date(client.last_update)) {
-            client.last_update = process.updated_at;
+          const data = processCountMap.get(email)!;
+          data.count += 1;
+          if (new Date(process.updated_at) > new Date(data.lastUpdate)) {
+            data.lastUpdate = process.updated_at;
           }
         }
       });
 
-      setClients(Array.from(clientsMap.values()));
+      // Combinar dados de clientes com contagem de processos
+      const clientsList = clientsData?.map(client => {
+        const processData = processCountMap.get(client.email);
+        return {
+          id: client.id,
+          client_name: client.company_name,
+          client_email: client.email,
+          cpf_cnpj: client.cnpj || 'Não informado',
+          process_count: processData?.count || 0,
+          last_update: processData?.lastUpdate || client.created_at,
+          registration_status: client.registration_status,
+          email_sent: client.email_sent
+        };
+      }) || [];
+
+      setClients(clientsList);
     } catch (error) {
       console.error('Error fetching clients:', error);
       toast.error('Erro ao carregar clientes');
@@ -233,6 +251,11 @@ const GestaoClientes = () => {
                   <TableRow key={client.client_email}>
                     <TableCell className="font-medium">
                       {client.client_name}
+                      {!client.email_sent && (
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          Email não enviado
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
