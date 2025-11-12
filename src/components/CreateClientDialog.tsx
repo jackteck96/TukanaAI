@@ -138,6 +138,29 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
     setLoading(true);
 
     try {
+      // Verificar se cliente já existe (por email ou CNPJ)
+      const { data: existingClients, error: checkError } = await supabase
+        .from("clients")
+        .select("id, email, cnpj")
+        .eq("company_id", company.id)
+        .or(`email.eq.${email}${cnpj ? `,cnpj.eq.${cnpj}` : ''}`);
+
+      if (checkError) {
+        console.error("Erro ao verificar cliente existente:", checkError);
+      }
+
+      if (existingClients && existingClients.length > 0) {
+        const duplicate = existingClients[0];
+        const reason = duplicate.email === email ? "e-mail" : "CNPJ";
+        toast({
+          title: "Cliente já cadastrado",
+          description: `Já existe um cliente cadastrado com este ${reason}.`,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const registrationStatus =
         qualificationMethod === 'client_fills'
           ? 'awaiting_client'
