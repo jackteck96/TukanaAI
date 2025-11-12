@@ -48,6 +48,14 @@ export default function GestaoPermissoes() {
   const isClientOrClientCollab = primaryRole === 'client' || primaryRole === 'client_collaborator';
   const effectiveCompanyId = company?.id ?? companyId ?? undefined;
 
+  console.log('[GestaoPermissoes] Debug:', { 
+    primaryRole, 
+    companyId, 
+    effectiveCompanyId, 
+    loading,
+    isCompanyAdmin 
+  });
+
   // Verificar autorização: apenas company_admin, client e client_collaborator podem acessar
   useEffect(() => {
     if (!loading && primaryRole && primaryRole === 'company_collaborator') {
@@ -330,7 +338,7 @@ export default function GestaoPermissoes() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Convidar Colaborador */}
-              {(primaryRole === 'company_admin' || primaryRole === 'company_collaborator') ? (
+              {primaryRole === 'company_admin' ? (
                 <UserInviteSystem onInviteSent={loadData} />
               ) : isClientOrClientCollab ? (
                 clientEmail ? (
@@ -339,7 +347,12 @@ export default function GestaoPermissoes() {
                   <Button variant="outline" disabled>Carregando…</Button>
                 )
               ) : (
-                <Button variant="outline" disabled>Indisponível</Button>
+                <div className="space-y-2">
+                  <Button variant="outline" disabled>Indisponível</Button>
+                  <p className="text-xs text-muted-foreground">
+                    Verifique o console do navegador para detalhes. Role: {primaryRole || 'não detectado'}
+                  </p>
+                </div>
               )}
 
               {/* Gerenciar Colaboradores */}
