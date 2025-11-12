@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Process {
   id: string;
   client_name: string;
+  project_name: string | null;
   process_type: string;
   status: string;
 }
@@ -44,6 +46,7 @@ export const CollaboratorPermissionsModal = ({
   const [processes, setProcesses] = useState<Process[]>([]);
   const [selectedProcesses, setSelectedProcesses] = useState<Set<string>>(new Set());
   const [permissionId, setPermissionId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (open) {
@@ -57,7 +60,7 @@ export const CollaboratorPermissionsModal = ({
       // Carregar processos
       let processesQuery = supabase
         .from('processes')
-        .select('id, client_name, process_type, status')
+        .select('id, client_name, project_name, process_type, status')
         .order('created_at', { ascending: false });
 
       if (companyId) {
@@ -210,6 +213,15 @@ export const CollaboratorPermissionsModal = ({
             {accessType === 'limited' && (
               <div className="space-y-4">
                 <Label>Processos Autorizados ({selectedProcesses.size} de {processes.length})</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar processo por nome ou cliente..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
                 <ScrollArea className="h-[300px] rounded-md border p-4">
                   {processes.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
@@ -217,26 +229,36 @@ export const CollaboratorPermissionsModal = ({
                     </p>
                   ) : (
                     <div className="space-y-3">
-                      {processes.map(process => (
-                        <div key={process.id} className="flex items-start space-x-3">
-                          <Checkbox
-                            id={process.id}
-                            checked={selectedProcesses.has(process.id)}
-                            onCheckedChange={() => handleProcessToggle(process.id)}
-                          />
-                          <Label
-                            htmlFor={process.id}
-                            className="font-normal cursor-pointer flex-1"
-                          >
-                            <div>
-                              <div className="font-medium">{process.client_name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {process.process_type} - {process.status}
+                      {processes
+                        .filter(process => {
+                          if (!searchQuery) return true;
+                          const query = searchQuery.toLowerCase();
+                          const processName = (process.project_name || process.process_type).toLowerCase();
+                          const clientName = process.client_name.toLowerCase();
+                          return processName.includes(query) || clientName.includes(query);
+                        })
+                        .map(process => (
+                          <div key={process.id} className="flex items-start space-x-3">
+                            <Checkbox
+                              id={process.id}
+                              checked={selectedProcesses.has(process.id)}
+                              onCheckedChange={() => handleProcessToggle(process.id)}
+                            />
+                            <Label
+                              htmlFor={process.id}
+                              className="font-normal cursor-pointer flex-1"
+                            >
+                              <div>
+                                <div className="font-medium">
+                                  {process.project_name || process.process_type}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Cliente: {process.client_name}
+                                </div>
                               </div>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
+                            </Label>
+                          </div>
+                        ))}
                     </div>
                   )}
                 </ScrollArea>
