@@ -48,6 +48,18 @@ export default function GestaoPermissoes() {
   const isClientOrClientCollab = primaryRole === 'client' || primaryRole === 'client_collaborator';
   const effectiveCompanyId = company?.id ?? companyId ?? undefined;
 
+  // Verificar autorização: apenas company_admin, client e client_collaborator podem acessar
+  useEffect(() => {
+    if (!loading && primaryRole && primaryRole === 'company_collaborator') {
+      toast({
+        title: 'Acesso negado',
+        description: 'Apenas administradores da empresa podem gerenciar permissões',
+        variant: 'destructive'
+      });
+      navigate(getDashboardRoute());
+    }
+  }, [primaryRole, loading]);
+
   const getDashboardRoute = () => {
     // Se é admin da empresa ou colaborador E tem company_id, vai para /empresa
     if ((primaryRole === 'company_admin' || primaryRole === 'company_collaborator') && companyId) {

@@ -44,10 +44,12 @@ import { CompanyLegalDataCard } from "@/components/CompanyLegalDataCard";
 import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificationButton";
 import { LegalData } from "@/utils/legalQualification";
 import CompanyNotifications from "@/components/CompanyNotifications";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { hasRole } = useUserRole();
   const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
   const [isAdmin, setIsAdmin] = useState(false);
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -610,12 +612,14 @@ const EmpresaDashboard = () => {
                       <span className="text-sm font-medium">Tipos de Docs</span>
                     </Button>
                   </Link>
-                  <Link to="/gestao-permissoes" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <Shield className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Permissões</span>
-                    </Button>
-                  </Link>
+                  {hasRole('company_admin') && (
+                    <Link to="/gestao-permissoes" className="w-full">
+                      <Button variant="outline" className="h-24 flex-col w-full">
+                        <Shield className="h-6 w-6 mb-2" />
+                        <span className="text-sm font-medium">Permissões</span>
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>

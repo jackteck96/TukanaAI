@@ -1234,15 +1234,6 @@ const AreaCliente = () => {
                 <User className="h-6 w-6 mb-2" />
                 <span className="text-xs font-semibold">Gerenciar Perfil</span>
               </Button>
-              <Link to="/gestao-permissoes" className="w-full">
-                <Button
-                  className="h-20 flex-col w-full"
-                  variant="outline"
-                >
-                  <Shield className="h-6 w-6 mb-2" />
-                  <span className="text-xs font-semibold">Permissões</span>
-                </Button>
-              </Link>
             </div>
           </CardContent>
         </Card>
