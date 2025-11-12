@@ -199,29 +199,84 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
 
       if (clientError) throw clientError;
 
-      // Se deve enviar email agora
-      if (sendEmailNow && newClient) {
+      // Se deve enviar email agora, criar convite com token
+      if (sendEmailNow && newClient && qualificationMethod === 'client_fills') {
+        // Gerar token único para o convite
+        const inviteToken = crypto.randomUUID().replace(/-/g, '');
+        
+        // Criar registro de convite
+        const { error: inviteError } = await supabase
+          .from('client_invites')
+          .insert({
+            company_id: company.id,
+            email: email,
+            token: inviteToken,
+            invited_by: user.id,
+            process_id: null,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 dias
+          });
+
+        if (inviteError) {
+          console.error('Erro ao criar convite:', inviteError);
+          toast({
+            title: "Cliente criado, mas erro no convite",
+            description: "Não foi possível gerar o link de convite.",
+            variant: "destructive",
+          });
+        } else {
+          // Enviar email com o token
+          try {
+            const emailBody = {
+              email: email,
+              full_name: companyName,
+              companyId: company.id,
+              inviteLink: `${window.location.origin}/cadastro-via-convite?token=${inviteToken}`,
+              inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+              role: 'client',
+              isCollaborator: false,
+            };
+
+            const { error: emailError } = await supabase.functions.invoke("send-unified-email", {
+              body: emailBody,
+            });
+
+            if (emailError) {
+              console.error("Erro ao enviar email:", emailError);
+              toast({
+                title: "Cliente criado, mas erro no email",
+                description: "Cliente cadastrado, mas não foi possível enviar o email. Você pode reenviá-lo depois.",
+                variant: "destructive",
+              });
+            } else {
+              // Atualizar registro marcando que email foi enviado
+              await supabase
+                .from("clients")
+                .update({ email_sent: true, email_sent_at: new Date().toISOString() })
+                .eq("id", newClient.id);
+
+              toast({
+                title: "Cliente criado com sucesso!",
+                description: "Email de cadastro enviado para o cliente.",
+              });
+            }
+          } catch (emailError) {
+            console.error("Exceção ao enviar email:", emailError);
+          }
+        }
+      } else if (sendEmailNow && newClient && qualificationMethod === 'company_fills') {
+        // Para empresa preenche, apenas enviar confirmação (sem convite)
         try {
-          const emailBody = qualificationMethod === 'company_fills' 
-            ? {
-                email: email,
-                full_name: companyName,
-                companyId: company.id,
-                confirmationLink: `${window.location.origin}/cliente`,
-                inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-                role: 'client',
-                isCollaborator: false,
-                isConfirmation: true,
-              }
-            : {
-                email: email,
-                full_name: companyName,
-                companyId: company.id,
-                inviteLink: `${window.location.origin}/cadastro-via-convite?id=${newClient.id}`,
-                inviterName: user?.user_metadata?.full_name || user?.email || company.name,
-                role: 'client',
-                isCollaborator: false,
-              };
+          const emailBody = {
+            email: email,
+            full_name: companyName,
+            companyId: company.id,
+            confirmationLink: `${window.location.origin}/cliente`,
+            inviterName: user?.user_metadata?.full_name || user?.email || company.name,
+            role: 'client',
+            isCollaborator: false,
+            isConfirmation: true,
+          };
 
           const { error: emailError } = await supabase.functions.invoke("send-unified-email", {
             body: emailBody,
@@ -231,11 +286,10 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
             console.error("Erro ao enviar email:", emailError);
             toast({
               title: "Cliente criado, mas erro no email",
-              description: "Cliente cadastrado, mas não foi possível enviar o email. Você pode reenviá-lo depois.",
+              description: "Cliente cadastrado, mas não foi possível enviar o email.",
               variant: "destructive",
             });
           } else {
-            // Atualizar registro marcando que email foi enviado
             await supabase
               .from("clients")
               .update({ email_sent: true, email_sent_at: new Date().toISOString() })
@@ -243,9 +297,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
 
             toast({
               title: "Cliente criado com sucesso!",
-              description: qualificationMethod === 'company_fills'
-                ? "Email de confirmação enviado para o cliente."
-                : "Email de cadastro enviado para o cliente.",
+              description: "Email de confirmação enviado para o cliente.",
             });
           }
         } catch (emailError) {

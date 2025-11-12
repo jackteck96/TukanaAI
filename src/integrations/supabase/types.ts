@@ -142,7 +142,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string
-          process_id: string
+          process_id: string | null
           status: string
           token: string
           used_at: string | null
@@ -154,7 +154,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by: string
-          process_id: string
+          process_id?: string | null
           status?: string
           token: string
           used_at?: string | null
@@ -166,7 +166,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string
-          process_id?: string
+          process_id?: string | null
           status?: string
           token?: string
           used_at?: string | null

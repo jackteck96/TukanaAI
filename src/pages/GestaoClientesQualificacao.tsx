@@ -135,12 +135,36 @@ const GestaoClientesQualificacao = () => {
 
     setSendingEmail(true);
     try {
+      // Gerar token único para o convite
+      const inviteToken = crypto.randomUUID().replace(/-/g, '');
+      
+      // Criar registro de convite
+      const { error: inviteError } = await supabase
+        .from('client_invites')
+        .insert({
+          company_id: company.id,
+          email: client.email,
+          token: inviteToken,
+          invited_by: user.id,
+          process_id: null,
+          status: 'pending',
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 dias
+        });
+
+      if (inviteError) {
+        console.error('Erro ao criar convite:', inviteError);
+        toast.error('Erro ao gerar link de convite');
+        setSendingEmail(false);
+        return;
+      }
+
+      // Enviar email com o token
       const { error: emailError } = await supabase.functions.invoke("send-unified-email", {
         body: {
           email: client.email,
           full_name: client.company_name,
           companyId: company.id,
-          inviteLink: `${window.location.origin}/cadastro-via-convite?id=${client.id}`,
+          inviteLink: `${window.location.origin}/cadastro-via-convite?token=${inviteToken}`,
           inviterName: user?.user_metadata?.full_name || user?.email || company.name,
           role: 'client',
           isCollaborator: false,

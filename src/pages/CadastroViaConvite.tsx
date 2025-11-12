@@ -62,7 +62,7 @@ export default function CadastroViaConvite() {
           setFullName(data.invite?.full_name || "");
         }
 
-        // Garantir que as tasks virem solicitações visíveis para o cliente (apenas para clientes)
+        // Garantir que as tasks virem solicitações visíveis para o cliente (apenas para clientes com processo)
         if (data.process?.id) {
           try {
             const { data: ensureData, error: ensureError } = await supabase.functions.invoke('ensure-requests-for-process', {
