@@ -20,6 +20,8 @@ interface Collaborator {
   email: string;
   full_name: string;
   role: string;
+  status: 'active' | 'pending';
+  invite_token?: string;
 }
 
 interface PermissionData {
@@ -107,13 +109,15 @@ export default function GestaoPermissoes() {
       let rolesByUser: Record<string, string[]> = {};
 
       if (primaryRole === 'company_admin' || primaryRole === 'company_collaborator') {
-        // Contexto de empresa: carregar colaboradores exatamente como na Gestão de Colaboradores
+        // Contexto de empresa: carregar colaboradores (ativos + pendentes)
         contextCompanyId = effectiveCompanyId;
 
         if (!contextCompanyId) {
           collaboratorsData = [];
         } else {
-          // 1) Buscar apenas colaboradores ativos via user_roles
+          const activeCollaborators: Collaborator[] = [];
+          
+          // 1) Buscar colaboradores ativos via user_roles
           const { data: roleLinks, error: rolesError } = await supabase
             .from('user_roles')
             .select('user_id, role')
@@ -123,12 +127,10 @@ export default function GestaoPermissoes() {
 
           if (rolesError) throw rolesError;
 
-          if (!roleLinks || roleLinks.length === 0) {
-            collaboratorsData = [];
-          } else {
+          if (roleLinks && roleLinks.length > 0) {
             const listedUserIds = roleLinks.map((r: any) => r.user_id as string);
 
-            // 2) Buscar profiles apenas dos colaboradores ativos
+            // 2) Buscar profiles dos colaboradores ativos
             const { data: profilesData, error: profilesError } = await supabase
               .from('profiles')
               .select('id, email, full_name')
@@ -142,13 +144,36 @@ export default function GestaoPermissoes() {
               return acc;
             }, {});
 
-            collaboratorsData = (profilesData || []).map((p: any) => ({
+            activeCollaborators.push(...(profilesData || []).map((p: any) => ({
               id: p.id,
               email: p.email,
               full_name: p.full_name,
-              role: (rolesByUser[p.id] || []).join(',')
-            }));
+              role: (rolesByUser[p.id] || []).join(','),
+              status: 'active' as const
+            })));
           }
+
+          // 4) Buscar colaboradores pendentes em user_invites
+          const { data: invitesData, error: invitesError } = await supabase
+            .from('user_invites')
+            .select('id, email, full_name, token')
+            .eq('company_id', contextCompanyId)
+            .eq('status', 'pending')
+            .in('role', ['admin', 'lawyer', 'staff']);
+
+          if (invitesError) throw invitesError;
+
+          const pendingCollaborators: Collaborator[] = (invitesData || []).map((invite: any) => ({
+            id: invite.id,
+            email: invite.email,
+            full_name: invite.full_name,
+            role: 'company_collaborator',
+            status: 'pending' as const,
+            invite_token: invite.token
+          }));
+
+          // 5) Combinar ambas as listas
+          collaboratorsData = [...activeCollaborators, ...pendingCollaborators];
         }
 
       } else if (primaryRole === 'client') {
@@ -180,7 +205,10 @@ export default function GestaoPermissoes() {
               .in('id', userIds);
 
             if (profilesError) throw profilesError;
-            collaboratorsData = profilesData || [];
+            collaboratorsData = (profilesData || []).map(p => ({
+              ...p,
+              status: 'active' as const
+            }));
           }
         }
 
@@ -215,7 +243,10 @@ export default function GestaoPermissoes() {
               .in('id', userIds);
 
             if (profilesError) throw profilesError;
-            collaboratorsData = profilesData || [];
+            collaboratorsData = (profilesData || []).map(p => ({
+              ...p,
+              status: 'active' as const
+            }));
           }
         }
       }
@@ -441,10 +472,17 @@ export default function GestaoPermissoes() {
                       <TableRow key={collaborator.id}>
                         <TableCell className="font-medium">
                           {collaborator.full_name}
+                          {collaborator.status === 'pending' && (
+                            <Badge variant="outline" className="ml-2 text-xs">Pendente</Badge>
+                          )}
                         </TableCell>
                         <TableCell>{collaborator.email}</TableCell>
                         <TableCell>
-                          {perm ? getAccessTypeBadge(perm.access_type) : (
+                          {collaborator.status === 'pending' ? (
+                            <Badge variant="secondary">Aguardando confirmação</Badge>
+                          ) : perm ? (
+                            getAccessTypeBadge(perm.access_type)
+                          ) : (
                             <Badge variant="outline">Não configurado</Badge>
                           )}
                         </TableCell>
@@ -464,14 +502,20 @@ export default function GestaoPermissoes() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditPermissions(collaborator)}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar Permissões
-                          </Button>
+                          {collaborator.status === 'active' ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditPermissions(collaborator)}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar Permissões
+                            </Button>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              Aguardando confirmação do convite
+                            </span>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
