@@ -87,6 +87,19 @@ const GestaoClientesQualificacao = () => {
     fetchClients();
   }, [company?.id]);
 
+  // Selecionar cliente automaticamente se vier da URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('clientId');
+    
+    if (clientId && clients.length > 0) {
+      const client = clients.find(c => c.id === clientId);
+      if (client) {
+        setSelectedClient(client);
+      }
+    }
+  }, [clients]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':

@@ -11,7 +11,8 @@ import {
   Calendar,
   FileText,
   ArrowLeft,
-  Eye
+  Eye,
+  Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -112,8 +113,29 @@ const GestaoClientes = () => {
     );
   });
 
-  const handleViewClient = (clientEmail: string) => {
-    navigate(`/cliente/${encodeURIComponent(clientEmail)}`);
+  const handleViewClient = (clientId: string) => {
+    navigate(`/gestao-clientes-qualificacao?clientId=${clientId}`);
+  };
+
+  const handleDeleteClient = async (clientId: string, clientName: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o cliente "${clientName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      toast.success('Cliente excluído com sucesso');
+      fetchClients();
+    } catch (error: any) {
+      console.error('Erro ao excluir cliente:', error);
+      toast.error('Erro ao excluir cliente');
+    }
   };
 
   if (!company) {
@@ -248,7 +270,11 @@ const GestaoClientes = () => {
               </TableHeader>
               <TableBody>
                 {filteredClients.map((client) => (
-                  <TableRow key={client.client_email}>
+                  <TableRow 
+                    key={client.id}
+                    className="cursor-pointer hover:bg-accent/50"
+                    onClick={() => handleViewClient(client.id)}
+                  >
                     <TableCell className="font-medium">
                       {client.client_name}
                       {!client.email_sent && (
@@ -276,14 +302,30 @@ const GestaoClientes = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewClient(client.client_email)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver Detalhes
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewClient(client.id);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver Detalhes
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClient(client.id, client.client_name);
+                          }}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
