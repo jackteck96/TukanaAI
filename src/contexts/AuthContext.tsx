@@ -65,14 +65,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Logout on page close/refresh
   useEffect(() => {
-    const handleBeforeUnload = async () => {
+    const handleBeforeUnload = () => {
       if (user) {
         try {
-          // Attempt logout but ignore session errors
-          await supabase.auth.signOut();
+          // Clear local session without network to avoid 403 "session_not_found" on unload
+          // This ensures the user must re-authenticate when returning
+          supabase.auth.signOut({ scope: 'local' });
         } catch (error) {
           // Silently ignore errors - session may already be invalid
-          console.log('Logout on close:', error);
+          console.log('Local signout on close:', error);
+        } finally {
+          // Fallback: ensure removal of persisted token in case supabase method fails
+          try {
+            localStorage.removeItem('sb-devnkdyfzlgspdlfuyam-auth-token');
+          } catch {}
         }
       }
     };
@@ -147,14 +153,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
+        const msg = (error.message || '').toLowerCase();
+        // Treat missing/invalid session as successful logout
+        if (msg.includes('session not found') || msg.includes('auth session missing') || msg.includes('session')) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {}
+          setUser(null);
+          setSession(null);
+          toast({ title: 'Logout realizado', description: 'Sessão encerrada.' });
+          return { error: null };
+        }
+        
         toast({
-          title: "Erro no logout",
+          title: 'Erro no logout',
           description: error.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
+        return { error };
       }
 
-      return { error };
+      return { error: null };
     } finally {
       setLoading(false);
     }
