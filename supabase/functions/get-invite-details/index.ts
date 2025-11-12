@@ -261,7 +261,7 @@ serve(async (req: Request): Promise<Response> => {
       invite,
       process,
       company: company || null,
-      documentRequests: effectiveDocumentRequests,
+      documentRequests: documentRequests,
     };
 
     return new Response(
