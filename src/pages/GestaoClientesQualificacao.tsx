@@ -20,7 +20,9 @@ import {
   Search,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Link as LinkIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,6 +63,7 @@ const GestaoClientesQualificacao = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string>('');
 
   const fetchClients = async () => {
     if (!company?.id) return;
@@ -96,9 +99,67 @@ const GestaoClientesQualificacao = () => {
       const client = clients.find(c => c.id === clientId);
       if (client) {
         setSelectedClient(client);
+        // Gerar link de convite ao abrir o modal
+        generateInviteLink(client);
       }
     }
   }, [clients]);
+
+  const generateInviteLink = async (client: Client) => {
+    if (!company?.id || !user?.id) return;
+
+    try {
+      // Verificar se já existe um convite pendente
+      const { data: existingInvites } = await supabase
+        .from('client_invites')
+        .select('token')
+        .eq('email', client.email)
+        .eq('company_id', company.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let token: string;
+
+      if (existingInvites && existingInvites.length > 0) {
+        // Usar token existente
+        token = existingInvites[0].token;
+      } else {
+        // Gerar novo token
+        token = crypto.randomUUID().replace(/-/g, '');
+        
+        // Criar registro de convite
+        const { error: inviteError } = await supabase
+          .from('client_invites')
+          .insert({
+            company_id: company.id,
+            email: client.email,
+            token: token,
+            invited_by: user.id,
+            process_id: null,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          });
+
+        if (inviteError) {
+          console.error('Erro ao criar convite:', inviteError);
+          return;
+        }
+      }
+
+      const link = `${window.location.origin}/cadastro-via-convite?token=${token}`;
+      setInviteLink(link);
+    } catch (error) {
+      console.error('Erro ao gerar link:', error);
+    }
+  };
+
+  const copyInviteLink = () => {
+    if (inviteLink) {
+      navigator.clipboard.writeText(inviteLink);
+      toast.success('Link copiado para a área de transferência!');
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -367,7 +428,10 @@ const GestaoClientesQualificacao = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedClient(client)}
+                        onClick={() => {
+                          setSelectedClient(client);
+                          generateInviteLink(client);
+                        }}
                       >
                         Ver Detalhes
                       </Button>
@@ -398,7 +462,20 @@ const GestaoClientesQualificacao = () => {
       </Card>
 
       {/* Client Details Dialog */}
-      <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
+      <Dialog 
+        open={!!selectedClient} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedClient(null);
+            setInviteLink('');
+            // Limpar clientId da URL se existir
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('clientId')) {
+              navigate('/gestao-clientes-qualificacao', { replace: true });
+            }
+          }
+        }}
+      >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -514,17 +591,62 @@ const GestaoClientesQualificacao = () => {
                 )}
               </div>
 
-              {/* Botão de Envio de Email */}
-              {!selectedClient.email_sent && selectedClient.qualification_method === 'client_fills' && (
+              {/* Link de Convite */}
+              {selectedClient.qualification_method === 'client_fills' && inviteLink && (
                 <>
                   <Separator />
-                  <div className="flex justify-end">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <LinkIcon className="h-5 w-5" />
+                      Link de Convite
+                    </h3>
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground">
+                        Compartilhe este link com o cliente para que ele possa completar o cadastro
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={inviteLink}
+                          readOnly
+                          className="font-mono text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={copyInviteLink}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Botão de Envio/Reenvio de Email */}
+              {selectedClient.qualification_method === 'client_fills' && (
+                <>
+                  <Separator />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={copyInviteLink}
+                      disabled={!inviteLink}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar Link
+                    </Button>
                     <Button
                       onClick={() => handleSendEmail(selectedClient)}
                       disabled={sendingEmail}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      {sendingEmail ? 'Enviando...' : 'Enviar E-mail de Cadastro'}
+                      {sendingEmail 
+                        ? 'Enviando...' 
+                        : selectedClient.email_sent 
+                          ? 'Reenviar E-mail de Cadastro'
+                          : 'Enviar E-mail de Cadastro'
+                      }
                     </Button>
                   </div>
                 </>
