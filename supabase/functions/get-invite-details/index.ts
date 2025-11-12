@@ -60,6 +60,7 @@ serve(async (req: Request): Promise<Response> => {
       .from('client_invites')
       .select('*')
       .eq('token', token)
+      .eq('status', 'pending')
       .maybeSingle();
 
     if (clientInvite) {
@@ -72,6 +73,7 @@ serve(async (req: Request): Promise<Response> => {
         .from('user_invites')
         .select('*')
         .eq('token', token)
+        .eq('status', 'pending')
         .maybeSingle();
 
       if (userInvite) {
@@ -79,9 +81,9 @@ serve(async (req: Request): Promise<Response> => {
         isCollaboratorInvite = true;
         console.log('[get-invite-details] Convite de colaborador encontrado');
       } else {
-        console.error('[get-invite-details] Convite não encontrado em nenhuma tabela');
+        console.error('[get-invite-details] Convite não encontrado em nenhuma tabela ou já foi usado');
         return new Response(
-          JSON.stringify({ success: false, error: 'Convite inválido ou expirado' }),
+          JSON.stringify({ success: false, error: 'Convite inválido, expirado ou já utilizado' }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
