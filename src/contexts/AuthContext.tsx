@@ -63,6 +63,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [toast]);
 
+  // Logout on page close/refresh
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (user) {
+        try {
+          // Attempt logout but ignore session errors
+          await supabase.auth.signOut();
+        } catch (error) {
+          // Silently ignore errors - session may already be invalid
+          console.log('Logout on close:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [user]);
+
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
       setLoading(true);
