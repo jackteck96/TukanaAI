@@ -31,7 +31,7 @@ interface PermissionData {
 export default function GestaoPermissoes() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { primaryRole, companyId } = useUserRole();
+  const { primaryRole, companyId, loading: roleLoading } = useUserRole();
   const { company } = useCompany();
   const { toast } = useToast();
 
@@ -48,13 +48,17 @@ export default function GestaoPermissoes() {
   const isClientOrClientCollab = primaryRole === 'client' || primaryRole === 'client_collaborator';
   const effectiveCompanyId = company?.id ?? companyId ?? undefined;
 
-  console.log('[GestaoPermissoes] Debug:', { 
-    primaryRole, 
-    companyId, 
-    effectiveCompanyId, 
-    loading,
-    isCompanyAdmin 
-  });
+  // Debug detalhado
+  useEffect(() => {
+    console.log('[GestaoPermissoes] Estado completo:', { 
+      primaryRole, 
+      companyId, 
+      effectiveCompanyId, 
+      loading,
+      isCompanyAdmin,
+      companyName: company?.name
+    });
+  }, [primaryRole, companyId, effectiveCompanyId, loading, isCompanyAdmin, company]);
 
   // Verificar autorização: apenas company_admin, client e client_collaborator podem acessar
   useEffect(() => {
@@ -337,8 +341,13 @@ export default function GestaoPermissoes() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Convidar Colaborador */}
-              {primaryRole === 'company_admin' ? (
+              {/* Convidar Colaborador - Apenas para company_admin */}
+              {roleLoading ? (
+                <Button variant="outline" disabled>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Carregando...
+                </Button>
+              ) : isCompanyAdmin ? (
                 <UserInviteSystem onInviteSent={loadData} />
               ) : isClientOrClientCollab ? (
                 clientEmail ? (
@@ -350,7 +359,7 @@ export default function GestaoPermissoes() {
                 <div className="space-y-2">
                   <Button variant="outline" disabled>Indisponível</Button>
                   <p className="text-xs text-muted-foreground">
-                    Verifique o console do navegador para detalhes. Role: {primaryRole || 'não detectado'}
+                    Role detectado: {primaryRole || 'nenhum'}. Abra o console (F12) para mais detalhes.
                   </p>
                 </div>
               )}
