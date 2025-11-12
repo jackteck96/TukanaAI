@@ -168,12 +168,10 @@ export function CompanyLegalDataCard({ companyId }: CompanyLegalDataCardProps) {
             <p className="text-sm">{companyData.legal_representative_name || 'Não informado'}</p>
           </div>
 
-          {companyData.legal_representative_cpf && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">CPF do Representante</p>
-              <p className="text-sm">{companyData.legal_representative_cpf}</p>
-            </div>
-          )}
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">CPF do Representante Legal</p>
+            <p className="text-sm">{companyData.legal_representative_cpf || 'Não informado'}</p>
+          </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">E-mail</p>

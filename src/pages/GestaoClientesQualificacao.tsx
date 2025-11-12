@@ -422,19 +422,19 @@ const GestaoClientesQualificacao = () => {
                 </>
               )}
 
-              {/* Sócio Administrador */}
-              {selectedClient.admin_full_name && (
+              {/* Sócio Administrador / Representante Legal */}
+              {(selectedClient.admin_full_name || selectedClient.admin_cpf) && (
                 <>
                   <Separator />
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                       <User className="h-5 w-5" />
-                      Sócio Administrador
+                      Sócio Administrador / Representante Legal
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-muted-foreground">Nome Completo</Label>
-                        <p className="font-medium">{selectedClient.admin_full_name}</p>
+                        <p className="font-medium">{selectedClient.admin_full_name || 'Não informado'}</p>
                       </div>
                       <div>
                         <Label className="text-muted-foreground">CPF</Label>
