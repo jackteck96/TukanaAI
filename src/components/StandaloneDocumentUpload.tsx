@@ -90,7 +90,7 @@ export const StandaloneDocumentUpload = ({
         
         const { data: profile } = await supabase
           .from('profiles')
-          .select('email, full_name')
+          .select('email, full_name, company_id')
           .eq('id', user.id)
           .single();
 
@@ -101,6 +101,7 @@ export const StandaloneDocumentUpload = ({
             client_email: profile.email,
             client_name: profile.full_name
           }));
+          setCompanyId(profile.company_id);
         }
 
         setLoadingClients(false);
