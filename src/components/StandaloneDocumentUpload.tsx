@@ -20,12 +20,14 @@ interface StandaloneDocumentUploadProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  isClientView?: boolean;
 }
 
 export const StandaloneDocumentUpload = ({
   open,
   onOpenChange,
-  onSuccess
+  onSuccess,
+  isClientView = false
 }: StandaloneDocumentUploadProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -82,7 +84,30 @@ export const StandaloneDocumentUpload = ({
     
     setLoadingClients(true);
     try {
-      // Primeiro, verificar se o usuário é um cliente
+      // Se isClientView está definido, usar diretamente
+      if (isClientView) {
+        setIsClientUser(true);
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          setUserProfile(profile);
+          setFormData(prev => ({
+            ...prev,
+            client_email: profile.email,
+            client_name: profile.full_name
+          }));
+        }
+
+        setLoadingClients(false);
+        return;
+      }
+
+      // Caso contrário, verificar se o usuário é um cliente
       const { data: clientRoleData } = await supabase
         .from('user_roles')
         .select('role, client_email')

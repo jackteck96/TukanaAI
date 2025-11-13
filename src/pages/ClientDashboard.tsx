@@ -237,6 +237,7 @@ const ClientDashboard = () => {
       <StandaloneDocumentUpload
         open={isStandaloneUploadOpen}
         onOpenChange={setIsStandaloneUploadOpen}
+        isClientView={true}
         onSuccess={() => {
           setIsStandaloneUploadOpen(false);
           // Recarregar listas após sucesso
