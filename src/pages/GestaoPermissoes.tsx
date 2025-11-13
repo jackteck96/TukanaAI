@@ -156,24 +156,34 @@ export default function GestaoPermissoes() {
           // 4) Buscar colaboradores pendentes em user_invites
           const { data: invitesData, error: invitesError } = await supabase
             .from('user_invites')
-            .select('id, email, full_name, token')
+            .select('id, email, full_name, token, role')
             .eq('company_id', contextCompanyId)
             .eq('status', 'pending')
             .in('role', ['admin', 'lawyer', 'staff']);
 
-          if (invitesError) throw invitesError;
+          console.log('[GestaoPermissoes] Convites pendentes encontrados:', invitesData);
+
+          if (invitesError) {
+            console.error('[GestaoPermissoes] Erro ao buscar convites:', invitesError);
+            throw invitesError;
+          }
 
           const pendingCollaborators: Collaborator[] = (invitesData || []).map((invite: any) => ({
             id: invite.id,
             email: invite.email,
-            full_name: invite.full_name,
-            role: 'company_collaborator',
+            full_name: invite.full_name || invite.email,
+            role: invite.role || 'staff',
             status: 'pending' as const,
             invite_token: invite.token
           }));
 
           // 5) Combinar ambas as listas
           collaboratorsData = [...activeCollaborators, ...pendingCollaborators];
+          console.log('[GestaoPermissoes] Total de colaboradores (ativos + pendentes):', {
+            ativos: activeCollaborators.length,
+            pendentes: pendingCollaborators.length,
+            total: collaboratorsData.length
+          });
         }
 
       } else if (primaryRole === 'client') {
