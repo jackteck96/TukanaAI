@@ -108,7 +108,7 @@ export default function GestaoPermissoes() {
       let contextClientEmail: string | undefined;
       let rolesByUser: Record<string, string[]> = {};
 
-      if (primaryRole === 'company_admin' || primaryRole === 'company_collaborator') {
+      if (primaryRole === 'company_admin' || primaryRole === 'company_collaborator' || (primaryRole === 'platform_admin' && !!effectiveCompanyId)) {
         // Contexto de empresa: carregar colaboradores (ativos + pendentes)
         contextCompanyId = effectiveCompanyId;
 
