@@ -235,7 +235,20 @@ const AreaCliente = () => {
           .select('status')
           .in('process_id', processIds);
         
-        // Buscar solicitações de documentos pendentes
+        // Garantir materialização das solicitações para cada processo antes de buscar
+        try {
+          await Promise.all(
+            processIds.map((pid) =>
+              supabase.functions
+                .invoke('ensure-requests-for-process', { body: { processId: pid } })
+                .catch(() => null)
+            )
+          );
+        } catch (e) {
+          console.warn('[AreaCliente] ensure-requests-for-process falhou para alguns processos', e);
+        }
+
+        // Buscar solicitações de documentos pendentes já materializadas
         const { data: docRequests } = await supabase
           .from('document_requests')
           .select(`
