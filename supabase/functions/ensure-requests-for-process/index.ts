@@ -133,25 +133,18 @@ serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    // 4) Remover o que não foi pedido (sem uploads)
-    const toDeleteIds: string[] = [];
-    (existingReqsFull || []).forEach((r: any) => {
-      const name = (r.document_name || '').toString();
-      const uploads = (r.document_uploads || []).length;
-      if (!desiredNames.includes(name) && uploads === 0) {
-        toDeleteIds.push(r.id);
-      }
-    });
-    if (toDeleteIds.length > 0) {
-      const { error: delErr } = await supabase
-        .from('document_requests')
-        .delete()
-        .in('id', toDeleteIds);
-      if (delErr) {
-        console.warn('[ensure-requests-for-process] Falha ao remover não pedidos:', delErr);
-      } else {
-        console.log('[ensure-requests-for-process] Removidos não pedidos:', toDeleteIds.length);
-      }
+    // 4) NÃO remover solicitações existentes sem uploads.
+    // Motivo: a empresa pode criar solicitações manualmente (ex.: via ProcessEditDialog)
+    // e elas podem não constar em tasks/process_type/document_types. Para não perder
+    // solicitações recém-criadas, não executamos mais remoção automática aqui.
+    // Mantemos o log apenas para referência e auditoria futura.
+    if (existingReqsFull && existingReqsFull.length) {
+      const orphanCount = (existingReqsFull || []).filter((r: any) => {
+        const name = (r.document_name || '').toString();
+        const uploads = (r.document_uploads || []).length;
+        return !desiredNames.includes(name) && uploads === 0;
+      }).length;
+      console.log('[ensure-requests-for-process] Remoção desativada. Solicitações órfãs detectadas (não removidas):', orphanCount);
     }
 
     // 5) Retornar lista atualizada de document_requests com seus uploads
