@@ -84,13 +84,39 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    if (process.client_email !== requesterEmail) {
-      console.warn('[get-process-requests] Acesso negado: email não corresponde ao cliente do processo');
+    let authorized = false;
+
+    // Regra 1: cliente principal do processo
+    if (process.client_email === requesterEmail) {
+      authorized = true;
+    } else {
+      // Regra 2: colaborador de cliente vinculado ao mesmo client_email do processo
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role, client_email')
+        .eq('user_id', userData.user.id);
+
+      if (rolesError) {
+        console.warn('[get-process-requests] Falha ao buscar user_roles:', rolesError);
+      }
+
+      if (roles && roles.length > 0) {
+        authorized = roles.some((r: any) =>
+          (r.role === 'client_collaborator' || r.role === 'client') &&
+          (r.client_email && r.client_email === process.client_email)
+        );
+      }
+    }
+
+    if (!authorized) {
+      console.warn('[get-process-requests] Acesso negado: usuário não é cliente do processo nem colaborador vinculado');
       return new Response(
         JSON.stringify({ success: false, error: 'Acesso negado ao processo' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('[get-process-requests] Acesso concedido ao processo:', processId);
 
     console.log('[get-process-requests] Buscando solicitações de documentos do processo');
     const { data: documentRequests, error: docReqError } = await supabase
