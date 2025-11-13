@@ -10,6 +10,7 @@ import { PendingSignatureDocuments } from "@/components/PendingSignatureDocument
 import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { ClientAwaitingCompanySignatures } from "@/components/ClientAwaitingCompanySignatures";
 
 const ClientDashboard = () => {
   const navigate = useNavigate();
@@ -218,6 +219,11 @@ const ClientDashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Aguardando Assinatura da Empresa */}
+        <div className="mt-6">
+          <ClientAwaitingCompanySignatures />
+        </div>
 
         {/* Info Card */}
         <Card>

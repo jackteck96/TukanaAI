@@ -291,10 +291,9 @@ export const StandaloneDocumentUpload = ({
 
       if (insertError) throw insertError;
 
-      // Criar notificação apropriada
+      // Criar notificação apropriada (tolerante a RLS)
       if (isClientUser) {
-        // Cliente enviou documento - notificar a empresa
-        await supabase
+        const { error: notifErr } = await supabase
           .from('client_notifications')
           .insert({
             company_id: targetCompanyId,
@@ -304,9 +303,11 @@ export const StandaloneDocumentUpload = ({
             title: `📝 Documento Aguardando Assinatura da Empresa`,
             message: `O cliente "${formData.client_name}" enviou o documento "${formData.document_name}" para assinatura da empresa.`
           } as any);
+        if (notifErr) {
+          console.warn('[StandaloneDocumentUpload] Notificação não criada (ignorado):', notifErr.message);
+        }
       } else {
-        // Empresa enviou documento - notificar o cliente
-        await supabase
+        const { error: notifErr } = await supabase
           .from('client_notifications')
           .insert({
             client_email: formData.client_email,
@@ -315,6 +316,9 @@ export const StandaloneDocumentUpload = ({
             title: `📄 Novo Documento Enviado`,
             message: `Um documento "${formData.document_name}" foi enviado para você e aguarda assinatura após a empresa assinar primeiro.`
           } as any);
+        if (notifErr) {
+          console.warn('[StandaloneDocumentUpload] Notificação não criada (ignorado):', notifErr.message);
+        }
       }
 
       toast({

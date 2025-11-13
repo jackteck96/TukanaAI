@@ -48,6 +48,7 @@ import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload"
 import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocuments";
 import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
 import { ProcessCalendar } from "@/components/ProcessCalendar";
+import { CompanyPendingStandaloneSignatures } from "@/components/CompanyPendingStandaloneSignatures";
 
 const GerenciarProcessos = () => {
   const location = useLocation();
@@ -677,8 +678,11 @@ const GerenciarProcessos = () => {
       </header>
 
       <div className="p-6 space-y-6">
-        {/* Documentos Pendentes de Assinatura */}
+        {/* Documentos Pendentes de Assinatura do Cliente (para ele assinar) */}
         <PendingSignatureDocuments />
+
+        {/* Documentos aguardando assinatura da empresa (cliente já assinou) */}
+        <CompanyPendingStandaloneSignatures />
 
         {/* Documentos Assinados */}
         <StandaloneSignedDocuments />
