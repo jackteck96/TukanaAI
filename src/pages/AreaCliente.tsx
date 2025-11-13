@@ -249,19 +249,27 @@ const AreaCliente = () => {
         }
 
         // Buscar solicitações de documentos pendentes já materializadas
-        const { data: docRequests } = await supabase
-          .from('document_requests')
-          .select(`
-            id,
-            document_name,
-            instructions,
-            required,
-            current_status,
-            process_id,
-            created_at
-          `)
-          .in('process_id', processIds)
-          .eq('current_status', 'pendente');
+        // Buscar solicitações de documentos pendentes via edge function (bypass RLS)
+        let allDocRequests: any[] = [];
+        try {
+          const results = await Promise.all(
+            processIds.map(async (pid) => {
+              const { data, error } = await supabase.functions.invoke('get-process-requests', {
+                body: { processId: pid }
+              });
+              if (error || !data?.success) {
+                console.warn('[AreaCliente] get-process-requests falhou para processo', pid, error || data?.error);
+                return [] as any[];
+              }
+              return (data.documentRequests || []) as any[];
+            })
+          );
+          allDocRequests = results.flat();
+        } catch (err) {
+          console.warn('[AreaCliente] Erro ao carregar document_requests via função:', err);
+        }
+
+        const docRequests = allDocRequests.filter((r: any) => r.current_status === 'pendente');
         
         // Mapear as solicitações pendentes com informações do processo
         const mappedPendingRequests = (docRequests || []).map((req: any) => {
