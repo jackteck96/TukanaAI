@@ -683,7 +683,7 @@ const AreaCliente = () => {
           id: req.id,
           name: req.title,
           type: "Pendente",
-          uploadDate: req.dueDate,
+          uploadDate: req.dueDate ? new Date(req.dueDate).toLocaleDateString('pt-BR') : "Sem prazo",
           status: "Pendente",
           size: "-",
           processId: req.processId,
