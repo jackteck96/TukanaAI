@@ -209,13 +209,11 @@ const AreaCliente = () => {
           .eq('client_email', profile.email)
           .eq('signature_status', 'company_signed');
 
-        // Buscar todos os processos do cliente
-        const { data: processesData } = await supabase
-          .from('processes')
-          .select('id, project_name')
-          .eq('client_email', user.email);
-        
-        if (!processesData || processesData.length === 0) {
+        // Buscar processos acessíveis ao usuário (cliente ou colaborador vinculado)
+        const { data: accessible } = await supabase.rpc('get_accessible_process_ids');
+        const processIds: string[] = (accessible || []).map((p: any) => p.process_id);
+
+        if (!processIds || processIds.length === 0) {
           setRealStats({
             pendingSignatures: pendingSigs?.length || 0,
             pendingTasks: 0,
@@ -224,8 +222,12 @@ const AreaCliente = () => {
           });
           return;
         }
-        
-        const processIds = processesData.map(p => p.id);
+
+        // Buscar metadados dos processos
+        const { data: processesData } = await supabase
+          .from('processes')
+          .select('id, project_name')
+          .in('id', processIds);
         
         // Buscar documentos
         const { data: documents } = await supabase
