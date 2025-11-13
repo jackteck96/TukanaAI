@@ -330,7 +330,7 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" size="sm">
           <Plus className="h-4 w-4 mr-2" />
           Novo Cliente
         </Button>
