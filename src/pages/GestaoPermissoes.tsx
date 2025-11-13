@@ -156,7 +156,9 @@ export default function GestaoPermissoes() {
           // 4) Buscar colaboradores pendentes com Edge Function (bypass RLS)
           let invitesData: any[] | null = null;
           try {
-            const { data: funcData, error: funcErr } = await supabase.functions.invoke('list-company-invites');
+            const { data: funcData, error: funcErr } = await supabase.functions.invoke('list-company-invites', {
+              body: { companyId: contextCompanyId }
+            });
             if (funcErr) {
               console.warn('[GestaoPermissoes] Edge function list-company-invites falhou, fallback para SELECT direto', funcErr);
             } else if (funcData?.success) {
