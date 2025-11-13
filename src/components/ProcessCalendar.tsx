@@ -243,11 +243,11 @@ export const ProcessCalendar = ({
                 Adicionar Evento
               </Button>
             ) : (
-              <Card>
+              <Card className="max-h-[calc(85vh-280px)]">
                 <CardHeader>
                   <CardTitle className="text-base">Novo Evento</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 overflow-y-auto max-h-[calc(85vh-360px)] pr-2">
                   <div className="space-y-2">
                     <Label htmlFor="title">Título do Evento</Label>
                     <Input
@@ -299,7 +299,7 @@ export const ProcessCalendar = ({
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-background border-t mt-2 -mx-2 px-2 pb-2">
                     <Button
                       variant="outline"
                       onClick={() => {
