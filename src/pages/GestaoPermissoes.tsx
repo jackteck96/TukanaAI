@@ -153,20 +153,34 @@ export default function GestaoPermissoes() {
             })));
           }
 
-          // 4) Buscar colaboradores pendentes em user_invites
-          const { data: invitesData, error: invitesError } = await supabase
-            .from('user_invites')
-            .select('id, email, full_name, token, role')
-            .eq('company_id', contextCompanyId)
-            .eq('status', 'pending')
-            .in('role', ['admin', 'lawyer', 'staff']);
-
-          console.log('[GestaoPermissoes] Convites pendentes encontrados:', invitesData);
-
-          if (invitesError) {
-            console.error('[GestaoPermissoes] Erro ao buscar convites:', invitesError);
-            throw invitesError;
+          // 4) Buscar colaboradores pendentes com Edge Function (bypass RLS)
+          let invitesData: any[] | null = null;
+          try {
+            const { data: funcData, error: funcErr } = await supabase.functions.invoke('list-company-invites');
+            if (funcErr) {
+              console.warn('[GestaoPermissoes] Edge function list-company-invites falhou, fallback para SELECT direto', funcErr);
+            } else if (funcData?.success) {
+              invitesData = funcData.invites || [];
+            }
+          } catch (e) {
+            console.warn('[GestaoPermissoes] Falha ao chamar list-company-invites, tentando fallback', e);
           }
+
+          if (!invitesData) {
+            const { data, error } = await supabase
+              .from('user_invites')
+              .select('id, email, full_name, token, role, status')
+              .eq('company_id', contextCompanyId)
+              .eq('status', 'pending')
+              .in('role', ['admin', 'lawyer', 'staff']);
+            if (error) {
+              console.error('[GestaoPermissoes] Erro no fallback user_invites select:', error);
+              throw error;
+            }
+            invitesData = data || [];
+          }
+
+          console.log('[GestaoPermissoes] Convites pendentes encontrados:', invitesData?.length);
 
           const pendingCollaborators: Collaborator[] = (invitesData || []).map((invite: any) => ({
             id: invite.id,
