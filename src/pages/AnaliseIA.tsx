@@ -32,11 +32,11 @@ export default function AnaliseIA() {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/empresa-dashboard')}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            Voltar para Dashboard
           </Button>
           <div className="flex items-center gap-3 mb-2">
             <Brain className="h-8 w-8 text-primary" />
