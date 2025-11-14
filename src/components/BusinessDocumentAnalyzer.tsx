@@ -43,7 +43,6 @@ interface BusinessDocumentAnalyzerProps {
 
 export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisComplete }: BusinessDocumentAnalyzerProps) {
   const { toast } = useToast();
-  const [processDescription, setProcessDescription] = useState('');
   const [documents, setDocuments] = useState<Document[]>([]);
   const [newDocName, setNewDocName] = useState('');
   const [newDocType, setNewDocType] = useState('');
@@ -171,7 +170,6 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
 
       const { data, error } = await supabase.functions.invoke('analyze-business-documents', {
         body: {
-          processDescription,
           documents,
           companyId,
           processId,
@@ -241,24 +239,6 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
             <Brain className="h-6 w-6 text-primary" />
             <h2 className="text-2xl font-bold">Análise Inteligente de Documentação Empresarial</h2>
           </div>
-
-          {!processId && (
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Descrição do Processo Documental (Opcional)
-              </label>
-              <Textarea
-                placeholder="Descreva o processo de documentação que precisa analisar (ex: due diligence para aquisição de empresa, regularização societária, contratos de prestação de serviços, etc.)"
-                value={processDescription}
-                onChange={(e) => setProcessDescription(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                A IA identificará automaticamente o tipo de processo e requisitos necessários
-              </p>
-            </div>
-          )}
           
           {processId && (
             <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
