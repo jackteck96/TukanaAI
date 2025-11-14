@@ -1,11 +1,14 @@
 import { useCompany } from '@/contexts/CompanyContext';
 import { BusinessDocumentAnalyzer } from '@/components/BusinessDocumentAnalyzer';
 import { Card } from '@/components/ui/card';
-import { Brain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Brain, ArrowLeft } from 'lucide-react';
 import Header from '@/components/Header';
+import { useNavigate } from 'react-router-dom';
 
 export default function AnaliseIA() {
   const { company } = useCompany();
+  const navigate = useNavigate();
 
   if (!company) {
     return (
@@ -27,6 +30,14 @@ export default function AnaliseIA() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
           <div className="flex items-center gap-3 mb-2">
             <Brain className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold">Análise Inteligente de Documentos</h1>
