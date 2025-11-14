@@ -199,7 +199,7 @@ export const ProcessCalendar = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden">
+      <DialogContent className="max-w-5xl h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-primary" />
@@ -207,9 +207,9 @@ export const ProcessCalendar = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 py-4 h-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 py-4 h-full min-h-0">
           {/* Calendário Visual */}
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[calc(85vh-120px)] pr-2 min-h-0">
             <Card>
               <CardContent className="p-4">
                 <Calendar
