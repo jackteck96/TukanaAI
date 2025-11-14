@@ -36,6 +36,7 @@ export const ProcessCalendar = ({
     description: '',
     event_date: '',
     event_time: '',
+    meeting_link: '',
   });
 
   useEffect(() => {
@@ -141,6 +142,7 @@ export const ProcessCalendar = ({
           description: newEvent.description,
           event_date: newEvent.event_date,
           event_time: newEvent.event_time || null,
+          meeting_link: newEvent.meeting_link || null,
           event_type: 'custom',
           created_by: userData.user.id,
         });
@@ -148,7 +150,7 @@ export const ProcessCalendar = ({
       if (error) throw error;
 
       toast.success('Evento adicionado ao calendário');
-      setNewEvent({ title: '', description: '', event_date: '', event_time: '' });
+      setNewEvent({ title: '', description: '', event_date: '', event_time: '', meeting_link: '' });
       setIsAddingEvent(false);
       loadEvents();
     } catch (error: any) {
@@ -235,7 +237,8 @@ export const ProcessCalendar = ({
                     title: '', 
                     description: '', 
                     event_date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '', 
-                    event_time: '' 
+                    event_time: '',
+                    meeting_link: '' 
                   });
                 }}
               >
@@ -299,12 +302,25 @@ export const ProcessCalendar = ({
                     </div>
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="meeting_link">Link da Reunião (opcional)</Label>
+                    <Input
+                      id="meeting_link"
+                      type="url"
+                      value={newEvent.meeting_link}
+                      onChange={(e) =>
+                        setNewEvent({ ...newEvent, meeting_link: e.target.value })
+                      }
+                      placeholder="https://teams.microsoft.com/..."
+                    />
+                  </div>
+
                   <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-background border-t mt-2 -mx-2 px-2 pb-2">
                     <Button
                       variant="outline"
                       onClick={() => {
                         setIsAddingEvent(false);
-                        setNewEvent({ title: '', description: '', event_date: '', event_time: '' });
+                        setNewEvent({ title: '', description: '', event_date: '', event_time: '', meeting_link: '' });
                       }}
                     >
                       Cancelar
@@ -385,6 +401,20 @@ export const ProcessCalendar = ({
                               {event.uploaded_by}
                             </div>
                           </div>
+
+                          {event.meeting_link && (
+                            <a
+                              href={event.meeting_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2"
+                            >
+                              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                              Entrar na reunião
+                            </a>
+                          )}
                         </div>
                       </div>
 

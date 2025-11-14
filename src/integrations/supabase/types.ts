@@ -1263,6 +1263,7 @@ export type Database = {
           event_time: string | null
           event_type: string
           id: string
+          meeting_link: string | null
           process_id: string
           title: string
           updated_at: string
@@ -1277,6 +1278,7 @@ export type Database = {
           event_time?: string | null
           event_type?: string
           id?: string
+          meeting_link?: string | null
           process_id: string
           title: string
           updated_at?: string
@@ -1291,6 +1293,7 @@ export type Database = {
           event_time?: string | null
           event_type?: string
           id?: string
+          meeting_link?: string | null
           process_id?: string
           title?: string
           updated_at?: string
