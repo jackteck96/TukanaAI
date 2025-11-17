@@ -471,7 +471,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Análise Contratual</h3>
                   
-                  {analysisResult.contractAnalysis.strongPoints.length > 0 && (
+                  {analysisResult.contractAnalysis.strongPoints?.length > 0 && (
                     <div>
                       <h4 className="text-sm font-medium text-green-600 mb-2 flex items-center gap-2">
                         <CheckCircle className="h-4 w-4" />
@@ -485,7 +485,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
                     </div>
                   )}
 
-                  {analysisResult.contractAnalysis.weakPoints.length > 0 && (
+                  {analysisResult.contractAnalysis.weakPoints?.length > 0 && (
                     <div>
                       <h4 className="text-sm font-medium text-yellow-600 mb-2 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
@@ -499,7 +499,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
                     </div>
                   )}
 
-                  {analysisResult.contractAnalysis.riskClauses.length > 0 && (
+                  {analysisResult.contractAnalysis.riskClauses?.length > 0 && (
                     <div>
                       <h4 className="text-sm font-medium text-red-600 mb-2 flex items-center gap-2">
                         <XCircle className="h-4 w-4" />
@@ -516,7 +516,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
               </>
             )}
 
-            {analysisResult.missingDocuments.length > 0 && (
+            {analysisResult.missingDocuments?.length > 0 && (
               <>
                 <Separator />
                 <div>
@@ -532,7 +532,7 @@ export function BusinessDocumentAnalyzer({ companyId, processId, onAnalysisCompl
               </>
             )}
 
-            {analysisResult.recommendations.length > 0 && (
+            {analysisResult.recommendations?.length > 0 && (
               <>
                 <Separator />
                 <div>
