@@ -353,19 +353,31 @@ Forneça um parecer objetivo e estruturado em formato JSON.`;
       // Tentar extrair JSON do conteúdo
       const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        analysis = JSON.parse(jsonMatch[0]);
+        const rawAnalysis = JSON.parse(jsonMatch[0]);
+        
+        // Mapear campos da resposta da IA para o formato esperado pelo frontend
+        analysis = {
+          processType: rawAnalysis.tipoDocumento || rawAnalysis.processType || 'Não identificado',
+          checklist: rawAnalysis.checklist || [],
+          contractAnalysis: rawAnalysis.contractAnalysis,
+          missingDocuments: rawAnalysis.missingDocuments || [],
+          recommendations: rawAnalysis.recomendacoes || rawAnalysis.recommendations || [],
+          finalReport: rawAnalysis.finalReport || rawAnalysis.resumoExecutivo || rawAnalysis.motivoStatus || 'Análise concluída'
+        };
       } else {
         throw new Error('No JSON found in AI response');
       }
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
+      console.log('Raw AI content:', aiContent);
+      
       // Fallback para estrutura básica
       analysis = {
         processType: 'Análise Documental',
         checklist: [],
         missingDocuments: [],
-        recommendations: [],
-        finalReport: aiContent,
+        recommendations: ['Não foi possível processar a resposta da IA. Por favor, tente novamente.'],
+        finalReport: aiContent || 'Erro ao processar a análise. Por favor, tente novamente.',
       };
     }
 
