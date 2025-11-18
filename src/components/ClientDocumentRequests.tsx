@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
-import { Upload, FileText, CheckCircle, Clock, AlertCircle, MessageSquare, Info, XCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle, Clock, AlertCircle, MessageSquare, Info, XCircle, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface DocumentUpload {
   id: string;
@@ -25,6 +29,14 @@ interface DocumentFromTable {
   rejection_reason?: string;
   adjustment_comments?: string;
   created_at: string;
+}
+
+interface DocumentTypeConfig {
+  id: string;
+  name: string;
+  has_issue_date?: boolean;
+  has_expiration_date?: boolean;
+  requires_issuing_location?: boolean;
 }
 
 interface DocumentRequest {
@@ -49,6 +61,13 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
   const [selectedDocForComments, setSelectedDocForComments] = useState<DocumentFromTable | null>(null);
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
   const [latestNotificationMessage, setLatestNotificationMessage] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<FileList | null>(null);
+  const [pendingRequest, setPendingRequest] = useState<DocumentRequest | null>(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [documentTypeConfig, setDocumentTypeConfig] = useState<DocumentTypeConfig | null>(null);
+  const [issueDate, setIssueDate] = useState<Date | undefined>(undefined);
+  const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined);
+  const [issuingLocation, setIssuingLocation] = useState('');
 
   useEffect(() => {
     console.log('[ClientDocumentRequests] Montando com processId:', processId);
@@ -317,6 +336,89 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     }
   };
 
+  const loadDocumentTypeConfig = async (documentTypeName: string, companyIdParam: string) => {
+    try {
+      // Tentar buscar primeiro da empresa
+      const { data: companyType } = await supabase
+        .from('document_types')
+        .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
+        .eq('company_id', companyIdParam)
+        .eq('name', documentTypeName)
+        .maybeSingle();
+
+      if (companyType) {
+        setDocumentTypeConfig(companyType);
+        return;
+      }
+
+      // Se não encontrou, buscar dos tipos globais
+      const { data: globalType } = await supabase
+        .from('global_document_types')
+        .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
+        .eq('name', documentTypeName)
+        .maybeSingle();
+
+      if (globalType) {
+        setDocumentTypeConfig(globalType);
+      } else {
+        setDocumentTypeConfig(null);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configuração do tipo de documento:', error);
+      setDocumentTypeConfig(null);
+    }
+  };
+
+  const handleFileSelection = async (request: DocumentRequest, files: FileList) => {
+    if (files.length === 0) return;
+
+    // Buscar company_id do processo
+    const { data: processData } = await supabase
+      .from('processes')
+      .select('company_id')
+      .eq('id', processId)
+      .single();
+
+    if (!processData?.company_id) {
+      toast.error('Erro ao identificar a empresa do processo');
+      return;
+    }
+
+    // Carregar configuração do tipo de documento
+    await loadDocumentTypeConfig(request.document_name, processData.company_id);
+
+    // Guardar arquivos e request pendentes
+    setPendingFiles(files);
+    setPendingRequest(request);
+    setIssueDate(undefined);
+    setExpirationDate(undefined);
+    setIssuingLocation('');
+    setIsUploadModalOpen(true);
+  };
+
+  const confirmUpload = async () => {
+    if (!pendingFiles || !pendingRequest) return;
+
+    // Validar campos obrigatórios
+    if (documentTypeConfig?.has_issue_date && !issueDate) {
+      toast.error('Por favor, informe a data de emissão');
+      return;
+    }
+    if (documentTypeConfig?.has_expiration_date && !expirationDate) {
+      toast.error('Por favor, informe a data de validade');
+      return;
+    }
+    if (documentTypeConfig?.requires_issuing_location && !issuingLocation.trim()) {
+      toast.error('Por favor, informe o local de emissão');
+      return;
+    }
+
+    setIsUploadModalOpen(false);
+    await handleFileUpload(pendingRequest, pendingFiles);
+    setPendingFiles(null);
+    setPendingRequest(null);
+  };
+
   const handleFileUpload = async (request: DocumentRequest, files: FileList) => {
     try {
       setUploadingDocId(request.id);
@@ -424,6 +526,29 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
             console.error('Erro ao registrar upload:', dbError);
             errorCount++;
             continue;
+          }
+
+          // Também registrar na tabela documents com os campos de data
+          const { data: userData } = await supabase.auth.getUser();
+          const { error: docError } = await supabase
+            .from('documents')
+            .insert({
+              process_id: processId,
+              company_id: processData?.company_id || profileData?.company_id,
+              document_type: request.document_name,
+              file_name: file.name,
+              file_path: fileName,
+              file_size: file.size,
+              file_type: file.type,
+              status: 'pending',
+              uploaded_by: userData.user?.id || '',
+              issue_date: issueDate ? issueDate.toISOString().split('T')[0] : null,
+              expiration_date: expirationDate ? expirationDate.toISOString().split('T')[0] : null,
+              issuing_location: issuingLocation || null,
+            });
+
+          if (docError) {
+            console.error('Erro ao registrar documento:', docError);
           }
 
           successCount++;
@@ -613,7 +738,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                         disabled={uploadingDocId === request.id}
                         onChange={(e) => {
                           if (e.target.files && e.target.files.length > 0) {
-                            handleFileUpload(request, e.target.files);
+                            handleFileSelection(request, e.target.files);
                           }
                         }}
                       />
@@ -828,6 +953,105 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
             <div className="flex justify-end">
               <Button onClick={() => setIsCommentsDialogOpen(false)}>
                 Fechar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Upload com Informações Adicionais */}
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Informações do Documento</DialogTitle>
+            <DialogDescription>
+              {pendingRequest?.document_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {pendingFiles && (
+              <div className="text-sm text-muted-foreground">
+                <FileText className="h-4 w-4 inline mr-1" />
+                {pendingFiles.length} arquivo{pendingFiles.length > 1 ? 's' : ''} selecionado{pendingFiles.length > 1 ? 's' : ''}
+              </div>
+            )}
+
+            {documentTypeConfig?.has_issue_date && (
+              <div>
+                <Label htmlFor="issue-date">Data de Emissão *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !issueDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {issueDate ? format(issueDate, "dd/MM/yyyy") : "Selecione a data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={issueDate}
+                      onSelect={setIssueDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {documentTypeConfig?.has_expiration_date && (
+              <div>
+                <Label htmlFor="expiration-date">Data de Validade *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !expirationDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {expirationDate ? format(expirationDate, "dd/MM/yyyy") : "Selecione a data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={expirationDate}
+                      onSelect={setExpirationDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {documentTypeConfig?.requires_issuing_location && (
+              <div>
+                <Label htmlFor="issuing-location">Local de Emissão *</Label>
+                <Input
+                  id="issuing-location"
+                  value={issuingLocation}
+                  onChange={(e) => setIssuingLocation(e.target.value)}
+                  placeholder="Ex: São Paulo/SP"
+                />
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end mt-4">
+              <Button variant="outline" onClick={() => setIsUploadModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={confirmUpload}>
+                Confirmar e Enviar
               </Button>
             </div>
           </div>
