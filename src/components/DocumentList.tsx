@@ -253,10 +253,10 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
 
   const updateDocumentStatus = async (documentId: string, newStatus: string) => {
     try {
-      // Buscar o tipo de documento antes de atualizar
+      // Buscar informações completas do documento e processo antes de atualizar
       const { data: doc } = await supabase
         .from('documents')
-        .select('document_type')
+        .select('document_type, file_name, process_id')
         .eq('id', documentId)
         .single();
 
@@ -275,6 +275,33 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
           .update({ current_status: requestStatus })
           .eq('process_id', processId)
           .eq('document_name', doc.document_type);
+      }
+
+      // Se aprovado, criar notificação para o cliente
+      if (newStatus === 'Aprovado' && doc) {
+        try {
+          const { data: processData } = await supabase
+            .from('processes')
+            .select('client_email, company_id')
+            .eq('id', processId)
+            .single();
+
+          if (processData) {
+            await supabase
+              .from('client_notifications')
+              .insert({
+                process_id: processId,
+                document_id: documentId,
+                client_email: processData.client_email,
+                company_id: processData.company_id,
+                notification_type: 'document_approved',
+                title: `Documento aprovado: ${doc.file_name}`,
+                message: `Seu documento "${doc.file_name}" foi aprovado pela empresa.`
+              });
+          }
+        } catch (notifError) {
+          console.error('Erro ao criar notificação:', notifError);
+        }
       }
 
       toast.success(`Documento ${newStatus.toLowerCase()} com sucesso`);

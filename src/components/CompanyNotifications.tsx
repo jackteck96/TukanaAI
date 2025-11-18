@@ -33,6 +33,27 @@ export default function CompanyNotifications({ className }: CompanyNotifications
   useEffect(() => {
     if (user) {
       loadNotifications();
+      
+      // Setup realtime subscription for new notifications
+      const channel = supabase
+        .channel('company-notifications-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'client_notifications'
+          },
+          () => {
+            console.log('[CompanyNotifications] Nova notificação recebida, recarregando...');
+            loadNotifications();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 
@@ -59,14 +80,13 @@ export default function CompanyNotifications({ className }: CompanyNotifications
 
       console.log('[CompanyNotifications] Buscando notificações para company:', userRole.company_id);
       
-      // Buscar notificações da empresa onde o cliente assinou documentos
+      // Buscar TODAS as notificações da empresa (sem filtro de tipo)
       const { data, error } = await supabase
         .from('client_notifications')
         .select('*')
         .eq('company_id', userRole.company_id)
-        .in('notification_type', ['signatures_complete', 'document_uploaded', 'signature_request'])
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) {
         console.error('[CompanyNotifications] Erro ao buscar:', error);
