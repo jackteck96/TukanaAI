@@ -549,6 +549,31 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
 
           if (docError) {
             console.error('Erro ao registrar documento:', docError);
+          } else {
+            // Criar notificação para a empresa sobre novo documento enviado
+            try {
+              const { data: newDoc } = await supabase
+                .from('documents')
+                .select('id')
+                .eq('file_path', fileName)
+                .single();
+
+              if (newDoc) {
+                await supabase
+                  .from('client_notifications')
+                  .insert({
+                    process_id: processId,
+                    document_id: newDoc.id,
+                    client_email: processData?.client_email || profileData?.email || '',
+                    company_id: processData?.company_id || profileData?.company_id,
+                    notification_type: 'document_uploaded',
+                    title: `Novo documento enviado: ${request.document_name}`,
+                    message: `O cliente enviou o documento "${request.document_name}" no processo.`
+                  });
+              }
+            } catch (notifError) {
+              console.error('Erro ao criar notificação:', notifError);
+            }
           }
 
           successCount++;

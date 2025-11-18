@@ -33,6 +33,27 @@ export default function ClientNotifications({ className }: ClientNotificationsPr
   useEffect(() => {
     if (user) {
       loadNotifications();
+      
+      // Setup realtime subscription for new notifications
+      const channel = supabase
+        .channel('client-notifications-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'client_notifications'
+          },
+          () => {
+            console.log('[ClientNotifications] Nova notificação recebida, recarregando...');
+            loadNotifications();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 
