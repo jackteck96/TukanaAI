@@ -108,12 +108,12 @@ export default function ExpiringDocumentsAlert() {
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-medium">{doc.document_name}</h4>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <h4 className="font-medium break-words line-clamp-2 flex-1 min-w-0">{doc.document_name}</h4>
                       <Badge
                         variant={doc.status === 'expired' ? 'destructive' : 'secondary'}
-                        className={doc.status === 'expiring_soon' ? 'bg-warning/10 text-warning border-warning/20' : ''}
+                        className={`flex-shrink-0 ${doc.status === 'expiring_soon' ? 'bg-warning/10 text-warning border-warning/20' : ''}`}
                       >
                         {doc.status === 'expired' ? 'Vencido' : 'Vence em breve'}
                       </Badge>

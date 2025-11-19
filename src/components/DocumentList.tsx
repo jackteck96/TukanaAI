@@ -427,11 +427,11 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
               className="flex items-center justify-between p-4 border rounded-lg bg-gradient-card gap-4"
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-3 mb-2">
+                  <div className="flex items-start gap-3 mb-2">
                   <FileText className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium break-words">{doc.file_name}</h4>
-                    <p className="text-sm text-muted-foreground break-words">
+                    <h4 className="font-medium break-words line-clamp-2">{doc.file_name}</h4>
+                    <p className="text-sm text-muted-foreground break-words line-clamp-1">
                       {doc.document_type} • {(doc.file_size / 1024).toFixed(1)} KB
                     </p>
                   </div>

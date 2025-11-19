@@ -739,7 +739,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(request.current_status)}
-                        <h3 className="font-semibold">{request.document_name}</h3>
+                        <h3 className="font-semibold break-words line-clamp-2">{request.document_name}</h3>
                         {request.required && (
                           <Badge variant="destructive" className="text-xs">Obrigatório</Badge>
                         )}
@@ -815,7 +815,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
                       {getStatusIcon(request.current_status)}
-                      <h3 className="font-semibold">{request.document_name}</h3>
+                      <h3 className="font-semibold break-words line-clamp-2">{request.document_name}</h3>
                       {request.required && (
                         <Badge variant="destructive" className="text-xs">Obrigatório</Badge>
                       )}
@@ -1011,7 +1011,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Informações do Documento</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="break-words">
               {pendingRequest?.document_name}
             </DialogDescription>
           </DialogHeader>
