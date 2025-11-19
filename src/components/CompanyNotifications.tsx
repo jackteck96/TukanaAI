@@ -189,9 +189,9 @@ export default function CompanyNotifications({ className }: CompanyNotifications
 
     // Navegar baseado no tipo
     if (notification.notification_type === 'signatures_complete') {
-      navigate('/assinaturas');
+      navigate('/gerenciar-processos');
     } else if (notification.process_id) {
-      navigate(`/processo/${notification.process_id}`);
+      navigate(`/gerenciar-processos?process=${notification.process_id}`);
     }
   };
 
