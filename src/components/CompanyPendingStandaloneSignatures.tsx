@@ -95,9 +95,9 @@ export function CompanyPendingStandaloneSignatures() {
         ) : (
           documents.map((doc) => (
             <div key={doc.id} className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <div className="font-medium">{doc.document_name}</div>
-                <div className="text-sm text-muted-foreground">Cliente: {doc.client_name} ({doc.client_email})</div>
+              <div className="flex-1 min-w-0 mr-4">
+                <div className="font-medium break-words line-clamp-2">{doc.document_name}</div>
+                <div className="text-sm text-muted-foreground break-words">Cliente: {doc.client_name} ({doc.client_email})</div>
                 <div className="mt-1"><Badge variant="secondary">Aguardando Empresa</Badge></div>
               </div>
               <div>

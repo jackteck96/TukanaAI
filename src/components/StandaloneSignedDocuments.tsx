@@ -198,10 +198,10 @@ export const StandaloneSignedDocuments = () => {
               key={doc.id}
               className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
             >
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <h4 className="font-medium">{doc.document_name}</h4>
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <h4 className="font-medium break-words line-clamp-2 flex-1 min-w-0">{doc.document_name}</h4>
                   {getStatusBadge(doc)}
                 </div>
                 <div className="text-sm text-muted-foreground">
