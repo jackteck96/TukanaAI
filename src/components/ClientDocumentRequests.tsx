@@ -338,38 +338,52 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
 
   const loadDocumentTypeConfig = async (documentTypeName: string, companyIdParam: string) => {
     try {
+      console.log('[loadDocumentTypeConfig] Buscando config para:', documentTypeName, 'company:', companyIdParam);
+      
       // Tentar buscar primeiro da empresa
-      const { data: companyType } = await supabase
+      const { data: companyType, error: companyError } = await supabase
         .from('document_types')
         .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
         .eq('company_id', companyIdParam)
         .eq('name', documentTypeName)
         .maybeSingle();
 
+      console.log('[loadDocumentTypeConfig] Company type result:', companyType, 'error:', companyError);
+
       if (companyType) {
+        console.log('[loadDocumentTypeConfig] Usando config da empresa:', companyType);
         setDocumentTypeConfig(companyType);
-        return;
+        return companyType;
       }
 
       // Se não encontrou, buscar dos tipos globais
-      const { data: globalType } = await supabase
+      const { data: globalType, error: globalError } = await supabase
         .from('global_document_types')
         .select('id, name, has_issue_date, has_expiration_date, requires_issuing_location')
         .eq('name', documentTypeName)
         .maybeSingle();
 
+      console.log('[loadDocumentTypeConfig] Global type result:', globalType, 'error:', globalError);
+
       if (globalType) {
+        console.log('[loadDocumentTypeConfig] Usando config global:', globalType);
         setDocumentTypeConfig(globalType);
+        return globalType;
       } else {
+        console.log('[loadDocumentTypeConfig] Nenhuma config encontrada, usando default null');
         setDocumentTypeConfig(null);
+        return null;
       }
     } catch (error) {
-      console.error('Erro ao carregar configuração do tipo de documento:', error);
+      console.error('[loadDocumentTypeConfig] Erro ao carregar configuração:', error);
       setDocumentTypeConfig(null);
+      return null;
     }
   };
 
   const handleFileSelection = async (request: DocumentRequest, files: FileList) => {
+    console.log('[handleFileSelection] Iniciando seleção de arquivo para:', request.document_name, 'files:', files.length);
+    
     if (files.length === 0) return;
 
     // Buscar company_id do processo
@@ -379,13 +393,18 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
       .eq('id', processId)
       .single();
 
+    console.log('[handleFileSelection] Process data:', processData);
+
     if (!processData?.company_id) {
       toast.error('Erro ao identificar a empresa do processo');
       return;
     }
 
     // Carregar configuração do tipo de documento
-    await loadDocumentTypeConfig(request.document_name, processData.company_id);
+    const config = await loadDocumentTypeConfig(request.document_name, processData.company_id);
+    
+    console.log('[handleFileSelection] Config carregada:', config);
+    console.log('[handleFileSelection] Abrindo modal - config:', config);
 
     // Guardar arquivos e request pendentes
     setPendingFiles(files);
@@ -393,7 +412,10 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
     setIssueDate(undefined);
     setExpirationDate(undefined);
     setIssuingLocation('');
+    
+    // Sempre abrir o modal, mesmo que não tenha configurações especiais
     setIsUploadModalOpen(true);
+    console.log('[handleFileSelection] Modal aberto:', true);
   };
 
   const confirmUpload = async () => {
@@ -1001,6 +1023,12 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
               </div>
             )}
 
+            {!documentTypeConfig && (
+              <div className="text-sm text-muted-foreground">
+                Carregando configurações do documento...
+              </div>
+            )}
+
             {documentTypeConfig?.has_issue_date && (
               <div>
                 <Label htmlFor="issue-date">Data de Emissão *</Label>
@@ -1017,7 +1045,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                       {issueDate ? format(issueDate, "dd/MM/yyyy") : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                     <Calendar
                       mode="single"
                       selected={issueDate}
@@ -1046,7 +1074,7 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
                       {expirationDate ? format(expirationDate, "dd/MM/yyyy") : "Selecione a data"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                     <Calendar
                       mode="single"
                       selected={expirationDate}
@@ -1075,8 +1103,8 @@ export default function ClientDocumentRequests({ processId, companyName }: Clien
               <Button variant="outline" onClick={() => setIsUploadModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={confirmUpload}>
-                Confirmar e Enviar
+              <Button onClick={confirmUpload} disabled={!documentTypeConfig}>
+                {!documentTypeConfig ? 'Aguarde...' : 'Confirmar e Enviar'}
               </Button>
             </div>
           </div>
