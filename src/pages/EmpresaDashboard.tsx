@@ -45,6 +45,7 @@ import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificatio
 import { LegalData } from "@/utils/legalQualification";
 import CompanyNotifications from "@/components/CompanyNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
+import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -304,6 +305,9 @@ const EmpresaDashboard = () => {
         
         {/* Company Notifications */}
         <CompanyNotifications />
+        
+        {/* Google Calendar Integration */}
+        <GoogleCalendarConnect />
         
         {/* Company Legal Data Card - Only show if data is incomplete */}
         {companyId && !isCompanyDataComplete && (
