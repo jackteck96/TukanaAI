@@ -80,11 +80,14 @@ export default function CompanyNotifications({ className }: CompanyNotifications
 
       console.log('[CompanyNotifications] Buscando notificações para company:', userRole.company_id);
       
-      // Buscar TODAS as notificações da empresa (sem filtro de tipo)
+      // Buscar notificações da empresa OU de processos da empresa
       const { data, error } = await supabase
         .from('client_notifications')
-        .select('*')
-        .eq('company_id', userRole.company_id)
+        .select(`
+          *,
+          processes!inner(company_id)
+        `)
+        .or(`company_id.eq.${userRole.company_id},processes.company_id.eq.${userRole.company_id}`)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -244,15 +247,12 @@ export default function CompanyNotifications({ className }: CompanyNotifications
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`border-l-4 rounded-lg transition-all ${getNotificationColor(notification.notification_type)} ${
+              className={`border-l-4 rounded-lg transition-all cursor-pointer ${getNotificationColor(notification.notification_type)} ${
                 !notification.is_read ? 'shadow-sm' : 'opacity-75'
               }`}
+              onClick={() => handleNotificationClick(notification)}
             >
-              <Button
-                variant="ghost"
-                className="w-full h-auto p-4 justify-start hover:bg-background/50 text-left"
-                onClick={() => handleNotificationClick(notification)}
-              >
+              <div className="w-full h-auto p-4 hover:bg-background/50">
                 <div className="flex items-start gap-3 flex-1">
                   {getNotificationIcon(notification.notification_type)}
                   <div className="flex-1 min-w-0">
@@ -292,7 +292,7 @@ export default function CompanyNotifications({ className }: CompanyNotifications
                     </Button>
                   </div>
                 </div>
-              </Button>
+              </div>
             </div>
           ))
         )}
