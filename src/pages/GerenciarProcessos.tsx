@@ -49,6 +49,7 @@ import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocument
 import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
 import { ProcessCalendar } from "@/components/ProcessCalendar";
 import { CompanyPendingStandaloneSignatures } from "@/components/CompanyPendingStandaloneSignatures";
+import { CreateMeetingDialog } from "@/components/CreateMeetingDialog";
 
 const GerenciarProcessos = () => {
   const location = useLocation();
@@ -72,6 +73,7 @@ const GerenciarProcessos = () => {
   const [selectedProcessForEdit, setSelectedProcessForEdit] = useState<string | null>(null);
   const [isStandaloneUploadOpen, setIsStandaloneUploadOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isMeetingDialogOpen, setIsMeetingDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Check if we have a specific process ID in the URL
@@ -378,6 +380,13 @@ const GerenciarProcessos = () => {
                   >
                     <Calendar className="h-4 w-4 mr-2" />
                     Calendário
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsMeetingDialogOpen(true)}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Agendar Google Meet
                   </Button>
                   <Button 
                     variant="outline" 
@@ -743,6 +752,17 @@ const GerenciarProcessos = () => {
             });
           }}
         />
+
+        {/* Google Meet Dialog */}
+        {currentProcess && (
+          <CreateMeetingDialog
+            open={isMeetingDialogOpen}
+            onOpenChange={setIsMeetingDialogOpen}
+            processId={currentProcess.id}
+            clientEmail={currentProcess.client_email}
+            clientName={currentProcess.client_name}
+          />
+        )}
       </div>
     </div>
   );
