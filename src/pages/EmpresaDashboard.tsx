@@ -306,9 +306,6 @@ const EmpresaDashboard = () => {
         {/* Company Notifications */}
         <CompanyNotifications />
         
-        {/* Google Calendar Integration */}
-        <GoogleCalendarConnect />
-        
         {/* Company Legal Data Card - Only show if data is incomplete */}
         {companyId && !isCompanyDataComplete && (
           <CompanyLegalDataCard companyId={companyId} />
@@ -563,6 +560,7 @@ const EmpresaDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   <PdfConverter />
+                  <GoogleCalendarConnect variant="button" />
                   <CreateClientDialog onClientCreated={refreshData} />
                   <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">

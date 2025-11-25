@@ -5,7 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 
-export const GoogleCalendarConnect = () => {
+interface GoogleCalendarConnectProps {
+  variant?: 'card' | 'button';
+}
+
+export const GoogleCalendarConnect = ({ variant = 'card' }: GoogleCalendarConnectProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
@@ -113,6 +117,54 @@ export const GoogleCalendarConnect = () => {
     }
   };
 
+  // Modo botão compacto para ações rápidas
+  if (variant === 'button') {
+    if (loading) {
+      return (
+        <Button variant="outline" className="h-20 md:h-24 flex-col w-full" disabled>
+          <Loader2 className="h-6 w-6 mb-2 animate-spin" />
+          <span className="text-xs md:text-sm font-medium">Carregando...</span>
+        </Button>
+      );
+    }
+
+    if (isConnected) {
+      return (
+        <Button 
+          variant="outline" 
+          className="h-20 md:h-24 flex-col w-full bg-green-50 dark:bg-green-950 border-green-500 hover:bg-green-100 dark:hover:bg-green-900" 
+          onClick={handleDisconnect}
+        >
+          <Check className="h-6 w-6 mb-2 text-green-600" />
+          <span className="text-xs md:text-sm font-medium">Conectado</span>
+          <span className="text-xs text-muted-foreground">Clique p/ desconectar</span>
+        </Button>
+      );
+    }
+
+    return (
+      <Button 
+        variant="outline" 
+        className="h-20 md:h-24 flex-col w-full" 
+        onClick={handleConnect}
+        disabled={connecting}
+      >
+        {connecting ? (
+          <>
+            <Loader2 className="h-6 w-6 mb-2 animate-spin" />
+            <span className="text-xs md:text-sm font-medium">Conectando...</span>
+          </>
+        ) : (
+          <>
+            <Calendar className="h-6 w-6 mb-2" />
+            <span className="text-xs md:text-sm font-medium">Google Calendar</span>
+          </>
+        )}
+      </Button>
+    );
+  }
+
+  // Modo card (padrão)
   if (loading) {
     return (
       <Card className="p-4 flex items-center gap-3">
