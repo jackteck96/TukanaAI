@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 import { 
   Shield, 
   Cloud, 
@@ -108,7 +108,7 @@ const Landing = () => {
   ];
 
   return (
-    <HelmetProvider>
+    <>
       <Helmet>
         <title>Fuzen - Plataforma de Gestão de Documentos Empresariais | Segurança e Eficiência</title>
         <meta name="description" content="Plataforma completa para gestão de documentos empresariais com segurança e eficiência. Solicite, armazene e gerencie documentos de clientes com criptografia, assinatura digital e conformidade LGPD." />
@@ -550,7 +550,7 @@ const Landing = () => {
 
       <Footer />
     </div>
-    </HelmetProvider>
+    </>
   );
 };
 
