@@ -533,6 +533,51 @@ export type Database = {
         }
         Relationships: []
       }
+      data_subject_requests: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          export_file_path: string | null
+          id: string
+          rejection_reason: string | null
+          request_details: Json | null
+          request_type: string
+          requested_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          export_file_path?: string | null
+          id?: string
+          rejection_reason?: string | null
+          request_details?: Json | null
+          request_type: string
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          export_file_path?: string | null
+          id?: string
+          rejection_reason?: string | null
+          request_details?: Json | null
+          request_type?: string
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       digital_signatures: {
         Row: {
           certificate_issuer: string
@@ -1252,6 +1297,78 @@ export type Database = {
           },
         ]
       }
+      personal_data_access_log: {
+        Row: {
+          access_type: string
+          accessed_at: string | null
+          accessed_user_id: string
+          accessor_user_id: string | null
+          data_category: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          purpose: string
+          user_agent: string | null
+        }
+        Insert: {
+          access_type: string
+          accessed_at?: string | null
+          accessed_user_id: string
+          accessor_user_id?: string | null
+          data_category: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          purpose: string
+          user_agent?: string | null
+        }
+        Update: {
+          access_type?: string
+          accessed_at?: string | null
+          accessed_user_id?: string
+          accessor_user_id?: string | null
+          data_category?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          purpose?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      privacy_policies: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          effective_date: string
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_date: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       process_calendar_events: {
         Row: {
           company_id: string
@@ -1545,6 +1662,66 @@ export type Database = {
           table_name?: string
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_incidents: {
+        Row: {
+          affected_data_categories: string[] | null
+          affected_users_count: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string
+          detected_at: string
+          id: string
+          incident_type: string
+          notification_sent_at: string | null
+          reported_at: string | null
+          reported_to_anpd: boolean | null
+          resolution_details: string | null
+          resolution_status: string | null
+          resolved_at: string | null
+          severity: string
+          updated_at: string | null
+          users_notified: boolean | null
+        }
+        Insert: {
+          affected_data_categories?: string[] | null
+          affected_users_count?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          detected_at: string
+          id?: string
+          incident_type: string
+          notification_sent_at?: string | null
+          reported_at?: string | null
+          reported_to_anpd?: boolean | null
+          resolution_details?: string | null
+          resolution_status?: string | null
+          resolved_at?: string | null
+          severity: string
+          updated_at?: string | null
+          users_notified?: boolean | null
+        }
+        Update: {
+          affected_data_categories?: string[] | null
+          affected_users_count?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          detected_at?: string
+          id?: string
+          incident_type?: string
+          notification_sent_at?: string | null
+          reported_at?: string | null
+          reported_to_anpd?: boolean | null
+          resolution_details?: string | null
+          resolution_status?: string | null
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string | null
+          users_notified?: boolean | null
         }
         Relationships: []
       }
@@ -1928,6 +2105,51 @@ export type Database = {
           },
         ]
       }
+      user_consents: {
+        Row: {
+          consent_date: string | null
+          consent_given: boolean
+          consent_type: string
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          purpose: string
+          revoked_date: string | null
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          consent_date?: string | null
+          consent_given?: boolean
+          consent_type: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          purpose: string
+          revoked_date?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          consent_date?: string | null
+          consent_given?: boolean
+          consent_type?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          purpose?: string
+          revoked_date?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       user_invites: {
         Row: {
           access_type: string | null
@@ -2117,6 +2339,16 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { user_uuid: string }; Returns: boolean }
+      log_personal_data_access: {
+        Args: {
+          p_access_type: string
+          p_accessed_user_id: string
+          p_data_category: string
+          p_metadata?: Json
+          p_purpose: string
+        }
+        Returns: string
+      }
       log_process_access: {
         Args: { access_type: string; process_uuid: string }
         Returns: undefined

@@ -83,11 +83,14 @@ const Footer = () => {
               © 2024 Fuzen. Todos os direitos reservados.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/privacidade" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link to="/politica-privacidade" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                 Política de Privacidade
               </Link>
-              <Link to="/termos" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link to="/termos-de-uso" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                 Termos de Uso
+              </Link>
+              <Link to="/meus-dados-pessoais" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                Meus Dados (LGPD)
               </Link>
             </div>
           </div>
