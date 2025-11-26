@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import { 
   Shield, 
   Cloud, 
@@ -107,16 +108,58 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <Header />
+    <HelmetProvider>
+      <Helmet>
+        <title>Fuzen - Plataforma de Gestão de Documentos Empresariais | Segurança e Eficiência</title>
+        <meta name="description" content="Plataforma completa para gestão de documentos empresariais com segurança e eficiência. Solicite, armazene e gerencie documentos de clientes com criptografia, assinatura digital e conformidade LGPD." />
+        <link rel="canonical" href="https://fuzen.app/" />
+        
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Fuzen",
+            "applicationCategory": "BusinessApplication",
+            "offers": {
+              "@type": "AggregateOffer",
+              "lowPrice": "49",
+              "highPrice": "149",
+              "priceCurrency": "BRL"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "ratingCount": "127"
+            }
+          })}
+        </script>
+        
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Fuzen",
+            "url": "https://fuzen.app",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://fuzen.app/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })}
+        </script>
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+        <Header />
       
       {/* Hero Section */}
       <section className="relative py-24 lg:py-40 overflow-hidden">
         {/* Animated Background Patterns */}
         <div className="absolute inset-0 overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5"
-            style={{ backgroundImage: `url(${heroImage})` }}
+          <img 
+            src={heroImage}
+            alt="Plataforma Fuzen - Interface de gestão de documentos empresariais com segurança"
+            className="absolute inset-0 w-full h-full object-cover opacity-5"
           />
           <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
           <div className="absolute top-0 -right-40 w-80 h-80 bg-accent/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
@@ -130,13 +173,13 @@ const Landing = () => {
             </Badge>
             
             <div className="mb-6 animate-fade-in animation-delay-200">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
-                  Fuzen
+                  Fuzen - Plataforma de Gestão de Documentos Empresariais
                 </span>
               </h1>
-              <p className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground/80 leading-tight">
-                Gerencie Documentos com Segurança e Eficiência
+              <p className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground/80 leading-tight">
+                Solicite, Armazene e Gerencie Documentos com Segurança e Eficiência
               </p>
             </div>
             
@@ -507,6 +550,7 @@ const Landing = () => {
 
       <Footer />
     </div>
+    </HelmetProvider>
   );
 };
 
