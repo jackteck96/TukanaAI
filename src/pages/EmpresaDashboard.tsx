@@ -571,7 +571,7 @@ const EmpresaDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   <PdfConverter />
-                  <CreateClientDialog onClientCreated={refreshData} />
+                  <CreateClientDialog onClientCreated={refreshData} variant="quickAction" />
                   <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">
                       <PenTool className="h-6 w-6 mb-2" />
