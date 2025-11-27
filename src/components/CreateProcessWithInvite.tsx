@@ -321,7 +321,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-6">
+          <Button size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Criar Novo Processo
           </Button>
