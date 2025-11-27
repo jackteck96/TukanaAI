@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import PontoClock from "@/components/PontoClock";
 import { 
   Users, 
@@ -25,7 +26,8 @@ import {
   UserPlus,
   Shield,
   PenTool,
-  List
+  List,
+  UserCircle
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -273,14 +275,24 @@ const EmpresaDashboard = () => {
                   Painel Admin
                 </Button>
               )}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setIsEditProfileModalOpen(true)}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Perfil
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <UserCircle className="h-4 w-4 mr-2" />
+                    Perfil
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setIsEditProfileModalOpen(true)}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Editar Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/meus-dados-pessoais')}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Meus Dados Pessoais (LGPD)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button variant="hero" size="sm" onClick={refreshData} disabled={loading}>
                 <Plus className="h-4 w-4 mr-2" />
                 {loading ? 'Atualizando...' : 'Atualizar'}

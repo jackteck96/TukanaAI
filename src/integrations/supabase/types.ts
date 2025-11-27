@@ -2150,6 +2150,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_google_tokens: {
+        Row: {
+          access_token: string
+          auth_user_id: string
+          created_at: string | null
+          expires_at: string | null
+          refresh_token: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          auth_user_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          refresh_token?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          auth_user_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          refresh_token?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_invites: {
         Row: {
           access_type: string | null
