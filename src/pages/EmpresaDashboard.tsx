@@ -254,20 +254,12 @@ const EmpresaDashboard = () => {
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-40">
         <div className="px-4 sm:px-6 py-4">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
-                <p className="text-sm text-muted-foreground">Visão geral dos processos e clientes</p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Sair</span>
-                </Button>
-              </div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
+              <p className="text-sm text-muted-foreground">Visão geral dos processos e clientes</p>
             </div>
-            <div className="flex items-center flex-wrap gap-2">
+            <div className="flex items-center flex-wrap gap-2 justify-end">
               {isAdmin && (
                 <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
                   <Shield className="h-4 w-4 mr-2" />
@@ -281,7 +273,7 @@ const EmpresaDashboard = () => {
                     Perfil
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-card z-50">
                   <DropdownMenuItem onClick={() => setIsEditProfileModalOpen(true)}>
                     <Users className="h-4 w-4 mr-2" />
                     Editar Perfil
@@ -305,6 +297,10 @@ const EmpresaDashboard = () => {
                   size="sm"
                 />
               )}
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sair</span>
+              </Button>
             </div>
           </div>
         </div>
