@@ -16,9 +16,10 @@ import { Plus, Building2, Mail, Phone, MapPin, User, FileText } from "lucide-rea
 
 interface CreateClientDialogProps {
   onClientCreated?: () => void;
+  variant?: 'default' | 'quickAction';
 }
 
-const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
+const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClientDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -330,10 +331,17 @@ const CreateClientDialog = ({ onClientCreated }: CreateClientDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Cliente
-        </Button>
+        {variant === 'quickAction' ? (
+          <Button variant="outline" className="h-24 flex-col w-full">
+            <Plus className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Novo Cliente</span>
+          </Button>
+        ) : (
+          <Button variant="default" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Cliente
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
