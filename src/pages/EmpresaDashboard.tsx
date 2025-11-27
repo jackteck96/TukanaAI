@@ -47,7 +47,6 @@ import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificatio
 import { LegalData } from "@/utils/legalQualification";
 import CompanyNotifications from "@/components/CompanyNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
-import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -572,7 +571,6 @@ const EmpresaDashboard = () => {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   <PdfConverter />
-                  <GoogleCalendarConnect variant="button" />
                   <CreateClientDialog onClientCreated={refreshData} />
                   <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
                     <Button variant="outline" className="h-24 flex-col w-full">

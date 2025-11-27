@@ -54,7 +54,6 @@ import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
 import PartnerDocumentsCard from "@/components/PartnerDocumentsCard";
 import { PdfConverter } from "@/components/PdfConverter";
 import { updateProcessProgress } from "@/utils/processProgressUpdater";
-import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -1234,7 +1233,6 @@ const AreaCliente = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <PdfConverter />
-              <GoogleCalendarConnect variant="button" />
               <Button
                 className="h-20 flex-col"
                 variant="outline"
