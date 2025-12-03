@@ -66,3 +66,26 @@ verify_jwt = false
 [functions.notify-document-request]
 verify_jwt = false
 
+[functions.send-contact-form]
+verify_jwt = false
+
+[functions.notify-new-user]
+verify_jwt = false
+
+[functions.complete-dual-signature]
+verify_jwt = false
+
+[functions.complete-standalone-signature]
+verify_jwt = false
+
+[functions.generate-authenticity-term]
+verify_jwt = false
+
+[functions.generate-final-authenticity-term]
+verify_jwt = false
+
+[functions.list-company-invites]
+verify_jwt = false
+
+[functions.create-client-collaborator-invite]
+verify_jwt = false

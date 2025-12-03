@@ -20,6 +20,7 @@ import {
   Globe
 } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 const Landing = () => {
   const features = [
@@ -198,6 +199,7 @@ const Landing = () => {
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </a>
+              <ContactFormDialog />
               <Link to="/auth">
                 <Button 
                   size="lg" 
