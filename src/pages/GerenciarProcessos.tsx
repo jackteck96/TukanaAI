@@ -687,6 +687,87 @@ const GerenciarProcessos = () => {
       </header>
 
       <div className="p-6 space-y-6">
+        {/* Search and Create */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 max-w-md relative">
+            <Input
+              placeholder="Buscar processos por cliente, tipo ou descrição..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-4"
+            />
+          </div>
+          <CreateProcessWithInvite />
+        </div>
+
+        {/* Process List */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Processos de Documentação
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="p-4 rounded-lg bg-muted/30 animate-pulse">
+                    <div className="h-4 bg-muted rounded w-40 mb-2"></div>
+                    <div className="h-3 bg-muted rounded w-32 mb-2"></div>
+                    <div className="h-2 bg-muted rounded w-full"></div>
+                  </div>
+                ))}
+              </div>
+            ) : processes.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium">Nenhum processo encontrado</p>
+                <p className="text-sm">Crie um novo processo para começar</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {processes
+                  .filter(process => 
+                    process.client?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    process.processType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    process.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((process) => (
+                    <div
+                      key={process.id}
+                      className={`p-4 rounded-lg border-l-4 ${getPriorityColor(process.priority)} bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer`}
+                      onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold text-foreground">{process.processType}</h3>
+                          <p className="text-sm text-muted-foreground">{process.client}</p>
+                        </div>
+                        <Badge className={getStatusColor(process.status)}>
+                          {process.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <Progress value={process.progress} className="h-2" />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {process.progress}% concluído
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">
+                            Prazo: {process.dueDate}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Documentos Pendentes de Assinatura do Cliente (para ele assinar) */}
         <PendingSignatureDocuments />
 
