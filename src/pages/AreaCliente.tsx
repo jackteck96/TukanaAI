@@ -54,6 +54,7 @@ import PartnerDocumentsUpload from "@/components/PartnerDocumentsUpload";
 import PartnerDocumentsCard from "@/components/PartnerDocumentsCard";
 import { PdfConverter } from "@/components/PdfConverter";
 import { updateProcessProgress } from "@/utils/processProgressUpdater";
+import { ReportProblemDialog } from "@/components/ReportProblemDialog";
 
 const AreaCliente = () => {
   const { user } = useAuth();
@@ -1094,6 +1095,7 @@ const AreaCliente = () => {
                 <User className="h-4 w-4 mr-2" />
                 Perfil
               </Button>
+              <ReportProblemDialog userType="cliente" />
               <Button 
                 variant="ghost" 
                 size="sm"
