@@ -52,7 +52,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.ensure-requests-for-process]
-verify_jwt = false
+verify_jwt = true
 
 [functions.complete-admin-signup]
 verify_jwt = false

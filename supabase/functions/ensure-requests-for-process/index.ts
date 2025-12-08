@@ -24,6 +24,42 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Extract JWT token from Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('[ensure-requests-for-process] Missing or invalid Authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Autenticação necessária' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // Create authenticated client to verify user
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      }
+    );
+
+    // Verify the user is authenticated
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+    if (userError || !user) {
+      console.error('[ensure-requests-for-process] User not authenticated:', userError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Usuário não autenticado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('[ensure-requests-for-process] User authenticated:', user.id);
+
+    // Create service role client for database operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -37,6 +73,29 @@ serve(async (req: Request): Promise<Response> => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Verify user has access to this process using the database function
+    const { data: hasAccess, error: accessError } = await supabaseAuth.rpc('can_access_process', {
+      process_uuid: processId
+    });
+
+    if (accessError) {
+      console.error('[ensure-requests-for-process] Error checking process access:', accessError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Erro ao verificar permissões' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!hasAccess) {
+      console.error('[ensure-requests-for-process] User does not have access to process:', processId);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Acesso negado ao processo' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('[ensure-requests-for-process] User has access to process:', processId);
 
     console.log('[ensure-requests-for-process] Garantindo solicitações para processo:', processId);
 
