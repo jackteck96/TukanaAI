@@ -11,6 +11,7 @@ const corsHeaders = {
 interface ContactFormRequest {
   fullName: string;
   email: string;
+  phone?: string;
   company?: string;
   message: string;
 }
@@ -22,9 +23,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { fullName, email, company, message }: ContactFormRequest = await req.json();
+    const { fullName, email, phone, company, message }: ContactFormRequest = await req.json();
 
-    console.log("Received contact form submission:", { fullName, email, company });
+    console.log("Received contact form submission:", { fullName, email, phone, company });
 
     // Validate required fields
     if (!fullName || !email || !message) {
@@ -71,6 +72,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 8px 0; color: #71717a; font-weight: 600;">E-mail:</td>
                     <td style="padding: 8px 0; color: #18181b;"><a href="mailto:${email}" style="color: #6366f1; text-decoration: none;">${email}</a></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #71717a; font-weight: 600;">Celular:</td>
+                    <td style="padding: 8px 0; color: #18181b;">${phone ? `<a href="tel:${phone}" style="color: #6366f1; text-decoration: none;">${phone}</a>` : "Não informado"}</td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; color: #71717a; font-weight: 600;">Empresa:</td>

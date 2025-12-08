@@ -21,6 +21,7 @@ import { Loader2, Send, MessageSquare } from "lucide-react";
 const contactSchema = z.object({
   fullName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
   email: z.string().email("E-mail inválido").max(255, "E-mail muito longo"),
+  phone: z.string().max(20, "Telefone muito longo").optional().or(z.literal("")),
   company: z.string().max(100, "Nome da empresa muito longo").optional(),
   message: z.string().min(10, "Mensagem deve ter pelo menos 10 caracteres").max(500, "Mensagem muito longa"),
 });
@@ -51,6 +52,7 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
         body: {
           fullName: data.fullName,
           email: data.email,
+          phone: data.phone || "",
           company: data.company || "",
           message: data.message,
         },
@@ -116,6 +118,20 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
             />
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Celular (opcional)</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="(11) 99999-9999"
+              {...register("phone")}
+              className={errors.phone ? "border-destructive" : ""}
+            />
+            {errors.phone && (
+              <p className="text-sm text-destructive">{errors.phone.message}</p>
             )}
           </div>
 
