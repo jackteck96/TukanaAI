@@ -6,16 +6,24 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Building2, Mail, Lock, User, MapPin, FileText } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+type PersonType = 'pj' | 'pf';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [personType, setPersonType] = useState<PersonType>('pj');
   const [formData, setFormData] = useState({
+    // Pessoa Jurídica fields
     companyName: '',
-    cpfCnpj: '',
+    cnpj: '',
+    // Pessoa Física fields
+    cpf: '',
+    // Common address fields
     street: '',
     number: '',
     complement: '',
@@ -23,10 +31,12 @@ const Signup = () => {
     city: '',
     state: '',
     zipCode: '',
+    // User fields
     fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    // Legal representative (only for PJ)
     hasLegalRepresentative: false,
     legalRepresentativeName: '',
     legalRepresentativeQualification: '',
@@ -37,15 +47,39 @@ const Signup = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.companyName.trim()) {
-      newErrors.companyName = 'Nome da empresa é obrigatório';
-    }
+    if (personType === 'pj') {
+      if (!formData.companyName.trim()) {
+        newErrors.companyName = 'Nome da empresa é obrigatório';
+      }
 
-    // CPF/CNPJ é opcional, mas se preenchido, deve ter formato válido
-    if (formData.cpfCnpj.trim()) {
-      const cleanDoc = formData.cpfCnpj.replace(/\D/g, '');
-      if (cleanDoc.length !== 11 && cleanDoc.length !== 14) {
-        newErrors.cpfCnpj = 'Digite um CPF (11 dígitos) ou CNPJ (14 dígitos) válido';
+      // CNPJ é opcional, mas se preenchido, deve ter formato válido
+      if (formData.cnpj.trim()) {
+        const cleanDoc = formData.cnpj.replace(/\D/g, '');
+        if (cleanDoc.length !== 14) {
+          newErrors.cnpj = 'CNPJ deve ter 14 dígitos';
+        }
+      }
+
+      if (formData.hasLegalRepresentative) {
+        if (!formData.legalRepresentativeName.trim()) {
+          newErrors.legalRepresentativeName = 'Nome do representante legal é obrigatório';
+        }
+        if (!formData.legalRepresentativeQualification.trim()) {
+          newErrors.legalRepresentativeQualification = 'Qualificação do representante legal é obrigatória';
+        }
+      }
+    } else {
+      // Pessoa Física - nome completo é obrigatório (será usado como "nome da empresa")
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = 'Nome completo é obrigatório';
+      }
+
+      // CPF é opcional, mas se preenchido, deve ter formato válido
+      if (formData.cpf.trim()) {
+        const cleanDoc = formData.cpf.replace(/\D/g, '');
+        if (cleanDoc.length !== 11) {
+          newErrors.cpf = 'CPF deve ter 11 dígitos';
+        }
       }
     }
 
@@ -77,15 +111,6 @@ const Signup = () => {
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Nome completo é obrigatório';
-    }
-
-    if (formData.hasLegalRepresentative) {
-      if (!formData.legalRepresentativeName.trim()) {
-        newErrors.legalRepresentativeName = 'Nome do representante legal é obrigatório';
-      }
-      if (!formData.legalRepresentativeQualification.trim()) {
-        newErrors.legalRepresentativeQualification = 'Qualificação do representante legal é obrigatória';
-      }
     }
 
     if (!formData.email.trim()) {
@@ -153,13 +178,19 @@ const Signup = () => {
           .limit(1)
           .single();
 
+        // Determine company name based on person type
+        const entityName = personType === 'pj' ? formData.companyName : formData.fullName;
+        const companySlug = generateSlug(entityName);
+        
         // Create company
-        const companySlug = generateSlug(formData.companyName);
         const { data: companyData, error: companyError } = await supabase
           .from('companies')
           .insert({
-            name: formData.companyName,
-            slug: companySlug
+            name: entityName,
+            slug: companySlug,
+            cnpj: personType === 'pj' ? (formData.cnpj || null) : (formData.cpf || null),
+            address: `${formData.street}, ${formData.number}${formData.complement ? `, ${formData.complement}` : ''} - ${formData.neighborhood}, ${formData.city}/${formData.state} - CEP: ${formData.zipCode}`,
+            legal_representative_name: personType === 'pj' && formData.hasLegalRepresentative ? formData.legalRepresentativeName : null,
           })
           .select()
           .single();
@@ -244,61 +275,109 @@ const Signup = () => {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Fuzen</h1>
-            <p className="text-sm text-muted-foreground">Crie sua conta empresarial</p>
+            <p className="text-sm text-muted-foreground">Crie sua conta</p>
           </div>
         </div>
 
         <Card className="shadow-lg border-border/50">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl font-semibold">Cadastro do Responsável</CardTitle>
+            <CardTitle className="text-xl font-semibold">Cadastro</CardTitle>
             <CardDescription>
-              Você será registrado como <strong>administrador</strong> da empresa e terá acesso completo ao sistema
+              Você será registrado como <strong>administrador</strong> e terá acesso completo ao sistema
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-sm font-medium">
-                  Nome da Empresa
-                </Label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="companyName"
-                    name="companyName"
-                    type="text"
-                    placeholder="Sua Empresa LTDA"
-                    value={formData.companyName}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    required
-                />
-                </div>
-                {errors.companyName && (
-                  <p className="text-sm text-destructive">{errors.companyName}</p>
-                )}
+              {/* Tipo de Pessoa */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Tipo de Cadastro</Label>
+                <RadioGroup 
+                  value={personType} 
+                  onValueChange={(value) => setPersonType(value as PersonType)}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pj" id="pj" />
+                    <Label htmlFor="pj" className="cursor-pointer">Pessoa Jurídica</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pf" id="pf" />
+                    <Label htmlFor="pf" className="cursor-pointer">Pessoa Física</Label>
+                  </div>
+                </RadioGroup>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cpfCnpj" className="text-sm font-medium">
-                  CPF ou CNPJ (opcional)
-                </Label>
-                <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="cpfCnpj"
-                    name="cpfCnpj"
-                    type="text"
-                    placeholder="CPF ou CNPJ"
-                    value={formData.cpfCnpj}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                  />
+              {/* Campos específicos para Pessoa Jurídica */}
+              {personType === 'pj' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName" className="text-sm font-medium">
+                      Nome da Empresa
+                    </Label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        type="text"
+                        placeholder="Sua Empresa LTDA"
+                        value={formData.companyName}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                    {errors.companyName && (
+                      <p className="text-sm text-destructive">{errors.companyName}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cnpj" className="text-sm font-medium">
+                      CNPJ (opcional)
+                    </Label>
+                    <div className="relative">
+                      <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        id="cnpj"
+                        name="cnpj"
+                        type="text"
+                        placeholder="00.000.000/0000-00"
+                        value={formData.cnpj}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.cnpj && (
+                      <p className="text-sm text-destructive">{errors.cnpj}</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Campos específicos para Pessoa Física */}
+              {personType === 'pf' && (
+                <div className="space-y-2">
+                  <Label htmlFor="cpf" className="text-sm font-medium">
+                    CPF (opcional)
+                  </Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="cpf"
+                      name="cpf"
+                      type="text"
+                      placeholder="000.000.000-00"
+                      value={formData.cpf}
+                      onChange={handleInputChange}
+                      className="pl-10"
+                    />
+                  </div>
+                  {errors.cpf && (
+                    <p className="text-sm text-destructive">{errors.cpf}</p>
+                  )}
                 </div>
-                {errors.cpfCnpj && (
-                  <p className="text-sm text-destructive">{errors.cpfCnpj}</p>
-                )}
-              </div>
+              )}
 
               <div className="space-y-4">
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -307,10 +386,15 @@ const Signup = () => {
                     <span className="font-semibold text-sm">Você será o Administrador</span>
                   </div>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                    Como responsável pela empresa, você terá acesso total ao sistema, incluindo relatórios, gerenciamento de usuários e todas as funcionalidades administrativas.
+                    {personType === 'pj' 
+                      ? 'Como responsável pela empresa, você terá acesso total ao sistema, incluindo relatórios, gerenciamento de usuários e todas as funcionalidades administrativas.'
+                      : 'Como profissional autônomo, você terá acesso total ao sistema para gerenciar seus processos e documentos.'}
                   </p>
                 </div>
-                <h3 className="text-sm font-medium text-foreground">Endereço da Sede</h3>
+                
+                <h3 className="text-sm font-medium text-foreground">
+                  {personType === 'pj' ? 'Endereço da Sede' : 'Endereço'}
+                </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -361,7 +445,7 @@ const Signup = () => {
                       id="complement"
                       name="complement"
                       type="text"
-                      placeholder="Sala 201"
+                      placeholder={personType === 'pj' ? 'Sala 201' : 'Apto 101'}
                       value={formData.complement}
                       onChange={handleInputChange}
                     />
@@ -441,75 +525,78 @@ const Signup = () => {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="hasLegalRepresentative"
-                    checked={formData.hasLegalRepresentative}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        hasLegalRepresentative: !!checked,
-                        legalRepresentativeName: checked ? prev.legalRepresentativeName : '',
-                        legalRepresentativeQualification: checked ? prev.legalRepresentativeQualification : ''
-                      }))
-                    }
-                  />
-                  <Label htmlFor="hasLegalRepresentative" className="text-sm font-medium">
-                    Possui representante legal diferente do cadastrante
-                  </Label>
-                </div>
-
-                {formData.hasLegalRepresentative && (
-                  <div className="space-y-4 pl-6 border-l-2 border-border">
-                    <div className="space-y-2">
-                      <Label htmlFor="legalRepresentativeName" className="text-sm font-medium">
-                        Nome do Representante Legal
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                        <Input
-                          id="legalRepresentativeName"
-                          name="legalRepresentativeName"
-                          type="text"
-                          placeholder="Nome completo do representante legal"
-                          value={formData.legalRepresentativeName}
-                          onChange={handleInputChange}
-                          className="pl-10"
-                        />
-                      </div>
-                      {errors.legalRepresentativeName && (
-                        <p className="text-sm text-destructive">{errors.legalRepresentativeName}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="legalRepresentativeQualification" className="text-sm font-medium">
-                        Qualificação do Representante Legal
-                      </Label>
-                      <div className="relative">
-                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                        <Input
-                          id="legalRepresentativeQualification"
-                          name="legalRepresentativeQualification"
-                          type="text"
-                          placeholder="Ex: Sócio-administrador, Procurador, etc."
-                          value={formData.legalRepresentativeQualification}
-                          onChange={handleInputChange}
-                          className="pl-10"
-                        />
-                      </div>
-                      {errors.legalRepresentativeQualification && (
-                        <p className="text-sm text-destructive">{errors.legalRepresentativeQualification}</p>
-                      )}
-                    </div>
+              {/* Representante Legal - apenas para PJ */}
+              {personType === 'pj' && (
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="hasLegalRepresentative"
+                      checked={formData.hasLegalRepresentative}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          hasLegalRepresentative: !!checked,
+                          legalRepresentativeName: checked ? prev.legalRepresentativeName : '',
+                          legalRepresentativeQualification: checked ? prev.legalRepresentativeQualification : ''
+                        }))
+                      }
+                    />
+                    <Label htmlFor="hasLegalRepresentative" className="text-sm font-medium">
+                      Possui representante legal diferente do cadastrante
+                    </Label>
                   </div>
-                )}
-              </div>
+
+                  {formData.hasLegalRepresentative && (
+                    <div className="space-y-4 pl-6 border-l-2 border-border">
+                      <div className="space-y-2">
+                        <Label htmlFor="legalRepresentativeName" className="text-sm font-medium">
+                          Nome do Representante Legal
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            id="legalRepresentativeName"
+                            name="legalRepresentativeName"
+                            type="text"
+                            placeholder="Nome completo do representante legal"
+                            value={formData.legalRepresentativeName}
+                            onChange={handleInputChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.legalRepresentativeName && (
+                          <p className="text-sm text-destructive">{errors.legalRepresentativeName}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="legalRepresentativeQualification" className="text-sm font-medium">
+                          Qualificação do Representante Legal
+                        </Label>
+                        <div className="relative">
+                          <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            id="legalRepresentativeQualification"
+                            name="legalRepresentativeQualification"
+                            type="text"
+                            placeholder="Ex: Sócio-administrador, Procurador, etc."
+                            value={formData.legalRepresentativeQualification}
+                            onChange={handleInputChange}
+                            className="pl-10"
+                          />
+                        </div>
+                        {errors.legalRepresentativeQualification && (
+                          <p className="text-sm text-destructive">{errors.legalRepresentativeQualification}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-sm font-medium">
-                  Nome Completo do Cadastrante
+                  {personType === 'pj' ? 'Nome Completo do Cadastrante' : 'Nome Completo'}
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
