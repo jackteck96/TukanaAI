@@ -15,7 +15,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     companyName: '',
-    cnpj: '',
+    cpfCnpj: '',
     street: '',
     number: '',
     complement: '',
@@ -41,10 +41,12 @@ const Signup = () => {
       newErrors.companyName = 'Nome da empresa é obrigatório';
     }
 
-    if (!formData.cnpj.trim()) {
-      newErrors.cnpj = 'CNPJ é obrigatório';
-    } else if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(formData.cnpj)) {
-      newErrors.cnpj = 'CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX';
+    // CPF/CNPJ é opcional, mas se preenchido, deve ter formato válido
+    if (formData.cpfCnpj.trim()) {
+      const cleanDoc = formData.cpfCnpj.replace(/\D/g, '');
+      if (cleanDoc.length !== 11 && cleanDoc.length !== 14) {
+        newErrors.cpfCnpj = 'Digite um CPF (11 dígitos) ou CNPJ (14 dígitos) válido';
+      }
     }
 
     if (!formData.street.trim()) {
@@ -278,24 +280,23 @@ const Signup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cnpj" className="text-sm font-medium">
-                  CNPJ
+                <Label htmlFor="cpfCnpj" className="text-sm font-medium">
+                  CPF ou CNPJ (opcional)
                 </Label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    id="cnpj"
-                    name="cnpj"
+                    id="cpfCnpj"
+                    name="cpfCnpj"
                     type="text"
-                    placeholder="XX.XXX.XXX/XXXX-XX"
-                    value={formData.cnpj}
+                    placeholder="CPF ou CNPJ"
+                    value={formData.cpfCnpj}
                     onChange={handleInputChange}
                     className="pl-10"
-                    required
                   />
                 </div>
-                {errors.cnpj && (
-                  <p className="text-sm text-destructive">{errors.cnpj}</p>
+                {errors.cpfCnpj && (
+                  <p className="text-sm text-destructive">{errors.cpfCnpj}</p>
                 )}
               </div>
 
