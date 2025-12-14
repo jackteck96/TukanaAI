@@ -6,6 +6,58 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// HTML escape function to prevent XSS/injection
+const escapeHtml = (text: string): string => {
+  const htmlEntities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
+};
+
+// Input validation
+const validateInput = (data: any): { valid: boolean; error?: string; data?: { processId: string; documentName: string; documentRequestId: string } } => {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, error: 'Invalid request body' };
+  }
+
+  const { processId, documentName, documentRequestId } = data;
+
+  // Validate processId (UUID format)
+  if (!processId || typeof processId !== 'string' || processId.length > 100) {
+    return { valid: false, error: 'Invalid processId' };
+  }
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(processId)) {
+    return { valid: false, error: 'Invalid processId format' };
+  }
+
+  // Validate documentName
+  if (!documentName || typeof documentName !== 'string' || documentName.trim().length === 0 || documentName.length > 500) {
+    return { valid: false, error: 'Invalid documentName' };
+  }
+
+  // Validate documentRequestId (UUID format)
+  if (!documentRequestId || typeof documentRequestId !== 'string' || documentRequestId.length > 100) {
+    return { valid: false, error: 'Invalid documentRequestId' };
+  }
+  if (!uuidRegex.test(documentRequestId)) {
+    return { valid: false, error: 'Invalid documentRequestId format' };
+  }
+
+  return {
+    valid: true,
+    data: {
+      processId: processId.trim(),
+      documentName: documentName.trim(),
+      documentRequestId: documentRequestId.trim(),
+    },
+  };
+};
+
 const sendEmail = async (emailData: any) => {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   
@@ -39,12 +91,6 @@ const sendEmail = async (emailData: any) => {
   }
 };
 
-interface NotifyDocumentRequestBody {
-  processId: string;
-  documentName: string;
-  documentRequestId: string;
-}
-
 const handler = async (req: Request): Promise<Response> => {
   console.log('[notify-document-request] Function invoked');
   
@@ -53,17 +99,20 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const body: NotifyDocumentRequestBody = await req.json();
+    const body = await req.json();
     console.log('[notify-document-request] Body received:', body);
 
-    const { processId, documentName, documentRequestId } = body;
-
-    if (!processId || !documentName || !documentRequestId) {
+    // Validate input
+    const validation = validateInput(body);
+    if (!validation.valid || !validation.data) {
+      console.error('[notify-document-request] Validation failed:', validation.error);
       return new Response(
-        JSON.stringify({ error: "Missing required parameters" }),
+        JSON.stringify({ error: validation.error || "Invalid input" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
+    const { processId, documentName, documentRequestId } = validation.data;
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -92,15 +141,20 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const clientEmail = process.client_email;
-    const clientName = process.client_name;
-    const processName = process.project_name || process.process_type;
+    const clientName = process.client_name || 'Cliente';
+    const processName = process.project_name || process.process_type || 'Processo';
     const companyName = (process.companies as any)?.name || "Fuzen";
 
+    // Escape HTML to prevent injection
+    const safeClientName = escapeHtml(clientName);
+    const safeDocumentName = escapeHtml(documentName);
+    const safeProcessName = escapeHtml(processName);
+    const safeCompanyName = escapeHtml(companyName);
+
     // Create access link for the client
-    const baseUrl = Deno.env.get("SUPABASE_URL")?.replace('https://', 'https://');
     const accessLink = `https://devnkdyfzlgspdlfuyam.lovable.app/area-cliente?id=${processId}`;
 
-    const subject = `📋 Nova Solicitação de Documento - ${processName}`;
+    const subject = `📋 Nova Solicitação de Documento - ${safeProcessName}`;
     const fromEmail = "convites@fuzen.online";
 
     const emailHtml = `
@@ -208,16 +262,16 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div class="content">
             <div class="greeting">
-              Olá <strong>${clientName}</strong>,
+              Olá <strong>${safeClientName}</strong>,
             </div>
             
             <p>Informamos que um novo documento foi solicitado para o seu processo.</p>
             
             <div class="document-info">
               <h3>📄 Documento Solicitado</h3>
-              <p><strong>Tipo:</strong> ${documentName}</p>
-              <p><strong>Processo:</strong> ${processName}</p>
-              <p><strong>Empresa:</strong> ${companyName}</p>
+              <p><strong>Tipo:</strong> ${safeDocumentName}</p>
+              <p><strong>Processo:</strong> ${safeProcessName}</p>
+              <p><strong>Empresa:</strong> ${safeCompanyName}</p>
               <p><strong>Status:</strong> Aguardando envio</p>
             </div>
             
@@ -239,7 +293,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p>
               Atenciosamente,<br>
-              <strong class="company-name">${companyName}</strong>
+              <strong class="company-name">${safeCompanyName}</strong>
             </p>
           </div>
           
