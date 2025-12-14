@@ -37,7 +37,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
   const [phone, setPhone] = useState("");
 
   // Dados completos (opcionais no início, obrigatórios quando empresa preenche)
-  const [cnpj, setCnpj] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState("");
   const [addressStreet, setAddressStreet] = useState("");
   const [addressNumber, setAddressNumber] = useState("");
   const [addressComplement, setAddressComplement] = useState("");
@@ -55,7 +55,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
     setCompanyName("");
     setEmail("");
     setPhone("");
-    setCnpj("");
+    setCpfCnpj("");
     setAddressStreet("");
     setAddressNumber("");
     setAddressComplement("");
@@ -99,7 +99,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
   const validateFullFields = () => {
     if (qualificationMethod === 'company_fills') {
       const missingFields = [];
-      if (!cnpj.trim()) missingFields.push("CNPJ");
+      // CPF/CNPJ é opcional
       if (!addressStreet.trim()) missingFields.push("Endereço");
       if (!addressNumber.trim()) missingFields.push("Número");
       if (!addressNeighborhood.trim()) missingFields.push("Bairro");
@@ -139,12 +139,12 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
     setLoading(true);
 
     try {
-      // Verificar se cliente já existe (por email ou CNPJ)
+      // Verificar se cliente já existe (por email ou CPF/CNPJ)
       const { data: existingClients, error: checkError } = await supabase
         .from("clients")
         .select("id, email, cnpj")
         .eq("company_id", company.id)
-        .or(`email.eq.${email}${cnpj ? `,cnpj.eq.${cnpj}` : ''}`);
+        .or(`email.eq.${email}${cpfCnpj ? `,cnpj.eq.${cpfCnpj}` : ''}`);
 
       if (checkError) {
         console.error("Erro ao verificar cliente existente:", checkError);
@@ -152,7 +152,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
 
       if (existingClients && existingClients.length > 0) {
         const duplicate = existingClients[0];
-        const reason = duplicate.email === email ? "e-mail" : "CNPJ";
+        const reason = duplicate.email === email ? "e-mail" : "CPF/CNPJ";
         toast({
           title: "Cliente já cadastrado",
           description: `Já existe um cliente cadastrado com este ${reason}.`,
@@ -165,7 +165,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
       const registrationStatus =
         qualificationMethod === 'client_fills'
           ? 'awaiting_client'
-          : cnpj && adminFullName && adminCpf
+          : cpfCnpj && adminFullName && adminCpf
           ? 'completed'
           : 'pending';
 
@@ -174,7 +174,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
         company_name: companyName,
         email,
         phone,
-        cnpj: cnpj || null,
+        cnpj: cpfCnpj || null,
         address_street: addressStreet || null,
         address_number: addressNumber || null,
         address_complement: addressComplement || null,
@@ -508,15 +508,14 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
                 </h3>
 
                 <div>
-                  <Label htmlFor="cnpj">
-                    CNPJ <span className="text-destructive">*</span>
+                  <Label htmlFor="cpfCnpj">
+                    CPF ou CNPJ (opcional)
                   </Label>
                   <Input
-                    id="cnpj"
-                    value={cnpj}
-                    onChange={(e) => setCnpj(e.target.value)}
-                    placeholder="00.000.000/0000-00"
-                    required={qualificationMethod === 'company_fills'}
+                    id="cpfCnpj"
+                    value={cpfCnpj}
+                    onChange={(e) => setCpfCnpj(e.target.value)}
+                    placeholder="CPF ou CNPJ"
                   />
                 </div>
 
