@@ -2367,6 +2367,7 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { user_uuid: string }; Returns: boolean }
+      is_platform_admin_safe: { Args: never; Returns: boolean }
       log_personal_data_access: {
         Args: {
           p_access_type: string
