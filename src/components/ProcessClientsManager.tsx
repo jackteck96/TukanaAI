@@ -150,44 +150,41 @@ export const ProcessClientsManager = ({
       {clients.length === 0 ? (
         // Formulário simplificado para o primeiro cliente
         <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-          {companyId && (
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1">
-                Buscar cliente existente (opcional)
-              </Label>
+          <div>
+            <Label htmlFor="client_name" className="text-xs">
+              Nome do Cliente *
+            </Label>
+            {companyId ? (
               <ClientAutocomplete
                 companyId={companyId}
                 value={newClient.client_name}
                 onChange={(value) => setNewClient({ ...newClient, client_name: value })}
                 onClientSelect={handleSelectExistingClient}
               />
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="client_name" className="text-xs">
-                Nome Completo *
-              </Label>
+            ) : (
               <Input
                 id="client_name"
                 value={newClient.client_name}
                 onChange={(e) => setNewClient({ ...newClient, client_name: e.target.value })}
                 placeholder="Nome do cliente"
               />
-            </div>
-            <div>
-              <Label htmlFor="client_email" className="text-xs">
-                Email *
-              </Label>
-              <Input
-                id="client_email"
-                type="email"
-                value={newClient.client_email}
-                onChange={(e) => setNewClient({ ...newClient, client_email: e.target.value })}
-                placeholder="email@exemplo.com"
-              />
-            </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              Digite para buscar cliente existente ou inserir um novo
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="client_email" className="text-xs">
+              Email *
+            </Label>
+            <Input
+              id="client_email"
+              type="email"
+              value={newClient.client_email}
+              onChange={(e) => setNewClient({ ...newClient, client_email: e.target.value })}
+              placeholder="email@exemplo.com"
+            />
           </div>
 
           <div>
@@ -248,44 +245,38 @@ export const ProcessClientsManager = ({
                   </Button>
                 </div>
                 
-                {companyId && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground mb-1">
-                      Buscar cliente existente (opcional)
-                    </Label>
+                <div>
+                  <Label htmlFor="client_name_add" className="text-xs">
+                    Nome do Cliente *
+                  </Label>
+                  {companyId ? (
                     <ClientAutocomplete
                       companyId={companyId}
                       value={newClient.client_name}
                       onChange={(value) => setNewClient({ ...newClient, client_name: value })}
                       onClientSelect={handleSelectExistingClient}
                     />
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="client_name_add" className="text-xs">
-                      Nome Completo *
-                    </Label>
+                  ) : (
                     <Input
                       id="client_name_add"
                       value={newClient.client_name}
                       onChange={(e) => setNewClient({ ...newClient, client_name: e.target.value })}
                       placeholder="Nome do cliente"
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="client_email_add" className="text-xs">
-                      Email *
-                    </Label>
-                    <Input
-                      id="client_email_add"
-                      type="email"
-                      value={newClient.client_email}
-                      onChange={(e) => setNewClient({ ...newClient, client_email: e.target.value })}
-                      placeholder="email@exemplo.com"
-                    />
-                  </div>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="client_email_add" className="text-xs">
+                    Email *
+                  </Label>
+                  <Input
+                    id="client_email_add"
+                    type="email"
+                    value={newClient.client_email}
+                    onChange={(e) => setNewClient({ ...newClient, client_email: e.target.value })}
+                    placeholder="email@exemplo.com"
+                  />
                 </div>
 
                 <div>
