@@ -2338,6 +2338,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_my_company_id: { Args: never; Returns: string }
       get_user_company_id: { Args: never; Returns: string }
       get_user_role_details: {
         Args: { user_uuid: string }
