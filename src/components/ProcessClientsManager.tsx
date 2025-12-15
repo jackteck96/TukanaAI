@@ -32,6 +32,7 @@ export const ProcessClientsManager = ({
     cpf_cnpj: '',
     is_primary: false
   });
+  const [showAddMore, setShowAddMore] = useState(false);
 
   const handleAddClient = () => {
     if (!newClient.client_name || !newClient.client_email) {
@@ -87,7 +88,7 @@ export const ProcessClientsManager = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-semibold">Clientes do Processo</Label>
+        <Label className="text-base font-semibold">Cliente(s) do Processo *</Label>
         {clients.length > 0 && (
           <Badge variant="secondary">
             {clients.length} cliente{clients.length !== 1 ? 's' : ''}
@@ -95,7 +96,7 @@ export const ProcessClientsManager = ({
         )}
       </div>
 
-      {/* Lista de clientes existentes */}
+      {/* Lista de clientes adicionados */}
       {clients.length > 0 && (
         <div className="space-y-2">
           {clients.map((client, index) => (
@@ -145,13 +146,10 @@ export const ProcessClientsManager = ({
         </div>
       )}
 
-      {/* Formulário para adicionar novo cliente */}
-      <Card className="p-4 bg-muted/50">
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">
-            {clients.length === 0 ? 'Adicionar Cliente Principal' : 'Adicionar Outro Cliente'}
-          </Label>
-          
+      {/* Formulário para o primeiro cliente ou adicionar mais */}
+      {clients.length === 0 ? (
+        // Formulário simplificado para o primeiro cliente
+        <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
           {companyId && (
             <div>
               <Label className="text-xs text-muted-foreground mb-1">
@@ -209,18 +207,116 @@ export const ProcessClientsManager = ({
             onClick={handleAddClient}
             disabled={!newClient.client_name || !newClient.client_email}
             className="w-full"
-            variant="secondary"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            {clients.length === 0 ? 'Adicionar Cliente' : 'Adicionar Outro Cliente'}
+            Confirmar Cliente
           </Button>
         </div>
-      </Card>
+      ) : (
+        // Botão para adicionar mais clientes (colapsado por padrão)
+        <div className="space-y-3">
+          {!showAddMore ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddMore(true)}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar outro cliente
+            </Button>
+          ) : (
+            <Card className="p-4 bg-muted/50">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Adicionar Outro Cliente</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowAddMore(false);
+                      setNewClient({
+                        client_name: '',
+                        client_email: '',
+                        cpf_cnpj: '',
+                        is_primary: false
+                      });
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+                
+                {companyId && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1">
+                      Buscar cliente existente (opcional)
+                    </Label>
+                    <ClientAutocomplete
+                      companyId={companyId}
+                      value={newClient.client_name}
+                      onChange={(value) => setNewClient({ ...newClient, client_name: value })}
+                      onClientSelect={handleSelectExistingClient}
+                    />
+                  </div>
+                )}
 
-      {clients.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-2">
-          Adicione pelo menos um cliente ao processo
-        </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="client_name_add" className="text-xs">
+                      Nome Completo *
+                    </Label>
+                    <Input
+                      id="client_name_add"
+                      value={newClient.client_name}
+                      onChange={(e) => setNewClient({ ...newClient, client_name: e.target.value })}
+                      placeholder="Nome do cliente"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client_email_add" className="text-xs">
+                      Email *
+                    </Label>
+                    <Input
+                      id="client_email_add"
+                      type="email"
+                      value={newClient.client_email}
+                      onChange={(e) => setNewClient({ ...newClient, client_email: e.target.value })}
+                      placeholder="email@exemplo.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="cpf_cnpj_add" className="text-xs">
+                    CPF/CNPJ (opcional)
+                  </Label>
+                  <Input
+                    id="cpf_cnpj_add"
+                    value={newClient.cpf_cnpj}
+                    onChange={(e) => setNewClient({ ...newClient, cpf_cnpj: e.target.value })}
+                    placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleAddClient();
+                    setShowAddMore(false);
+                  }}
+                  disabled={!newClient.client_name || !newClient.client_email}
+                  className="w-full"
+                  variant="secondary"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Cliente
+                </Button>
+              </div>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );
