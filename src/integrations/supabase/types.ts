@@ -2338,7 +2338,6 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
-      get_my_company_id: { Args: never; Returns: string }
       get_user_company_id: { Args: never; Returns: string }
       get_user_role_details: {
         Args: { user_uuid: string }
@@ -2367,7 +2366,6 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { user_uuid: string }; Returns: boolean }
-      is_platform_admin_safe: { Args: never; Returns: boolean }
       log_personal_data_access: {
         Args: {
           p_access_type: string

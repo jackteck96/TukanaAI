@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const [availableDocuments, setAvailableDocuments] = useState<string[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [processClients, setProcessClients] = useState<ProcessClient[]>([]);
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherDocumentName, setOtherDocumentName] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -126,6 +129,16 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     setProcessClients([]);
     setRequiredDocuments([]);
     setSearchTerm("");
+    setShowOtherInput(false);
+    setOtherDocumentName("");
+  };
+
+  const handleAddOtherDocument = () => {
+    if (otherDocumentName.trim() && !requiredDocuments.includes(otherDocumentName.trim())) {
+      setRequiredDocuments([...requiredDocuments, otherDocumentName.trim()]);
+      setOtherDocumentName("");
+      setShowOtherInput(false);
+    }
   };
 
   const copyToClipboard = async (text: string) => {
@@ -427,33 +440,91 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
                     </p>
                   </div>
                 ) : (
-                  availableDocuments
-                    .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
-                    .map((doc) => (
-                    <div key={doc} className="flex items-center space-x-2 py-1">
+                  <>
+                    {availableDocuments
+                      .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
+                      .map((doc) => (
+                      <div key={doc} className="flex items-center space-x-2 py-1">
+                        <input
+                          type="checkbox"
+                          id={`doc-${doc}`}
+                          checked={requiredDocuments.includes(doc)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setRequiredDocuments([...requiredDocuments, doc]);
+                            } else {
+                              setRequiredDocuments(requiredDocuments.filter(d => d !== doc));
+                            }
+                          }}
+                          className="rounded border-border"
+                        />
+                        <Label htmlFor={`doc-${doc}`} className="text-sm cursor-pointer flex-1">
+                          {doc}
+                        </Label>
+                      </div>
+                    ))}
+                    
+                    {/* Opção "Outro" */}
+                    <div className="flex items-center space-x-2 py-1 border-t mt-2 pt-2">
                       <input
                         type="checkbox"
-                        id={`doc-${doc}`}
-                        checked={requiredDocuments.includes(doc)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setRequiredDocuments([...requiredDocuments, doc]);
-                          } else {
-                            setRequiredDocuments(requiredDocuments.filter(d => d !== doc));
-                          }
-                        }}
+                        id="doc-outro"
+                        checked={showOtherInput}
+                        onChange={(e) => setShowOtherInput(e.target.checked)}
                         className="rounded border-border"
                       />
-                      <Label htmlFor={`doc-${doc}`} className="text-sm cursor-pointer flex-1">
-                        {doc}
+                      <Label htmlFor="doc-outro" className="text-sm cursor-pointer flex-1 font-medium">
+                        Outro (especificar)
                       </Label>
                     </div>
-                  )))
-                }
+                  </>
+                )}
               </div>
+              
+              {/* Campo para documento personalizado */}
+              {showOtherInput && (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Digite o nome do documento..."
+                    value={otherDocumentName}
+                    onChange={(e) => setOtherDocumentName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddOtherDocument();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddOtherDocument}
+                    disabled={!otherDocumentName.trim()}
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              
               {requiredDocuments.length > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  {requiredDocuments.length} documento(s) selecionado(s): {requiredDocuments.join(", ")}
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">
+                    {requiredDocuments.length} documento(s) selecionado(s):
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {requiredDocuments.map((doc) => (
+                      <Badge key={doc} variant="secondary" className="text-xs flex items-center gap-1">
+                        {doc}
+                        <button
+                          type="button"
+                          onClick={() => setRequiredDocuments(requiredDocuments.filter(d => d !== doc))}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

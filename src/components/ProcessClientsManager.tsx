@@ -128,17 +128,16 @@ export const ProcessClientsManager = ({
                       <Star className="h-4 w-4" />
                     </Button>
                   )}
-                  {clients.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveClient(index)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveClient(index)}
+                    className="text-destructive hover:text-destructive"
+                    title="Remover cliente"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </Card>
