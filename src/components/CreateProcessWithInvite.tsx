@@ -230,6 +230,65 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         throw clientsError;
       }
 
+      // 2.5 Salvar campos personalizados de cada cliente
+      for (const client of processClients) {
+        if (client.customFields && client.customFields.length > 0) {
+          // Verificar se o cliente já existe na tabela clients
+          let { data: existingClient } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('email', client.client_email)
+            .eq('company_id', company.id)
+            .maybeSingle();
+
+          let clientId: string;
+          
+          if (existingClient) {
+            clientId = existingClient.id;
+          } else {
+            // Criar cliente se não existir
+            const { data: newClient, error: newClientError } = await supabase
+              .from('clients')
+              .insert({
+                company_id: company.id,
+                company_name: client.client_name,
+                email: client.client_email,
+                phone: '',
+                cnpj: client.cpf_cnpj || null,
+                created_by: user.id,
+                registration_status: 'pending'
+              })
+              .select('id')
+              .single();
+
+            if (newClientError) {
+              console.error('Error creating client:', newClientError);
+              continue;
+            }
+            clientId = newClient.id;
+          }
+
+          // Salvar campos personalizados
+          const customFieldsToInsert = client.customFields.map(field => ({
+            client_id: clientId,
+            company_id: company.id,
+            field_name: field.field_name,
+            field_type: field.field_type,
+            field_value: field.field_value,
+            is_required: field.is_required,
+            template_id: field.template_id || null
+          }));
+
+          const { error: fieldsError } = await supabase
+            .from('client_custom_field_values')
+            .insert(customFieldsToInsert);
+
+          if (fieldsError) {
+            console.error('Error saving custom fields:', fieldsError);
+          }
+        }
+      }
+
       // 3. Enviar convites para todos os clientes
       for (const client of processClients) {
         try {
