@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Building2, Mail, Phone, MapPin, User, FileText } from "lucide-react";
+import ClientCustomFields, { CustomField } from "./ClientCustomFields";
 
 interface CreateClientDialogProps {
   onClientCreated?: () => void;
@@ -49,6 +50,9 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
   const [adminCpf, setAdminCpf] = useState("");
   const [internalNotes, setInternalNotes] = useState("");
 
+  // Campos personalizados
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+
   const resetForm = () => {
     setQualificationMethod('company_fills');
     setSendEmailNow(false);
@@ -66,6 +70,7 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
     setAdminFullName("");
     setAdminCpf("");
     setInternalNotes("");
+    setCustomFields([]);
   };
 
   const validateBasicFields = () => {
@@ -118,6 +123,21 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
         return false;
       }
     }
+
+    // Validar campos personalizados obrigatórios
+    const missingCustomFields = customFields
+      .filter(f => f.is_required && !f.field_value?.trim())
+      .map(f => f.field_name);
+
+    if (missingCustomFields.length > 0) {
+      toast({
+        title: "Campos personalizados obrigatórios faltando",
+        description: `Preencha: ${missingCustomFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
     return true;
   };
 
@@ -199,6 +219,27 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
         .single();
 
       if (clientError) throw clientError;
+
+      // Salvar campos personalizados
+      if (newClient && customFields.length > 0) {
+        const customFieldValues = customFields.map(field => ({
+          client_id: newClient.id,
+          company_id: company.id,
+          template_id: field.template_id || null,
+          field_name: field.field_name,
+          field_type: field.field_type,
+          field_value: field.field_value || null,
+          is_required: field.is_required,
+        }));
+
+        const { error: customFieldsError } = await supabase
+          .from('client_custom_field_values')
+          .insert(customFieldValues);
+
+        if (customFieldsError) {
+          console.error('Erro ao salvar campos personalizados:', customFieldsError);
+        }
+      }
 
       // Se deve enviar email agora, criar convite com token
       if (sendEmailNow && newClient && qualificationMethod === 'client_fills') {
@@ -650,6 +691,16 @@ const CreateClientDialog = ({ onClientCreated, variant = 'default' }: CreateClie
                 </div>
               </div>
             </>
+          )}
+
+          {/* Campos Personalizados */}
+          {company?.id && (
+            <ClientCustomFields
+              companyId={company.id}
+              customFields={customFields}
+              onChange={setCustomFields}
+              showAddButton={true}
+            />
           )}
 
           {/* Observações Internas */}

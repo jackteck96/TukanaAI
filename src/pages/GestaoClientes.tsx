@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Users, 
   Search,
@@ -12,7 +13,9 @@ import {
   FileText,
   ArrowLeft,
   Eye,
-  Trash2
+  Trash2,
+  Settings2,
+  ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +23,7 @@ import { useCompany } from '@/contexts/CompanyContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import CreateClientDialog from '@/components/CreateClientDialog';
+import CustomFieldTemplatesManager from '@/components/CustomFieldTemplatesManager';
 
 interface Client {
   id: string;
@@ -39,6 +43,7 @@ const GestaoClientes = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCustomFields, setShowCustomFields] = useState(false);
 
   const fetchClients = async () => {
     if (!user || !company) return;
@@ -175,6 +180,22 @@ const GestaoClientes = () => {
           </Button>
         </div>
       </div>
+
+      {/* Configurações de Campos Personalizados */}
+      <Collapsible open={showCustomFields} onOpenChange={setShowCustomFields}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full justify-between">
+            <div className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4" />
+              Configurar Campos Personalizados
+            </div>
+            <ChevronDown className={`h-4 w-4 transition-transform ${showCustomFields ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4">
+          <CustomFieldTemplatesManager />
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">

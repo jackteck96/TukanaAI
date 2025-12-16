@@ -134,6 +134,114 @@ export type Database = {
         }
         Relationships: []
       }
+      client_custom_field_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          display_order: number
+          field_name: string
+          field_type: string
+          id: string
+          is_active: boolean
+          is_required: boolean
+          options: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          display_order?: number
+          field_name: string
+          field_type?: string
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          options?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          display_order?: number
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          options?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_custom_field_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_custom_field_values: {
+        Row: {
+          client_id: string
+          company_id: string
+          created_at: string
+          field_name: string
+          field_type: string
+          field_value: string | null
+          id: string
+          is_required: boolean
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          company_id: string
+          created_at?: string
+          field_name: string
+          field_type?: string
+          field_value?: string | null
+          id?: string
+          is_required?: boolean
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          company_id?: string
+          created_at?: string
+          field_name?: string
+          field_type?: string
+          field_value?: string | null
+          id?: string
+          is_required?: boolean
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_custom_field_values_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_custom_field_values_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_custom_field_values_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "client_custom_field_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_invites: {
         Row: {
           company_id: string
