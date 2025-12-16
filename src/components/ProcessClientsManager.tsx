@@ -4,8 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Star } from 'lucide-react';
+import { Plus, Trash2, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { ClientAutocomplete } from './ClientAutocomplete';
+import ClientCustomFields, { CustomField } from './ClientCustomFields';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 export interface ProcessClient {
   id?: string;
@@ -13,6 +15,7 @@ export interface ProcessClient {
   client_email: string;
   cpf_cnpj?: string;
   is_primary: boolean;
+  customFields?: CustomField[];
 }
 
 interface ProcessClientsManagerProps {
@@ -30,9 +33,11 @@ export const ProcessClientsManager = ({
     client_name: '',
     client_email: '',
     cpf_cnpj: '',
-    is_primary: false
+    is_primary: false,
+    customFields: []
   });
   const [showAddMore, setShowAddMore] = useState(false);
+  const [expandedClients, setExpandedClients] = useState<number[]>([]);
 
   const handleAddClient = () => {
     if (!newClient.client_name || !newClient.client_email) {
@@ -53,8 +58,21 @@ export const ProcessClientsManager = ({
       client_name: '',
       client_email: '',
       cpf_cnpj: '',
-      is_primary: false
+      is_primary: false,
+      customFields: []
     });
+  };
+
+  const handleClientCustomFieldsChange = (index: number, fields: CustomField[]) => {
+    const updated = [...clients];
+    updated[index].customFields = fields;
+    onChange(updated);
+  };
+
+  const toggleClientExpanded = (index: number) => {
+    setExpandedClients(prev => 
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
   };
 
   const handleRemoveClient = (index: number) => {
@@ -81,7 +99,8 @@ export const ProcessClientsManager = ({
       client_name: client.client_name,
       client_email: client.client_email,
       cpf_cnpj: client.cpf_cnpj || '',
-      is_primary: false
+      is_primary: false,
+      customFields: []
     });
   };
 
@@ -100,48 +119,86 @@ export const ProcessClientsManager = ({
       {clients.length > 0 && (
         <div className="space-y-2">
           {clients.map((client, index) => (
-            <Card key={index} className="p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium truncate">{client.client_name}</p>
-                    {client.is_primary && (
-                      <Badge variant="default" className="flex items-center gap-1">
-                        <Star className="h-3 w-3" />
-                        Principal
-                      </Badge>
+            <Collapsible 
+              key={index} 
+              open={expandedClients.includes(index)}
+              onOpenChange={() => toggleClientExpanded(index)}
+            >
+              <Card className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium truncate">{client.client_name}</p>
+                      {client.is_primary && (
+                        <Badge variant="default" className="flex items-center gap-1">
+                          <Star className="h-3 w-3" />
+                          Principal
+                        </Badge>
+                      )}
+                      {client.customFields && client.customFields.length > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {client.customFields.length} campo(s)
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">{client.client_email}</p>
+                    {client.cpf_cnpj && (
+                      <p className="text-xs text-muted-foreground mt-1">{client.cpf_cnpj}</p>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">{client.client_email}</p>
-                  {client.cpf_cnpj && (
-                    <p className="text-xs text-muted-foreground mt-1">{client.cpf_cnpj}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  {!client.is_primary && clients.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    {companyId && (
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          title="Campos personalizados"
+                        >
+                          {expandedClients.includes(index) ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                    )}
+                    {!client.is_primary && clients.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSetPrimary(index)}
+                        title="Marcar como principal"
+                      >
+                        <Star className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleSetPrimary(index)}
-                      title="Marcar como principal"
+                      onClick={() => handleRemoveClient(index)}
+                      className="text-destructive hover:text-destructive"
+                      title="Remover cliente"
                     >
-                      <Star className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveClient(index)}
-                    className="text-destructive hover:text-destructive"
-                    title="Remover cliente"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
+                
+                {companyId && (
+                  <CollapsibleContent className="mt-3 pt-3 border-t">
+                    <ClientCustomFields
+                      companyId={companyId}
+                      customFields={client.customFields || []}
+                      onChange={(fields) => handleClientCustomFieldsChange(index, fields)}
+                      showAddButton={true}
+                    />
+                  </CollapsibleContent>
+                )}
+              </Card>
+            </Collapsible>
           ))}
         </div>
       )}
@@ -199,6 +256,15 @@ export const ProcessClientsManager = ({
             />
           </div>
 
+          {companyId && (
+            <ClientCustomFields
+              companyId={companyId}
+              customFields={newClient.customFields || []}
+              onChange={(fields) => setNewClient({ ...newClient, customFields: fields })}
+              showAddButton={true}
+            />
+          )}
+
           <Button
             type="button"
             onClick={handleAddClient}
@@ -233,12 +299,13 @@ export const ProcessClientsManager = ({
                     size="sm"
                     onClick={() => {
                       setShowAddMore(false);
-                      setNewClient({
-                        client_name: '',
-                        client_email: '',
-                        cpf_cnpj: '',
-                        is_primary: false
-                      });
+                    setNewClient({
+                      client_name: '',
+                      client_email: '',
+                      cpf_cnpj: '',
+                      is_primary: false,
+                      customFields: []
+                    });
                     }}
                   >
                     Cancelar
@@ -290,6 +357,15 @@ export const ProcessClientsManager = ({
                     placeholder="000.000.000-00 ou 00.000.000/0000-00"
                   />
                 </div>
+
+                {companyId && (
+                  <ClientCustomFields
+                    companyId={companyId}
+                    customFields={newClient.customFields || []}
+                    onChange={(fields) => setNewClient({ ...newClient, customFields: fields })}
+                    showAddButton={true}
+                  />
+                )}
 
                 <Button
                   type="button"
