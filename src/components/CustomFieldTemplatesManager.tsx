@@ -127,6 +127,15 @@ const CustomFieldTemplatesManager = () => {
       return;
     }
 
+    if (fieldType === 'checkbox' && options.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Campos do tipo checkbox precisam de pelo menos uma opção (ex: Sim, Não).",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (editingTemplate) {
         // Update existing
@@ -136,7 +145,7 @@ const CustomFieldTemplatesManager = () => {
             field_name: fieldName,
             field_type: fieldType,
             is_required: isRequired,
-            options: fieldType === 'select' ? options : [],
+            options: (fieldType === 'select' || fieldType === 'checkbox') ? options : [],
           })
           .eq('id', editingTemplate.id);
 
@@ -159,7 +168,7 @@ const CustomFieldTemplatesManager = () => {
             field_name: fieldName,
             field_type: fieldType,
             is_required: isRequired,
-            options: fieldType === 'select' ? options : [],
+            options: (fieldType === 'select' || fieldType === 'checkbox') ? options : [],
             display_order: maxOrder,
           });
 
@@ -292,9 +301,9 @@ const CustomFieldTemplatesManager = () => {
                   </Select>
                 </div>
 
-                {fieldType === 'select' && (
+                {(fieldType === 'select' || fieldType === 'checkbox') && (
                   <div>
-                    <Label>Opções</Label>
+                    <Label>Opções {fieldType === 'checkbox' && '(ex: Sim, Não)'}</Label>
                     <div className="flex gap-2 mb-2">
                       <Input
                         value={newOption}
@@ -383,7 +392,7 @@ const CustomFieldTemplatesManager = () => {
                         <Badge variant="destructive" className="text-xs">Inativo</Badge>
                       )}
                     </div>
-                    {template.field_type === 'select' && template.options?.length > 0 && (
+                    {(template.field_type === 'select' || template.field_type === 'checkbox') && template.options?.length > 0 && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Opções: {template.options.join(', ')}
                       </p>

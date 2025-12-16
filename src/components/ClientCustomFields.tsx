@@ -150,6 +150,38 @@ const ClientCustomFields = ({
   const renderFieldInput = (field: CustomField, index: number) => {
     switch (field.field_type) {
       case 'checkbox':
+        // Se tem opções, renderizar como grupo de opções (radio-like)
+        if (field.options && field.options.length > 0) {
+          return (
+            <div>
+              <Label>
+                {field.field_name}
+                {field.is_required && <span className="text-destructive ml-1">*</span>}
+              </Label>
+              <div className="flex flex-wrap gap-4 mt-2">
+                {field.options.map((opt, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`custom-field-${index}-${i}`}
+                      checked={field.field_value === opt}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleFieldChange(index, opt);
+                        } else {
+                          handleFieldChange(index, '');
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`custom-field-${index}-${i}`} className="cursor-pointer text-sm">
+                      {opt}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        // Fallback para checkbox simples sem opções
         return (
           <div className="flex items-center gap-2">
             <Checkbox
@@ -296,7 +328,7 @@ const ClientCustomFields = ({
                     onValueChange={(v) => setNewField({ 
                       ...newField, 
                       field_type: v as CustomField['field_type'],
-                      options: v === 'select' ? [] : newField.options
+                      options: (v === 'select' || v === 'checkbox') ? [] : newField.options
                     })}
                   >
                     <SelectTrigger>
@@ -311,9 +343,9 @@ const ClientCustomFields = ({
                 </div>
               </div>
 
-              {newField.field_type === 'select' && (
+              {(newField.field_type === 'select' || newField.field_type === 'checkbox') && (
                 <div>
-                  <Label>Opções</Label>
+                  <Label>Opções {newField.field_type === 'checkbox' && '(ex: Sim, Não)'}</Label>
                   <div className="flex gap-2 mb-2">
                     <Input
                       value={newOption}
@@ -366,7 +398,10 @@ const ClientCustomFields = ({
                   type="button"
                   size="sm"
                   onClick={handleAddField}
-                  disabled={!newField.field_name.trim() || (newField.field_type === 'select' && (!newField.options || newField.options.length === 0))}
+                  disabled={
+                    !newField.field_name.trim() || 
+                    ((newField.field_type === 'select' || newField.field_type === 'checkbox') && (!newField.options || newField.options.length === 0))
+                  }
                 >
                   Adicionar Campo
                 </Button>
