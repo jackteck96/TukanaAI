@@ -189,37 +189,36 @@ const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSele
           </div>
         ) : hasCategories ? (
           <Accordion type="multiple" className="w-full">
-            {categories.map((category) => {
-              const categoryDocs = documentsByCategory[category.id] || [];
-              const selectedInCategory = categoryDocs.filter(d => 
-                selectedDocuments.includes(d.name)
-              ).length;
+            <div className="max-h-64 overflow-y-auto">
+              {categories.map((category) => {
+                const categoryDocs = documentsByCategory[category.id] || [];
+                const selectedInCategory = categoryDocs.filter(d => 
+                  selectedDocuments.includes(d.name)
+                ).length;
 
-              if (searchTerm && categoryDocs.length === 0) return null;
+                // Skip empty categories when searching
+                if (searchTerm && categoryDocs.length === 0) return null;
+                // Skip categories with no documents
+                if (categoryDocs.length === 0) return null;
 
-              return (
-                <AccordionItem key={category.id} value={category.id} className="border-b last:border-0">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
-                    <div className="flex items-center justify-between w-full pr-2">
-                      <span className="font-medium">{category.name}</span>
-                      <div className="flex items-center gap-2">
-                        {selectedInCategory > 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            {selectedInCategory}
-                          </Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {categoryDocs.length} doc{categoryDocs.length !== 1 ? 's' : ''}
-                        </span>
+                return (
+                  <AccordionItem key={category.id} value={category.id} className="border-b last:border-0">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
+                      <div className="flex items-center justify-between w-full pr-2">
+                        <span className="font-medium">{category.name}</span>
+                        <div className="flex items-center gap-2">
+                          {selectedInCategory > 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              {selectedInCategory}
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {categoryDocs.length} doc{categoryDocs.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-3">
-                    {categoryDocs.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-2">
-                        Nenhum documento nesta categoria
-                      </p>
-                    ) : (
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-3">
                       <div className="space-y-2">
                         {categoryDocs.map((doc) => (
                           <div key={doc.id} className="flex items-center space-x-3 py-1">
@@ -237,59 +236,59 @@ const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSele
                           </div>
                         ))}
                       </div>
-                    )}
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+
+              {/* Uncategorized Documents */}
+              {documentsByCategory.uncategorized.length > 0 && (
+                <AccordionItem value="uncategorized" className="border-b last:border-0">
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
+                    <div className="flex items-center justify-between w-full pr-2">
+                      <span className="font-medium">Outros Documentos</span>
+                      <div className="flex items-center gap-2">
+                        {documentsByCategory.uncategorized.filter(d => 
+                          selectedDocuments.includes(d.name)
+                        ).length > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {documentsByCategory.uncategorized.filter(d => 
+                              selectedDocuments.includes(d.name)
+                            ).length}
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {documentsByCategory.uncategorized.length} doc{documentsByCategory.uncategorized.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-3">
+                    <div className="space-y-2">
+                      {documentsByCategory.uncategorized.map((doc) => (
+                        <div key={doc.id} className="flex items-center space-x-3 py-1">
+                          <Checkbox
+                            id={`doc-${doc.id}`}
+                            checked={selectedDocuments.includes(doc.name)}
+                            onCheckedChange={() => handleToggleDocument(doc.name)}
+                          />
+                          <Label 
+                            htmlFor={`doc-${doc.id}`} 
+                            className="text-sm cursor-pointer flex-1"
+                          >
+                            {doc.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
-              );
-            })}
-
-            {/* Uncategorized Documents */}
-            {documentsByCategory.uncategorized.length > 0 && (
-              <AccordionItem value="uncategorized" className="border-b last:border-0">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50">
-                  <div className="flex items-center justify-between w-full pr-2">
-                    <span className="font-medium">Outros Documentos</span>
-                    <div className="flex items-center gap-2">
-                      {documentsByCategory.uncategorized.filter(d => 
-                        selectedDocuments.includes(d.name)
-                      ).length > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {documentsByCategory.uncategorized.filter(d => 
-                            selectedDocuments.includes(d.name)
-                          ).length}
-                        </Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {documentsByCategory.uncategorized.length} doc{documentsByCategory.uncategorized.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-3">
-                  <div className="space-y-2">
-                    {documentsByCategory.uncategorized.map((doc) => (
-                      <div key={doc.id} className="flex items-center space-x-3 py-1">
-                        <Checkbox
-                          id={`doc-${doc.id}`}
-                          checked={selectedDocuments.includes(doc.name)}
-                          onCheckedChange={() => handleToggleDocument(doc.name)}
-                        />
-                        <Label 
-                          htmlFor={`doc-${doc.id}`} 
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {doc.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
+              )}
+            </div>
           </Accordion>
         ) : (
           // Flat list when no categories exist
-          <div className="max-h-48 overflow-y-auto p-3 space-y-2">
+          <div className="max-h-64 overflow-y-auto p-3 space-y-2">
             {filteredDocuments.map((doc) => (
               <div key={doc.id} className="flex items-center space-x-3 py-1">
                 <Checkbox

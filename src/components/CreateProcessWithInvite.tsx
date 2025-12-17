@@ -392,7 +392,23 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
             onSelectionChange={setRequiredDocuments}
           />
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-blue-900 dark:text-blue-300">
+                  Convite por Email
+                </h4>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                  Após criar o processo, emails de convite serão automaticamente 
+                  enviados para {processClients.length > 0 ? 'os clientes' : 'o(s) cliente(s)'} com as instruções 
+                  para criar conta e acessar o processo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2">
             <Button
               type="button"
               variant="outline"
