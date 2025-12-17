@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare, Plus, Info, AlertCircle } from 'lucide-react';
+import { FileText, Download, Eye, Clock, CheckCircle, XCircle, Check, X, MessageSquare, Plus, Info, AlertCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -344,6 +344,39 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
     });
   };
 
+  const handleDeleteDocument = async (documentId: string, filePath: string, fileName: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o documento "${fileName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('documents')
+        .remove([filePath]);
+
+      if (storageError) {
+        console.error('Erro ao excluir do storage:', storageError);
+        // Continue to delete from database even if storage fails
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', documentId);
+
+      if (dbError) throw dbError;
+
+      toast.success('Documento excluído com sucesso');
+      await updateProcessProgress();
+      loadDocuments();
+    } catch (error) {
+      console.error('Erro ao excluir documento:', error);
+      toast.error('Erro ao excluir documento');
+    }
+  };
+
   const handleDialogConfirm = async () => {
     await updateProcessProgress();
     loadDocuments(); // Recarregar lista após ação
@@ -519,6 +552,15 @@ export default function DocumentList({ processId, refreshKey = 0 }: DocumentList
                        className="text-warning hover:bg-warning/10"
                      >
                        <MessageSquare className="h-4 w-4" />
+                     </Button>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleDeleteDocument(doc.id, doc.file_path, doc.file_name)}
+                       className="text-destructive hover:bg-destructive/10"
+                       title="Excluir documento"
+                     >
+                       <Trash2 className="h-4 w-4" />
                      </Button>
                   </>
                 )}
