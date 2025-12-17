@@ -311,118 +311,121 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
             Criar Novo Processo
           </Button>
         </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Mail className="h-5 w-5 mr-2" />
-            Criar Processo e Convidar Cliente
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="projectName">Nome do Processo *</Label>
-            <Input
-              id="projectName"
-              value={formData.projectName}
-              onChange={(e) =>
-                setFormData({ ...formData, projectName: e.target.value })
-              }
-              placeholder="Ex: Abertura de Empresa, Regularização Fiscal..."
-              required
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Digite o nome que identifica este processo/projeto
-            </p>
-          </div>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Mail className="h-5 w-5 mr-2" />
+              Criar Processo e Convidar Cliente
+            </DialogTitle>
+          </DialogHeader>
 
-          <ProcessClientsManager
-            clients={processClients}
-            onChange={setProcessClients}
-            companyId={company?.id}
-          />
-
-          <div>
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              placeholder="Descreva o processo..."
-              rows={3}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="priority">Prioridade</Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, priority: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Alta">Alta</SelectItem>
-                  <SelectItem value="Média">Média</SelectItem>
-                  <SelectItem value="Baixa">Baixa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="dueDate">Data de Vencimento</Label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
-                }
-              />
-            </div>
-          </div>
-
-          {/* Document Types Selection */}
-          <DocumentSelector
-            selectedDocuments={requiredDocuments}
-            onSelectionChange={setRequiredDocuments}
-          />
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <div className="flex items-start space-x-2">
-              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+          <form onSubmit={handleSubmit} className="flex flex-col min-h-0 gap-4">
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
               <div>
-                <h4 className="font-medium text-blue-900 dark:text-blue-300">
-                  Convite por Email
-                </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                  Após criar o processo, emails de convite serão automaticamente 
-                  enviados para {processClients.length > 0 ? 'os clientes' : 'o(s) cliente(s)'} com as instruções 
-                  para criar conta e acessar o processo.
+                <Label htmlFor="projectName">Nome do Processo *</Label>
+                <Input
+                  id="projectName"
+                  value={formData.projectName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, projectName: e.target.value })
+                  }
+                  placeholder="Ex: Abertura de Empresa, Regularização Fiscal..."
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Digite o nome que identifica este processo/projeto
                 </p>
               </div>
-            </div>
-          </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Criando..." : "Criar Processo e Enviar Convite"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
+              <ProcessClientsManager
+                clients={processClients}
+                onChange={setProcessClients}
+                companyId={company?.id}
+              />
+
+              <div>
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Descreva o processo..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="priority">Prioridade</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, priority: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Alta">Alta</SelectItem>
+                      <SelectItem value="Média">Média</SelectItem>
+                      <SelectItem value="Baixa">Baixa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="dueDate">Data de Vencimento</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, dueDate: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Document Types Selection */}
+              <DocumentSelector
+                selectedDocuments={requiredDocuments}
+                onSelectionChange={setRequiredDocuments}
+              />
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-900 dark:text-blue-300">
+                      Convite por Email
+                    </h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                      Após criar o processo, emails de convite serão automaticamente
+                      enviados para {processClients.length > 0 ? "os clientes" : "o(s) cliente(s)"} com as instruções
+                      para criar conta e acessar o processo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Criando..." : "Criar Processo e Enviar Convite"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
     </Dialog>
 
     {/* Modal para mostrar link de convite */}
