@@ -160,7 +160,7 @@ export const TemplateEditor = ({
       processedContent = processedContent.replace(/\[QUALIFICAÇÃO_EMPRESA\]/gi, companyQualification);
       processedContent = processedContent.replace(/\[QUALIFICACAO_CLIENTE\]/gi, clientQualification);
       processedContent = processedContent.replace(/\[QUALIFICAÇÃO_CLIENTE\]/gi, clientQualification);
-      
+
       // Common contract variables - replace with full legal qualification
       processedContent = processedContent.replace(/\[EMPRESA\]/gi, companyQualification);
       processedContent = processedContent.replace(/\[CONTRATANTE\]/gi, companyQualification);
@@ -170,10 +170,12 @@ export const TemplateEditor = ({
       processedContent = processedContent.replace(/\[OUTORGADO\]/gi, clientQualification);
       processedContent = processedContent.replace(/\[PARTE_1\]/gi, companyQualification);
       processedContent = processedContent.replace(/\[PARTE_2\]/gi, clientQualification);
-      
+
+      // Back-compat: some templates use [CLIENTE] meaning the qualified party
+      processedContent = processedContent.replace(/\[CLIENTE\]/gi, clientQualification);
+
       // Replace common variables with validation
       processedContent = processedContent.replace(/\[CLIENTE_NOME\]/gi, processData.client_name || '[NOME NÃO INFORMADO]');
-      processedContent = processedContent.replace(/\[CLIENTE\]/gi, processData.client_name || '[NOME NÃO INFORMADO]');
       processedContent = processedContent.replace(/\[CLIENTE_EMAIL\]/gi, processData.client_email || '[EMAIL NÃO INFORMADO]');
       processedContent = processedContent.replace(/\[CPF_CNPJ\]/gi, processData.cpf_cnpj || '[CPF/CNPJ NÃO INFORMADO]');
       processedContent = processedContent.replace(/\[PROCESSO_NOME\]/gi, processData.project_name || '[PROCESSO SEM NOME]');
