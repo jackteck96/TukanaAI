@@ -30,6 +30,7 @@ interface DocumentCategory {
   id: string;
   name: string;
   display_order: number;
+  is_global?: boolean;
 }
 
 const CadastroTiposDocumentos = () => {
@@ -76,17 +77,31 @@ const CadastroTiposDocumentos = () => {
   };
 
   const fetchCategories = async () => {
-    if (!company?.id) return;
-
     try {
-      const { data, error } = await supabase
-        .from('document_categories')
+      // Fetch global categories
+      const { data: globalData, error: globalError } = await supabase
+        .from('global_document_categories')
         .select('*')
-        .eq('company_id', company.id)
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      setCategories(data || []);
+      if (globalError) throw globalError;
+
+      // Fetch company-specific categories
+      let companyCategories: DocumentCategory[] = [];
+      if (company?.id) {
+        const { data: companyData, error: companyError } = await supabase
+          .from('document_categories')
+          .select('*')
+          .eq('company_id', company.id)
+          .order('display_order', { ascending: true });
+
+        if (companyError) throw companyError;
+        companyCategories = (companyData || []).map(c => ({ ...c, is_global: false }));
+      }
+
+      // Merge global and company categories
+      const globalCategories = (globalData || []).map(c => ({ ...c, is_global: true }));
+      setCategories([...globalCategories, ...companyCategories]);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -234,10 +249,10 @@ const CadastroTiposDocumentos = () => {
     setIsModalOpen(true);
   };
 
-  const getCategoryName = (categoryId: string | null) => {
+  const getCategoryInfo = (categoryId: string | null) => {
     if (!categoryId) return null;
     const category = categories.find(c => c.id === categoryId);
-    return category?.name;
+    return category ? { name: category.name, is_global: category.is_global } : null;
   };
 
   if (loading) {
@@ -323,7 +338,22 @@ const CadastroTiposDocumentos = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">Sem categoria</SelectItem>
-                          {categories.map(category => (
+                          {categories.filter(c => c.is_global).length > 0 && (
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50">
+                              Categorias Globais
+                            </div>
+                          )}
+                          {categories.filter(c => c.is_global).map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                          {categories.filter(c => !c.is_global).length > 0 && (
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50">
+                              Categorias da Empresa
+                            </div>
+                          )}
+                          {categories.filter(c => !c.is_global).map(category => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
                             </SelectItem>
@@ -402,10 +432,14 @@ const CadastroTiposDocumentos = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-lg">{tipo.name}</CardTitle>
-                        {getCategoryName(tipo.category_id) && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
+                        {getCategoryInfo(tipo.category_id) && (
+                          <span className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${
+                            getCategoryInfo(tipo.category_id)?.is_global 
+                              ? 'bg-primary/10 text-primary' 
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
                             <Folder className="w-3 h-3" />
-                            {getCategoryName(tipo.category_id)}
+                            {getCategoryInfo(tipo.category_id)?.name}
                           </span>
                         )}
                       </div>

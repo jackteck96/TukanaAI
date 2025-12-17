@@ -29,7 +29,7 @@ import {
   FolderOpen,
   Building2
 } from "lucide-react";
-import DocumentCategoryManager from "@/components/DocumentCategoryManager";
+import GlobalDocumentCategoryManager from "@/components/GlobalDocumentCategoryManager";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -784,49 +784,10 @@ const AdminDashboard = () => {
           {/* Document Categories Tab */}
           <TabsContent value="categories" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Categorias de Documentos por Empresa</h2>
+              <h2 className="text-2xl font-semibold">Categorias Globais de Documentos</h2>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Selecione uma Empresa
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="companySelect">Empresa</Label>
-                  <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
-                    <SelectTrigger id="companySelect">
-                      <SelectValue placeholder="Selecione uma empresa para gerenciar categorias" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedCompanyId && (
-                  <div className="mt-6">
-                    <DocumentCategoryManager 
-                      key={selectedCompanyId}
-                      companyId={selectedCompanyId}
-                    />
-                  </div>
-                )}
-
-                {!selectedCompanyId && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Selecione uma empresa acima para gerenciar suas categorias de documentos.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <GlobalDocumentCategoryManager />
           </TabsContent>
 
           {/* Terms of Service Tab */}
