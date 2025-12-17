@@ -749,6 +749,41 @@ export type Database = {
         }
         Relationships: []
       }
+      document_categories: {
+        Row: {
+          company_id: string
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_categories_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_reports: {
         Row: {
           approved_documents: number
@@ -856,6 +891,7 @@ export type Database = {
       }
       document_types: {
         Row: {
+          category_id: string | null
           company_id: string
           created_at: string
           has_expiration_date: boolean
@@ -867,6 +903,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category_id?: string | null
           company_id: string
           created_at?: string
           has_expiration_date?: boolean
@@ -878,6 +915,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category_id?: string | null
           company_id?: string
           created_at?: string
           has_expiration_date?: boolean
@@ -888,7 +926,15 @@ export type Database = {
           requires_issuing_location?: boolean
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "document_types_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "document_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       document_uploads: {
         Row: {
@@ -1075,6 +1121,7 @@ export type Database = {
       }
       global_document_types: {
         Row: {
+          category_id: string | null
           created_at: string
           has_expiration_date: boolean
           has_issue_date: boolean
@@ -1085,6 +1132,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           has_expiration_date?: boolean
           has_issue_date?: boolean
@@ -1095,6 +1143,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           has_expiration_date?: boolean
           has_issue_date?: boolean

@@ -5,14 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
-import { ClientAutocomplete } from "./ClientAutocomplete";
 import { ProcessClientsManager, ProcessClient } from "./ProcessClientsManager";
+import DocumentSelector from "./DocumentSelector";
 
 interface CreateProcessForm {
   projectName: string;
@@ -28,16 +27,11 @@ interface CreateProcessWithInviteProps {
 const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInviteProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [requiredDocuments, setRequiredDocuments] = useState<string[]>([]);
   const [showInviteLink, setShowInviteLink] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [clientName, setClientName] = useState("");
-  const [availableDocuments, setAvailableDocuments] = useState<string[]>([]);
-  const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [processClients, setProcessClients] = useState<ProcessClient[]>([]);
-  const [showOtherInput, setShowOtherInput] = useState(false);
-  const [otherDocumentName, setOtherDocumentName] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
   const { company } = useCompany();
@@ -49,76 +43,6 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     dueDate: "",
   });
 
-  // Carregar tipos de documentos da empresa e globais
-  useEffect(() => {
-    const fetchDocumentTypes = async () => {
-      if (!company?.id) return;
-      
-      setLoadingDocuments(true);
-      try {
-        // Buscar tipos de documentos da empresa
-        const { data: companyTypes, error: companyError } = await supabase
-          .from('document_types')
-          .select('name')
-          .eq('company_id', company.id)
-          .order('name');
-
-        // Buscar tipos globais
-        const { data: globalTypes, error: globalError } = await supabase
-          .from('global_document_types')
-          .select('name')
-          .order('name');
-
-        if (companyError) {
-          console.error('Erro ao buscar tipos da empresa:', companyError);
-        }
-
-        if (globalError) {
-          console.error('Erro ao buscar tipos globais:', globalError);
-        }
-
-        // Combinar e remover duplicatas
-        const companyTypeNames = companyTypes?.map(t => t.name) || [];
-        const globalTypeNames = globalTypes?.map(t => t.name) || [];
-        const allTypes = [...new Set([...companyTypeNames, ...globalTypeNames])];
-
-        // Fallback para lista padrão se não houver tipos cadastrados
-        if (allTypes.length === 0) {
-          setAvailableDocuments([
-            "RG - Registro Geral",
-            "CPF - Cadastro de Pessoa Física", 
-            "Comprovante de Residência",
-            "CNPJ - Cadastro Nacional da Pessoa Jurídica",
-            "Carteira de Trabalho",
-            "Contrato Social", 
-            "Inscrição Estadual", 
-            "Alvará de Funcionamento",
-            "Declaração de Imposto de Renda", 
-            "Comprovante de Renda", 
-            "Certidão de Nascimento",
-            "Certidão de Casamento", 
-            "Procuração", 
-            "Contrato de Prestação de Serviços"
-          ]);
-        } else {
-          setAvailableDocuments(allTypes.sort());
-        }
-      } catch (error) {
-        console.error('Erro ao carregar tipos de documentos:', error);
-        // Usar lista padrão em caso de erro
-        setAvailableDocuments([
-          "RG - Registro Geral",
-          "CPF - Cadastro de Pessoa Física", 
-          "Comprovante de Residência"
-        ]);
-      } finally {
-        setLoadingDocuments(false);
-      }
-    };
-
-    fetchDocumentTypes();
-  }, [company?.id]);
-
   const resetForm = () => {
     setFormData({
       projectName: "",
@@ -128,17 +52,6 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     });
     setProcessClients([]);
     setRequiredDocuments([]);
-    setSearchTerm("");
-    setShowOtherInput(false);
-    setOtherDocumentName("");
-  };
-
-  const handleAddOtherDocument = () => {
-    if (otherDocumentName.trim() && !requiredDocuments.includes(otherDocumentName.trim())) {
-      setRequiredDocuments([...requiredDocuments, otherDocumentName.trim()]);
-      setOtherDocumentName("");
-      setShowOtherInput(false);
-    }
   };
 
   const copyToClipboard = async (text: string) => {
@@ -474,136 +387,10 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           </div>
 
           {/* Document Types Selection */}
-          <div>
-            <Label>Documentos Necessários</Label>
-            <div className="space-y-3">
-              <div className="relative">
-                <Input
-                  placeholder="Buscar documentos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pr-8"
-                />
-              </div>
-              <div className="max-h-40 overflow-y-auto border rounded-lg p-3 bg-muted/30">
-                {loadingDocuments ? (
-                  <div className="flex items-center justify-center py-4">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    <span className="ml-2 text-sm text-muted-foreground">Carregando tipos de documentos...</span>
-                  </div>
-                ) : availableDocuments.length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">Nenhum tipo de documento encontrado.</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Cadastre tipos de documentos em <strong>Configurações → Tipos de Documentos</strong>
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {availableDocuments
-                      .filter(doc => doc.toLowerCase().includes(searchTerm.toLowerCase()))
-                      .map((doc) => (
-                      <div key={doc} className="flex items-center space-x-2 py-1">
-                        <input
-                          type="checkbox"
-                          id={`doc-${doc}`}
-                          checked={requiredDocuments.includes(doc)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setRequiredDocuments([...requiredDocuments, doc]);
-                            } else {
-                              setRequiredDocuments(requiredDocuments.filter(d => d !== doc));
-                            }
-                          }}
-                          className="rounded border-border"
-                        />
-                        <Label htmlFor={`doc-${doc}`} className="text-sm cursor-pointer flex-1">
-                          {doc}
-                        </Label>
-                      </div>
-                    ))}
-                    
-                    {/* Opção "Outro" */}
-                    <div className="flex items-center space-x-2 py-1 border-t mt-2 pt-2">
-                      <input
-                        type="checkbox"
-                        id="doc-outro"
-                        checked={showOtherInput}
-                        onChange={(e) => setShowOtherInput(e.target.checked)}
-                        className="rounded border-border"
-                      />
-                      <Label htmlFor="doc-outro" className="text-sm cursor-pointer flex-1 font-medium">
-                        Outro (especificar)
-                      </Label>
-                    </div>
-                  </>
-                )}
-              </div>
-              
-              {/* Campo para documento personalizado */}
-              {showOtherInput && (
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Digite o nome do documento..."
-                    value={otherDocumentName}
-                    onChange={(e) => setOtherDocumentName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddOtherDocument();
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddOtherDocument}
-                    disabled={!otherDocumentName.trim()}
-                    size="sm"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              
-              {requiredDocuments.length > 0 && (
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">
-                    {requiredDocuments.length} documento(s) selecionado(s):
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {requiredDocuments.map((doc) => (
-                      <Badge key={doc} variant="secondary" className="text-xs flex items-center gap-1">
-                        {doc}
-                        <button
-                          type="button"
-                          onClick={() => setRequiredDocuments(requiredDocuments.filter(d => d !== doc))}
-                          className="ml-1 hover:text-destructive"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <div className="flex items-start space-x-2">
-              <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-blue-900 dark:text-blue-300">
-                  Convite por Email
-                </h4>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                  Após criar o processo, emails de convite serão automaticamente 
-                  enviados para {processClients.length > 0 ? 'os clientes' : 'o(s) cliente(s)'} com as instruções 
-                  para criar conta e acessar o processo.
-                </p>
-              </div>
-            </div>
-          </div>
+          <DocumentSelector
+            selectedDocuments={requiredDocuments}
+            onSelectionChange={setRequiredDocuments}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button

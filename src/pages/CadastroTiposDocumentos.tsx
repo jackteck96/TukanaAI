@@ -4,14 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Edit, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Plus, Edit, Trash2, Folder } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
+import DocumentCategoryManager from "@/components/DocumentCategoryManager";
 
 interface TipoDocumento {
   id: string;
@@ -20,6 +23,13 @@ interface TipoDocumento {
   has_expiration_date: boolean;
   requires_issuing_location: boolean;
   notes: string;
+  category_id: string | null;
+}
+
+interface DocumentCategory {
+  id: string;
+  name: string;
+  display_order: number;
 }
 
 const CadastroTiposDocumentos = () => {
@@ -28,6 +38,7 @@ const CadastroTiposDocumentos = () => {
   const { user } = useAuth();
   const { company } = useCompany();
   const [tiposDocumentos, setTiposDocumentos] = useState<TipoDocumento[]>([]);
+  const [categories, setCategories] = useState<DocumentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTipo, setEditingTipo] = useState<TipoDocumento | null>(null);
@@ -36,7 +47,8 @@ const CadastroTiposDocumentos = () => {
     has_issue_date: false,
     has_expiration_date: false,
     requires_issuing_location: false,
-    notes: ""
+    notes: "",
+    category_id: ""
   });
 
   const fetchDocumentTypes = async () => {
@@ -63,8 +75,26 @@ const CadastroTiposDocumentos = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    if (!company?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('document_categories')
+        .select('*')
+        .eq('company_id', company.id)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   useEffect(() => {
     fetchDocumentTypes();
+    fetchCategories();
   }, [company?.id]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -96,16 +126,19 @@ const CadastroTiposDocumentos = () => {
     }
 
     try {
+      const payload = {
+        name: formData.name,
+        has_issue_date: formData.has_issue_date,
+        has_expiration_date: formData.has_expiration_date,
+        requires_issuing_location: formData.requires_issuing_location,
+        notes: formData.notes,
+        category_id: formData.category_id || null
+      };
+
       if (editingTipo) {
         const { error } = await supabase
           .from('document_types')
-          .update({
-            name: formData.name,
-            has_issue_date: formData.has_issue_date,
-            has_expiration_date: formData.has_expiration_date,
-            requires_issuing_location: formData.requires_issuing_location,
-            notes: formData.notes
-          })
+          .update(payload)
           .eq('id', editingTipo.id);
 
         if (error) throw error;
@@ -118,11 +151,7 @@ const CadastroTiposDocumentos = () => {
         const { error } = await supabase
           .from('document_types')
           .insert({
-            name: formData.name,
-            has_issue_date: formData.has_issue_date,
-            has_expiration_date: formData.has_expiration_date,
-            requires_issuing_location: formData.requires_issuing_location,
-            notes: formData.notes,
+            ...payload,
             company_id: company.id
           });
 
@@ -139,7 +168,8 @@ const CadastroTiposDocumentos = () => {
         has_issue_date: false,
         has_expiration_date: false,
         requires_issuing_location: false,
-        notes: ""
+        notes: "",
+        category_id: ""
       });
       setEditingTipo(null);
       setIsModalOpen(false);
@@ -161,7 +191,8 @@ const CadastroTiposDocumentos = () => {
       has_issue_date: tipo.has_issue_date,
       has_expiration_date: tipo.has_expiration_date,
       requires_issuing_location: tipo.requires_issuing_location,
-      notes: tipo.notes
+      notes: tipo.notes,
+      category_id: tipo.category_id || ""
     });
     setIsModalOpen(true);
   };
@@ -197,9 +228,16 @@ const CadastroTiposDocumentos = () => {
       has_issue_date: false,
       has_expiration_date: false,
       requires_issuing_location: false,
-      notes: ""
+      notes: "",
+      category_id: ""
     });
     setIsModalOpen(true);
+  };
+
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return null;
+    const category = categories.find(c => c.id === categoryId);
+    return category?.name;
   };
 
   if (loading) {
@@ -230,174 +268,215 @@ const CadastroTiposDocumentos = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Cadastro de Tipos de Documentos
+              Tipos de Documentos
             </h1>
             <p className="text-muted-foreground mt-2">
-              Gerencie os tipos de documentos disponíveis no sistema
+              Gerencie categorias e tipos de documentos
             </p>
           </div>
         </div>
 
-        <div className="flex justify-end mb-6">
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={openNewModal} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Novo Tipo de Documento
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingTipo ? 'Editar' : 'Cadastrar'} Tipo de Documento
-                </DialogTitle>
-                <DialogDescription>
-                  {editingTipo ? 'Atualize' : 'Adicione'} as informações do tipo de documento
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nome do Documento</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="Ex: RG, CPF, CNH..."
-                    required
-                  />
-                </div>
+        <Tabs defaultValue="documents" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="documents">Tipos de Documentos</TabsTrigger>
+            <TabsTrigger value="categories">Categorias</TabsTrigger>
+          </TabsList>
 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="has_issue_date"
-                      checked={formData.has_issue_date}
-                      onCheckedChange={(checked) => 
-                        handleInputChange('has_issue_date', checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="has_issue_date">Possui data de emissão</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="has_expiration_date"
-                      checked={formData.has_expiration_date}
-                      onCheckedChange={(checked) => 
-                        handleInputChange('has_expiration_date', checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="has_expiration_date">Possui data de expiração</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="requires_issuing_location"
-                      checked={formData.requires_issuing_location}
-                      onCheckedChange={(checked) => 
-                        handleInputChange('requires_issuing_location', checked as boolean)
-                      }
-                    />
-                    <Label htmlFor="requires_issuing_location">Requer local de emissão</Label>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
-                    placeholder="Informações adicionais sobre o documento..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1">
-                    {editingTipo ? 'Atualizar' : 'Cadastrar'}
+          <TabsContent value="documents" className="space-y-6">
+            <div className="flex justify-end">
+              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={openNewModal} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Novo Tipo de Documento
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingTipo ? 'Editar' : 'Cadastrar'} Tipo de Documento
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingTipo ? 'Atualize' : 'Adicione'} as informações do tipo de documento
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Nome do Documento</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        placeholder="Ex: RG, CPF, CNH..."
+                        required
+                      />
+                    </div>
 
-        <div className="grid gap-4">
-          {tiposDocumentos.map((tipo) => (
-            <Card key={tipo.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{tipo.name}</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit(tipo)}
-                      className="h-8 w-8 hover:bg-accent"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(tipo.id)}
-                      className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {tipo.has_issue_date && (
-                      <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
-                        Data de Emissão
-                      </span>
-                    )}
-                    {tipo.has_expiration_date && (
-                      <span className="px-2 py-1 bg-accent/10 text-accent-foreground text-xs rounded-full">
-                        Data de Expiração
-                      </span>
-                    )}
-                    {tipo.requires_issuing_location && (
-                      <span className="px-2 py-1 bg-secondary/50 text-secondary-foreground text-xs rounded-full">
-                        Local de Emissão
-                      </span>
-                    )}
-                  </div>
-                  {tipo.notes && (
-                    <p className="text-sm text-muted-foreground">
-                      {tipo.notes}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <div>
+                      <Label htmlFor="category">Categoria</Label>
+                      <Select
+                        value={formData.category_id}
+                        onValueChange={(value) => handleInputChange('category_id', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria (opcional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Sem categoria</SelectItem>
+                          {categories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-        {tiposDocumentos.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <p className="text-muted-foreground">
-                Nenhum tipo de documento cadastrado ainda.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Clique em "Novo Tipo de Documento" para começar.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="has_issue_date"
+                          checked={formData.has_issue_date}
+                          onCheckedChange={(checked) => 
+                            handleInputChange('has_issue_date', checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="has_issue_date">Possui data de emissão</Label>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="has_expiration_date"
+                          checked={formData.has_expiration_date}
+                          onCheckedChange={(checked) => 
+                            handleInputChange('has_expiration_date', checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="has_expiration_date">Possui data de expiração</Label>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="requires_issuing_location"
+                          checked={formData.requires_issuing_location}
+                          onCheckedChange={(checked) => 
+                            handleInputChange('requires_issuing_location', checked as boolean)
+                          }
+                        />
+                        <Label htmlFor="requires_issuing_location">Requer local de emissão</Label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="notes">Observações</Label>
+                      <Textarea
+                        id="notes"
+                        value={formData.notes}
+                        onChange={(e) => handleInputChange('notes', e.target.value)}
+                        placeholder="Informações adicionais sobre o documento..."
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button type="submit" className="flex-1">
+                        {editingTipo ? 'Atualizar' : 'Cadastrar'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsModalOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid gap-4">
+              {tiposDocumentos.map((tipo) => (
+                <Card key={tipo.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{tipo.name}</CardTitle>
+                        {getCategoryName(tipo.category_id) && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded-full">
+                            <Folder className="w-3 h-3" />
+                            {getCategoryName(tipo.category_id)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(tipo)}
+                          className="h-8 w-8 hover:bg-accent"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(tipo.id)}
+                          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {tipo.has_issue_date && (
+                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                            Data de Emissão
+                          </span>
+                        )}
+                        {tipo.has_expiration_date && (
+                          <span className="px-2 py-1 bg-accent/10 text-accent-foreground text-xs rounded-full">
+                            Data de Expiração
+                          </span>
+                        )}
+                        {tipo.requires_issuing_location && (
+                          <span className="px-2 py-1 bg-secondary/50 text-secondary-foreground text-xs rounded-full">
+                            Local de Emissão
+                          </span>
+                        )}
+                      </div>
+                      {tipo.notes && (
+                        <p className="text-sm text-muted-foreground">
+                          {tipo.notes}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {tiposDocumentos.length === 0 && (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Nenhum tipo de documento cadastrado ainda.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Clique em "Novo Tipo de Documento" para começar.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="categories">
+            <DocumentCategoryManager onCategoriesChange={fetchCategories} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
