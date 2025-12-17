@@ -25,8 +25,11 @@ import {
   Copy,
   UserPlus,
   Crown,
-  Mail
+  Mail,
+  FolderOpen,
+  Building2
 } from "lucide-react";
+import DocumentCategoryManager from "@/components/DocumentCategoryManager";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -152,6 +155,9 @@ const AdminDashboard = () => {
 
   const [loading, setLoading] = useState(true);
 
+  // States for company categories management
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
 
   // Categories and document options
   const categories = [
@@ -183,12 +189,27 @@ const AdminDashboard = () => {
         fetchDocumentTypes(),
         fetchTemplates(),
         fetchTrainingData(),
-        fetchTrainingCases()
+        fetchTrainingCases(),
+        fetchCompanies()
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name')
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      setCompanies(data || []);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
     }
   };
 
@@ -637,10 +658,14 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="admins" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="admins" className="flex items-center gap-2">
               <Crown className="w-4 h-4" />
               Administradores
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="flex items-center gap-2">
+              <FolderOpen className="w-4 h-4" />
+              Categorias
             </TabsTrigger>
             <TabsTrigger value="terms" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -754,6 +779,54 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Document Categories Tab */}
+          <TabsContent value="categories" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Categorias de Documentos por Empresa</h2>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Selecione uma Empresa
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="companySelect">Empresa</Label>
+                  <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
+                    <SelectTrigger id="companySelect">
+                      <SelectValue placeholder="Selecione uma empresa para gerenciar categorias" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedCompanyId && (
+                  <div className="mt-6">
+                    <DocumentCategoryManager 
+                      key={selectedCompanyId}
+                      companyId={selectedCompanyId}
+                    />
+                  </div>
+                )}
+
+                {!selectedCompanyId && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Selecione uma empresa acima para gerenciar suas categorias de documentos.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Terms of Service Tab */}
