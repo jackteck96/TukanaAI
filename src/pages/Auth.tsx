@@ -315,10 +315,10 @@ const Auth = () => {
                 <img src={logo} alt="Fuzen Logo" className="h-16 w-auto" />
               </div>
               <CardTitle className="text-2xl font-bold">
-                Entrar na Plataforma
+                Bem-vindo à Fuzen
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Acesse sua conta para gerenciar processos jurídicos
+                Acesse sua conta para organizar, acompanhar e centralizar documentos
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -383,22 +383,25 @@ const Auth = () => {
 
               <Separator className="my-6" />
               
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-4">
+              <div className="text-center space-y-3">
+                <p className="text-sm text-muted-foreground">
                   Não tem uma conta?{' '}
-                  <Link to="/signup" className="text-primary hover:underline">
-                    Criar conta empresarial
+                  <Link to="/signup" className="text-primary font-medium hover:underline">
+                    Criar conta para minha empresa
                   </Link>
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Menos planilhas. Mais controle.
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Ao fazer login, você concorda com nossos{' '}
-                  <a href="#" className="text-primary hover:underline">
+                  <Link to="/termos-de-uso" className="text-primary hover:underline">
                     Termos de Uso
-                  </a>{' '}
+                  </Link>{' '}
                   e{' '}
-                  <a href="#" className="text-primary hover:underline">
+                  <Link to="/politica-privacidade" className="text-primary hover:underline">
                     Política de Privacidade
-                  </a>
+                  </Link>
                 </p>
               </div>
             </CardContent>
