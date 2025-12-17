@@ -982,14 +982,14 @@ const AdminDashboard = () => {
                     <div>
                       <Label htmlFor="category">Categoria</Label>
                       <Select
-                        value={docTypeForm.category_id}
-                        onValueChange={(value) => setDocTypeForm(prev => ({ ...prev, category_id: value }))}
+                        value={docTypeForm.category_id || "__none__"}
+                        onValueChange={(value) => setDocTypeForm(prev => ({ ...prev, category_id: value === "__none__" ? "" : value }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria (opcional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Sem categoria</SelectItem>
+                          <SelectItem value="__none__">Sem categoria</SelectItem>
                           {globalCategories.map(category => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}
