@@ -5,15 +5,28 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Upload, FileText } from 'lucide-react';
+import { Loader2, Upload, FileText, Search, Globe } from 'lucide-react';
 import InternalSignatureManager from './InternalSignatureManager';
+import jsPDF from 'jspdf';
 
 interface Client {
   client_email: string;
   client_name: string;
+}
+
+interface Template {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  variables: string[];
+  is_global?: boolean;
 }
 
 interface StandaloneDocumentUploadProps {
@@ -37,6 +50,16 @@ export const StandaloneDocumentUpload = ({
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [isClientUser, setIsClientUser] = useState(false);
   const [userProfile, setUserProfile] = useState<{ email: string; full_name: string } | null>(null);
+  
+  // Tab de origem: upload ou modelo
+  const [sourceTab, setSourceTab] = useState<'upload' | 'template'>('upload');
+  
+  // Templates
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [templateVariables, setTemplateVariables] = useState<Record<string, string>>({});
+  const [templateSearch, setTemplateSearch] = useState('');
   
   const [formData, setFormData] = useState({
     client_email: '',
@@ -64,6 +87,10 @@ export const StandaloneDocumentUpload = ({
     setShowSignatureModal(false);
     setShowSuccessStep(false);
     setLoading(false);
+    setSourceTab('upload');
+    setSelectedTemplate(null);
+    setTemplateVariables({});
+    setTemplateSearch('');
   };
 
   useEffect(() => {
@@ -71,13 +98,60 @@ export const StandaloneDocumentUpload = ({
       // Ao abrir, garantir que estamos no passo inicial
       setShowSuccessStep(false);
       setShowSignatureModal(false);
-      // Carregar clientes
+      // Carregar clientes e templates
       loadClients();
+      loadTemplates();
     } else {
       // Ao fechar, resetar fluxo por completo
       resetSignatureFlow();
     }
   }, [open]);
+
+  const loadTemplates = async () => {
+    if (!user) return;
+    
+    setLoadingTemplates(true);
+    try {
+      // Fetch global templates
+      const { data: globalTemplates, error: globalError } = await supabase
+        .from('global_document_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('title');
+      
+      if (globalError) console.error('Erro ao carregar templates globais:', globalError);
+
+      // Fetch company templates (need company_id first)
+      let companyTemplates: any[] = [];
+      if (companyId) {
+        const { data, error } = await supabase
+          .from('company_document_templates')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('is_active', true)
+          .order('title');
+        
+        if (error) console.error('Erro ao carregar templates da empresa:', error);
+        companyTemplates = data || [];
+      }
+
+      const global = (globalTemplates || []).map(t => ({ ...t, is_global: true }));
+      const company = companyTemplates.map(t => ({ ...t, is_global: false }));
+      
+      setTemplates([...company, ...global]);
+    } catch (error) {
+      console.error('Erro ao carregar templates:', error);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  // Recarregar templates quando companyId mudar
+  useEffect(() => {
+    if (open && companyId) {
+      loadTemplates();
+    }
+  }, [companyId]);
 
   const loadClients = async () => {
     if (!user) return;
@@ -224,11 +298,134 @@ export const StandaloneDocumentUpload = ({
     }
   };
 
-  const handleSubmit = async () => {
-    if (!formData.client_email || !formData.file) {
+  // Selecionar um template
+  const handleSelectTemplate = (template: Template) => {
+    setSelectedTemplate(template);
+    setFormData(prev => ({
+      ...prev,
+      document_name: template.title
+    }));
+    // Inicializar variáveis do template
+    const vars: Record<string, string> = {};
+    template.variables.forEach(v => {
+      vars[v] = '';
+    });
+    setTemplateVariables(vars);
+  };
+
+  // Gerar PDF a partir do template
+  const generatePdfFromTemplate = async (): Promise<File | null> => {
+    if (!selectedTemplate) return null;
+
+    try {
+      let content = selectedTemplate.content;
+      
+      // Substituir variáveis no conteúdo
+      Object.entries(templateVariables).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        content = content.replace(regex, value || `[${key}]`);
+      });
+
+      // Criar PDF
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      
+      // Título
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(selectedTemplate.title, margin, 25);
+      
+      // Linha separadora
+      pdf.setDrawColor(200);
+      pdf.line(margin, 30, pageWidth - margin, 30);
+      
+      // Conteúdo
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      
+      const lines = pdf.splitTextToSize(content, maxWidth);
+      let yPosition = 40;
+      const lineHeight = 6;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      for (const line of lines) {
+        if (yPosition > pageHeight - 20) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        pdf.text(line, margin, yPosition);
+        yPosition += lineHeight;
+      }
+
+      // Converter para File
+      const pdfBlob = pdf.output('blob');
+      const fileName = `${selectedTemplate.title.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+      return new File([pdfBlob], fileName, { type: 'application/pdf' });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
       toast({
         title: 'Erro',
-        description: 'Preencha todos os campos obrigatórios e selecione um arquivo',
+        description: 'Falha ao gerar PDF do modelo',
+        variant: 'destructive'
+      });
+      return null;
+    }
+  };
+
+  // Obter preview do conteúdo do template
+  const getTemplatePreview = () => {
+    if (!selectedTemplate) return '';
+    let content = selectedTemplate.content;
+    Object.entries(templateVariables).forEach(([key, value]) => {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+      content = content.replace(regex, value || `[${key}]`);
+    });
+    return content;
+  };
+
+  const filteredTemplates = templates.filter(t =>
+    t.title.toLowerCase().includes(templateSearch.toLowerCase()) ||
+    t.category.toLowerCase().includes(templateSearch.toLowerCase())
+  );
+
+  const getCategoriaColor = (categoria: string) => {
+    const colors: Record<string, string> = {
+      "Contrato": "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
+      "Procuração": "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
+      "Certidão": "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
+      "Declaração": "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400",
+      "Petição": "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
+    };
+    return colors[categoria] || "bg-muted text-muted-foreground";
+  };
+
+  const handleSubmit = async () => {
+    // Validar cliente
+    if (!formData.client_email) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione um cliente',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Validar arquivo ou template
+    if (sourceTab === 'upload' && !formData.file) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione um arquivo',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (sourceTab === 'template' && !selectedTemplate) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione um modelo de documento',
         variant: 'destructive'
       });
       return;
@@ -259,14 +456,28 @@ export const StandaloneDocumentUpload = ({
 
     setLoading(true);
     try {
+      // Determinar o arquivo a ser enviado
+      let fileToUpload: File;
+      
+      if (sourceTab === 'template') {
+        const generatedPdf = await generatePdfFromTemplate();
+        if (!generatedPdf) {
+          setLoading(false);
+          return;
+        }
+        fileToUpload = generatedPdf;
+      } else {
+        fileToUpload = formData.file!;
+      }
+
       // Upload do arquivo para o storage
-      const fileExt = formData.file.name.split('.').pop();
+      const fileExt = fileToUpload.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `standalone-signatures/${targetCompanyId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(filePath, formData.file);
+        .upload(filePath, fileToUpload);
 
       if (uploadError) throw uploadError;
 
@@ -279,8 +490,8 @@ export const StandaloneDocumentUpload = ({
           client_name: formData.client_name,
           document_name: formData.document_name,
           file_path: filePath,
-          file_type: formData.file.type,
-          file_size: formData.file.size,
+          file_type: fileToUpload.type,
+          file_size: fileToUpload.size,
           signature_deadline: formData.signature_deadline || null,
           signature_status: 'pending',
           uploaded_by: user!.id,
@@ -488,37 +699,177 @@ export const StandaloneDocumentUpload = ({
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="document_name">Nome do Documento *</Label>
-              <Input
-                id="document_name"
-                value={formData.document_name}
-                onChange={(e) => setFormData({ ...formData, document_name: e.target.value })}
-                placeholder="Ex: Contrato de Prestação de Serviços"
-              />
-            </div>
+            {/* Tabs para escolher entre upload de arquivo ou usar modelo */}
+            <Tabs value={sourceTab} onValueChange={(v) => setSourceTab(v as 'upload' | 'template')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Enviar Arquivo
+                </TabsTrigger>
+                <TabsTrigger value="template">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Usar Modelo
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="file">Arquivo *</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="file"
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx"
-                  className="flex-1"
-                />
-                {formData.file && (
-                  <span className="text-sm text-muted-foreground">
-                    {(formData.file.size / 1024 / 1024).toFixed(2)} MB
-                  </span>
+              {/* Tab de Upload */}
+              <TabsContent value="upload" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="document_name">Nome do Documento *</Label>
+                  <Input
+                    id="document_name"
+                    value={formData.document_name}
+                    onChange={(e) => setFormData({ ...formData, document_name: e.target.value })}
+                    placeholder="Ex: Contrato de Prestação de Serviços"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="file">Arquivo *</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="file"
+                      type="file"
+                      onChange={handleFileChange}
+                      accept=".pdf,.doc,.docx"
+                      className="flex-1"
+                    />
+                    {formData.file && (
+                      <span className="text-sm text-muted-foreground">
+                        {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Formatos aceitos: PDF, DOC, DOCX
+                  </p>
+                </div>
+              </TabsContent>
+
+              {/* Tab de Modelo */}
+              <TabsContent value="template" className="space-y-4 mt-4">
+                {!selectedTemplate ? (
+                  <>
+                    {/* Busca de templates */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        placeholder="Buscar modelos..."
+                        className="pl-10"
+                        value={templateSearch}
+                        onChange={(e) => setTemplateSearch(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Lista de templates */}
+                    <div className="max-h-60 overflow-y-auto space-y-2">
+                      {loadingTemplates ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                      ) : filteredTemplates.length === 0 ? (
+                        <div className="text-center py-8">
+                          <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Nenhum modelo encontrado</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Crie modelos em "Modelos de Documentos"
+                          </p>
+                        </div>
+                      ) : (
+                        filteredTemplates.map((template) => (
+                          <Card 
+                            key={template.id}
+                            className="hover:bg-accent cursor-pointer transition-colors"
+                            onClick={() => handleSelectTemplate(template)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-medium text-sm">{template.title}</span>
+                                    <Badge className={getCategoriaColor(template.category)} variant="secondary">
+                                      {template.category}
+                                    </Badge>
+                                    {template.is_global && (
+                                      <Badge variant="outline" className="text-xs">
+                                        <Globe className="h-3 w-3 mr-1" />
+                                        Global
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground line-clamp-1">
+                                    {template.content.substring(0, 80)}...
+                                  </p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Modelo selecionado */}
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium text-sm">{selectedTemplate.title}</p>
+                          <Badge className={getCategoriaColor(selectedTemplate.category)} variant="secondary">
+                            {selectedTemplate.category}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTemplate(null);
+                          setTemplateVariables({});
+                        }}
+                      >
+                        Trocar
+                      </Button>
+                    </div>
+
+                    {/* Variáveis do template */}
+                    {selectedTemplate.variables.length > 0 && (
+                      <div className="space-y-3">
+                        <Label>Preencha as variáveis:</Label>
+                        {selectedTemplate.variables.map((variable) => (
+                          <div key={variable} className="space-y-1">
+                            <Label htmlFor={variable} className="text-sm text-muted-foreground">
+                              {variable}
+                            </Label>
+                            <Input
+                              id={variable}
+                              value={templateVariables[variable] || ''}
+                              onChange={(e) => setTemplateVariables(prev => ({
+                                ...prev,
+                                [variable]: e.target.value
+                              }))}
+                              placeholder={`Digite o valor para ${variable}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Preview do conteúdo */}
+                    <div className="space-y-2">
+                      <Label>Preview do documento:</Label>
+                      <div className="max-h-40 overflow-y-auto p-3 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap">
+                        {getTemplatePreview().substring(0, 500)}
+                        {getTemplatePreview().length > 500 && '...'}
+                      </div>
+                    </div>
+                  </>
                 )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Formatos aceitos: PDF, DOC, DOCX
-              </p>
-            </div>
+              </TabsContent>
+            </Tabs>
 
+            {/* Campos comuns */}
             <div className="space-y-2">
               <Label htmlFor="deadline">Prazo para Assinatura</Label>
               <Input
