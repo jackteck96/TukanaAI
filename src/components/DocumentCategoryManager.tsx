@@ -18,9 +18,10 @@ interface DocumentCategory {
 
 interface DocumentCategoryManagerProps {
   onCategoriesChange?: () => void;
+  companyId?: string; // Optional: for platform admins to manage any company's categories
 }
 
-const DocumentCategoryManager = ({ onCategoriesChange }: DocumentCategoryManagerProps) => {
+const DocumentCategoryManager = ({ onCategoriesChange, companyId: propCompanyId }: DocumentCategoryManagerProps) => {
   const [categories, setCategories] = useState<DocumentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,14 +30,17 @@ const DocumentCategoryManager = ({ onCategoriesChange }: DocumentCategoryManager
   const { toast } = useToast();
   const { company } = useCompany();
 
+  // Use prop companyId if provided, otherwise use company context
+  const effectiveCompanyId = propCompanyId || company?.id;
+
   const fetchCategories = async () => {
-    if (!company?.id) return;
+    if (!effectiveCompanyId) return;
 
     try {
       const { data, error } = await supabase
         .from('document_categories')
         .select('*')
-        .eq('company_id', company.id)
+        .eq('company_id', effectiveCompanyId)
         .order('display_order', { ascending: true });
 
       if (error) throw error;
@@ -55,12 +59,12 @@ const DocumentCategoryManager = ({ onCategoriesChange }: DocumentCategoryManager
 
   useEffect(() => {
     fetchCategories();
-  }, [company?.id]);
+  }, [effectiveCompanyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!categoryName.trim() || !company?.id) {
+    if (!categoryName.trim() || !effectiveCompanyId) {
       toast({
         title: "Erro",
         description: "Nome da categoria é obrigatório",
@@ -87,7 +91,7 @@ const DocumentCategoryManager = ({ onCategoriesChange }: DocumentCategoryManager
           .from('document_categories')
           .insert({
             name: categoryName,
-            company_id: company.id,
+            company_id: effectiveCompanyId,
             display_order: maxOrder
           });
 
