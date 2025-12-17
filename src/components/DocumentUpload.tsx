@@ -227,26 +227,10 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
         throw dbError;
       }
 
-      // Tentar gerar relatório atualizado, mas não falhar se der erro
-      try {
-        console.log('Gerando relatório atualizado após upload de documento');
-        await supabase.rpc('generate_document_report', { 
-          process_uuid: processId 
-        });
-      } catch (reportError) {
-        console.error('Erro ao gerar relatório (não crítico):', reportError);
-      }
-
+      // Sucesso! Mostrar feedback imediato e fechar modal
       toast.success('Documento enviado com sucesso!');
       
-      // Atualizar progresso do processo
-      try {
-        await updateProcessProgress(processId);
-      } catch (e) {
-        console.warn('[DocumentUpload] Falha ao atualizar progresso (não crítico):', e);
-      }
-      
-      // Limpar formulário
+      // Limpar formulário imediatamente
       setFile(null);
       setDocumentType('');
       setUploaderName('');
@@ -261,9 +245,10 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
       // Callback para atualizar a interface pai
       onUploadComplete?.();
 
-      // Se requer assinatura, abrir automaticamente o modal de assinatura
+      // === Operações em background (não bloqueiam UI) ===
+      
+      // Se requer assinatura, abrir modal de assinatura
       if (requiresSignature && docData) {
-        // Pequeno delay para garantir que o modal principal fechou primeiro
         setTimeout(() => {
           setPreviewDocument({
             id: docData.id,
@@ -273,27 +258,33 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
           });
           setShowPreviewModal(true);
         }, 100);
-
-        // Enviar notificação e email para o destinatário
-        try {
-          const senderType = profile?.email === processData?.client_email ? 'client' : 'company';
-
-          await supabase.functions.invoke('send-document-notification', {
-            body: {
-              documentId: docData.id,
-              processId: processId,
-              documentName: docData.file_name,
-              senderType,
-              requiresSignature: true
-            }
-          });
-
-          console.log('Notificação de assinatura enviada com sucesso');
-        } catch (notificationError) {
-          console.error('Erro ao enviar notificação:', notificationError);
-          // Não bloquear o upload se a notificação falhar
-        }
       }
+
+      // Executar operações não-críticas em paralelo sem bloquear
+      Promise.allSettled([
+        // Gerar relatório
+        Promise.resolve(supabase.rpc('generate_document_report', { process_uuid: processId }))
+          .then(() => console.log('[DocumentUpload] Relatório gerado'))
+          .catch(e => console.warn('[DocumentUpload] Erro ao gerar relatório:', e)),
+        
+        // Atualizar progresso
+        updateProcessProgress(processId)
+          .then(() => console.log('[DocumentUpload] Progresso atualizado'))
+          .catch(e => console.warn('[DocumentUpload] Erro ao atualizar progresso:', e)),
+        
+        // Enviar notificação se requer assinatura
+        requiresSignature && docData ? supabase.functions.invoke('send-document-notification', {
+          body: {
+            documentId: docData.id,
+            processId: processId,
+            documentName: docData.file_name,
+            senderType: profile?.email === processData?.client_email ? 'client' : 'company',
+            requiresSignature: true
+          }
+        }).then(() => console.log('[DocumentUpload] Notificação enviada'))
+          .catch(e => console.warn('[DocumentUpload] Erro ao enviar notificação:', e))
+        : Promise.resolve()
+      ]);
 
     } catch (error) {
       console.error('Erro no upload:', error);
