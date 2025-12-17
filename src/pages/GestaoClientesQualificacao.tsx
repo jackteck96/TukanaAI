@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { 
   Building2, 
@@ -31,6 +30,8 @@ import { useCompany } from '@/contexts/CompanyContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import CreateClientDialog from '@/components/CreateClientDialog';
+import { CopyLegalQualificationButton } from '@/components/CopyLegalQualificationButton';
+import { LegalData } from '@/utils/legalQualification';
 
 interface Client {
   id: string;
@@ -65,6 +66,7 @@ const GestaoClientesQualificacao = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [inviteLink, setInviteLink] = useState<string>('');
+  const [clientLegalData, setClientLegalData] = useState<LegalData | null>(null);
 
   const fetchClients = async () => {
     if (!company?.id) return;
@@ -102,6 +104,8 @@ const GestaoClientesQualificacao = () => {
         setSelectedClient(client);
         // Gerar link de convite ao abrir o modal
         generateInviteLink(client);
+        // Buscar dados jurídicos do cliente
+        fetchClientLegalData(client);
       }
     }
   }, [clients]);
@@ -152,6 +156,81 @@ const GestaoClientesQualificacao = () => {
       setInviteLink(link);
     } catch (error) {
       console.error('Erro ao gerar link:', error);
+    }
+  };
+
+  const fetchClientLegalData = async (client: Client) => {
+    if (!company?.id) return;
+
+    try {
+      // Primeiro, verificar se existe client_legal_data
+      const { data: legalData } = await supabase
+        .from('client_legal_data')
+        .select('*')
+        .eq('client_email', client.email)
+        .eq('company_id', company.id)
+        .maybeSingle();
+
+      if (legalData) {
+        // Usar dados de client_legal_data se existir
+        if (legalData.person_type === 'pf') {
+          setClientLegalData({
+            person_type: 'pf',
+            client_name: legalData.client_name,
+            cpf: legalData.cpf || undefined,
+            rg: legalData.rg || undefined,
+            nationality: legalData.nationality || undefined,
+            marital_status: legalData.marital_status || undefined,
+            profession: legalData.profession || undefined,
+            address: legalData.address || undefined,
+            email: legalData.email || client.email,
+            phone: legalData.phone || client.phone
+          });
+        } else {
+          setClientLegalData({
+            person_type: 'pj',
+            company_name: legalData.company_name || legalData.client_name,
+            cnpj: legalData.cnpj || undefined,
+            address: legalData.address || undefined,
+            legal_representative_name: legalData.legal_representative_name || undefined,
+            legal_representative_cpf: legalData.legal_representative_cpf || undefined,
+            email: legalData.email || client.email,
+            phone: legalData.phone || client.phone
+          });
+        }
+      } else {
+        // Fallback: usar dados da tabela clients como PJ
+        const address = [
+          client.address_street,
+          client.address_number,
+          client.address_complement,
+          client.address_neighborhood,
+          client.address_city,
+          client.address_state,
+          client.address_zipcode
+        ].filter(Boolean).join(', ');
+
+        setClientLegalData({
+          person_type: 'pj',
+          company_name: client.company_name,
+          cnpj: client.cnpj || undefined,
+          address: address || undefined,
+          legal_representative_name: client.admin_full_name || undefined,
+          legal_representative_cpf: client.admin_cpf || undefined,
+          email: client.email,
+          phone: client.phone
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching legal data:', error);
+      // Fallback em caso de erro
+      setClientLegalData({
+        person_type: 'pj',
+        company_name: client.company_name,
+        cnpj: client.cnpj || undefined,
+        email: client.email,
+        phone: client.phone
+      });
     }
   };
 
@@ -455,6 +534,7 @@ const GestaoClientesQualificacao = () => {
                         onClick={() => {
                           setSelectedClient(client);
                           generateInviteLink(client);
+                          fetchClientLegalData(client);
                         }}
                       >
                         Ver Detalhes
@@ -500,6 +580,7 @@ const GestaoClientesQualificacao = () => {
           if (!open) {
             setSelectedClient(null);
             setInviteLink('');
+            setClientLegalData(null);
             // Limpar clientId da URL se existir
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('clientId')) {
@@ -521,6 +602,13 @@ const GestaoClientesQualificacao = () => {
 
           {selectedClient && (
             <div className="space-y-6">
+              {/* Botão de Copiar Qualificação Jurídica */}
+              {clientLegalData && (
+                <div className="flex justify-end">
+                  <CopyLegalQualificationButton data={clientLegalData} />
+                </div>
+              )}
+
               {/* Dados Básicos */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
