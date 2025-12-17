@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,13 +11,26 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Upload, FileText, Search, Globe } from 'lucide-react';
+import { Loader2, Upload, FileText, Search, Globe, User } from 'lucide-react';
 import InternalSignatureManager from './InternalSignatureManager';
 import jsPDF from 'jspdf';
+import { formatLegalQualification, LegalData } from '@/utils/legalQualification';
+import { cn } from '@/lib/utils';
 
 interface Client {
   client_email: string;
   client_name: string;
+  id?: string;
+}
+
+interface RegisteredClient {
+  id: string;
+  email: string;
+  company_name: string;
+  phone: string;
+  cnpj?: string;
+  admin_full_name?: string;
+  admin_cpf?: string;
 }
 
 interface Template {
@@ -47,9 +60,20 @@ export const StandaloneDocumentUpload = ({
   const [loading, setLoading] = useState(false);
   const [loadingClients, setLoadingClients] = useState(true);
   const [clients, setClients] = useState<Client[]>([]);
+  const [registeredClients, setRegisteredClients] = useState<RegisteredClient[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [isClientUser, setIsClientUser] = useState(false);
   const [userProfile, setUserProfile] = useState<{ email: string; full_name: string } | null>(null);
+  
+  // Client search for templates
+  const [clientSearch, setClientSearch] = useState('');
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+  const [filteredClients, setFilteredClients] = useState<RegisteredClient[]>([]);
+  const clientSearchRef = useRef<HTMLDivElement>(null);
+  
+  // Company legal qualification
+  const [companyQualification, setCompanyQualification] = useState<string>('');
+  const [clientQualification, setClientQualification] = useState<string>('');
   
   // Tab de origem: upload ou modelo
   const [sourceTab, setSourceTab] = useState<'upload' | 'template'>('upload');
@@ -91,7 +115,36 @@ export const StandaloneDocumentUpload = ({
     setSelectedTemplate(null);
     setTemplateVariables({});
     setTemplateSearch('');
+    setClientSearch('');
+    setClientQualification('');
+    setShowClientSuggestions(false);
   };
+
+  // Close client suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (clientSearchRef.current && !clientSearchRef.current.contains(event.target as Node)) {
+        setShowClientSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filter clients based on search
+  useEffect(() => {
+    if (clientSearch.length >= 2) {
+      const filtered = registeredClients.filter(c =>
+        c.company_name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+        c.email.toLowerCase().includes(clientSearch.toLowerCase())
+      ).slice(0, 5);
+      setFilteredClients(filtered);
+      setShowClientSuggestions(filtered.length > 0);
+    } else {
+      setFilteredClients([]);
+      setShowClientSuggestions(false);
+    }
+  }, [clientSearch, registeredClients]);
 
   useEffect(() => {
     if (open) {
@@ -106,6 +159,119 @@ export const StandaloneDocumentUpload = ({
       resetSignatureFlow();
     }
   }, [open]);
+
+  // Load company legal qualification
+  const loadCompanyQualification = async (cId: string) => {
+    try {
+      const { data: companyData } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', cId)
+        .single();
+
+      if (companyData) {
+        const companyLegalData: LegalData = {
+          person_type: 'pj',
+          company_name: companyData.name,
+          cnpj: companyData.cnpj || undefined,
+          address: companyData.address || undefined,
+          legal_representative_name: companyData.legal_representative_name || undefined,
+          legal_representative_cpf: companyData.legal_representative_cpf || undefined,
+          email: companyData.email || undefined,
+          phone: companyData.phone || undefined
+        };
+        const qualification = formatLegalQualification(companyLegalData);
+        setCompanyQualification(qualification);
+        return qualification;
+      }
+    } catch (error) {
+      console.error('Erro ao carregar qualificação da empresa:', error);
+    }
+    return '';
+  };
+
+  // Load client legal qualification
+  const loadClientQualification = async (clientEmail: string, cId: string) => {
+    try {
+      // Try client_legal_data first
+      const { data: legalData } = await supabase
+        .from('client_legal_data')
+        .select('*')
+        .eq('client_email', clientEmail)
+        .eq('company_id', cId)
+        .maybeSingle();
+
+      if (legalData) {
+        let clientData: LegalData;
+        if (legalData.person_type === 'pf') {
+          clientData = {
+            person_type: 'pf',
+            client_name: legalData.client_name,
+            cpf: legalData.cpf || undefined,
+            rg: legalData.rg || undefined,
+            nationality: legalData.nationality || undefined,
+            marital_status: legalData.marital_status || undefined,
+            profession: legalData.profession || undefined,
+            address: legalData.address || undefined,
+            email: legalData.email || clientEmail,
+            phone: legalData.phone || undefined
+          };
+        } else {
+          clientData = {
+            person_type: 'pj',
+            company_name: legalData.company_name || legalData.client_name,
+            cnpj: legalData.cnpj || undefined,
+            address: legalData.address || undefined,
+            legal_representative_name: legalData.legal_representative_name || undefined,
+            legal_representative_cpf: legalData.legal_representative_cpf || undefined,
+            email: legalData.email || clientEmail,
+            phone: legalData.phone || undefined
+          };
+        }
+        const qualification = formatLegalQualification(clientData);
+        setClientQualification(qualification);
+        return qualification;
+      }
+
+      // Fallback: try clients table
+      const { data: clientBasicData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('email', clientEmail)
+        .eq('company_id', cId)
+        .maybeSingle();
+
+      if (clientBasicData) {
+        const address = [
+          clientBasicData.address_street,
+          clientBasicData.address_number,
+          clientBasicData.address_complement,
+          clientBasicData.address_neighborhood,
+          clientBasicData.address_city,
+          clientBasicData.address_state,
+          clientBasicData.address_zipcode
+        ].filter(Boolean).join(', ');
+
+        const clientData: LegalData = {
+          person_type: 'pj',
+          company_name: clientBasicData.company_name,
+          cnpj: clientBasicData.cnpj || undefined,
+          address: address || undefined,
+          legal_representative_name: clientBasicData.admin_full_name || undefined,
+          legal_representative_cpf: clientBasicData.admin_cpf || undefined,
+          email: clientBasicData.email,
+          phone: clientBasicData.phone || undefined
+        };
+        const qualification = formatLegalQualification(clientData);
+        setClientQualification(qualification);
+        return qualification;
+      }
+    } catch (error) {
+      console.error('Erro ao carregar qualificação do cliente:', error);
+    }
+    setClientQualification('');
+    return '';
+  };
 
   const loadTemplates = async () => {
     if (!user) return;
@@ -233,8 +399,34 @@ export const StandaloneDocumentUpload = ({
       
       if (userCompanyId) {
         setCompanyId(userCompanyId);
+        
+        // Load company qualification
+        loadCompanyQualification(userCompanyId);
 
-        // Buscar TODOS os clientes únicos dos processos da empresa (sem limite)
+        // Buscar clientes cadastrados da tabela clients
+        const { data: clientsData, error: clientsError } = await supabase
+          .from('clients')
+          .select('id, email, company_name, phone, cnpj, admin_full_name, admin_cpf')
+          .eq('company_id', userCompanyId)
+          .order('company_name', { ascending: true });
+
+        let loadedRegisteredClients: RegisteredClient[] = [];
+        let loadedClients: Client[] = [];
+
+        if (clientsError) {
+          console.error('Erro ao buscar clientes cadastrados:', clientsError);
+        } else if (clientsData && clientsData.length > 0) {
+          loadedRegisteredClients = clientsData;
+          setRegisteredClients(clientsData);
+          // Also set as regular clients for backwards compatibility
+          loadedClients = clientsData.map(c => ({
+            client_email: c.email,
+            client_name: c.company_name
+          }));
+          console.log('Clientes cadastrados carregados:', clientsData.length);
+        }
+
+        // Also fetch from processes for clients not in clients table
         const { data: processData, error: processError } = await supabase
           .from('processes')
           .select('client_email, client_name')
@@ -243,23 +435,29 @@ export const StandaloneDocumentUpload = ({
 
         if (processError) {
           console.error('Erro ao buscar processos:', processError);
-          throw processError;
-        }
-
-        if (processData && processData.length > 0) {
-          // Remover duplicatas por email
-          const uniqueClients = Array.from(
+        } else if (processData && processData.length > 0) {
+          // Merge with registered clients, removing duplicates
+          const existingEmails = new Set(loadedRegisteredClients.map(c => c.email));
+          const processClients = processData
+            .filter(p => !existingEmails.has(p.client_email))
+            .map(item => ({
+              client_email: item.client_email,
+              client_name: item.client_name
+            }));
+          
+          loadedClients = Array.from(
             new Map(
-              processData.map(item => [item.client_email, item])
+              [...loadedClients, ...processClients].map(item => [item.client_email, item])
             ).values()
           );
-          setClients(uniqueClients);
-          console.log('Clientes carregados:', uniqueClients.length);
-        } else {
-          setClients([]);
+        }
+        
+        setClients(loadedClients);
+        
+        if (loadedClients.length === 0 && loadedRegisteredClients.length === 0) {
           toast({
             title: 'Aviso',
-            description: 'Nenhum cliente encontrado. Você precisa ter processos cadastrados com clientes primeiro.',
+            description: 'Nenhum cliente encontrado. Cadastre clientes primeiro.',
             variant: 'default'
           });
         }
@@ -276,7 +474,7 @@ export const StandaloneDocumentUpload = ({
     }
   };
 
-  const handleClientChange = (email: string) => {
+  const handleClientChange = async (email: string) => {
     const selectedClient = clients.find(c => c.client_email === email);
     if (selectedClient) {
       setFormData({
@@ -284,6 +482,41 @@ export const StandaloneDocumentUpload = ({
         client_email: email,
         client_name: selectedClient.client_name
       });
+      // Load client qualification for templates
+      if (companyId) {
+        await loadClientQualification(email, companyId);
+      }
+    }
+  };
+
+  // Handle registered client selection in template tab
+  const handleRegisteredClientSelect = async (client: RegisteredClient) => {
+    setFormData(prev => ({
+      ...prev,
+      client_email: client.email,
+      client_name: client.company_name
+    }));
+    setClientSearch(client.company_name);
+    setShowClientSuggestions(false);
+    
+    // Load client qualification
+    if (companyId) {
+      const clientQual = await loadClientQualification(client.email, companyId);
+      
+      // Auto-fill template variables if template is selected
+      if (selectedTemplate) {
+        setTemplateVariables(prev => {
+          const updated = { ...prev };
+          // Auto-fill common variable names
+          const qualificationVars = ['qualificacao_cliente', 'qualificação_cliente', 'cliente_qualificacao', 'CLIENTE'];
+          qualificationVars.forEach(varName => {
+            if (varName in updated || selectedTemplate.variables.includes(varName)) {
+              updated[varName] = clientQual;
+            }
+          });
+          return updated;
+        });
+      }
     }
   };
 
@@ -299,16 +532,27 @@ export const StandaloneDocumentUpload = ({
   };
 
   // Selecionar um template
-  const handleSelectTemplate = (template: Template) => {
+  const handleSelectTemplate = async (template: Template) => {
     setSelectedTemplate(template);
     setFormData(prev => ({
       ...prev,
       document_name: template.title
     }));
-    // Inicializar variáveis do template
+    
+    // Inicializar variáveis do template com qualificações pré-preenchidas
     const vars: Record<string, string> = {};
     template.variables.forEach(v => {
-      vars[v] = '';
+      // Auto-fill company qualification variables
+      const companyVars = ['qualificacao_empresa', 'qualificação_empresa', 'empresa_qualificacao', 'EMPRESA', 'CONTRATANTE'];
+      const clientVars = ['qualificacao_cliente', 'qualificação_cliente', 'cliente_qualificacao', 'CLIENTE', 'CONTRATADO'];
+      
+      if (companyVars.some(cv => v.toLowerCase().includes(cv.toLowerCase()))) {
+        vars[v] = companyQualification;
+      } else if (clientVars.some(cv => v.toLowerCase().includes(cv.toLowerCase()))) {
+        vars[v] = clientQualification;
+      } else {
+        vars[v] = '';
+      }
     });
     setTemplateVariables(vars);
   };
@@ -827,11 +1071,81 @@ export const StandaloneDocumentUpload = ({
                         onClick={() => {
                           setSelectedTemplate(null);
                           setTemplateVariables({});
+                          setClientSearch('');
+                          setClientQualification('');
                         }}
                       >
                         Trocar
                       </Button>
                     </div>
+
+                    {/* Seleção de cliente para modelos (apenas para empresas) */}
+                    {!isClientUser && (
+                      <div ref={clientSearchRef} className="space-y-2 relative">
+                        <Label>Cliente *</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            placeholder="Buscar cliente cadastrado..."
+                            className="pl-10"
+                            value={clientSearch}
+                            onChange={(e) => setClientSearch(e.target.value)}
+                          />
+                        </div>
+                        
+                        {/* Client suggestions dropdown */}
+                        {showClientSuggestions && filteredClients.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            {filteredClients.map((client) => (
+                              <button
+                                key={client.id}
+                                type="button"
+                                onClick={() => handleRegisteredClientSelect(client)}
+                                className={cn(
+                                  "w-full text-left px-4 py-3 hover:bg-accent transition-colors",
+                                  "flex items-start gap-3 border-b last:border-b-0"
+                                )}
+                              >
+                                <User className="h-4 w-4 text-primary mt-0.5" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm">{client.company_name}</div>
+                                  <div className="text-xs text-muted-foreground truncate">{client.email}</div>
+                                  {client.cnpj && (
+                                    <div className="text-xs text-muted-foreground">CNPJ: {client.cnpj}</div>
+                                  )}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Selected client info */}
+                        {formData.client_email && (
+                          <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                              Cliente selecionado: {formData.client_name}
+                            </p>
+                            <p className="text-xs text-green-600 dark:text-green-300">{formData.client_email}</p>
+                          </div>
+                        )}
+                        
+                        {clientSearch.length > 0 && clientSearch.length < 2 && (
+                          <p className="text-xs text-muted-foreground">
+                            Digite mais {2 - clientSearch.length} caractere(s) para buscar
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Company qualification info */}
+                    {companyQualification && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <Label className="text-xs text-blue-800 dark:text-blue-200">Qualificação da Empresa (preenchida automaticamente)</Label>
+                        <p className="text-xs text-blue-600 dark:text-blue-300 mt-1 line-clamp-2">
+                          {companyQualification.substring(0, 150)}...
+                        </p>
+                      </div>
+                    )}
 
                     {/* Variáveis do template */}
                     {selectedTemplate.variables.length > 0 && (
@@ -842,7 +1156,7 @@ export const StandaloneDocumentUpload = ({
                             <Label htmlFor={variable} className="text-sm text-muted-foreground">
                               {variable}
                             </Label>
-                            <Input
+                            <Textarea
                               id={variable}
                               value={templateVariables[variable] || ''}
                               onChange={(e) => setTemplateVariables(prev => ({
@@ -850,6 +1164,8 @@ export const StandaloneDocumentUpload = ({
                                 [variable]: e.target.value
                               }))}
                               placeholder={`Digite o valor para ${variable}`}
+                              rows={variable.toLowerCase().includes('qualifica') ? 4 : 1}
+                              className="min-h-[40px]"
                             />
                           </div>
                         ))}
