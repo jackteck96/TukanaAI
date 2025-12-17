@@ -195,6 +195,7 @@ const EmpresaDashboard = () => {
   // Primary quick actions (always visible)
   const primaryActions = [
     { icon: UserPlus, label: "Novo Cliente", component: <CreateClientDialog onClientCreated={refreshData} variant="quickAction" /> },
+    { icon: Users, label: "Gestão Clientes", href: "/gestao-clientes-qualificacao" },
     { icon: PenTool, label: "Assinaturas", href: "/gerenciar-processos?tab=assinaturas" },
     { icon: Search, label: "Buscar Docs", onClick: () => setIsSearchModalOpen(true) },
     { icon: FileText, label: "Processos", href: "/gerenciar-processos" },
