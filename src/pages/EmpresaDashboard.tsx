@@ -2,32 +2,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import PontoClock from "@/components/PontoClock";
 import { 
   Users, 
   FileText, 
   Clock, 
   CheckCircle, 
-  AlertTriangle,
-  TrendingUp,
-  Filter,
   Plus,
   Search,
   MoreHorizontal,
-  Eye,
   LogOut,
   Brain,
   UserPlus,
   Shield,
   PenTool,
   List,
-  UserCircle
+  UserCircle,
+  ChevronRight,
+  ChevronDown,
+  TrendingUp,
+  AlertCircle,
+  Settings,
+  ArrowRight,
+  Sparkles
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -58,7 +57,14 @@ const EmpresaDashboard = () => {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [companyLegalData, setCompanyLegalData] = useState<LegalData | null>(null);
   const [isCompanyDataComplete, setIsCompanyDataComplete] = useState(false);
+  const [isPontoOpen, setIsPontoOpen] = useState(false);
+  const [showAllActions, setShowAllActions] = useState(false);
   
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [processSearchTerm, setProcessSearchTerm] = useState("");
+
   useEffect(() => {
     console.log('[EmpresaDashboard] mounted', { user: user?.email });
   }, [user]);
@@ -98,7 +104,6 @@ const EmpresaDashboard = () => {
         const fetchedCompanyId = profile?.company_id || null;
         setCompanyId(fetchedCompanyId);
 
-        // Fetch company legal data if company_id exists
         if (fetchedCompanyId) {
           const { data: companyData } = await supabase
             .from('companies')
@@ -107,7 +112,6 @@ const EmpresaDashboard = () => {
             .single();
 
           if (companyData) {
-            // Check if data is complete
             const isComplete = !!(
               companyData.cnpj &&
               companyData.name &&
@@ -120,7 +124,6 @@ const EmpresaDashboard = () => {
 
             setIsCompanyDataComplete(isComplete);
 
-            // Always prepare legal data for copy button, even if incomplete
             const legalData: LegalData = {
               person_type: 'pj',
               company_name: companyData.name,
@@ -142,58 +145,6 @@ const EmpresaDashboard = () => {
     checkAdminRole();
   }, [user]);
 
-  // Redirect clients to their area if they land here accidentally
-  useEffect(() => {
-    const checkRoleAndRedirect = async () => {
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profile?.role === 'client') {
-        navigate('/cliente', { replace: true });
-      }
-    };
-    checkRoleAndRedirect();
-  }, [user, navigate]);
-  const stats = [
-    {
-      title: "Total de Clientes",
-      value: dashboardStats.totalClients.toString(),
-      change: dashboardStats.totalClients > 0 ? "+100%" : "0%",
-      icon: Users,
-      color: "text-primary",
-      route: "/gestao-clientes"
-    },
-    {
-      title: "Processos Ativos",
-      value: dashboardStats.totalProcesses.toString(),
-      change: dashboardStats.totalProcesses > 0 ? "+100%" : "0%",
-      icon: FileText,
-      color: "text-accent",
-      route: "/gerenciar-processos"
-    },
-    {
-      title: "Pendentes",
-      value: dashboardStats.pendingProcesses.toString(),
-      change: dashboardStats.pendingProcesses > 0 ? "+100%" : "0%",
-      icon: Clock,
-      color: "text-orange-500",
-      route: "/gerenciar-processos?status=pendente"
-    },
-    {
-      title: "Concluídos Hoje",
-      value: dashboardStats.completedToday.toString(),
-      change: dashboardStats.completedToday > 0 ? "+100%" : "0%",
-      icon: CheckCircle,
-      color: "text-green-500",
-      route: "/relatorios",
-      onClick: () => setIsCompletedTodayModalOpen(true)
-    }
-  ];
-
   const handleLogout = async () => {
     await signOut();
     navigate('/');
@@ -204,468 +155,460 @@ const EmpresaDashboard = () => {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffInMinutes < 60) return `${diffInMinutes} min atrás`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`;
-    return `${Math.floor(diffInMinutes / 1440)} dia(s) atrás`;
+    if (diffInMinutes < 60) return `${diffInMinutes}min`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    return `${Math.floor(diffInMinutes / 1440)}d`;
   };
 
   const formatDueDate = (dateString: string | null) => {
     if (!dateString) return 'Sem prazo';
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Aprovado":
       case "Concluído":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
+        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
       case "Em Análise":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
+        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
       case "Pendente":
       case "Documentos Pendentes":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400";
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
       default:
         return "bg-muted text-muted-foreground";
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "border-l-red-500";
-      case "medium":
-        return "border-l-yellow-500";
-      case "low":
-        return "border-l-green-500";
-      default:
-        return "border-l-muted";
-    }
-  };
+  const normalizeSearch = (text: string) => text.replace(/[.\-/]/g, '').toLowerCase();
 
-  
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [processSearchTerm, setProcessSearchTerm] = useState("");
+  const filteredProcesses = recentProcesses.filter((process) => {
+    if (!processSearchTerm) return true;
+    const searchLower = normalizeSearch(processSearchTerm);
+    return (
+      normalizeSearch(process.project_name || '').includes(searchLower) ||
+      normalizeSearch(process.client_name || '').includes(searchLower) ||
+      normalizeSearch(process.cpf_cnpj || '').includes(searchLower)
+    );
+  });
 
+  // Primary quick actions (always visible)
+  const primaryActions = [
+    { icon: UserPlus, label: "Novo Cliente", component: <CreateClientDialog onClientCreated={refreshData} variant="quickAction" /> },
+    { icon: PenTool, label: "Assinaturas", href: "/gerenciar-processos?tab=assinaturas" },
+    { icon: Search, label: "Buscar Docs", onClick: () => setIsSearchModalOpen(true) },
+    { icon: FileText, label: "Processos", href: "/gerenciar-processos" },
+  ];
+
+  // Secondary quick actions (hidden by default)
+  const secondaryActions = [
+    { icon: TrendingUp, label: "Relatórios", href: "/relatorios" },
+    { icon: Clock, label: "Rel. Ponto", href: "/relatorios-ponto" },
+    { icon: Users, label: "Colaboradores", href: "/gestao-colaboradores" },
+    { icon: FileText, label: "Modelos", href: "/modelos-documentos" },
+    { icon: Brain, label: "Análise IA", href: "/analise-ia" },
+    { icon: List, label: "Tipos Docs", href: "/cadastro-tipos-documentos" },
+    ...(hasRole('company_admin') ? [{ icon: Shield, label: "Permissões", href: "/gestao-permissoes" }] : []),
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard - Empresa</h1>
-              <p className="text-sm text-muted-foreground">Visão geral dos processos e clientes</p>
+      {/* Clean Header */}
+      <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-40">
+        <div className="px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left: Title */}
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+              </div>
             </div>
-            <div className="flex items-center flex-wrap gap-2 justify-end">
-              {isAdmin && (
-                <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
-                  <Shield className="h-4 w-4 mr-2" />
-                  Painel Admin
-                </Button>
-              )}
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2">
+              {/* Primary CTA */}
+              <CreateProcessWithInvite />
+
+              {/* Secondary Actions Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <UserCircle className="h-4 w-4 mr-2" />
-                    Perfil
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-card z-50">
+                <DropdownMenuContent align="end" className="w-56">
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Painel Admin
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={() => setIsEditProfileModalOpen(true)}>
-                    <Users className="h-4 w-4 mr-2" />
+                    <UserCircle className="h-4 w-4 mr-2" />
                     Editar Perfil
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/meus-dados-pessoais')}>
                     <Shield className="h-4 w-4 mr-2" />
-                    Meus Dados Pessoais (LGPD)
+                    Meus Dados (LGPD)
+                  </DropdownMenuItem>
+                  {companyLegalData && (
+                    <DropdownMenuItem asChild>
+                      <CopyLegalQualificationButton 
+                        data={companyLegalData}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start font-normal"
+                      />
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <ReportProblemDialog 
+                    userType="empresa" 
+                    trigger={
+                      <Button variant="ghost" size="sm" className="w-full justify-start font-normal h-auto py-1.5 px-2">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        Relatar Problema
+                      </Button>
+                    }
+                  />
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="hero" size="sm" onClick={refreshData} disabled={loading}>
-                <Plus className="h-4 w-4 mr-2" />
-                {loading ? 'Atualizando...' : 'Atualizar'}
-              </Button>
-              <UserInviteSystem onInviteSent={refreshData} />
-              <CreateProcessWithInvite />
-              {companyLegalData && (
-                <CopyLegalQualificationButton 
-                  data={companyLegalData}
-                  variant="outline"
-                  size="sm"
-                />
-              )}
-              <ReportProblemDialog userType="empresa" />
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Sair</span>
-              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="p-6 space-y-6">
-        {/* Expiring Documents Alert */}
-        <ExpiringDocumentsAlert />
-        
-        {/* Company Notifications */}
-        <CompanyNotifications />
-        
-        {/* Company Legal Data Card - Only show if data is incomplete */}
-        {companyId && !isCompanyDataComplete && (
-          <CompanyLegalDataCard companyId={companyId} />
-        )}
-        
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <Card 
-              key={index} 
-              className="hover:shadow-card transition-all duration-300 cursor-pointer hover:scale-105" 
-              onClick={() => stat.onClick ? stat.onClick() : navigate(stat.route)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {stat.value}
-                    </p>
-                    <p className={`text-xs ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                      {stat.change} vs mês anterior
-                    </p>
-                  </div>
-                  <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
-                    <stat.icon className="h-6 w-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <main className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+        {/* Alerts Section - Compact */}
+        <div className="space-y-3">
+          <ExpiringDocumentsAlert />
+          <CompanyNotifications compact />
+          {companyId && !isCompanyDataComplete && (
+            <CompanyLegalDataCard companyId={companyId} />
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Clients */}
-          <Card>
-            <CardHeader>
+        {/* KPIs Row - Compact and Clean */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card 
+            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
+            onClick={() => navigate('/gestao-clientes')}
+          >
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <span>Clientes Recentes</span>
-                </CardTitle>
-                <div className="flex items-center space-x-2">
-                  <Link to="/gestao-clientes">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Ver Todos
-                    </Button>
-                  </Link>
-                  <Link to="/gestao-colaboradores">
-                    <Button variant="ghost" size="sm">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Gerenciar Colaboradores
-                    </Button>
-                  </Link>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Clientes</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{dashboardStats.totalClients}</p>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {loading ? (
-                  Array.from({ length: 3 }, (_, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-muted/30 animate-pulse">
-                      <div className="h-4 bg-muted rounded w-32 mb-2"></div>
-                      <div className="h-3 bg-muted rounded w-24"></div>
-                    </div>
-                  ))
-                ) : recentClients.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum cliente ainda</p>
-                    <p className="text-sm">Crie seu primeiro processo para começar</p>
-                  </div>
-                ) : (
-                  recentClients.map((client) => (
-                  <div
-                    key={client.id}
-                    className={`p-4 rounded-lg border-l-4 ${getPriorityColor(client.priority)} bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer`}
-                    onClick={() => navigate(`/cliente/${encodeURIComponent(client.client_email)}`)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{client.client_name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Badge className={getStatusColor(client.status)}>
-                            {client.status}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {client.document_count} documentos
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Atualizado {formatLastUpdate(client.last_update)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  ))
-                )}
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Recent Processes */}
-          <Card>
-            <CardHeader>
+          <Card 
+            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
+            onClick={() => navigate('/gerenciar-processos')}
+          >
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5" />
-                  <span>Processos em Andamento</span>
-                </CardTitle>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/gerenciar-processos">
-                    Ver Todos
-                  </Link>
-                </Button>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ativos</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{dashboardStats.totalProcesses}</p>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-blue-500" />
+                </div>
               </div>
-              <div className="mt-4">
-                <div className="relative">
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
+            onClick={() => navigate('/gerenciar-processos?status=pendente')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pendentes</p>
+                  <p className="text-2xl font-bold text-amber-600 mt-1">{dashboardStats.pendingProcesses}</p>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-amber-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
+            onClick={() => setIsCompletedTodayModalOpen(true)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Concluídos</p>
+                  <p className="text-2xl font-bold text-emerald-600 mt-1">{dashboardStats.completedToday}</p>
+                </div>
+                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-emerald-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Processes - Main Focus (2 columns) */}
+          <div className="lg:col-span-2 space-y-4">
+            <Card className="border-border/50">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base font-semibold">Processos em Andamento</CardTitle>
+                    <Badge variant="secondary" className="text-xs">{filteredProcesses.length}</Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" asChild className="text-xs">
+                    <Link to="/gerenciar-processos" className="flex items-center gap-1">
+                      Ver todos <ChevronRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                </div>
+                {/* Search */}
+                <div className="relative mt-3">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por nome do processo, cliente ou CNPJ..."
+                    placeholder="Buscar processo, cliente ou CNPJ..."
                     value={processSearchTerm}
                     onChange={(e) => setProcessSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-9 h-9 text-sm bg-muted/30 border-border/50"
                   />
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {loading ? (
-                  Array.from({ length: 3 }, (_, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-muted/30 animate-pulse">
-                      <div className="h-4 bg-muted rounded w-40 mb-2"></div>
-                      <div className="h-3 bg-muted rounded w-32 mb-2"></div>
-                      <div className="h-2 bg-muted rounded w-full"></div>
-                    </div>
-                  ))
-                ) : recentProcesses.length === 0 ? (
-                  <Card className="p-6 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-3">
-                      <Shield className="h-10 w-10 text-muted-foreground opacity-50" />
-                      <div>
-                        <p className="text-sm font-medium mb-1">Nenhum processo disponível</p>
-                        <p className="text-xs text-muted-foreground">
-                          Aguarde liberação do administrador
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ) : (
-                  (() => {
-                    // Normalizar a busca removendo caracteres especiais
-                    const normalizeSearch = (text: string) => {
-                      return text.replace(/[.\-/]/g, '').toLowerCase();
-                    };
-
-                    const filteredProcesses = recentProcesses.filter((process) => {
-                      if (!processSearchTerm) return true;
-                      const searchLower = normalizeSearch(processSearchTerm);
-                      
-                      console.log('[EmpresaDashboard] Filtering:', {
-                        searchTerm: processSearchTerm,
-                        normalized: searchLower,
-                        process: {
-                          project_name: process.project_name,
-                          client_name: process.client_name,
-                          cpf_cnpj: process.cpf_cnpj
-                        }
-                      });
-                      
-                      return (
-                        normalizeSearch(process.project_name || '').includes(searchLower) ||
-                        normalizeSearch(process.client_name || '').includes(searchLower) ||
-                        normalizeSearch(process.cpf_cnpj || '').includes(searchLower)
-                      );
-                    });
-
-                    if (filteredProcesses.length === 0) {
-                      return (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p>Nenhum processo encontrado</p>
-                          <p className="text-sm">Tente outro termo de busca</p>
-                        </div>
-                      );
-                    }
-
-                    return filteredProcesses.map((process) => (
-                  <div
-                    key={process.id}
-                    className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">
-                          {process.project_name || 'Sem nome'}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {process.client_name}
-                        </p>
-                      </div>
-                      <Badge className={getStatusColor(process.status)}>
-                        {process.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${process.progress}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {process.progress}% concluído
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground whitespace-nowrap">
-                          Prazo: {formatDueDate(process.due_date)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  ));
-                  })()
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-
-        {/* Ponto Clock and Quick Actions Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Ponto Clock */}
-          <div>
-            <PontoClock />
-          </div>
-
-          {/* Quick Actions - taking 2 columns */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                  <PdfConverter />
-                  <CreateClientDialog onClientCreated={refreshData} variant="quickAction" />
-                  <Link to="/gerenciar-processos?tab=assinaturas" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <PenTool className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Assinaturas</span>
-                    </Button>
-                  </Link>
-                  <Link to="/gerenciar-processos" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <FileText className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Gerenciar Processos</span>
-                    </Button>
-                  </Link>
-                  <Button variant="outline" className="h-24 flex-col w-full" onClick={() => setIsSearchModalOpen(true)}>
-                    <Search className="h-6 w-6 mb-2" />
-                    <span className="text-sm font-medium">Buscar Documentos</span>
-                  </Button>
-                  <Link to="/relatorios" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <TrendingUp className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Gerar Relatórios</span>
-                    </Button>
-                  </Link>
-                  <Link to="/relatorios-ponto" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <Clock className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Rel. Ponto</span>
-                    </Button>
-                  </Link>
-                  <Link to="/gestao-colaboradores" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <Users className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Colaboradores</span>
-                    </Button>
-                  </Link>
-                  <Link to="/modelos-documentos" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <FileText className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Modelos de Docs</span>
-                    </Button>
-                  </Link>
-                  <Link to="/analise-ia" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <Brain className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Análise IA</span>
-                    </Button>
-                  </Link>
-                  <Link to="/cadastro-tipos-documentos" className="w-full">
-                    <Button variant="outline" className="h-24 flex-col w-full">
-                      <List className="h-6 w-6 mb-2" />
-                      <span className="text-sm font-medium">Tipos de Docs</span>
-                    </Button>
-                  </Link>
-                  {hasRole('company_admin') && (
-                    <Link to="/gestao-permissoes" className="w-full">
-                      <Button variant="outline" className="h-24 flex-col w-full">
-                        <Shield className="h-6 w-6 mb-2" />
-                        <span className="text-sm font-medium">Permissões</span>
-                      </Button>
-                    </Link>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {loading ? (
+                    Array.from({ length: 3 }, (_, i) => (
+                      <div key={i} className="p-3 rounded-lg bg-muted/30 animate-pulse">
+                        <div className="h-4 bg-muted rounded w-40 mb-2"></div>
+                        <div className="h-2 bg-muted rounded w-full"></div>
+                      </div>
+                    ))
+                  ) : filteredProcesses.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                      <p className="text-sm">Nenhum processo encontrado</p>
+                    </div>
+                  ) : (
+                    filteredProcesses.map((process) => (
+                      <div
+                        key={process.id}
+                        className="group p-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border border-transparent hover:border-border/50"
+                        onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-sm text-foreground truncate">
+                                {process.project_name || 'Sem nome'}
+                              </h3>
+                              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${getStatusColor(process.status)}`}>
+                                {process.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                              {process.client_name}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-[10px] text-muted-foreground">{formatDueDate(process.due_date)}</p>
+                          </div>
+                        </div>
+                        {/* Progress Bar */}
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                            <span>Progresso</span>
+                            <span>{process.progress}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div
+                              className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${process.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
                   )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quick Actions - Compact */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-semibold">Ações Rápidas</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowAllActions(!showAllActions)}
+                    className="text-xs"
+                  >
+                    {showAllActions ? 'Ver menos' : 'Ver todas'}
+                    <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showAllActions ? 'rotate-180' : ''}`} />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-4 gap-2">
+                  {/* Primary Actions */}
+                  {primaryActions.map((action, i) => (
+                    action.component ? (
+                      <div key={i}>{action.component}</div>
+                    ) : action.onClick ? (
+                      <Button 
+                        key={i}
+                        variant="outline" 
+                        className="h-16 flex-col gap-1 text-xs border-border/50 hover:bg-muted/50"
+                        onClick={action.onClick}
+                      >
+                        <action.icon className="h-4 w-4" />
+                        <span className="text-[10px]">{action.label}</span>
+                      </Button>
+                    ) : (
+                      <Link key={i} to={action.href!}>
+                        <Button variant="outline" className="h-16 flex-col gap-1 w-full text-xs border-border/50 hover:bg-muted/50">
+                          <action.icon className="h-4 w-4" />
+                          <span className="text-[10px]">{action.label}</span>
+                        </Button>
+                      </Link>
+                    )
+                  ))}
+                </div>
+
+                {/* Secondary Actions - Collapsible */}
+                {showAllActions && (
+                  <div className="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-border/50">
+                    <PdfConverter />
+                    {secondaryActions.map((action, i) => (
+                      <Link key={i} to={action.href}>
+                        <Button variant="ghost" className="h-16 flex-col gap-1 w-full text-xs hover:bg-muted/50">
+                          <action.icon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">{action.label}</span>
+                        </Button>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Secondary Content */}
+          <div className="space-y-4">
+            {/* Recent Clients - Compact */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold">Clientes Recentes</CardTitle>
+                  <Button variant="ghost" size="sm" asChild className="text-xs h-7 px-2">
+                    <Link to="/gestao-clientes">
+                      Ver todos <ChevronRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {loading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-2 rounded bg-muted/30 animate-pulse">
+                        <div className="h-3 bg-muted rounded w-24 mb-1"></div>
+                        <div className="h-2 bg-muted rounded w-16"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recentClients.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-xs">Nenhum cliente ainda</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {recentClients.slice(0, 3).map((client) => (
+                      <div
+                        key={client.id}
+                        className="group p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer flex items-center justify-between"
+                        onClick={() => navigate(`/cliente/${encodeURIComponent(client.client_email)}`)}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{client.client_name}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className={`text-[10px] px-1 py-0 ${getStatusColor(client.status)}`}>
+                              {client.status}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground">{formatLastUpdate(client.last_update)}</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Ponto Clock - Collapsible */}
+            <Collapsible open={isPontoOpen} onOpenChange={setIsPontoOpen}>
+              <Card className="border-border/50">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="pb-2 cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-semibold">Controle de Ponto</CardTitle>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isPontoOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0">
+                    <PontoClock compact />
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Client Modal */}
-
-      {/* Search Modal */}
+      {/* Modals */}
       <DocumentSearchModal 
         isOpen={isSearchModalOpen} 
         onClose={() => setIsSearchModalOpen(false)} 
       />
-
-      {/* Completed Today Modal */}
       <CompletedTodayModal 
         isOpen={isCompletedTodayModalOpen} 
         onClose={() => setIsCompletedTodayModalOpen(false)} 
       />
-      {/* Search Modal */}
-      <DocumentSearchModal 
-        isOpen={isSearchModalOpen} 
-        onClose={() => setIsSearchModalOpen(false)} 
-      />
-
-      {/* Edit Profile Modal */}
       <EditCompanyProfileModal
         open={isEditProfileModalOpen}
         onOpenChange={setIsEditProfileModalOpen}
-      />
-
-      {/* Completed Today Modal */}
-      <CompletedTodayModal 
-        isOpen={isCompletedTodayModalOpen} 
-        onClose={() => setIsCompletedTodayModalOpen(false)} 
       />
     </div>
   );

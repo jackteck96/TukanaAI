@@ -22,9 +22,10 @@ interface Notification {
 
 interface CompanyNotificationsProps {
   className?: string;
+  compact?: boolean;
 }
 
-export default function CompanyNotifications({ className }: CompanyNotificationsProps) {
+export default function CompanyNotifications({ className, compact = false }: CompanyNotificationsProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -201,6 +202,9 @@ export default function CompanyNotifications({ className }: CompanyNotifications
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   if (loading) {
+    if (compact) {
+      return null;
+    }
     return (
       <Card className={className}>
         <CardContent className="p-6">
@@ -210,17 +214,32 @@ export default function CompanyNotifications({ className }: CompanyNotifications
     );
   }
 
+  // Compact mode: hide when no notifications
+  if (compact && notifications.length === 0) {
+    return null;
+  }
+
+  // Compact mode: show minimal alert
+  if (compact && unreadCount === 0) {
+    return (
+      <div className={`flex items-center gap-2 p-3 rounded-lg bg-muted/30 text-sm text-muted-foreground ${className}`}>
+        <Bell className="h-4 w-4" />
+        <span>Tudo em dia. Nenhuma pendência no momento.</span>
+      </div>
+    );
+  }
+
   return (
     <Card className={className}>
-      <CardHeader>
+      <CardHeader className={compact ? "pb-2 pt-3 px-4" : ""}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {unreadCount > 0 ? (
-              <BellRing className="h-5 w-5 text-primary" />
+              <BellRing className={`${compact ? "h-4 w-4" : "h-5 w-5"} text-primary`} />
             ) : (
-              <Bell className="h-5 w-5 text-muted-foreground" />
+              <Bell className={`${compact ? "h-4 w-4" : "h-5 w-5"} text-muted-foreground`} />
             )}
-            <CardTitle>Notificações</CardTitle>
+            <CardTitle className={compact ? "text-sm" : ""}>Notificações</CardTitle>
             {unreadCount > 0 && (
               <Badge variant="destructive" className="h-5 px-2 text-xs">
                 {unreadCount}
@@ -228,16 +247,18 @@ export default function CompanyNotifications({ className }: CompanyNotifications
             )}
           </div>
           {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} className={compact ? "text-xs h-7" : ""}>
               Marcar todas como lidas
             </Button>
           )}
         </div>
-        <CardDescription>
-          Atualizações sobre assinaturas e documentos
-        </CardDescription>
+        {!compact && (
+          <CardDescription>
+            Atualizações sobre assinaturas e documentos
+          </CardDescription>
+        )}
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={`space-y-3 ${compact ? "px-4 pb-3 pt-0" : ""}`}>
         {notifications.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
