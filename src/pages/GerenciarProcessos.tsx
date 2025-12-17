@@ -76,9 +76,10 @@ const GerenciarProcessos = () => {
   const [isMeetingDialogOpen, setIsMeetingDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // Check if we have a specific process ID in the URL
+  // Check if we have a specific process ID or tab in the URL
   const urlParams = new URLSearchParams(location.search);
   const processId = urlParams.get('id');
+  const activeTab = urlParams.get('tab');
 
   useEffect(() => {
     if (processId) {
@@ -649,6 +650,56 @@ const GerenciarProcessos = () => {
           onOpenChange={setIsCalendarOpen}
           processId={currentProcess.id}
           companyId={currentProcess.company_id}
+        />
+      </div>
+    );
+  }
+
+  // Se a tab é "assinaturas", mostrar view dedicada de assinaturas standalone
+  if (activeTab === 'assinaturas') {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="bg-card border-b border-border sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Link to="/empresa">
+                  <Button variant="ghost" size="sm">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Voltar
+                  </Button>
+                </Link>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">Assinaturas</h1>
+                  <p className="text-muted-foreground">Gerencie documentos avulsos para assinatura</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setIsStandaloneUploadOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Documento para Assinatura
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-6 space-y-6">
+          {/* Documentos pendentes de assinatura da empresa */}
+          <CompanyPendingStandaloneSignatures />
+          
+          {/* Documentos já assinados */}
+          <StandaloneSignedDocuments />
+        </div>
+
+        {/* Modal de upload de documento avulso */}
+        <StandaloneDocumentUpload
+          open={isStandaloneUploadOpen}
+          onOpenChange={setIsStandaloneUploadOpen}
         />
       </div>
     );
