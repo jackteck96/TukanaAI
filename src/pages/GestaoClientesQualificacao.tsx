@@ -508,7 +508,15 @@ const GestaoClientesQualificacao = () => {
               </TableHeader>
               <TableBody>
                 {filteredClients.map((client) => (
-                  <TableRow key={client.id}>
+                  <TableRow 
+                    key={client.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setSelectedClient(client);
+                      generateInviteLink(client);
+                      fetchClientLegalData(client);
+                    }}
+                  >
                     <TableCell className="font-medium">{client.company_name}</TableCell>
                     <TableCell>{client.email}</TableCell>
                     <TableCell>{client.phone}</TableCell>
@@ -527,7 +535,7 @@ const GestaoClientesQualificacao = () => {
                         </div>
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="text-right space-x-2" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
                         size="sm"
