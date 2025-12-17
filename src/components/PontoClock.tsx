@@ -8,7 +8,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTimeRecords, TimeEntry } from "@/hooks/useTimeRecords";
 import { supabase } from "@/integrations/supabase/client";
 
-const PontoClock = () => {
+interface PontoClockProps {
+  compact?: boolean;
+}
+
+const PontoClock = ({ compact = false }: PontoClockProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState<string>("");
@@ -95,6 +99,51 @@ const PontoClock = () => {
       default: return 'bg-muted text-muted-foreground';
     }
   };
+
+  // Compact mode for collapsible sidebar
+  if (compact) {
+    return (
+      <div className="space-y-3">
+        {/* Time and Employee */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-mono font-bold text-primary">
+              {formatTime(currentTime)}
+            </div>
+            <div className="text-xs text-muted-foreground">{currentEmployee}</div>
+          </div>
+          {lastEntry && (
+            <Badge className={`text-[10px] ${getEntryTypeColor(lastEntry.type)}`}>
+              {getEntryTypeLabel(lastEntry.type)} às {formatTime(lastEntry.timestamp).slice(0, 5)}
+            </Badge>
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => handlePonto(nextAction.type)}
+            className={`${nextAction.color} hover:opacity-90 text-white flex-1 h-8 text-xs`}
+            disabled={loading}
+          >
+            <NextActionIcon className="h-3 w-3 mr-1" />
+            {loading ? '...' : nextAction.label}
+          </Button>
+          
+          {(lastEntry?.type === 'entrada' || lastEntry?.type === 'retorno') && (
+            <Button 
+              onClick={() => handlePonto('pausa')}
+              variant="outline"
+              className="h-8 text-xs"
+            >
+              <Coffee className="h-3 w-3 mr-1" />
+              Pausa
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Card className="w-full">
