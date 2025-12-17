@@ -330,14 +330,14 @@ const CadastroTiposDocumentos = () => {
                     <div>
                       <Label htmlFor="category">Categoria</Label>
                       <Select
-                        value={formData.category_id}
-                        onValueChange={(value) => handleInputChange('category_id', value)}
+                        value={formData.category_id || "__none__"}
+                        onValueChange={(value) => handleInputChange('category_id', value === "__none__" ? "" : value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria (opcional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Sem categoria</SelectItem>
+                          <SelectItem value="__none__">Sem categoria</SelectItem>
                           {categories.filter(c => c.is_global).length > 0 && (
                             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50">
                               Categorias Globais
