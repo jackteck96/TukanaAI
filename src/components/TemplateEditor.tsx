@@ -8,6 +8,7 @@ import { FileText, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
+import { formatLegalQualification, LegalData } from "@/utils/legalQualification";
 
 interface Template {
   id: string;
@@ -47,9 +48,114 @@ export const TemplateEditor = ({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (template && processData) {
+    const loadAndProcessTemplate = async () => {
+      if (!template || !processData) return;
+
+      // Fetch company legal data
+      let companyQualification = '[QUALIFICAÇÃO DA EMPRESA NÃO DISPONÍVEL]';
+      if (companyId) {
+        const { data: companyData } = await supabase
+          .from('companies')
+          .select('*')
+          .eq('id', companyId)
+          .single();
+
+        if (companyData) {
+          const companyLegalData: LegalData = {
+            person_type: 'pj',
+            company_name: companyData.name,
+            cnpj: companyData.cnpj || undefined,
+            address: companyData.address || undefined,
+            legal_representative_name: companyData.legal_representative_name || undefined,
+            legal_representative_cpf: companyData.legal_representative_cpf || undefined,
+            email: companyData.email || undefined,
+            phone: companyData.phone || undefined
+          };
+          companyQualification = formatLegalQualification(companyLegalData);
+        }
+      }
+
+      // Fetch client legal data
+      let clientQualification = '[QUALIFICAÇÃO DO CLIENTE NÃO DISPONÍVEL]';
+      if (processData.client_email) {
+        const { data: clientLegalData } = await supabase
+          .from('client_legal_data')
+          .select('*')
+          .eq('client_email', processData.client_email)
+          .eq('company_id', companyId)
+          .maybeSingle();
+
+        if (clientLegalData) {
+          if (clientLegalData.person_type === 'pf') {
+            const clientData: LegalData = {
+              person_type: 'pf',
+              client_name: clientLegalData.client_name,
+              cpf: clientLegalData.cpf || undefined,
+              rg: clientLegalData.rg || undefined,
+              nationality: clientLegalData.nationality || undefined,
+              marital_status: clientLegalData.marital_status || undefined,
+              profession: clientLegalData.profession || undefined,
+              address: clientLegalData.address || undefined,
+              email: clientLegalData.email || processData.client_email,
+              phone: clientLegalData.phone || undefined
+            };
+            clientQualification = formatLegalQualification(clientData);
+          } else {
+            const clientData: LegalData = {
+              person_type: 'pj',
+              company_name: clientLegalData.company_name || clientLegalData.client_name,
+              cnpj: clientLegalData.cnpj || undefined,
+              address: clientLegalData.address || undefined,
+              legal_representative_name: clientLegalData.legal_representative_name || undefined,
+              legal_representative_cpf: clientLegalData.legal_representative_cpf || undefined,
+              email: clientLegalData.email || processData.client_email,
+              phone: clientLegalData.phone || undefined
+            };
+            clientQualification = formatLegalQualification(clientData);
+          }
+        } else {
+          // Fallback: try to get basic info from clients table
+          const { data: clientBasicData } = await supabase
+            .from('clients')
+            .select('*')
+            .eq('email', processData.client_email)
+            .eq('company_id', companyId)
+            .maybeSingle();
+
+          if (clientBasicData) {
+            const address = [
+              clientBasicData.address_street,
+              clientBasicData.address_number,
+              clientBasicData.address_complement,
+              clientBasicData.address_neighborhood,
+              clientBasicData.address_city,
+              clientBasicData.address_state,
+              clientBasicData.address_zipcode
+            ].filter(Boolean).join(', ');
+
+            const clientData: LegalData = {
+              person_type: 'pj',
+              company_name: clientBasicData.company_name,
+              cnpj: clientBasicData.cnpj || undefined,
+              address: address || undefined,
+              legal_representative_name: clientBasicData.admin_full_name || undefined,
+              legal_representative_cpf: clientBasicData.admin_cpf || undefined,
+              email: clientBasicData.email,
+              phone: clientBasicData.phone || undefined
+            };
+            clientQualification = formatLegalQualification(clientData);
+          }
+        }
+      }
+
       // Replace template variables with actual data
       let processedContent = template.content;
+      
+      // Replace legal qualification variables
+      processedContent = processedContent.replace(/\[QUALIFICACAO_EMPRESA\]/g, companyQualification);
+      processedContent = processedContent.replace(/\[QUALIFICAÇÃO_EMPRESA\]/g, companyQualification);
+      processedContent = processedContent.replace(/\[QUALIFICACAO_CLIENTE\]/g, clientQualification);
+      processedContent = processedContent.replace(/\[QUALIFICAÇÃO_CLIENTE\]/g, clientQualification);
       
       // Replace common variables with validation
       processedContent = processedContent.replace(/\[CLIENTE_NOME\]/g, processData.client_name || '[NOME NÃO INFORMADO]');
@@ -62,8 +168,10 @@ export const TemplateEditor = ({
       
       setContent(processedContent);
       setFileName(`${template.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
-    }
-  }, [template, processData]);
+    };
+
+    loadAndProcessTemplate();
+  }, [template, processData, companyId]);
 
   const handleSaveToProcess = async () => {
     if (!content.trim()) {
@@ -235,18 +343,23 @@ export const TemplateEditor = ({
             />
           </div>
 
-          {template?.variables && template.variables.length > 0 && (
-            <div className="bg-muted/50 p-3 rounded-md">
-              <p className="text-sm font-medium mb-2">Variáveis disponíveis:</p>
-              <div className="flex flex-wrap gap-2">
-                {template.variables.map((variable) => (
-                  <code key={variable} className="text-xs bg-background px-2 py-1 rounded">
-                    {variable}
-                  </code>
-                ))}
-              </div>
+          <div className="bg-muted/50 p-3 rounded-md">
+            <p className="text-sm font-medium mb-2">Variáveis disponíveis:</p>
+            <div className="flex flex-wrap gap-2">
+              <code className="text-xs bg-background px-2 py-1 rounded">[QUALIFICAÇÃO_EMPRESA]</code>
+              <code className="text-xs bg-background px-2 py-1 rounded">[QUALIFICAÇÃO_CLIENTE]</code>
+              <code className="text-xs bg-background px-2 py-1 rounded">[CLIENTE_NOME]</code>
+              <code className="text-xs bg-background px-2 py-1 rounded">[CLIENTE_EMAIL]</code>
+              <code className="text-xs bg-background px-2 py-1 rounded">[CPF_CNPJ]</code>
+              <code className="text-xs bg-background px-2 py-1 rounded">[PROCESSO_NOME]</code>
+              <code className="text-xs bg-background px-2 py-1 rounded">[DATA_ATUAL]</code>
+              {template?.variables && template.variables.map((variable) => (
+                <code key={variable} className="text-xs bg-background px-2 py-1 rounded">
+                  {variable}
+                </code>
+              ))}
             </div>
-          )}
+          </div>
         </div>
 
         <DialogFooter>
