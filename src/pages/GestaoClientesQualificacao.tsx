@@ -578,14 +578,15 @@ const GestaoClientesQualificacao = () => {
         open={!!selectedClient} 
         onOpenChange={(open) => {
           if (!open) {
+            // Limpar clientId da URL primeiro se existir (sem causar re-render via navigate)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('clientId')) {
+              window.history.replaceState({}, '', '/gestao-clientes-qualificacao');
+            }
+            // Depois resetar estados
             setSelectedClient(null);
             setInviteLink('');
             setClientLegalData(null);
-            // Limpar clientId da URL se existir
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('clientId')) {
-              navigate('/gestao-clientes-qualificacao', { replace: true });
-            }
           }
         }}
       >
