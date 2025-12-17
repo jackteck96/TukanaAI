@@ -36,6 +36,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 
+interface GlobalDocumentCategory {
+  id: string;
+  name: string;
+  display_order: number;
+}
+
 interface GlobalDocumentType {
   id: string;
   name: string;
@@ -43,6 +49,7 @@ interface GlobalDocumentType {
   has_expiration_date: boolean;
   requires_issuing_location: boolean;
   notes: string;
+  category_id: string | null;
 }
 
 interface GlobalDocumentTemplate {
@@ -120,8 +127,10 @@ const AdminDashboard = () => {
     has_issue_date: false,
     has_expiration_date: false,
     requires_issuing_location: false,
-    notes: ""
+    notes: "",
+    category_id: ""
   });
+  const [globalCategories, setGlobalCategories] = useState<GlobalDocumentCategory[]>([]);
 
   // States for document templates
   const [templates, setTemplates] = useState<GlobalDocumentTemplate[]>([]);
@@ -187,6 +196,7 @@ const AdminDashboard = () => {
         fetchPlatformAdmins(),
         fetchTermsOfService(),
         fetchDocumentTypes(),
+        fetchGlobalCategories(),
         fetchTemplates(),
         fetchTrainingData(),
         fetchTrainingCases(),
@@ -401,6 +411,16 @@ const AdminDashboard = () => {
     setDocumentTypes(data || []);
   };
 
+  const fetchGlobalCategories = async () => {
+    const { data, error } = await supabase
+      .from('global_document_categories')
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (error) throw error;
+    setGlobalCategories(data || []);
+  };
+
   const fetchTemplates = async () => {
     const { data, error } = await supabase
       .from('global_document_templates')
@@ -439,10 +459,19 @@ const AdminDashboard = () => {
     e.preventDefault();
     
     try {
+      const payload = {
+        name: docTypeForm.name,
+        has_issue_date: docTypeForm.has_issue_date,
+        has_expiration_date: docTypeForm.has_expiration_date,
+        requires_issuing_location: docTypeForm.requires_issuing_location,
+        notes: docTypeForm.notes,
+        category_id: docTypeForm.category_id || null
+      };
+
       if (editingDocType) {
         const { error } = await supabase
           .from('global_document_types')
-          .update(docTypeForm)
+          .update(payload)
           .eq('id', editingDocType.id);
         
         if (error) throw error;
@@ -450,7 +479,7 @@ const AdminDashboard = () => {
       } else {
         const { error } = await supabase
           .from('global_document_types')
-          .insert(docTypeForm);
+          .insert(payload);
         
         if (error) throw error;
         toast({ title: "Sucesso", description: "Tipo de documento criado" });
@@ -458,7 +487,7 @@ const AdminDashboard = () => {
       
       setIsDocTypeModalOpen(false);
       setEditingDocType(null);
-      setDocTypeForm({ name: "", has_issue_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "" });
+      setDocTypeForm({ name: "", has_issue_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "", category_id: "" });
       fetchDocumentTypes();
     } catch (error: any) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -923,7 +952,7 @@ const AdminDashboard = () => {
                 <DialogTrigger asChild>
                   <Button onClick={() => {
                     setEditingDocType(null);
-                    setDocTypeForm({ name: "", has_issue_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "" });
+                    setDocTypeForm({ name: "", has_issue_date: false, has_expiration_date: false, requires_issuing_location: false, notes: "", category_id: "" });
                   }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Novo Tipo
@@ -948,6 +977,26 @@ const AdminDashboard = () => {
                         placeholder="Ex: RG, CPF, CNH..."
                         required
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="category">Categoria</Label>
+                      <Select
+                        value={docTypeForm.category_id}
+                        onValueChange={(value) => setDocTypeForm(prev => ({ ...prev, category_id: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria (opcional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Sem categoria</SelectItem>
+                          {globalCategories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-3">
@@ -1018,7 +1067,15 @@ const AdminDashboard = () => {
                 <Card key={type.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{type.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{type.name}</CardTitle>
+                        {type.category_id && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                            <FolderOpen className="w-3 h-3" />
+                            {globalCategories.find(c => c.id === type.category_id)?.name}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
@@ -1030,7 +1087,8 @@ const AdminDashboard = () => {
                               has_issue_date: type.has_issue_date,
                               has_expiration_date: type.has_expiration_date,
                               requires_issuing_location: type.requires_issuing_location,
-                              notes: type.notes
+                              notes: type.notes,
+                              category_id: type.category_id || ""
                             });
                             setIsDocTypeModalOpen(true);
                           }}
