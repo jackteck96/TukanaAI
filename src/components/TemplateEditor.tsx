@@ -29,6 +29,7 @@ interface TemplateEditorProps {
     client_email: string;
     cpf_cnpj?: string;
     project_name?: string;
+    company_id?: string;
   };
   companyId: string;
   onDocumentCreated: () => void;
@@ -51,13 +52,16 @@ export const TemplateEditor = ({
     const loadAndProcessTemplate = async () => {
       if (!template || !processData) return;
 
+      // Use company_id from processData (process context) or fallback to prop
+      const effectiveCompanyId = processData.company_id || companyId;
+
       // Fetch company legal data
       let companyQualification = '[QUALIFICAÇÃO DA EMPRESA NÃO DISPONÍVEL]';
-      if (companyId) {
+      if (effectiveCompanyId) {
         const { data: companyData } = await supabase
           .from('companies')
           .select('*')
-          .eq('id', companyId)
+          .eq('id', effectiveCompanyId)
           .single();
 
         if (companyData) {
@@ -77,12 +81,12 @@ export const TemplateEditor = ({
 
       // Fetch client legal data
       let clientQualification = '[QUALIFICAÇÃO DO CLIENTE NÃO DISPONÍVEL]';
-      if (processData.client_email) {
+      if (processData.client_email && effectiveCompanyId) {
         const { data: clientLegalData } = await supabase
           .from('client_legal_data')
           .select('*')
           .eq('client_email', processData.client_email)
-          .eq('company_id', companyId)
+          .eq('company_id', effectiveCompanyId)
           .maybeSingle();
 
         if (clientLegalData) {
@@ -119,7 +123,7 @@ export const TemplateEditor = ({
             .from('clients')
             .select('*')
             .eq('email', processData.client_email)
-            .eq('company_id', companyId)
+            .eq('company_id', effectiveCompanyId)
             .maybeSingle();
 
           if (clientBasicData) {
