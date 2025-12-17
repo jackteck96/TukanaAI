@@ -1,16 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataSubjectRightsPortal } from "@/components/DataSubjectRightsPortal";
 import { ConsentManagement } from "@/components/ConsentManagement";
-import { Shield, UserCheck, FileText, Info } from "lucide-react";
+import { Shield, UserCheck, FileText, Info, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const MeusDadosPessoais = () => {
+  const navigate = useNavigate();
+  const { primaryRole, companyId } = useUserRole();
+
+  const getDashboardRoute = () => {
+    if (primaryRole === 'company_admin' || primaryRole === 'company_collaborator') {
+      return '/empresa';
+    }
+    if (primaryRole === 'client' || primaryRole === 'client_collaborator') {
+      return '/cliente';
+    }
+    if (primaryRole === 'platform_admin' && !companyId) {
+      return '/admin';
+    }
+    return '/empresa';
+  };
+
   return (
     <>
       <Helmet>
@@ -23,6 +40,15 @@ const MeusDadosPessoais = () => {
         
         <main className="container mx-auto px-4 py-8 max-w-6xl">
           <div className="mb-8">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(getDashboardRoute())}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao Dashboard
+            </Button>
             <h1 className="text-3xl font-bold mb-2">Meus Dados Pessoais</h1>
             <p className="text-muted-foreground">
               Gerencie seus dados, consentimentos e exerça seus direitos conforme LGPD
