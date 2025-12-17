@@ -271,10 +271,10 @@ export const TemplateEditor = ({
       const safeFileName = pdfFileName.replace(/[^a-zA-Z0-9.-]/g, '_');
       const filePath = `${processId}/${processName}_${documentType}_${safeFileName}`;
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage (upsert to allow overwriting existing files)
       const { error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(filePath, file);
+        .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
         console.error('Erro no upload:', uploadError);
