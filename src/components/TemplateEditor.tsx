@@ -151,20 +151,30 @@ export const TemplateEditor = ({
       // Replace template variables with actual data
       let processedContent = template.content;
       
-      // Replace legal qualification variables
-      processedContent = processedContent.replace(/\[QUALIFICACAO_EMPRESA\]/g, companyQualification);
-      processedContent = processedContent.replace(/\[QUALIFICAÇÃO_EMPRESA\]/g, companyQualification);
-      processedContent = processedContent.replace(/\[QUALIFICACAO_CLIENTE\]/g, clientQualification);
-      processedContent = processedContent.replace(/\[QUALIFICAÇÃO_CLIENTE\]/g, clientQualification);
+      // Replace legal qualification variables (full qualification)
+      processedContent = processedContent.replace(/\[QUALIFICACAO_EMPRESA\]/gi, companyQualification);
+      processedContent = processedContent.replace(/\[QUALIFICAÇÃO_EMPRESA\]/gi, companyQualification);
+      processedContent = processedContent.replace(/\[QUALIFICACAO_CLIENTE\]/gi, clientQualification);
+      processedContent = processedContent.replace(/\[QUALIFICAÇÃO_CLIENTE\]/gi, clientQualification);
+      
+      // Common contract variables - replace with full legal qualification
+      processedContent = processedContent.replace(/\[EMPRESA\]/gi, companyQualification);
+      processedContent = processedContent.replace(/\[CONTRATANTE\]/gi, companyQualification);
+      processedContent = processedContent.replace(/\[OUTORGANTE\]/gi, companyQualification);
+      processedContent = processedContent.replace(/\[CONTRATADA\]/gi, clientQualification);
+      processedContent = processedContent.replace(/\[CONTRATADO\]/gi, clientQualification);
+      processedContent = processedContent.replace(/\[OUTORGADO\]/gi, clientQualification);
+      processedContent = processedContent.replace(/\[PARTE_1\]/gi, companyQualification);
+      processedContent = processedContent.replace(/\[PARTE_2\]/gi, clientQualification);
       
       // Replace common variables with validation
-      processedContent = processedContent.replace(/\[CLIENTE_NOME\]/g, processData.client_name || '[NOME NÃO INFORMADO]');
-      processedContent = processedContent.replace(/\[CLIENTE\]/g, processData.client_name || '[NOME NÃO INFORMADO]');
-      processedContent = processedContent.replace(/\[CLIENTE_EMAIL\]/g, processData.client_email || '[EMAIL NÃO INFORMADO]');
-      processedContent = processedContent.replace(/\[CPF_CNPJ\]/g, processData.cpf_cnpj || '[CPF/CNPJ NÃO INFORMADO]');
-      processedContent = processedContent.replace(/\[PROCESSO_NOME\]/g, processData.project_name || '[PROCESSO SEM NOME]');
-      processedContent = processedContent.replace(/\[DATA_ATUAL\]/g, new Date().toLocaleDateString('pt-BR'));
-      processedContent = processedContent.replace(/\[DATA\]/g, new Date().toLocaleDateString('pt-BR'));
+      processedContent = processedContent.replace(/\[CLIENTE_NOME\]/gi, processData.client_name || '[NOME NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[CLIENTE\]/gi, processData.client_name || '[NOME NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[CLIENTE_EMAIL\]/gi, processData.client_email || '[EMAIL NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[CPF_CNPJ\]/gi, processData.cpf_cnpj || '[CPF/CNPJ NÃO INFORMADO]');
+      processedContent = processedContent.replace(/\[PROCESSO_NOME\]/gi, processData.project_name || '[PROCESSO SEM NOME]');
+      processedContent = processedContent.replace(/\[DATA_ATUAL\]/gi, new Date().toLocaleDateString('pt-BR'));
+      processedContent = processedContent.replace(/\[DATA\]/gi, new Date().toLocaleDateString('pt-BR'));
       
       setContent(processedContent);
       setFileName(`${template.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
