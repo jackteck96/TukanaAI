@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Progress } from "@/components/ui/progress";
 import PontoClock from "@/components/PontoClock";
 import { 
   Users, 
@@ -12,7 +13,7 @@ import {
   CheckCircle, 
   Plus,
   Search,
-  MoreHorizontal,
+  MoreVertical,
   LogOut,
   Brain,
   UserPlus,
@@ -24,15 +25,18 @@ import {
   ChevronDown,
   TrendingUp,
   AlertCircle,
+  ArrowUpRight,
+  LayoutDashboard,
+  FolderOpen,
   Settings,
-  ArrowRight,
-  Sparkles
+  Bell,
+  Menu,
+  X
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import UserInviteSystem from "@/components/UserInviteSystem";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
 import CompletedTodayModal from "@/components/CompletedTodayModal";
 import DocumentSearchModal from "@/components/DocumentSearchModal";
@@ -55,10 +59,12 @@ const EmpresaDashboard = () => {
   const { stats: dashboardStats, recentClients, recentProcesses, loading, refreshData } = useDashboardData();
   const [isAdmin, setIsAdmin] = useState(false);
   const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>("");
   const [companyLegalData, setCompanyLegalData] = useState<LegalData | null>(null);
   const [isCompanyDataComplete, setIsCompanyDataComplete] = useState(false);
   const [isPontoOpen, setIsPontoOpen] = useState(false);
   const [showAllActions, setShowAllActions] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isCompletedTodayModalOpen, setIsCompletedTodayModalOpen] = useState(false);
@@ -112,6 +118,7 @@ const EmpresaDashboard = () => {
             .single();
 
           if (companyData) {
+            setCompanyName(companyData.name || 'Empresa');
             const isComplete = !!(
               companyData.cnpj &&
               companyData.name &&
@@ -161,7 +168,7 @@ const EmpresaDashboard = () => {
   };
 
   const formatDueDate = (dateString: string | null) => {
-    if (!dateString) return 'Sem prazo';
+    if (!dateString) return null;
     return new Date(dateString).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   };
 
@@ -169,12 +176,13 @@ const EmpresaDashboard = () => {
     switch (status) {
       case "Aprovado":
       case "Concluído":
-        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+        return "bg-success/10 text-success border-success/20";
       case "Em Análise":
-        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
+      case "Em andamento":
+        return "bg-info/10 text-info border-info/20";
       case "Pendente":
       case "Documentos Pendentes":
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+        return "bg-warning/10 text-warning border-warning/20";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -192,411 +200,553 @@ const EmpresaDashboard = () => {
     );
   });
 
-  // Primary quick actions (always visible)
-  const primaryActions = [
-    { icon: UserPlus, label: "Novo Cliente", component: <CreateClientDialog onClientCreated={refreshData} variant="quickAction" /> },
-    { icon: Users, label: "Gestão Clientes", href: "/gestao-clientes-qualificacao" },
+  // Navigation items for sidebar
+  const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", href: "/empresa", active: true },
+    { icon: FolderOpen, label: "Processos", href: "/gerenciar-processos" },
+    { icon: Users, label: "Clientes", href: "/gestao-clientes-qualificacao" },
     { icon: PenTool, label: "Assinaturas", href: "/gerenciar-processos?tab=assinaturas" },
-    { icon: Search, label: "Buscar Docs", onClick: () => setIsSearchModalOpen(true) },
-    { icon: FileText, label: "Processos", href: "/gerenciar-processos" },
+    { icon: FileText, label: "Modelos", href: "/modelos-documentos" },
+    { icon: TrendingUp, label: "Relatórios", href: "/relatorios" },
   ];
 
-  // Secondary quick actions (hidden by default)
-  const secondaryActions = [
-    { icon: TrendingUp, label: "Relatórios", href: "/relatorios" },
-    { icon: Clock, label: "Rel. Ponto", href: "/relatorios-ponto" },
-    { icon: Users, label: "Colaboradores", href: "/gestao-colaboradores" },
-    { icon: FileText, label: "Modelos", href: "/modelos-documentos" },
+  const secondaryNavItems = [
     { icon: Brain, label: "Análise IA", href: "/analise-ia" },
-    { icon: List, label: "Tipos Docs", href: "/cadastro-tipos-documentos" },
+    { icon: List, label: "Tipos de Docs", href: "/cadastro-tipos-documentos" },
+    { icon: Users, label: "Colaboradores", href: "/gestao-colaboradores" },
+    { icon: Clock, label: "Rel. Ponto", href: "/relatorios-ponto" },
     ...(hasRole('company_admin') ? [{ icon: Shield, label: "Permissões", href: "/gestao-permissoes" }] : []),
   ];
 
+  // KPI data
+  const kpis = [
+    { 
+      label: "Clientes", 
+      value: dashboardStats.totalClients, 
+      icon: Users,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+      href: "/gestao-clientes"
+    },
+    { 
+      label: "Processos Ativos", 
+      value: dashboardStats.totalProcesses, 
+      icon: FileText,
+      color: "text-info",
+      bgColor: "bg-info/10",
+      href: "/gerenciar-processos"
+    },
+    { 
+      label: "Pendentes", 
+      value: dashboardStats.pendingProcesses, 
+      icon: AlertCircle,
+      color: "text-warning",
+      bgColor: "bg-warning/10",
+      href: "/gerenciar-processos?status=pendente"
+    },
+    { 
+      label: "Concluídos Hoje", 
+      value: dashboardStats.completedToday, 
+      icon: CheckCircle,
+      color: "text-success",
+      bgColor: "bg-success/10",
+      onClick: () => setIsCompletedTodayModalOpen(true)
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Clean Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-40">
-        <div className="px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Left: Title */}
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
-              </div>
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden lg:flex flex-col w-64 bg-sidebar-background border-r border-sidebar-border">
+        {/* Logo */}
+        <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
+          <Link to="/empresa" className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">F</span>
             </div>
+            <span className="text-sidebar-foreground font-semibold text-lg tracking-tight">Fuzen</span>
+          </Link>
+        </div>
 
-            {/* Right: Actions */}
-            <div className="flex items-center gap-2">
-              {/* Primary CTA */}
-              <CreateProcessWithInvite />
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                item.active 
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                  : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+              }`}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          ))}
 
-              {/* Secondary Actions Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  {isAdmin && (
-                    <>
-                      <DropdownMenuItem onClick={() => navigate('/admin')}>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Painel Admin
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem onClick={() => setIsEditProfileModalOpen(true)}>
-                    <UserCircle className="h-4 w-4 mr-2" />
-                    Editar Perfil
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/meus-dados-pessoais')}>
-                    <Shield className="h-4 w-4 mr-2" />
-                    Meus Dados (LGPD)
-                  </DropdownMenuItem>
-                  {companyLegalData && (
-                    <DropdownMenuItem asChild>
-                      <CopyLegalQualificationButton 
-                        data={companyLegalData}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start font-normal"
-                      />
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <ReportProblemDialog 
-                    userType="empresa" 
-                    trigger={
-                      <Button variant="ghost" size="sm" className="w-full justify-start font-normal h-auto py-1.5 px-2">
-                        <AlertCircle className="h-4 w-4 mr-2" />
-                        Relatar Problema
-                      </Button>
-                    }
-                  />
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <div className="pt-4 mt-4 border-t border-sidebar-border">
+            <p className="px-3 text-xs font-medium text-sidebar-muted uppercase tracking-wider mb-2">Mais</p>
+            {secondaryNavItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+
+        {/* User section */}
+        <div className="p-4 border-t border-sidebar-border">
+          <div className="flex items-center gap-3 px-2">
+            <div className="h-9 w-9 rounded-full bg-sidebar-accent flex items-center justify-center">
+              <UserCircle className="h-5 w-5 text-sidebar-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{companyName}</p>
+              <p className="text-xs text-sidebar-muted truncate">{user?.email}</p>
             </div>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Alerts Section - Compact */}
-        <div className="space-y-3">
-          <ExpiringDocumentsAlert />
-          <CompanyNotifications compact />
-          {companyId && !isCompanyDataComplete && (
-            <CompanyLegalDataCard companyId={companyId} />
-          )}
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <aside className="fixed left-0 top-0 h-full w-72 bg-sidebar-background border-r border-sidebar-border animate-slide-in-right">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-sidebar-border">
+              <Link to="/empresa" className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">F</span>
+                </div>
+                <span className="text-sidebar-foreground font-semibold text-lg">Fuzen</span>
+              </Link>
+              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="text-sidebar-foreground">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <nav className="p-4 space-y-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    item.active 
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                      : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+              <div className="pt-4 mt-4 border-t border-sidebar-border">
+                {secondaryNavItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </aside>
         </div>
+      )}
 
-        {/* KPIs Row - Compact and Clean */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
-            onClick={() => navigate('/gestao-clientes')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Clientes</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{dashboardStats.totalClients}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden" 
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">Visão geral da sua operação</p>
+            </div>
+          </div>
 
-          <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
-            onClick={() => navigate('/gerenciar-processos')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ativos</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{dashboardStats.totalProcesses}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-blue-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="hidden sm:flex items-center gap-2 text-muted-foreground"
+              onClick={() => setIsSearchModalOpen(true)}
+            >
+              <Search className="h-4 w-4" />
+              <span className="text-sm">Buscar...</span>
+              <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                ⌘K
+              </kbd>
+            </Button>
 
-          <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
-            onClick={() => navigate('/gerenciar-processos?status=pendente')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pendentes</p>
-                  <p className="text-2xl font-bold text-amber-600 mt-1">{dashboardStats.pendingProcesses}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-amber-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Primary CTA */}
+            <CreateProcessWithInvite />
 
-          <Card 
-            className="cursor-pointer hover:bg-muted/50 transition-colors border-border/50"
-            onClick={() => setIsCompletedTodayModalOpen(true)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Concluídos</p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-1">{dashboardStats.completedToday}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-emerald-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Notifications - placeholder */}
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              {dashboardStats.pendingProcesses > 0 && (
+                <span className="absolute top-1 right-1 h-2 w-2 bg-warning rounded-full" />
+              )}
+            </Button>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Processes - Main Focus (2 columns) */}
-          <div className="lg:col-span-2 space-y-4">
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-base font-semibold">Processos em Andamento</CardTitle>
-                    <Badge variant="secondary" className="text-xs">{filteredProcesses.length}</Badge>
+            {/* User menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {isAdmin && (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Shield className="h-4 w-4 mr-2" />
+                      Painel Admin
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem onClick={() => setIsEditProfileModalOpen(true)}>
+                  <UserCircle className="h-4 w-4 mr-2" />
+                  Editar Perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/meus-dados-pessoais')}>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Meus Dados (LGPD)
+                </DropdownMenuItem>
+                {companyLegalData && (
+                  <DropdownMenuItem asChild>
+                    <CopyLegalQualificationButton 
+                      data={companyLegalData}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start font-normal"
+                    />
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <ReportProblemDialog 
+                  userType="empresa" 
+                  trigger={
+                    <Button variant="ghost" size="sm" className="w-full justify-start font-normal h-auto py-1.5 px-2">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      Relatar Problema
+                    </Button>
+                  }
+                />
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        {/* Main content area */}
+        <main className="flex-1 p-4 lg:p-6 space-y-6 overflow-auto">
+          {/* Alerts */}
+          <div className="space-y-3">
+            <ExpiringDocumentsAlert />
+            <CompanyNotifications compact />
+            {companyId && !isCompanyDataComplete && (
+              <CompanyLegalDataCard companyId={companyId} />
+            )}
+          </div>
+
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {kpis.map((kpi) => (
+              <Card 
+                key={kpi.label}
+                className="cursor-pointer hover:shadow-md transition-all duration-200 border-border/50 group"
+                onClick={kpi.onClick || (() => kpi.href && navigate(kpi.href))}
+              >
+                <CardContent className="p-4 lg:p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{kpi.label}</p>
+                      <p className={`text-2xl lg:text-3xl font-bold ${kpi.color}`}>{kpi.value}</p>
+                    </div>
+                    <div className={`h-10 w-10 rounded-xl ${kpi.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                      <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
+                    </div>
                   </div>
-                  <Button variant="ghost" size="sm" asChild className="text-xs">
-                    <Link to="/gerenciar-processos" className="flex items-center gap-1">
-                      Ver todos <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  </Button>
-                </div>
-                {/* Search */}
-                <div className="relative mt-3">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar processo, cliente ou CNPJ..."
-                    value={processSearchTerm}
-                    onChange={(e) => setProcessSearchTerm(e.target.value)}
-                    className="pl-9 h-9 text-sm bg-muted/30 border-border/50"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2">
-                  {loading ? (
-                    Array.from({ length: 3 }, (_, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-muted/30 animate-pulse">
-                        <div className="h-4 bg-muted rounded w-40 mb-2"></div>
-                        <div className="h-2 bg-muted rounded w-full"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Main grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Processes - 2 columns */}
+            <div className="xl:col-span-2 space-y-6">
+              <Card className="border-border/50">
+                <CardHeader className="pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <CardTitle className="text-base font-semibold">Processos em Andamento</CardTitle>
+                      <Badge variant="secondary" className="font-normal">{filteredProcesses.length}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 sm:w-64">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Buscar processo..."
+                          value={processSearchTerm}
+                          onChange={(e) => setProcessSearchTerm(e.target.value)}
+                          className="pl-9 h-9 text-sm"
+                        />
                       </div>
-                    ))
-                  ) : filteredProcesses.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                      <p className="text-sm">Nenhum processo encontrado</p>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/gerenciar-processos" className="flex items-center gap-1">
+                          Ver todos
+                          <ArrowUpRight className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {loading ? (
+                      Array.from({ length: 4 }, (_, i) => (
+                        <div key={i} className="p-4 rounded-xl bg-muted/30 animate-pulse">
+                          <div className="h-4 bg-muted rounded w-48 mb-3"></div>
+                          <div className="h-2 bg-muted rounded w-full"></div>
+                        </div>
+                      ))
+                    ) : filteredProcesses.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="h-12 w-12 rounded-full bg-muted mx-auto mb-3 flex items-center justify-center">
+                          <FileText className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Nenhum processo encontrado</p>
+                        <Button variant="link" size="sm" className="mt-2" asChild>
+                          <Link to="/gerenciar-processos">Criar novo processo</Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      filteredProcesses.map((process) => (
+                        <div
+                          key={process.id}
+                          className="group p-4 rounded-xl border border-border/50 hover:border-border hover:bg-muted/30 transition-all cursor-pointer"
+                          onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
+                        >
+                          <div className="flex items-start justify-between gap-4 mb-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="font-medium text-sm text-foreground truncate">
+                                  {process.project_name || 'Sem nome'}
+                                </h3>
+                                <Badge variant="outline" className={`text-xs ${getStatusColor(process.status)}`}>
+                                  {process.status}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">{process.client_name}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              {formatDueDate(process.due_date) && (
+                                <p className="text-xs text-muted-foreground">{formatDueDate(process.due_date)}</p>
+                              )}
+                              <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 ml-auto" />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">Progresso</span>
+                              <span className="font-medium text-foreground">{process.progress}%</span>
+                            </div>
+                            <Progress value={process.progress} className="h-1.5" />
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-semibold">Ações Rápidas</CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowAllActions(!showAllActions)}
+                      className="text-xs"
+                    >
+                      {showAllActions ? 'Menos' : 'Mais'}
+                      <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showAllActions ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <CreateClientDialog onClientCreated={refreshData} variant="quickAction" />
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col gap-2 hover:bg-muted/50"
+                      onClick={() => navigate('/gestao-clientes-qualificacao')}
+                    >
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs">Gestão Clientes</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col gap-2 hover:bg-muted/50"
+                      onClick={() => navigate('/gerenciar-processos?tab=assinaturas')}
+                    >
+                      <PenTool className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs">Assinaturas</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col gap-2 hover:bg-muted/50"
+                      onClick={() => setIsSearchModalOpen(true)}
+                    >
+                      <Search className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-xs">Buscar Docs</span>
+                    </Button>
+                  </div>
+
+                  {showAllActions && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 pt-3 border-t border-border/50">
+                      <PdfConverter />
+                      <Button 
+                        variant="ghost" 
+                        className="h-16 flex-col gap-1.5 hover:bg-muted/50"
+                        onClick={() => navigate('/gerenciar-processos')}
+                      >
+                        <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Processos</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="h-16 flex-col gap-1.5 hover:bg-muted/50"
+                        onClick={() => navigate('/modelos-documentos')}
+                      >
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Modelos</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="h-16 flex-col gap-1.5 hover:bg-muted/50"
+                        onClick={() => navigate('/analise-ia')}
+                      >
+                        <Brain className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Análise IA</span>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar content */}
+            <div className="space-y-6">
+              {/* Recent Clients */}
+              <Card className="border-border/50">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold">Clientes Recentes</CardTitle>
+                    <Button variant="ghost" size="sm" asChild className="text-xs h-7">
+                      <Link to="/gestao-clientes">
+                        Ver todos
+                        <ChevronRight className="h-3 w-3 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {loading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="p-3 rounded-lg bg-muted/30 animate-pulse">
+                          <div className="h-3 bg-muted rounded w-28 mb-2"></div>
+                          <div className="h-2 bg-muted rounded w-20"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : recentClients.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="h-10 w-10 rounded-full bg-muted mx-auto mb-2 flex items-center justify-center">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Nenhum cliente ainda</p>
                     </div>
                   ) : (
-                    filteredProcesses.map((process) => (
-                      <div
-                        key={process.id}
-                        className="group p-3 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border border-transparent hover:border-border/50"
-                        onClick={() => navigate(`/gerenciar-processos?id=${process.id}`)}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-medium text-sm text-foreground truncate">
-                                {process.project_name || 'Sem nome'}
-                              </h3>
-                              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${getStatusColor(process.status)}`}>
-                                {process.status}
+                    <div className="space-y-2">
+                      {recentClients.slice(0, 4).map((client) => (
+                        <div
+                          key={client.id}
+                          className="group p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer flex items-center justify-between"
+                          onClick={() => navigate(`/cliente/${encodeURIComponent(client.client_email)}`)}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-foreground truncate">{client.client_name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${getStatusColor(client.status)}`}>
+                                {client.status}
                               </Badge>
+                              <span className="text-[10px] text-muted-foreground">{formatLastUpdate(client.last_update)}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                              {process.client_name}
-                            </p>
                           </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-[10px] text-muted-foreground">{formatDueDate(process.due_date)}</p>
-                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                         </div>
-                        {/* Progress Bar */}
-                        <div className="mt-2">
-                          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                            <span>Progresso</span>
-                            <span>{process.progress}%</span>
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-1.5">
-                            <div
-                              className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                              style={{ width: `${process.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions - Compact */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-semibold">Ações Rápidas</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setShowAllActions(!showAllActions)}
-                    className="text-xs"
-                  >
-                    {showAllActions ? 'Ver menos' : 'Ver todas'}
-                    <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showAllActions ? 'rotate-180' : ''}`} />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-4 gap-2">
-                  {/* Primary Actions */}
-                  {primaryActions.map((action, i) => (
-                    action.component ? (
-                      <div key={i}>{action.component}</div>
-                    ) : action.onClick ? (
-                      <Button 
-                        key={i}
-                        variant="outline" 
-                        className="h-16 flex-col gap-1 text-xs border-border/50 hover:bg-muted/50"
-                        onClick={action.onClick}
-                      >
-                        <action.icon className="h-4 w-4" />
-                        <span className="text-[10px]">{action.label}</span>
-                      </Button>
-                    ) : (
-                      <Link key={i} to={action.href!}>
-                        <Button variant="outline" className="h-16 flex-col gap-1 w-full text-xs border-border/50 hover:bg-muted/50">
-                          <action.icon className="h-4 w-4" />
-                          <span className="text-[10px]">{action.label}</span>
-                        </Button>
-                      </Link>
-                    )
-                  ))}
-                </div>
-
-                {/* Secondary Actions - Collapsible */}
-                {showAllActions && (
-                  <div className="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-border/50">
-                    <PdfConverter />
-                    {secondaryActions.map((action, i) => (
-                      <Link key={i} to={action.href}>
-                        <Button variant="ghost" className="h-16 flex-col gap-1 w-full text-xs hover:bg-muted/50">
-                          <action.icon className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-[10px] text-muted-foreground">{action.label}</span>
-                        </Button>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar - Secondary Content */}
-          <div className="space-y-4">
-            {/* Recent Clients - Compact */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold">Clientes Recentes</CardTitle>
-                  <Button variant="ghost" size="sm" asChild className="text-xs h-7 px-2">
-                    <Link to="/gestao-clientes">
-                      Ver todos <ChevronRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {loading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="p-2 rounded bg-muted/30 animate-pulse">
-                        <div className="h-3 bg-muted rounded w-24 mb-1"></div>
-                        <div className="h-2 bg-muted rounded w-16"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : recentClients.length === 0 ? (
-                  <div className="text-center py-6 text-muted-foreground">
-                    <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                    <p className="text-xs">Nenhum cliente ainda</p>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {recentClients.slice(0, 3).map((client) => (
-                      <div
-                        key={client.id}
-                        className="group p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer flex items-center justify-between"
-                        onClick={() => navigate(`/cliente/${encodeURIComponent(client.client_email)}`)}
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{client.client_name}</p>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`text-[10px] px-1 py-0 ${getStatusColor(client.status)}`}>
-                              {client.status}
-                            </Badge>
-                            <span className="text-[10px] text-muted-foreground">{formatLastUpdate(client.last_update)}</span>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Ponto Clock - Collapsible */}
-            <Collapsible open={isPontoOpen} onOpenChange={setIsPontoOpen}>
-              <Card className="border-border/50">
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="pb-2 cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <CardTitle className="text-sm font-semibold">Controle de Ponto</CardTitle>
-                      </div>
-                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isPontoOpen ? 'rotate-180' : ''}`} />
+                      ))}
                     </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    <PontoClock compact />
-                  </CardContent>
-                </CollapsibleContent>
+                  )}
+                </CardContent>
               </Card>
-            </Collapsible>
+
+              {/* Ponto Clock */}
+              <Collapsible open={isPontoOpen} onOpenChange={setIsPontoOpen}>
+                <Card className="border-border/50">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="pb-3 cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <CardTitle className="text-sm font-semibold">Controle de Ponto</CardTitle>
+                        </div>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isPontoOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="pt-0">
+                      <PontoClock compact />
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Modals */}
       <DocumentSearchModal 
