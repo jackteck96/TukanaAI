@@ -51,6 +51,7 @@ import { LegalData } from "@/utils/legalQualification";
 import CompanyNotifications from "@/components/CompanyNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ReportProblemDialog } from "@/components/ReportProblemDialog";
+import logo from "@/assets/logo.png";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -259,11 +260,9 @@ const EmpresaDashboard = () => {
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-sidebar-background border-r border-sidebar-border">
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
+        <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
           <Link to="/empresa" className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">F</span>
-            </div>
+            <img src={logo} alt="Fuzen" className="h-8 w-auto" />
             <span className="text-sidebar-foreground font-semibold text-lg tracking-tight">Fuzen</span>
           </Link>
         </div>
@@ -319,11 +318,9 @@ const EmpresaDashboard = () => {
         <div className="lg:hidden fixed inset-0 z-50">
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
           <aside className="fixed left-0 top-0 h-full w-72 bg-sidebar-background border-r border-sidebar-border animate-slide-in-right">
-            <div className="h-16 flex items-center justify-between px-6 border-b border-sidebar-border">
+            <div className="h-16 flex items-center justify-between px-5 border-b border-sidebar-border">
               <Link to="/empresa" className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">F</span>
-                </div>
+                <img src={logo} alt="Fuzen" className="h-8 w-auto" />
                 <span className="text-sidebar-foreground font-semibold text-lg">Fuzen</span>
               </Link>
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="text-sidebar-foreground">
