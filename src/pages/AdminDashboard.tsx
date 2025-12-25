@@ -1062,71 +1062,152 @@ const AdminDashboard = () => {
               </Dialog>
             </div>
 
-            <div className="grid gap-4">
-              {documentTypes.map((type) => (
-                <Card key={type.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{type.name}</CardTitle>
-                        {type.category_id && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
-                            <FolderOpen className="w-3 h-3" />
-                            {globalCategories.find(c => c.id === type.category_id)?.name}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setEditingDocType(type);
-                            setDocTypeForm({
-                              name: type.name,
-                              has_issue_date: type.has_issue_date,
-                              has_expiration_date: type.has_expiration_date,
-                              requires_issuing_location: type.requires_issuing_location,
-                              notes: type.notes,
-                              category_id: type.category_id || ""
-                            });
-                            setIsDocTypeModalOpen(true);
-                          }}
-                          className="h-8 w-8 hover:bg-accent"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteDocType(type.id)}
-                          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+            {/* Tipos de documentos agrupados por categoria */}
+            <div className="space-y-8">
+              {globalCategories.map((category) => {
+                const categoryDocs = documentTypes.filter(type => type.category_id === category.id);
+                if (categoryDocs.length === 0) return null;
+                
+                return (
+                  <div key={category.id} className="space-y-4">
+                    <div className="flex items-center gap-3 border-b pb-2">
+                      <FolderOpen className="w-5 h-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-foreground">{category.name}</h3>
+                      <Badge variant="secondary" className="ml-auto">{categoryDocs.length} documentos</Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {type.has_issue_date && (
-                          <Badge variant="secondary">Data de Emissão</Badge>
-                        )}
-                        {type.has_expiration_date && (
-                          <Badge variant="secondary">Data de Expiração</Badge>
-                        )}
-                        {type.requires_issuing_location && (
-                          <Badge variant="secondary">Local de Emissão</Badge>
-                        )}
-                      </div>
-                      {type.notes && (
-                        <p className="text-sm text-muted-foreground">{type.notes}</p>
-                      )}
+                    
+                    <div className="grid gap-3 pl-4">
+                      {categoryDocs.map((type) => (
+                        <Card key={type.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
+                          <CardHeader className="pb-3 py-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-base font-medium">{type.name}</CardTitle>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setEditingDocType(type);
+                                    setDocTypeForm({
+                                      name: type.name,
+                                      has_issue_date: type.has_issue_date,
+                                      has_expiration_date: type.has_expiration_date,
+                                      requires_issuing_location: type.requires_issuing_location,
+                                      notes: type.notes,
+                                      category_id: type.category_id || ""
+                                    });
+                                    setIsDocTypeModalOpen(true);
+                                  }}
+                                  className="h-8 w-8 hover:bg-accent"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteDocType(type.id)}
+                                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0 pb-3">
+                            <div className="flex flex-wrap gap-2">
+                              {type.has_issue_date && (
+                                <Badge variant="outline" className="text-xs">Data de Emissão</Badge>
+                              )}
+                              {type.has_expiration_date && (
+                                <Badge variant="outline" className="text-xs">Data de Expiração</Badge>
+                              )}
+                              {type.requires_issuing_location && (
+                                <Badge variant="outline" className="text-xs">Local de Emissão</Badge>
+                              )}
+                            </div>
+                            {type.notes && (
+                              <p className="text-sm text-muted-foreground mt-2">{type.notes}</p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                );
+              })}
+              
+              {/* Documentos sem categoria */}
+              {(() => {
+                const uncategorizedDocs = documentTypes.filter(type => !type.category_id);
+                if (uncategorizedDocs.length === 0) return null;
+                
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 border-b pb-2">
+                      <FileText className="w-5 h-5 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold text-foreground">Sem Categoria</h3>
+                      <Badge variant="secondary" className="ml-auto">{uncategorizedDocs.length} documentos</Badge>
+                    </div>
+                    
+                    <div className="grid gap-3 pl-4">
+                      {uncategorizedDocs.map((type) => (
+                        <Card key={type.id} className="shadow-card hover:shadow-elegant transition-all duration-300">
+                          <CardHeader className="pb-3 py-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-base font-medium">{type.name}</CardTitle>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setEditingDocType(type);
+                                    setDocTypeForm({
+                                      name: type.name,
+                                      has_issue_date: type.has_issue_date,
+                                      has_expiration_date: type.has_expiration_date,
+                                      requires_issuing_location: type.requires_issuing_location,
+                                      notes: type.notes,
+                                      category_id: type.category_id || ""
+                                    });
+                                    setIsDocTypeModalOpen(true);
+                                  }}
+                                  className="h-8 w-8 hover:bg-accent"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteDocType(type.id)}
+                                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0 pb-3">
+                            <div className="flex flex-wrap gap-2">
+                              {type.has_issue_date && (
+                                <Badge variant="outline" className="text-xs">Data de Emissão</Badge>
+                              )}
+                              {type.has_expiration_date && (
+                                <Badge variant="outline" className="text-xs">Data de Expiração</Badge>
+                              )}
+                              {type.requires_issuing_location && (
+                                <Badge variant="outline" className="text-xs">Local de Emissão</Badge>
+                              )}
+                            </div>
+                            {type.notes && (
+                              <p className="text-sm text-muted-foreground mt-2">{type.notes}</p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {documentTypes.length === 0 && (
