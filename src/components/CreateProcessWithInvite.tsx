@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
 import { ProcessClientsManager, ProcessClient } from "./ProcessClientsManager";
-import DocumentSelector from "./DocumentSelector";
+import DocumentSelector, { CustomDocumentConfig } from "./DocumentSelector";
 
 interface CreateProcessForm {
   projectName: string;
@@ -28,6 +28,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [requiredDocuments, setRequiredDocuments] = useState<string[]>([]);
+  const [customDocuments, setCustomDocuments] = useState<CustomDocumentConfig[]>([]);
   const [showInviteLink, setShowInviteLink] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [clientName, setClientName] = useState("");
@@ -52,6 +53,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     });
     setProcessClients([]);
     setRequiredDocuments([]);
+    setCustomDocuments([]);
   };
 
   const copyToClipboard = async (text: string) => {
@@ -199,6 +201,28 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           if (fieldsError) {
             console.error('Error saving custom fields:', fieldsError);
           }
+        }
+      }
+
+      // 2.6 Criar document_requests para documentos personalizados
+      if (customDocuments.length > 0) {
+        const customDocRequestsToInsert = customDocuments.map(doc => ({
+          process_id: processData.id,
+          company_id: company.id,
+          document_name: doc.name,
+          required: true,
+          current_status: 'pendente',
+          has_issue_date: doc.hasIssueDate,
+          has_expiration_date: doc.hasExpirationDate,
+          requires_issuing_location: doc.requiresIssuingLocation
+        }));
+
+        const { error: customDocsError } = await supabase
+          .from('document_requests')
+          .insert(customDocRequestsToInsert);
+
+        if (customDocsError) {
+          console.error('Error creating custom document requests:', customDocsError);
         }
       }
 
@@ -392,6 +416,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
               <DocumentSelector
                 selectedDocuments={requiredDocuments}
                 onSelectionChange={setRequiredDocuments}
+                customDocuments={customDocuments}
+                onCustomDocumentsChange={setCustomDocuments}
               />
 
               <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">

@@ -838,12 +838,15 @@ export type Database = {
           created_at: string
           current_status: string
           document_name: string
+          has_expiration_date: boolean | null
+          has_issue_date: boolean | null
           id: string
           instructions: string | null
           last_upload_id: string | null
           last_uploaded_at: string | null
           process_id: string
           required: boolean
+          requires_issuing_location: boolean | null
           updated_at: string
         }
         Insert: {
@@ -851,12 +854,15 @@ export type Database = {
           created_at?: string
           current_status?: string
           document_name: string
+          has_expiration_date?: boolean | null
+          has_issue_date?: boolean | null
           id?: string
           instructions?: string | null
           last_upload_id?: string | null
           last_uploaded_at?: string | null
           process_id: string
           required?: boolean
+          requires_issuing_location?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -864,12 +870,15 @@ export type Database = {
           created_at?: string
           current_status?: string
           document_name?: string
+          has_expiration_date?: boolean | null
+          has_issue_date?: boolean | null
           id?: string
           instructions?: string | null
           last_upload_id?: string | null
           last_uploaded_at?: string | null
           process_id?: string
           required?: boolean
+          requires_issuing_location?: boolean | null
           updated_at?: string
         }
         Relationships: [

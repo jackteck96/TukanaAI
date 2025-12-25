@@ -26,18 +26,35 @@ interface DocumentCategory {
   display_order: number;
 }
 
+export interface CustomDocumentConfig {
+  name: string;
+  hasIssueDate: boolean;
+  hasExpirationDate: boolean;
+  requiresIssuingLocation: boolean;
+}
+
 interface DocumentSelectorProps {
   selectedDocuments: string[];
   onSelectionChange: (documents: string[]) => void;
+  customDocuments?: CustomDocumentConfig[];
+  onCustomDocumentsChange?: (docs: CustomDocumentConfig[]) => void;
 }
 
-const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSelectorProps) => {
+const DocumentSelector = ({ 
+  selectedDocuments, 
+  onSelectionChange,
+  customDocuments = [],
+  onCustomDocumentsChange 
+}: DocumentSelectorProps) => {
   const [categories, setCategories] = useState<DocumentCategory[]>([]);
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherDocumentName, setOtherDocumentName] = useState("");
+  const [hasIssueDate, setHasIssueDate] = useState(false);
+  const [hasExpirationDate, setHasExpirationDate] = useState(false);
+  const [requiresIssuingLocation, setRequiresIssuingLocation] = useState(false);
   const { company } = useCompany();
 
   useEffect(() => {
@@ -152,14 +169,36 @@ const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSele
 
   const handleAddOtherDocument = () => {
     if (otherDocumentName.trim() && !selectedDocuments.includes(otherDocumentName.trim())) {
-      onSelectionChange([...selectedDocuments, otherDocumentName.trim()]);
+      const docName = otherDocumentName.trim();
+      onSelectionChange([...selectedDocuments, docName]);
+      
+      // Add custom document config
+      if (onCustomDocumentsChange) {
+        const newCustomDoc: CustomDocumentConfig = {
+          name: docName,
+          hasIssueDate,
+          hasExpirationDate,
+          requiresIssuingLocation
+        };
+        onCustomDocumentsChange([...customDocuments, newCustomDoc]);
+      }
+      
+      // Reset form
       setOtherDocumentName("");
+      setHasIssueDate(false);
+      setHasExpirationDate(false);
+      setRequiresIssuingLocation(false);
       setShowOtherInput(false);
     }
   };
 
   const handleRemoveDocument = (docName: string) => {
     onSelectionChange(selectedDocuments.filter(d => d !== docName));
+    
+    // Also remove from custom documents if it exists there
+    if (onCustomDocumentsChange && customDocuments.some(d => d.name === docName)) {
+      onCustomDocumentsChange(customDocuments.filter(d => d.name !== docName));
+    }
   };
 
   if (loading) {
@@ -343,26 +382,65 @@ const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSele
 
       {/* Custom Document Input */}
       {showOtherInput && (
-        <div className="flex gap-2">
-          <Input
-            placeholder="Digite o nome do documento..."
-            value={otherDocumentName}
-            onChange={(e) => setOtherDocumentName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddOtherDocument();
-              }
-            }}
-          />
-          <Button
-            type="button"
-            onClick={handleAddOtherDocument}
-            disabled={!otherDocumentName.trim()}
-            size="sm"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+        <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Digite o nome do documento..."
+              value={otherDocumentName}
+              onChange={(e) => setOtherDocumentName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddOtherDocument();
+                }
+              }}
+            />
+            <Button
+              type="button"
+              onClick={handleAddOtherDocument}
+              disabled={!otherDocumentName.trim()}
+              size="sm"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground font-medium">Configurações do documento:</p>
+            
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="has-issue-date"
+                checked={hasIssueDate}
+                onCheckedChange={(checked) => setHasIssueDate(checked as boolean)}
+              />
+              <Label htmlFor="has-issue-date" className="text-sm cursor-pointer">
+                Possui data de emissão
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="has-expiration-date"
+                checked={hasExpirationDate}
+                onCheckedChange={(checked) => setHasExpirationDate(checked as boolean)}
+              />
+              <Label htmlFor="has-expiration-date" className="text-sm cursor-pointer">
+                Possui data de validade
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="requires-issuing-location"
+                checked={requiresIssuingLocation}
+                onCheckedChange={(checked) => setRequiresIssuingLocation(checked as boolean)}
+              />
+              <Label htmlFor="requires-issuing-location" className="text-sm cursor-pointer">
+                Requer local de emissão
+              </Label>
+            </div>
+          </div>
         </div>
       )}
 
