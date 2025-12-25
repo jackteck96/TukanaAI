@@ -42,22 +42,34 @@ const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSele
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!company?.id) return;
-
       try {
-        // Fetch categories
-        const { data: categoriesData } = await supabase
-          .from('document_categories')
+        // Fetch global categories first (these are the main categories)
+        const { data: globalCategoriesData } = await supabase
+          .from('global_document_categories')
           .select('*')
-          .eq('company_id', company.id)
           .order('display_order', { ascending: true });
 
+        // Fetch company-specific categories if company exists
+        let companyCategoriesData: DocumentCategory[] = [];
+        if (company?.id) {
+          const { data } = await supabase
+            .from('document_categories')
+            .select('*')
+            .eq('company_id', company.id)
+            .order('display_order', { ascending: true });
+          companyCategoriesData = data || [];
+        }
+
         // Fetch company document types
-        const { data: companyTypes } = await supabase
-          .from('document_types')
-          .select('id, name, category_id')
-          .eq('company_id', company.id)
-          .order('name');
+        let companyTypes: DocumentType[] = [];
+        if (company?.id) {
+          const { data } = await supabase
+            .from('document_types')
+            .select('id, name, category_id')
+            .eq('company_id', company.id)
+            .order('name');
+          companyTypes = data || [];
+        }
 
         // Fetch global document types
         const { data: globalTypes } = await supabase
@@ -65,19 +77,26 @@ const DocumentSelector = ({ selectedDocuments, onSelectionChange }: DocumentSele
           .select('id, name, category_id')
           .order('name');
 
-        setCategories(categoriesData || []);
+        // Combine categories - global first, then company-specific
+        const allCategories: DocumentCategory[] = [
+          ...(globalCategoriesData || []),
+          ...(companyCategoriesData || [])
+        ];
+        setCategories(allCategories);
         
-        // Combine and dedupe by name
+        // Combine and dedupe document types by name
         const allTypes: DocumentType[] = [];
         const seenNames = new Set<string>();
         
-        for (const type of (companyTypes || [])) {
+        // Company types take priority
+        for (const type of companyTypes) {
           if (!seenNames.has(type.name)) {
             seenNames.add(type.name);
             allTypes.push(type);
           }
         }
         
+        // Then global types
         for (const type of (globalTypes || [])) {
           if (!seenNames.has(type.name)) {
             seenNames.add(type.name);
