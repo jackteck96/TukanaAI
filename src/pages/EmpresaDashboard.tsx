@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
 import PontoClock from "@/components/PontoClock";
@@ -398,13 +399,20 @@ const EmpresaDashboard = () => {
             {/* Primary CTA */}
             <CreateProcessWithInvite />
 
-            {/* Notifications - placeholder */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {dashboardStats.pendingProcesses > 0 && (
-                <span className="absolute top-1 right-1 h-2 w-2 bg-warning rounded-full" />
-              )}
-            </Button>
+            {/* Notifications */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {dashboardStats.pendingProcesses > 0 && (
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-warning rounded-full" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-96 p-0 max-h-[500px] overflow-y-auto">
+                <CompanyNotifications />
+              </PopoverContent>
+            </Popover>
 
             {/* User menu */}
             <DropdownMenu>

@@ -188,11 +188,11 @@ export default function CompanyNotifications({ className, compact = false }: Com
       await markAsRead(notification.id);
     }
 
-    // Navegar baseado no tipo
-    if (notification.notification_type === 'signatures_complete') {
+    // Navegar diretamente para o processo específico
+    if (notification.process_id) {
+      navigate(`/gerenciar-processos?id=${notification.process_id}`);
+    } else {
       navigate('/gerenciar-processos');
-    } else if (notification.process_id) {
-      navigate(`/gerenciar-processos?process=${notification.process_id}`);
     }
   };
 
