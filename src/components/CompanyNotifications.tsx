@@ -81,14 +81,11 @@ export default function CompanyNotifications({ className, compact = false }: Com
 
       console.log('[CompanyNotifications] Buscando notificações para company:', userRole.company_id);
       
-      // Buscar notificações da empresa OU de processos da empresa
+      // Buscar notificações da empresa
       const { data, error } = await supabase
         .from('client_notifications')
-        .select(`
-          *,
-          processes!inner(company_id)
-        `)
-        .or(`company_id.eq.${userRole.company_id},processes.company_id.eq.${userRole.company_id}`)
+        .select('*')
+        .eq('company_id', userRole.company_id)
         .order('created_at', { ascending: false })
         .limit(20);
 
