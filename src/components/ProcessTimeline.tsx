@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Clock, FileText, Search, Eye, FileCheck, CheckCircle } from 'lucide-react';
+import { Check, Clock, FileText, Send, Search, CheckCircle, FolderOpen } from 'lucide-react';
 
 interface TimelineStep {
   id: string;
@@ -17,80 +17,71 @@ interface ProcessTimelineProps {
 }
 
 const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, className }) => {
-  // Mapear status para etapas da timeline
+  // Mapear status para etapas da timeline baseado no fluxo real de documentação
   const getTimelineSteps = (status: string): TimelineStep[] => {
-    const baseSteps = [
+    const normalizedStatus = status.toLowerCase().trim();
+    
+    // Determinar o índice atual baseado no status
+    let currentIndex = 0;
+    
+    if (normalizedStatus === 'pendente') {
+      currentIndex = 1; // Aguardando documentos
+    } else if (normalizedStatus === 'enviado') {
+      currentIndex = 2; // Documentos enviados
+    } else if (normalizedStatus === 'em análise' || normalizedStatus === 'em andamento') {
+      currentIndex = 3; // Em análise
+    } else if (normalizedStatus === 'aprovado') {
+      currentIndex = 4; // Aprovado/Revisão final
+    } else if (normalizedStatus === 'concluído' || normalizedStatus === 'finalizado') {
+      currentIndex = 5; // Concluído
+    }
+
+    const steps: TimelineStep[] = [
       {
-        id: 'received',
-        title: 'Recepção',
-        description: 'Documento recebido e registrado no sistema',
+        id: 'created',
+        title: 'Processo Criado',
+        description: 'Processo registrado e documentos solicitados',
+        icon: <FolderOpen className="h-4 w-4" />,
+        status: currentIndex >= 0 ? 'completed' : 'pending'
+      },
+      {
+        id: 'awaiting',
+        title: 'Aguardando Documentos',
+        description: 'Esperando envio dos documentos pelo cliente',
         icon: <FileText className="h-4 w-4" />,
-        status: 'completed' as const,
-        date: new Date().toLocaleDateString()
+        status: currentIndex > 1 ? 'completed' : currentIndex === 1 ? 'current' : 'pending'
+      },
+      {
+        id: 'sent',
+        title: 'Documentos Enviados',
+        description: 'Cliente enviou os documentos solicitados',
+        icon: <Send className="h-4 w-4" />,
+        status: currentIndex > 2 ? 'completed' : currentIndex === 2 ? 'current' : 'pending'
       },
       {
         id: 'analysis',
-        title: 'Análise',
-        description: 'Documento em processo de análise técnica',
+        title: 'Em Análise',
+        description: 'Documentos sendo analisados pela equipe',
         icon: <Search className="h-4 w-4" />,
-        status: 'pending' as const
+        status: currentIndex > 3 ? 'completed' : currentIndex === 3 ? 'current' : 'pending'
       },
       {
-        id: 'review',
-        title: 'Revisão',
-        description: 'Revisão final e validação do documento',
-        icon: <Eye className="h-4 w-4" />,
-        status: 'pending' as const
-      },
-      {
-        id: 'approval',
-        title: 'Aprovação',
-        description: 'Aprovação final e assinatura do documento',
-        icon: <FileCheck className="h-4 w-4" />,
-        status: 'pending' as const
+        id: 'approved',
+        title: 'Documentos Aprovados',
+        description: 'Todos os documentos foram aprovados',
+        icon: <Check className="h-4 w-4" />,
+        status: currentIndex > 4 ? 'completed' : currentIndex === 4 ? 'current' : 'pending'
       },
       {
         id: 'completed',
-        title: 'Finalização',
-        description: 'Processo concluído com sucesso',
+        title: 'Processo Concluído',
+        description: 'Processo finalizado com sucesso',
         icon: <CheckCircle className="h-4 w-4" />,
-        status: 'pending' as const
+        status: currentIndex >= 5 ? 'completed' : 'pending'
       }
     ];
 
-    // Atualizar status baseado no status atual
-    switch (status.toLowerCase()) {
-      case 'pendente':
-        (baseSteps[1] as any).status = 'current';
-        break;
-      case 'em andamento':
-      case 'em análise':
-        (baseSteps[1] as any).status = 'completed';
-        (baseSteps[2] as any).status = 'current';
-        break;
-      case 'em revisão':
-        (baseSteps[1] as any).status = 'completed';
-        (baseSteps[2] as any).status = 'completed';
-        (baseSteps[3] as any).status = 'current';
-        break;
-      case 'aprovado':
-        (baseSteps[1] as any).status = 'completed';
-        (baseSteps[2] as any).status = 'completed';
-        (baseSteps[3] as any).status = 'completed';
-        (baseSteps[4] as any).status = 'current';
-        break;
-      case 'finalizado':
-      case 'concluído':
-        baseSteps.forEach(step => (step as any).status = 'completed');
-        break;
-      default:
-        // Para qualquer outro status, considerar "em andamento"
-        (baseSteps[1] as any).status = 'completed';
-        (baseSteps[2] as any).status = 'current';
-        break;
-    }
-
-    return baseSteps;
+    return steps;
   };
 
   const steps = getTimelineSteps(currentStatus);
@@ -123,6 +114,9 @@ const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ currentStatus, classN
       <div className="flex items-center space-x-2 mb-6">
         <div className="w-1 h-6 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
         <h3 className="font-semibold text-foreground">Timeline do Processo</h3>
+        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full capitalize">
+          {currentStatus}
+        </span>
       </div>
       
       <div className="relative pl-2">
