@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, FileText, CheckCircle, AlertCircle, Clock, Upload } from "lucide-react";
+import { Brain, FileText, CheckCircle, AlertCircle, Clock, Upload, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import jsPDF from "jspdf";
 
 interface Document {
   name: string;
@@ -107,6 +108,98 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const downloadReport = () => {
+    if (!analysisResult) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxWidth = pageWidth - margin * 2;
+    let y = 20;
+
+    const addText = (text: string, fontSize: number = 10, isBold: boolean = false) => {
+      doc.setFontSize(fontSize);
+      doc.setFont("helvetica", isBold ? "bold" : "normal");
+      const lines = doc.splitTextToSize(text, maxWidth);
+      
+      lines.forEach((line: string) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, margin, y);
+        y += fontSize * 0.5;
+      });
+      y += 3;
+    };
+
+    const addSection = (title: string, items: string[], bulletColor?: string) => {
+      addText(title, 12, true);
+      y += 2;
+      items.forEach(item => {
+        addText(`• ${item}`, 10);
+      });
+      y += 5;
+    };
+
+    // Header
+    addText("PARECER FINAL DE DOCUMENTAÇÃO", 16, true);
+    addText(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 10);
+    y += 10;
+
+    // Identificação do Processo
+    addText("IDENTIFICAÇÃO DO PROCESSO:", 12, true);
+    addText(analysisResult.finalReport.processIdentification, 10);
+    y += 10;
+
+    // Pontos Fortes
+    if (analysisResult.finalReport.strongPoints.length > 0) {
+      addSection("PONTOS FORTES:", analysisResult.finalReport.strongPoints);
+    }
+
+    // Pontos Fracos
+    if (analysisResult.finalReport.weakPoints.length > 0) {
+      addSection("PONTOS FRACOS:", analysisResult.finalReport.weakPoints);
+    }
+
+    // O que precisa ser melhorado
+    if (analysisResult.finalReport.needsImprovement.length > 0) {
+      addSection("O QUE PRECISA SER MELHORADO:", analysisResult.finalReport.needsImprovement);
+    }
+
+    // O que falta
+    if (analysisResult.finalReport.missing.length > 0) {
+      addSection("O QUE FALTA:", analysisResult.finalReport.missing);
+    }
+
+    // Análise Contratual
+    if (analysisResult.finalReport.contractualAnalysis.length > 0) {
+      addSection("ANÁLISE CONTRATUAL:", analysisResult.finalReport.contractualAnalysis);
+    }
+
+    // Status
+    y += 5;
+    addText("STATUS DO PROCESSO:", 12, true);
+    addText(analysisResult.finalReport.status === 'ready_for_validation' 
+      ? 'Pronto para Validação' 
+      : 'Incompleto', 10);
+
+    // Checklist
+    if (analysisResult.checklist.length > 0) {
+      y += 10;
+      addSection("CHECKLIST DE DOCUMENTOS NECESSÁRIOS:", analysisResult.checklist);
+    }
+
+    // Save the PDF
+    const fileName = `parecer_documentacao_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+
+    toast({
+      title: "Relatório baixado",
+      description: "O parecer foi salvo em PDF com sucesso.",
+    });
   };
 
   return (
@@ -218,11 +311,15 @@ export const AIProcessAnalyzer = ({ companyId, onAnalysisComplete }: AIProcessAn
       {/* Resultado da Análise */}
       {analysisResult && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Parecer Final de Documentação
             </CardTitle>
+            <Button variant="outline" size="sm" onClick={downloadReport}>
+              <Download className="h-4 w-4 mr-2" />
+              Baixar PDF
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Identificação do Processo */}
