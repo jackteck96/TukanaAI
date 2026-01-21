@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -10,7 +10,6 @@ import {
   Cloud, 
   Users, 
   FileCheck, 
-  Search, 
   BarChart3, 
   Lock, 
   Clock, 
@@ -18,7 +17,6 @@ import {
   ArrowRight,
   Zap,
   Globe,
-  Brain,
   AlertTriangle,
   FolderOpen,
   RefreshCw,
@@ -26,7 +24,10 @@ import {
   Scale,
   Home,
   DollarSign,
-  Sparkles
+  Settings,
+  Eye,
+  Layers,
+  Target
 } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
@@ -36,22 +37,22 @@ const Landing = () => {
     {
       icon: FolderOpen,
       title: "Documentos espalhados",
-      description: "Arquivos em e-mails, pastas locais, drives e sistemas diferentes dificultam o acesso rápido."
+      description: "Arquivos em e-mails, pastas locais, drives e sistemas diferentes dificultam o acesso."
     },
     {
       icon: RefreshCw,
-      title: "Controle manual",
-      description: "Planilhas e processos manuais geram inconsistências e dependência de pessoas específicas."
+      title: "Processos manuais",
+      description: "Planilhas e controles manuais geram inconsistências e dependência de pessoas."
     },
     {
       icon: AlertTriangle,
-      title: "Retrabalho constante",
-      description: "Buscar, organizar e conferir documentos consome tempo valioso da equipe."
+      title: "Dificuldade de controle",
+      description: "Sem padronização, é difícil saber o status real de cada documento ou processo."
     },
     {
       icon: Clock,
-      title: "Riscos de erros e prazos",
-      description: "Sem alertas automáticos, documentos vencem e oportunidades são perdidas."
+      title: "Riscos e retrabalho",
+      description: "Erros, prazos perdidos e retrabalho constante comprometem a operação."
     }
   ];
 
@@ -59,43 +60,43 @@ const Landing = () => {
     {
       number: "01",
       icon: Cloud,
-      title: "Envie seus documentos",
-      description: "Faça upload de contratos, arquivos e documentos críticos de forma simples e segura. Aceite envios de clientes e parceiros diretamente na plataforma."
+      title: "Centralize seus documentos",
+      description: "Reúna todos os documentos da empresa em um único lugar seguro. Clientes, parceiros e equipe enviam e acessam arquivos de forma organizada."
     },
     {
       number: "02",
-      icon: Brain,
-      title: "Organização automática com IA",
-      description: "A inteligência artificial da Fuzen classifica, categoriza e indexa documentos automaticamente. Sem trabalho manual, sem erros de organização."
+      icon: Layers,
+      title: "Organização automática e padronização",
+      description: "A Fuzen classifica e organiza documentos automaticamente, seguindo padrões definidos. Sem trabalho manual, sem bagunça."
     },
     {
       number: "03",
       icon: BarChart3,
-      title: "Relatórios, alertas e controle",
-      description: "Receba notificações de vencimentos, gere relatórios detalhados e tenha visibilidade total sobre todos os documentos da empresa."
+      title: "Controle, relatórios e alertas",
+      description: "Acompanhe o status de cada documento, receba alertas de vencimento e gere relatórios para ter visão completa da documentação."
     }
   ];
 
   const benefits = [
     {
-      icon: Clock,
-      title: "Economia de tempo",
-      description: "Reduza em até 80% o tempo gasto com busca e organização de documentos."
+      icon: Target,
+      title: "Padronização de processos",
+      description: "Fluxos documentais organizados e consistentes em toda a empresa."
     },
     {
       icon: Shield,
       title: "Redução de erros",
-      description: "Elimine falhas humanas com automação documental inteligente."
+      description: "Menos falhas humanas com organização automática e alertas."
     },
     {
       icon: Zap,
-      title: "Aumento de produtividade",
-      description: "Equipes focam no que importa, não em tarefas repetitivas."
+      title: "Ganho de produtividade",
+      description: "Equipes focam no trabalho estratégico, não em buscar arquivos."
     },
     {
-      icon: BarChart3,
-      title: "Decisões mais rápidas",
-      description: "Acesso instantâneo a informações críticas para tomada de decisão."
+      icon: Eye,
+      title: "Visão clara da documentação",
+      description: "Saiba exatamente onde está cada documento e qual seu status."
     }
   ];
 
@@ -103,7 +104,12 @@ const Landing = () => {
     {
       icon: Scale,
       title: "Escritórios jurídicos",
-      description: "Gestão de contratos, processos e documentos de clientes com segurança e conformidade."
+      description: "Organização de contratos, processos e documentos de clientes com segurança."
+    },
+    {
+      icon: Home,
+      title: "Imobiliárias",
+      description: "Controle de contratos, vistorias e documentação de imóveis e locatários."
     },
     {
       icon: Building2,
@@ -111,13 +117,8 @@ const Landing = () => {
       description: "Centralização de documentos fiscais, RH, financeiros e operacionais."
     },
     {
-      icon: Home,
-      title: "Imobiliárias",
-      description: "Controle de contratos, vistorias, documentação de imóveis e locatários."
-    },
-    {
       icon: DollarSign,
-      title: "Times financeiros",
+      title: "Times financeiros e operacionais",
       description: "Gestão de notas fiscais, contratos e documentos de compliance."
     }
   ];
@@ -125,9 +126,9 @@ const Landing = () => {
   return (
     <>
       <Helmet>
-        <title>Gestão Inteligente de Documentos com IA para Empresas | Fuzen</title>
-        <meta name="description" content="Automatize a organização, análise e controle de documentos empresariais com IA. Software de gestão documental para escritórios jurídicos, imobiliárias e times financeiros. Solicite uma demonstração." />
-        <meta name="keywords" content="gestão inteligente de documentos, automação documental, gestão de documentos empresariais, software de gestão documental, gestão de documentos com IA, controle de documentos empresariais" />
+        <title>Organização Inteligente de Documentos e Processos Empresariais | Fuzen</title>
+        <meta name="description" content="Centralize documentos, organize fluxos e tenha controle total da documentação da sua empresa. Plataforma de organização documental para escritórios jurídicos, imobiliárias e times financeiros." />
+        <meta name="keywords" content="organização de documentos, gestão documental, controle de documentos empresariais, organização de processos, centralização de documentos, gestão de documentos empresariais" />
         <link rel="canonical" href="https://fuzen.online/" />
         
         <script type="application/ld+json">
@@ -136,7 +137,7 @@ const Landing = () => {
             "@type": "SoftwareApplication",
             "name": "Fuzen",
             "applicationCategory": "BusinessApplication",
-            "description": "Software de gestão inteligente de documentos com IA para empresas",
+            "description": "Plataforma de organização inteligente de documentos e processos empresariais",
             "operatingSystem": "Web",
             "offers": {
               "@type": "Offer",
@@ -160,7 +161,7 @@ const Landing = () => {
             "@type": "Organization",
             "name": "Fuzen",
             "url": "https://fuzen.online",
-            "description": "Plataforma de gestão inteligente de documentos com IA para empresas",
+            "description": "Plataforma de organização inteligente de documentos e processos empresariais",
             "logo": "https://fuzen.online/logo.png"
           })}
         </script>
@@ -174,7 +175,7 @@ const Landing = () => {
           <div className="absolute inset-0 overflow-hidden">
             <img 
               src={heroImage}
-              alt="Plataforma Fuzen - Gestão inteligente de documentos empresariais com IA"
+              alt="Plataforma Fuzen - Organização inteligente de documentos empresariais"
               className="absolute inset-0 w-full h-full object-cover opacity-5"
             />
             <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
@@ -185,20 +186,20 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-5xl mx-auto text-center">
               <Badge className="mb-8 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
-                <Sparkles className="h-4 w-4 mr-2 inline" />
-                Powered by IA
+                <FileCheck className="h-4 w-4 mr-2 inline" />
+                Controle total dos seus documentos
               </Badge>
               
               <div className="mb-6 animate-fade-in animation-delay-200">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                   <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
-                    Gestão inteligente de documentos com IA para empresas
+                    Organização inteligente de documentos e processos empresariais
                   </span>
                 </h1>
               </div>
               
               <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in animation-delay-400">
-                Automatize a organização, análise e controle de documentos empresariais, contratos e arquivos críticos em um só lugar.
+                Centralize documentos, organize fluxos e tenha controle total da documentação da sua empresa — sem retrabalho e sem planilhas.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in animation-delay-600">
@@ -227,16 +228,16 @@ const Landing = () => {
               
               <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm md:text-base text-muted-foreground animate-fade-in animation-delay-800">
                 <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
-                  <Brain className="h-4 w-4 text-success" />
-                  <span>IA integrada</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
                   <Lock className="h-4 w-4 text-success" />
-                  <span>100% seguro</span>
+                  <span>Dados seguros</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
                   <Globe className="h-4 w-4 text-success" />
                   <span>Conforme LGPD</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
+                  <Users className="h-4 w-4 text-success" />
+                  <span>Suporte especializado</span>
                 </div>
               </div>
             </div>
@@ -250,23 +251,24 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative">
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                Problemas comuns na gestão de documentos empresariais
+                O problema da má organização documental nas empresas
               </h2>
-              <div className="text-lg md:text-xl text-muted-foreground leading-relaxed space-y-4">
+              <div className="text-lg md:text-xl text-muted-foreground leading-relaxed space-y-4 text-left md:text-center">
                 <p>
-                  Empresas de todos os portes enfrentam desafios diários com a gestão de documentos. 
-                  Arquivos espalhados entre e-mails, pastas locais, drives compartilhados e sistemas 
-                  diferentes criam um cenário caótico que dificulta o acesso rápido às informações.
+                  Muitas empresas ainda lidam com documentos espalhados entre e-mails, pastas locais, 
+                  drives compartilhados e diferentes sistemas. Essa fragmentação dificulta o acesso 
+                  rápido às informações e compromete a produtividade das equipes.
                 </p>
                 <p>
-                  O controle manual por meio de planilhas e processos despadronizados gera inconsistências, 
-                  retrabalho constante e dependência excessiva de pessoas específicas. Sem automação, 
-                  equipes perdem horas preciosas buscando, organizando e conferindo documentos.
+                  Processos manuais baseados em planilhas e controles individuais geram inconsistências, 
+                  criam dependência de pessoas específicas e aumentam a chance de erros. Sem padronização, 
+                  cada colaborador organiza documentos de um jeito diferente.
                 </p>
                 <p>
-                  Os riscos são reais: documentos vencem sem aviso, contratos importantes são perdidos, 
-                  prazos críticos são esquecidos e oportunidades de negócio são desperdiçadas. 
-                  A falta de visibilidade e controle compromete a produtividade e a tomada de decisão.
+                  Os riscos operacionais são reais: prazos perdidos, documentos vencidos sem aviso, 
+                  retrabalho constante e dificuldade em localizar arquivos críticos. A falta de 
+                  visibilidade sobre a documentação compromete a tomada de decisão e a eficiência 
+                  do negócio como um todo.
                 </p>
               </div>
             </div>
@@ -295,10 +297,10 @@ const Landing = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Como funciona a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">gestão documental inteligente</span> da Fuzen
+                Como a Fuzen <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">organiza documentos e processos</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Em três passos simples, transforme a forma como sua empresa gerencia documentos
+                Em três passos simples, transforme a gestão documental da sua empresa
               </p>
             </div>
             
@@ -332,10 +334,10 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Benefícios da <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">automação documental</span> para empresas
+                Benefícios da <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">organização inteligente</span> da documentação
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Com a Fuzen, sua empresa ganha eficiência, segurança e controle total sobre documentos
+                Com a Fuzen, sua empresa ganha controle, padronização e eficiência
               </p>
             </div>
             
@@ -377,10 +379,10 @@ const Landing = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Software de <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">gestão documental</span> feito para equipes
+                Para quem a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Fuzen</span> é indicada
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                A Fuzen atende empresas e times que precisam de controle de documentos empresariais com segurança e eficiência
+                Empresas e times que precisam de organização documental profissional
               </p>
             </div>
             
@@ -403,19 +405,59 @@ const Landing = () => {
           </div>
         </section>
 
-        {/* Plans Section */}
-        <section id="planos" className="py-24 lg:py-32 relative">
+        {/* Technology Section */}
+        <section id="tecnologia" className="py-24 lg:py-32 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
           
           <div className="container mx-auto px-4 relative">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                  Tecnologia como <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">apoio</span>
+                </h2>
+              </div>
+              
+              <Card className="border-2 border-primary/20 rounded-3xl overflow-hidden bg-gradient-to-br from-card to-primary/5">
+                <CardContent className="p-8 md:p-12">
+                  <div className="flex items-start gap-6">
+                    <div className="hidden md:flex w-16 h-16 flex-shrink-0 bg-gradient-to-br from-primary to-accent rounded-2xl items-center justify-center shadow-lg">
+                      <Settings className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-lg text-muted-foreground leading-relaxed">
+                        A Fuzen utiliza automação e inteligência para facilitar a organização dos seus 
+                        documentos e processos. A tecnologia trabalha nos bastidores para classificar 
+                        arquivos, identificar padrões e gerar alertas automaticamente.
+                      </p>
+                      <p className="text-lg text-muted-foreground leading-relaxed">
+                        Você não precisa de conhecimento técnico para usar a plataforma. A interface 
+                        é simples e intuitiva, pensada para que qualquer pessoa da equipe consiga 
+                        enviar, organizar e encontrar documentos com facilidade.
+                      </p>
+                      <p className="text-lg text-muted-foreground leading-relaxed">
+                        O foco está em resolver problemas práticos do dia a dia: encontrar arquivos 
+                        rapidamente, saber o status de cada documento, receber lembretes de vencimento 
+                        e ter relatórios claros para a gestão.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Plans Section */}
+        <section id="planos" className="py-24 lg:py-32">
+          <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
                 Planos <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">sob medida</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Nossos planos são personalizados de acordo com o volume de documentos, número de usuários 
-                e nível de automação que sua empresa precisa. Cada negócio é único, e a Fuzen se adapta 
-                às suas necessidades específicas de gestão de documentos empresariais.
+                Nossos planos são personalizados de acordo com o volume de documentos, número de 
+                usuários e a complexidade dos processos da sua empresa. Cada negócio tem suas 
+                particularidades, e a Fuzen se adapta às suas necessidades específicas.
               </p>
               
               <Card className="border-2 border-primary/20 rounded-3xl overflow-hidden bg-gradient-to-br from-card to-primary/5">
@@ -453,11 +495,12 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 leading-tight">
-                Pronto para ter <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">controle total</span> sobre seus documentos?
+                Tenha <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">controle e organização</span> sobre seus documentos
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-                Empresas que usam a Fuzen reduzem em até 80% o tempo gasto com gestão documental. 
-                Solicite uma demonstração e veja como a automação documental com IA pode transformar sua operação.
+                Chega de documentos espalhados, processos manuais e retrabalho. Com a Fuzen, sua 
+                empresa ganha uma plataforma completa para organizar, controlar e acompanhar toda 
+                a documentação de forma simples e eficiente. Solicite uma demonstração e veja como funciona.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -491,7 +534,7 @@ const Landing = () => {
                 <span className="text-border">•</span>
                 <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4 text-success" />
-                  <span>Dados 100% seguros</span>
+                  <span>Dados seguros</span>
                 </div>
                 <span className="text-border">•</span>
                 <div className="flex items-center gap-2">
