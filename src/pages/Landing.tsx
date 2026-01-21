@@ -37,22 +37,22 @@ const Landing = () => {
     {
       icon: FolderOpen,
       title: "Documentos espalhados",
-      description: "Arquivos em e-mails, pastas locais, drives e sistemas diferentes dificultam o acesso."
+      description: "Arquivos dispersos em e-mails, pastas, drives e sistemas dificultam o acesso e atrasam decisões."
     },
     {
       icon: RefreshCw,
       title: "Processos manuais",
-      description: "Planilhas e controles manuais geram inconsistências e dependência de pessoas."
+      description: "Controles em planilhas geram inconsistências, dependência de pessoas e falhas operacionais."
     },
     {
       icon: AlertTriangle,
-      title: "Dificuldade de controle",
-      description: "Sem padronização, é difícil saber o status real de cada documento ou processo."
+      title: "Falta de controle",
+      description: "Sem padronização, é impossível saber o status de cada documento ou processo em tempo real."
     },
     {
       icon: Clock,
       title: "Riscos e retrabalho",
-      description: "Erros, prazos perdidos e retrabalho constante comprometem a operação."
+      description: "Prazos perdidos, documentos vencidos e retrabalho constante comprometem a operação."
     }
   ];
 
@@ -60,43 +60,53 @@ const Landing = () => {
     {
       number: "01",
       icon: Cloud,
-      title: "Centralize seus documentos",
-      description: "Reúna todos os documentos da empresa em um único lugar seguro. Clientes, parceiros e equipe enviam e acessam arquivos de forma organizada."
+      title: "Centralização dos documentos",
+      description: "Reúna todos os documentos, contratos e arquivos da empresa em um único ambiente seguro e acessível para toda a equipe."
     },
     {
       number: "02",
       icon: Layers,
       title: "Organização automática e padronização",
-      description: "A Fuzen classifica e organiza documentos automaticamente, seguindo padrões definidos. Sem trabalho manual, sem bagunça."
+      description: "A Fuzen organiza e classifica documentos automaticamente, seguindo padrões definidos pela sua empresa. Sem bagunça, sem trabalho manual."
     },
     {
       number: "03",
       icon: BarChart3,
-      title: "Controle, relatórios e alertas",
-      description: "Acompanhe o status de cada documento, receba alertas de vencimento e gere relatórios para ter visão completa da documentação."
+      title: "Controle de prazos, relatórios e visão geral",
+      description: "Acompanhe o status de cada documento, receba alertas de vencimento e tenha relatórios claros para visão completa dos processos."
     }
   ];
 
   const benefits = [
     {
+      icon: FolderOpen,
+      title: "Centralização de documentos empresariais",
+      description: "Todos os arquivos em um só lugar, organizados e acessíveis."
+    },
+    {
       icon: Target,
       title: "Padronização de processos",
-      description: "Fluxos documentais organizados e consistentes em toda a empresa."
+      description: "Fluxos documentais consistentes e organizados em toda a empresa."
     },
     {
       icon: Shield,
-      title: "Redução de erros",
-      description: "Menos falhas humanas com organização automática e alertas."
+      title: "Redução de erros e retrabalho",
+      description: "Menos falhas com organização automática e alertas de vencimento."
     },
     {
       icon: Zap,
-      title: "Ganho de produtividade",
+      title: "Mais produtividade para os times",
       description: "Equipes focam no trabalho estratégico, não em buscar arquivos."
     },
     {
       icon: Eye,
-      title: "Visão clara da documentação",
-      description: "Saiba exatamente onde está cada documento e qual seu status."
+      title: "Visão clara e organizada da documentação",
+      description: "Saiba exatamente onde está cada documento e qual seu status atual."
+    },
+    {
+      icon: BarChart3,
+      title: "Apoio à tomada de decisão",
+      description: "Relatórios e informações organizadas para decisões mais rápidas."
     }
   ];
 
@@ -104,22 +114,22 @@ const Landing = () => {
     {
       icon: Scale,
       title: "Escritórios jurídicos",
-      description: "Organização de contratos, processos e documentos de clientes com segurança."
+      description: "Organização de contratos, processos e documentos legais com segurança e controle de prazos."
     },
     {
       icon: Home,
       title: "Imobiliárias",
-      description: "Controle de contratos, vistorias e documentação de imóveis e locatários."
+      description: "Controle de contratos, vistorias e documentação de imóveis e locatários em um só lugar."
     },
     {
       icon: Building2,
-      title: "Empresas administrativas",
-      description: "Centralização de documentos fiscais, RH, financeiros e operacionais."
+      title: "Empresas em crescimento",
+      description: "Gestão de documentos, contratos e processos internos de forma organizada e escalável."
     },
     {
       icon: DollarSign,
       title: "Times financeiros e operacionais",
-      description: "Gestão de notas fiscais, contratos e documentos de compliance."
+      description: "Controle de notas fiscais, compliance e documentos críticos com rastreabilidade."
     }
   ];
 
@@ -127,8 +137,8 @@ const Landing = () => {
     <>
       <Helmet>
         <title>Organização Inteligente de Documentos e Processos Empresariais | Fuzen</title>
-        <meta name="description" content="Centralize documentos, organize fluxos e tenha controle total da documentação da sua empresa. Plataforma de organização documental para escritórios jurídicos, imobiliárias e times financeiros." />
-        <meta name="keywords" content="organização de documentos, gestão documental, controle de documentos empresariais, organização de processos, centralização de documentos, gestão de documentos empresariais" />
+        <meta name="description" content="Centralize, organize e controle documentos, contratos e processos da sua empresa com eficiência. Plataforma de gestão documental para escritórios jurídicos, imobiliárias e times financeiros." />
+        <meta name="keywords" content="organização de documentos empresariais, gestão documental, controle de processos internos, documentos e contratos empresariais, organização documental profissional, software de gestão documental" />
         <link rel="canonical" href="https://fuzen.online/" />
         
         <script type="application/ld+json">
@@ -137,7 +147,7 @@ const Landing = () => {
             "@type": "SoftwareApplication",
             "name": "Fuzen",
             "applicationCategory": "BusinessApplication",
-            "description": "Plataforma de organização inteligente de documentos e processos empresariais",
+            "description": "Plataforma de organização inteligente de documentos e processos empresariais para centralização, controle e gestão documental",
             "operatingSystem": "Web",
             "offers": {
               "@type": "Offer",
@@ -199,7 +209,7 @@ const Landing = () => {
               </div>
               
               <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in animation-delay-400">
-                Centralize documentos, organize fluxos e tenha controle total da documentação da sua empresa — sem retrabalho e sem planilhas.
+                Centralize, organize e controle documentos, contratos e processos da sua empresa com eficiência — sem retrabalho, sem planilhas e sem perda de informação.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in animation-delay-600">
@@ -251,24 +261,25 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative">
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                O problema da má organização documental nas empresas
+                O problema da desorganização documental nas empresas
               </h2>
               <div className="text-lg md:text-xl text-muted-foreground leading-relaxed space-y-4 text-left md:text-center">
                 <p>
-                  Muitas empresas ainda lidam com documentos espalhados entre e-mails, pastas locais, 
-                  drives compartilhados e diferentes sistemas. Essa fragmentação dificulta o acesso 
-                  rápido às informações e compromete a produtividade das equipes.
+                  A realidade de muitas empresas é a mesma: documentos espalhados entre e-mails, pastas locais, 
+                  drives compartilhados e sistemas diferentes. Cada pessoa guarda arquivos de um jeito, e 
+                  quando alguém precisa de um documento específico, começa uma verdadeira busca que consome 
+                  tempo e gera frustração.
                 </p>
                 <p>
-                  Processos manuais baseados em planilhas e controles individuais geram inconsistências, 
-                  criam dependência de pessoas específicas e aumentam a chance de erros. Sem padronização, 
-                  cada colaborador organiza documentos de um jeito diferente.
+                  Processos manuais baseados em planilhas e controles individuais criam inconsistências graves. 
+                  Há dependência de pessoas específicas que "sabem onde está tudo", e quando elas saem de férias 
+                  ou deixam a empresa, o conhecimento vai junto. O retrabalho se torna rotina.
                 </p>
                 <p>
-                  Os riscos operacionais são reais: prazos perdidos, documentos vencidos sem aviso, 
-                  retrabalho constante e dificuldade em localizar arquivos críticos. A falta de 
-                  visibilidade sobre a documentação compromete a tomada de decisão e a eficiência 
-                  do negócio como um todo.
+                  Os riscos operacionais são concretos: prazos perdidos por falta de acompanhamento, documentos 
+                  vencidos sem aviso, erros em contratos por versões desatualizadas e dificuldade de localizar 
+                  arquivos críticos em momentos decisivos. A falta de visibilidade sobre a documentação 
+                  compromete a tomada de decisão e a eficiência do negócio.
                 </p>
               </div>
             </div>
@@ -337,11 +348,11 @@ const Landing = () => {
                 Benefícios da <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">organização inteligente</span> da documentação
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Com a Fuzen, sua empresa ganha controle, padronização e eficiência
+                Transforme a gestão documental da sua empresa e ganhe controle, produtividade e eficiência
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {benefits.map((benefit, index) => (
                 <Card 
                   key={index} 
@@ -382,7 +393,7 @@ const Landing = () => {
                 Para quem a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Fuzen</span> é indicada
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Empresas e times que precisam de organização documental profissional
+                Empresas e times que precisam de organização documental profissional e controle de processos internos
               </p>
             </div>
             
@@ -425,19 +436,19 @@ const Landing = () => {
                     </div>
                     <div className="space-y-4">
                       <p className="text-lg text-muted-foreground leading-relaxed">
-                        A Fuzen utiliza automação e inteligência para facilitar a organização dos seus 
-                        documentos e processos. A tecnologia trabalha nos bastidores para classificar 
-                        arquivos, identificar padrões e gerar alertas automaticamente.
+                        A Fuzen utiliza automação e inteligência para facilitar a organização documental 
+                        e o controle de processos da sua empresa. A tecnologia trabalha nos bastidores, 
+                        classificando arquivos, identificando padrões e gerando alertas de forma automática.
                       </p>
                       <p className="text-lg text-muted-foreground leading-relaxed">
-                        Você não precisa de conhecimento técnico para usar a plataforma. A interface 
-                        é simples e intuitiva, pensada para que qualquer pessoa da equipe consiga 
-                        enviar, organizar e encontrar documentos com facilidade.
+                        Você não precisa de conhecimento técnico para usar a plataforma. A interface é 
+                        simples e intuitiva, pensada para que qualquer pessoa da equipe consiga enviar, 
+                        organizar e encontrar documentos com facilidade. Sem complexidade operacional.
                       </p>
                       <p className="text-lg text-muted-foreground leading-relaxed">
-                        O foco está em resolver problemas práticos do dia a dia: encontrar arquivos 
+                        O foco está em resolver problemas práticos do dia a dia: localizar arquivos 
                         rapidamente, saber o status de cada documento, receber lembretes de vencimento 
-                        e ter relatórios claros para a gestão.
+                        e ter relatórios claros para apoiar a gestão.
                       </p>
                     </div>
                   </div>
@@ -455,9 +466,10 @@ const Landing = () => {
                 Planos <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">sob medida</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Nossos planos são personalizados de acordo com o volume de documentos, número de 
+                Os planos são personalizados de acordo com o volume de documentos, número de 
                 usuários e a complexidade dos processos da sua empresa. Cada negócio tem suas 
-                particularidades, e a Fuzen se adapta às suas necessidades específicas.
+                particularidades, e a Fuzen se adapta às suas necessidades específicas de 
+                organização documental e controle de processos internos.
               </p>
               
               <Card className="border-2 border-primary/20 rounded-3xl overflow-hidden bg-gradient-to-br from-card to-primary/5">
@@ -495,12 +507,12 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 leading-tight">
-                Tenha <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">controle e organização</span> sobre seus documentos
+                Tenha <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">controle e organização</span> sobre sua documentação
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-                Chega de documentos espalhados, processos manuais e retrabalho. Com a Fuzen, sua 
-                empresa ganha uma plataforma completa para organizar, controlar e acompanhar toda 
-                a documentação de forma simples e eficiente. Solicite uma demonstração e veja como funciona.
+                Chega de documentos espalhados, processos manuais e retrabalho. Conheça a Fuzen na prática 
+                e veja como sua empresa pode ganhar organização, controle e eficiência na gestão documental. 
+                Solicite uma demonstração gratuita e descubra como funciona.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
