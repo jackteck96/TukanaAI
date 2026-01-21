@@ -29,11 +29,14 @@ const Header = () => {
             <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
               Início
             </Link>
-            <a href="#recursos" className="text-muted-foreground hover:text-primary transition-colors">
-              Recursos
+            <a href="#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
+              Como Funciona
             </a>
-            <a href="#precos" className="text-muted-foreground hover:text-primary transition-colors">
-              Preços
+            <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
+              Benefícios
+            </a>
+            <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
+              Para Quem
             </a>
           </nav>
 
@@ -49,8 +52,8 @@ const Header = () => {
                 <Link to="/auth">
                   <Button variant="outline">Login</Button>
                 </Link>
-                <a href="#precos">
-                  <Button variant="hero">Começar Agora</Button>
+                <a href="#planos">
+                  <Button variant="hero">Solicitar Demonstração</Button>
                 </a>
               </>
             )}
@@ -72,11 +75,14 @@ const Header = () => {
               <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
                 Início
               </Link>
-              <a href="#recursos" className="text-muted-foreground hover:text-primary transition-colors">
-                Recursos
+              <a href="#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
+                Como Funciona
               </a>
-              <a href="#precos" className="text-muted-foreground hover:text-primary transition-colors">
-                Preços
+              <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
+                Benefícios
+              </a>
+              <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
+                Para Quem
               </a>
               <div className="flex flex-col space-y-2 pt-4">
                 {user ? (
@@ -89,8 +95,8 @@ const Header = () => {
                     <Link to="/auth">
                       <Button variant="outline" className="w-full">Login</Button>
                     </Link>
-                    <a href="#precos">
-                      <Button variant="hero" className="w-full">Começar Agora</Button>
+                    <a href="#planos">
+                      <Button variant="hero" className="w-full">Solicitar Demonstração</Button>
                     </a>
                   </>
                 )}
