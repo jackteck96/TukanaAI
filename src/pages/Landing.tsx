@@ -17,103 +17,118 @@ import {
   CheckCircle,
   ArrowRight,
   Zap,
-  Globe
+  Globe,
+  Brain,
+  AlertTriangle,
+  FolderOpen,
+  RefreshCw,
+  Building2,
+  Scale,
+  Home,
+  DollarSign,
+  Sparkles
 } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 const Landing = () => {
-  const features = [
+  const problems = [
     {
-      icon: Shield,
-      title: "Segurança Avançada",
-      description: "Criptografia de ponta e backup automático para proteger seus documentos"
+      icon: FolderOpen,
+      title: "Documentos espalhados",
+      description: "Arquivos em e-mails, pastas locais, drives e sistemas diferentes dificultam o acesso rápido."
     },
     {
+      icon: RefreshCw,
+      title: "Controle manual",
+      description: "Planilhas e processos manuais geram inconsistências e dependência de pessoas específicas."
+    },
+    {
+      icon: AlertTriangle,
+      title: "Retrabalho constante",
+      description: "Buscar, organizar e conferir documentos consome tempo valioso da equipe."
+    },
+    {
+      icon: Clock,
+      title: "Riscos de erros e prazos",
+      description: "Sem alertas automáticos, documentos vencem e oportunidades são perdidas."
+    }
+  ];
+
+  const steps = [
+    {
+      number: "01",
       icon: Cloud,
-      title: "Armazenamento em Nuvem",
-      description: "Acesse seus documentos de qualquer lugar, a qualquer hora"
+      title: "Envie seus documentos",
+      description: "Faça upload de contratos, arquivos e documentos críticos de forma simples e segura. Aceite envios de clientes e parceiros diretamente na plataforma."
     },
     {
-      icon: Users,
-      title: "Gestão de Clientes",
-      description: "Organize documentos por cliente com controle de acesso personalizado"
+      number: "02",
+      icon: Brain,
+      title: "Organização automática com IA",
+      description: "A inteligência artificial da Fuzen classifica, categoriza e indexa documentos automaticamente. Sem trabalho manual, sem erros de organização."
     },
     {
-      icon: FileCheck,
-      title: "Aprovação Digital",
-      description: "Fluxos de aprovação automatizados com assinatura digital"
-    },
-    {
-      icon: Search,
-      title: "Busca Inteligente",
-      description: "Encontre qualquer documento em segundos com busca avançada"
-    },
-    {
+      number: "03",
       icon: BarChart3,
-      title: "Relatórios Detalhados",
-      description: "Acompanhe o progresso e gere relatórios completos"
+      title: "Relatórios, alertas e controle",
+      description: "Receba notificações de vencimentos, gere relatórios detalhados e tenha visibilidade total sobre todos os documentos da empresa."
     }
   ];
 
   const benefits = [
-    "Redução de 80% no tempo de processamento",
-    "Segurança bancária para seus documentos",
-    "Interface intuitiva e fácil de usar",
-    "Suporte técnico especializado 24/7",
-    "Integração com sistemas existentes",
-    "Conformidade com LGPD"
+    {
+      icon: Clock,
+      title: "Economia de tempo",
+      description: "Reduza em até 80% o tempo gasto com busca e organização de documentos."
+    },
+    {
+      icon: Shield,
+      title: "Redução de erros",
+      description: "Elimine falhas humanas com automação documental inteligente."
+    },
+    {
+      icon: Zap,
+      title: "Aumento de produtividade",
+      description: "Equipes focam no que importa, não em tarefas repetitivas."
+    },
+    {
+      icon: BarChart3,
+      title: "Decisões mais rápidas",
+      description: "Acesso instantâneo a informações críticas para tomada de decisão."
+    }
   ];
 
-  const plans = [
+  const audiences = [
     {
-      name: "Starter",
-      price: "R$ 49",
-      description: "Ideal para pequenas empresas",
-      features: [
-        "Até 5 usuários",
-        "100GB de armazenamento",
-        "Suporte por email",
-        "Relatórios básicos"
-      ],
-      highlighted: false
+      icon: Scale,
+      title: "Escritórios jurídicos",
+      description: "Gestão de contratos, processos e documentos de clientes com segurança e conformidade."
     },
     {
-      name: "Professional",
-      price: "R$ 149",
-      description: "Para empresas em crescimento",
-      features: [
-        "Até 25 usuários",
-        "500GB de armazenamento",
-        "Suporte prioritário",
-        "Relatórios avançados",
-        "Integrações personalizadas",
-        "Assinatura digital"
-      ],
-      highlighted: true
+      icon: Building2,
+      title: "Empresas administrativas",
+      description: "Centralização de documentos fiscais, RH, financeiros e operacionais."
     },
     {
-      name: "Enterprise",
-      price: "Sob consulta",
-      description: "Para grandes corporações",
-      features: [
-        "Usuários ilimitados",
-        "Armazenamento ilimitado",
-        "Suporte dedicado",
-        "Personalização completa",
-        "SLA garantido",
-        "Auditoria completa"
-      ],
-      highlighted: false
+      icon: Home,
+      title: "Imobiliárias",
+      description: "Controle de contratos, vistorias, documentação de imóveis e locatários."
+    },
+    {
+      icon: DollarSign,
+      title: "Times financeiros",
+      description: "Gestão de notas fiscais, contratos e documentos de compliance."
     }
   ];
 
   return (
     <>
       <Helmet>
-        <title>Fuzen - Plataforma de Gestão de Documentos Empresariais | Segurança e Eficiência</title>
-        <meta name="description" content="Plataforma completa para gestão de documentos empresariais com segurança e eficiência. Solicite, armazene e gerencie documentos de clientes com criptografia, assinatura digital e conformidade LGPD." />
-        <link rel="canonical" href="https://fuzen.app/" />
+        <title>Gestão Inteligente de Documentos com IA para Empresas | Fuzen</title>
+        <meta name="description" content="Automatize a organização, análise e controle de documentos empresariais com IA. Software de gestão documental para escritórios jurídicos, imobiliárias e times financeiros. Solicite uma demonstração." />
+        <meta name="keywords" content="gestão inteligente de documentos, automação documental, gestão de documentos empresariais, software de gestão documental, gestão de documentos com IA, controle de documentos empresariais" />
+        <link rel="canonical" href="https://fuzen.online/" />
         
         <script type="application/ld+json">
           {JSON.stringify({
@@ -121,11 +136,15 @@ const Landing = () => {
             "@type": "SoftwareApplication",
             "name": "Fuzen",
             "applicationCategory": "BusinessApplication",
+            "description": "Software de gestão inteligente de documentos com IA para empresas",
+            "operatingSystem": "Web",
             "offers": {
-              "@type": "AggregateOffer",
-              "lowPrice": "49",
-              "highPrice": "149",
-              "priceCurrency": "BRL"
+              "@type": "Offer",
+              "availability": "https://schema.org/InStock",
+              "priceSpecification": {
+                "@type": "PriceSpecification",
+                "priceCurrency": "BRL"
+              }
             },
             "aggregateRating": {
               "@type": "AggregateRating",
@@ -138,14 +157,11 @@ const Landing = () => {
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebSite",
+            "@type": "Organization",
             "name": "Fuzen",
-            "url": "https://fuzen.app",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://fuzen.app/search?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            }
+            "url": "https://fuzen.online",
+            "description": "Plataforma de gestão inteligente de documentos com IA para empresas",
+            "logo": "https://fuzen.online/logo.png"
           })}
         </script>
       </Helmet>
@@ -153,405 +169,342 @@ const Landing = () => {
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
         <Header />
       
-      {/* Hero Section */}
-      <section className="relative py-24 lg:py-40 overflow-hidden">
-        {/* Animated Background Patterns */}
-        <div className="absolute inset-0 overflow-hidden">
-          <img 
-            src={heroImage}
-            alt="Plataforma Fuzen - Interface de gestão de documentos empresariais com segurança"
-            className="absolute inset-0 w-full h-full object-cover opacity-5"
-          />
-          <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-          <div className="absolute top-0 -right-40 w-80 h-80 bg-accent/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-40 left-20 w-80 h-80 bg-primary/5 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <Badge className="mb-8 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
-              ✨ Nova versão disponível
-            </Badge>
-            
-            <div className="mb-6 animate-fade-in animation-delay-200">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
-                  Fuzen - Plataforma de Gestão de Documentos Empresariais
-                </span>
-              </h1>
-              <p className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground/80 leading-tight">
-                Solicite, Armazene e Gerencie Documentos com Segurança e Eficiência
-              </p>
-            </div>
-            
-            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in animation-delay-400">
-              A Fuzen é a plataforma completa para empresas que precisam solicitar, armazenar e gerenciar 
-              documentos de clientes de forma segura e organizada.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in animation-delay-600">
-              <a href="#precos">
-                <Button 
-                  size="lg" 
-                  className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-primary-dark hover:shadow-elegant transition-all duration-300 hover:scale-105"
-                >
-                  Começar Agora
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </a>
-              <ContactFormDialog />
-              <Link to="/auth">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
-                >
-                  Já tem conta? Entrar
-                  <FileCheck className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm md:text-base text-muted-foreground animate-fade-in animation-delay-800">
-              <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
-                <Lock className="h-4 w-4 text-success" />
-                <span>Dados 100% seguros</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
-                <Globe className="h-4 w-4 text-success" />
-                <span>Conforme LGPD</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
-                <CheckCircle className="h-4 w-4 text-success" />
-                <span>Suporte especializado</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="recursos" className="py-24 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-muted/30 to-background" />
-        
-        <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-              Tudo que você precisa em uma plataforma
-            </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Recursos poderosos para simplificar a gestão de documentos
-            </p>
+        {/* Hero Section */}
+        <section className="relative py-24 lg:py-40 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <img 
+              src={heroImage}
+              alt="Plataforma Fuzen - Gestão inteligente de documentos empresariais com IA"
+              className="absolute inset-0 w-full h-full object-cover opacity-5"
+            />
+            <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+            <div className="absolute top-0 -right-40 w-80 h-80 bg-accent/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+            <div className="absolute -bottom-40 left-20 w-80 h-80 bg-primary/5 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="group relative overflow-hidden border-2 hover:border-primary/20 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl cursor-pointer"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                <CardHeader className="text-center relative z-10 pb-4 pt-8">
-                  <div className="relative mb-6 inline-block mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
-                    <div className="relative w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      <feature.icon className="h-10 w-10 text-white" />
-                    </div>
-                  </div>
-                  <CardTitle className="text-xl md:text-2xl group-hover:text-primary transition-colors duration-300 px-4 mb-4">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                
-                <CardContent className="text-center relative z-10 px-6 pb-8">
-                  <div className="max-h-0 opacity-0 group-hover:max-h-40 group-hover:opacity-100 overflow-hidden transition-all duration-500 ease-in-out">
-                    <p className="text-muted-foreground leading-relaxed text-base pt-2">
-                      {feature.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-24 lg:py-32">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                  Por que escolher a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Fuzen?</span>
-                </h2>
-                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-                  A solução completa para gerenciar seus documentos com segurança e eficiência.
-                </p>
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-5xl mx-auto text-center">
+              <Badge className="mb-8 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
+                <Sparkles className="h-4 w-4 mr-2 inline" />
+                Powered by IA
+              </Badge>
+              
+              <div className="mb-6 animate-fade-in animation-delay-200">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                  <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
+                    Gestão inteligente de documentos com IA para empresas
+                  </span>
+                </h1>
               </div>
               
-              <div className="space-y-5">
-                {benefits.map((benefit, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-start gap-4 p-4 rounded-2xl hover:bg-success/5 transition-all duration-300 group"
-                  >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-success/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <CheckCircle className="h-5 w-5 text-success" />
-                    </div>
-                    <span className="text-lg text-foreground leading-relaxed pt-1">{benefit}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in animation-delay-400">
+                Automatize a organização, análise e controle de documentos empresariais, contratos e arquivos críticos em um só lugar.
+              </p>
               
-              <div className="pt-4">
-                <a href="#recursos">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in animation-delay-600">
+                <ContactFormDialog 
+                  trigger={
+                    <Button 
+                      size="lg" 
+                      className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-primary-dark hover:shadow-elegant transition-all duration-300 hover:scale-105"
+                    >
+                      Solicitar Demonstração
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  }
+                />
+                <Link to="/auth">
                   <Button 
                     size="lg" 
-                    className="group bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105 rounded-2xl px-8"
+                    variant="outline" 
+                    className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
                   >
-                    Conhecer Todos os Recursos
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    Já tem conta? Entrar
+                    <FileCheck className="ml-2 h-5 w-5" />
                   </Button>
-                </a>
+                </Link>
+              </div>
+              
+              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm md:text-base text-muted-foreground animate-fade-in animation-delay-800">
+                <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
+                  <Brain className="h-4 w-4 text-success" />
+                  <span>IA integrada</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
+                  <Lock className="h-4 w-4 text-success" />
+                  <span>100% seguro</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
+                  <Globe className="h-4 w-4 text-success" />
+                  <span>Conforme LGPD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Problems Section */}
+        <section id="problemas" className="py-24 lg:py-32 relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-muted/30 to-background" />
+          
+          <div className="container mx-auto px-4 relative">
+            <div className="max-w-4xl mx-auto text-center mb-16">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Problemas comuns na gestão de documentos empresariais
+              </h2>
+              <div className="text-lg md:text-xl text-muted-foreground leading-relaxed space-y-4">
+                <p>
+                  Empresas de todos os portes enfrentam desafios diários com a gestão de documentos. 
+                  Arquivos espalhados entre e-mails, pastas locais, drives compartilhados e sistemas 
+                  diferentes criam um cenário caótico que dificulta o acesso rápido às informações.
+                </p>
+                <p>
+                  O controle manual por meio de planilhas e processos despadronizados gera inconsistências, 
+                  retrabalho constante e dependência excessiva de pessoas específicas. Sem automação, 
+                  equipes perdem horas preciosas buscando, organizando e conferindo documentos.
+                </p>
+                <p>
+                  Os riscos são reais: documentos vencem sem aviso, contratos importantes são perdidos, 
+                  prazos críticos são esquecidos e oportunidades de negócio são desperdiçadas. 
+                  A falta de visibilidade e controle compromete a produtividade e a tomada de decisão.
+                </p>
               </div>
             </div>
             
-            <div className="relative order-first lg:order-last">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl transform rotate-3 blur-2xl opacity-30" />
-              
-              <Card className="relative border-2 hover:border-primary/20 transition-all duration-500 overflow-hidden rounded-3xl shadow-2xl backdrop-blur-sm bg-card/80">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-                
-                <CardContent className="p-8 md:p-10 relative z-10">
-                  <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl md:text-2xl font-bold">Controle Total</h3>
-                    <Badge className="px-3 py-1 bg-success/10 text-success border-success/20">
-                      <Clock className="h-4 w-4 mr-1 inline" />
-                      Sempre disponível
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/20">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                          <FileCheck className="h-5 w-5 text-primary" />
-                        </div>
-                        <h4 className="text-lg font-semibold">Gestão Completa</h4>
-                      </div>
-                      <p className="text-muted-foreground">Acompanhe todos os documentos em um único lugar</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {problems.map((problem, index) => (
+                <Card 
+                  key={index} 
+                  className="group relative overflow-hidden border-2 hover:border-destructive/30 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl"
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-14 h-14 mx-auto mb-4 bg-destructive/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <problem.icon className="h-7 w-7 text-destructive" />
                     </div>
-                    
-                    <div className="p-6 rounded-2xl bg-gradient-to-br from-accent/10 to-primary/10 border-2 border-accent/20">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                          <Shield className="h-5 w-5 text-accent" />
-                        </div>
-                        <h4 className="text-lg font-semibold">Segurança Garantida</h4>
-                      </div>
-                      <p className="text-muted-foreground">Proteção de dados com criptografia avançada</p>
-                    </div>
-                    
-                    <div className="p-6 rounded-2xl bg-gradient-to-br from-success/10 to-primary/10 border-2 border-success/20">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center">
-                          <BarChart3 className="h-5 w-5 text-success" />
-                        </div>
-                        <h4 className="text-lg font-semibold">Relatórios Inteligentes</h4>
-                      </div>
-                      <p className="text-muted-foreground">Análises detalhadas para melhores decisões</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8 pt-8 border-t-2 border-border">
-                    <div className="flex items-center gap-3 text-base">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                        <Zap className="h-5 w-5 text-success" />
-                      </div>
-                      <span className="text-success font-medium">Plataforma otimizada e eficiente</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    <h3 className="text-lg font-semibold mb-2">{problem.title}</h3>
+                    <p className="text-muted-foreground text-sm">{problem.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing Section */}
-      <section id="precos" className="py-24 lg:py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
-        
-        <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-              Planos para cada necessidade
-            </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed">
-              Escolha o plano ideal para sua empresa
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/signup">
-                <Button 
-                  size="lg" 
-                  className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105"
-                >
-                  Cadastrar Empresa
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link to="/cadastro-cliente">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
-                >
-                  Cadastrar como Cliente
-                </Button>
-              </Link>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {plans.map((plan, index) => (
-              <Card 
-                key={index} 
-                className={`relative overflow-hidden transition-all duration-500 rounded-3xl border-2 ${
-                  plan.highlighted 
-                    ? 'border-primary shadow-2xl lg:scale-105 bg-gradient-to-b from-card to-primary/5' 
-                    : 'border-border hover:border-primary/30 hover:shadow-xl backdrop-blur-sm bg-card/50'
-                }`}
-              >
-                {plan.highlighted && (
-                  <>
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
-                    <Badge className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-6 py-2 bg-gradient-to-r from-primary to-accent text-white shadow-lg z-10 text-sm font-semibold">
-                      Mais Popular
-                    </Badge>
-                  </>
-                )}
-                
-                <CardHeader className="text-center pt-12 pb-8 relative z-10">
-                  <CardTitle className="text-2xl md:text-3xl mb-4 font-bold">
-                    {plan.name}
-                  </CardTitle>
-                  <div className="mb-4">
-                    <div className={`text-5xl md:text-6xl font-bold ${plan.highlighted ? 'bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent' : 'text-primary'}`}>
-                      {plan.price}
-                    </div>
-                    {plan.price !== "Sob consulta" && (
-                      <span className="text-lg text-muted-foreground">/mês</span>
-                    )}
-                  </div>
-                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                    {plan.description}
-                  </p>
-                </CardHeader>
-                
-                <CardContent className="relative z-10 px-6 pb-10">
-                  <ul className="space-y-4 mb-10">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-3 group">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-success/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <CheckCircle className="h-4 w-4 text-success" />
-                        </div>
-                        <span className="text-base leading-relaxed">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Link to="/signup">
-                    <Button 
-                      className={`w-full py-6 rounded-2xl text-lg font-semibold transition-all duration-300 hover:scale-105 ${
-                        plan.highlighted 
-                          ? 'bg-gradient-to-r from-primary to-accent hover:shadow-elegant' 
-                          : 'border-2 hover:bg-primary/5'
-                      }`}
-                      variant={plan.highlighted ? "default" : "outline"}
-                    >
-                      {plan.name === "Enterprise" ? "Falar com Vendas" : "Começar Agora"}
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 lg:py-32 relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-          <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto">
+        {/* How It Works Section */}
+        <section id="como-funciona" className="py-24 lg:py-32">
+          <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight">
-                Pronto para transformar sua <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">gestão de documentos?</span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                Como funciona a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">gestão documental inteligente</span> da Fuzen
               </h2>
-              <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-                Junte-se a mais de 1.000 empresas que já confiam na Fuzen
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+                Em três passos simples, transforme a forma como sua empresa gerencia documentos
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/signup">
-                <Button 
-                  size="lg" 
-                  className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105"
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {steps.map((step, index) => (
+                <Card 
+                  key={index} 
+                  className="group relative overflow-hidden border-2 hover:border-primary/30 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl"
                 >
-                  Cadastrar Empresa
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link to="/cadastro-cliente">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
-                >
-                  Cadastrar como Cliente
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button 
-                  size="lg" 
-                  variant="ghost" 
-                  className="text-lg px-10 py-6 rounded-2xl hover:bg-muted/50 transition-all duration-300"
-                >
-                  Já tem conta? Entrar
-                </Button>
-              </Link>
+                  <div className="absolute top-4 right-4 text-6xl font-bold text-primary/10 group-hover:text-primary/20 transition-colors duration-300">
+                    {step.number}
+                  </div>
+                  
+                  <CardContent className="p-8 relative z-10">
+                    <div className="w-16 h-16 mb-6 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <step.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Benefits Section */}
+        <section id="beneficios" className="py-24 lg:py-32 relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
+          
+          <div className="container mx-auto px-4 relative">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                Benefícios da <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">automação documental</span> para empresas
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+                Com a Fuzen, sua empresa ganha eficiência, segurança e controle total sobre documentos
+              </p>
             </div>
             
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm md:text-base text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-success" />
-                <span>Plataforma segura</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              {benefits.map((benefit, index) => (
+                <Card 
+                  key={index} 
+                  className="group relative overflow-hidden border-2 hover:border-success/30 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl"
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-14 h-14 mx-auto mb-4 bg-success/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <benefit.icon className="h-7 w-7 text-success" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{benefit.title}</h3>
+                    <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            <div className="mt-12 text-center">
+              <ContactFormDialog 
+                trigger={
+                  <Button 
+                    size="lg" 
+                    className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105"
+                  >
+                    Solicitar Demonstração
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Target Audience Section */}
+        <section id="para-quem" className="py-24 lg:py-32">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                Software de <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">gestão documental</span> feito para equipes
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+                A Fuzen atende empresas e times que precisam de controle de documentos empresariais com segurança e eficiência
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              {audiences.map((audience, index) => (
+                <Card 
+                  key={index} 
+                  className="group relative overflow-hidden border-2 hover:border-primary/30 transition-all duration-500 hover:shadow-card backdrop-blur-sm bg-card/50 hover:-translate-y-2 rounded-3xl"
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="w-14 h-14 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <audience.icon className="h-7 w-7 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{audience.title}</h3>
+                    <p className="text-muted-foreground text-sm">{audience.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Plans Section */}
+        <section id="planos" className="py-24 lg:py-32 relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
+          
+          <div className="container mx-auto px-4 relative">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+                Planos <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">sob medida</span>
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+                Nossos planos são personalizados de acordo com o volume de documentos, número de usuários 
+                e nível de automação que sua empresa precisa. Cada negócio é único, e a Fuzen se adapta 
+                às suas necessidades específicas de gestão de documentos empresariais.
+              </p>
+              
+              <Card className="border-2 border-primary/20 rounded-3xl overflow-hidden bg-gradient-to-br from-card to-primary/5">
+                <CardContent className="p-8 md:p-12">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="text-left">
+                      <h3 className="text-2xl md:text-3xl font-bold mb-2">Quer saber qual plano é ideal para você?</h3>
+                      <p className="text-muted-foreground">Nossa equipe irá entender sua demanda e apresentar a melhor solução.</p>
+                    </div>
+                    <ContactFormDialog 
+                      trigger={
+                        <Button 
+                          size="lg" 
+                          className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                        >
+                          Solicitar Demonstração
+                          <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      }
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA Section */}
+        <section className="py-24 lg:py-32 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+            <div className="absolute bottom-20 right-10 w-72 h-72 bg-accent/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+          </div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 leading-tight">
+                Pronto para ter <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">controle total</span> sobre seus documentos?
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
+                Empresas que usam a Fuzen reduzem em até 80% o tempo gasto com gestão documental. 
+                Solicite uma demonstração e veja como a automação documental com IA pode transformar sua operação.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <ContactFormDialog 
+                  trigger={
+                    <Button 
+                      size="lg" 
+                      className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105"
+                    >
+                      Solicitar Demonstração
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  }
+                />
+                <Link to="/auth">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+                  >
+                    Já tem conta? Entrar
+                  </Button>
+                </Link>
               </div>
-              <span className="text-border">•</span>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-success" />
-                <span>Suporte incluso</span>
-              </div>
-              <span className="text-border">•</span>
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-success" />
-                <span>Conforme LGPD</span>
+              
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm md:text-base text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-success" />
+                  <span>Demonstração gratuita</span>
+                </div>
+                <span className="text-border">•</span>
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-success" />
+                  <span>Dados 100% seguros</span>
+                </div>
+                <span className="text-border">•</span>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-success" />
+                  <span>Conforme LGPD</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
     </>
   );
 };
