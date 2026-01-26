@@ -134,6 +134,65 @@ export type Database = {
         }
         Relationships: []
       }
+      b2b_clients: {
+        Row: {
+          cancelled_at: string | null
+          cnpj: string | null
+          company_id: string | null
+          company_name: string
+          cpf: string | null
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          phone: string | null
+          plan: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          cnpj?: string | null
+          company_id?: string | null
+          company_name: string
+          cpf?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          plan?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          cnpj?: string | null
+          company_id?: string | null
+          company_name?: string
+          cpf?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          plan?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "b2b_clients_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_custom_field_templates: {
         Row: {
           company_id: string
@@ -641,6 +700,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_usage_history: {
+        Row: {
+          client_id: string | null
+          coupon_id: string
+          cpf_cnpj: string
+          created_at: string
+          discount_applied: number
+          id: string
+          plan_at_use: string | null
+          used_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          coupon_id: string
+          cpf_cnpj: string
+          created_at?: string
+          discount_applied: number
+          id?: string
+          plan_at_use?: string | null
+          used_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          coupon_id?: string
+          cpf_cnpj?: string
+          created_at?: string
+          discount_applied?: number
+          id?: string
+          plan_at_use?: string | null
+          used_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usage_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "b2b_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usage_history_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "discount_coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_subject_requests: {
         Row: {
           completed_at: string | null
@@ -745,6 +852,60 @@ export type Database = {
           signer_cpf?: string
           signer_email?: string
           signer_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      discount_coupons: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number
+          discount_duration_months: number | null
+          discount_type: string
+          discount_value: number
+          eligible_plans: string[]
+          expiration_date: string
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          restrict_single_use_per_client: boolean
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number
+          discount_duration_months?: number | null
+          discount_type: string
+          discount_value: number
+          eligible_plans?: string[]
+          expiration_date: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          restrict_single_use_per_client?: boolean
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number
+          discount_duration_months?: number | null
+          discount_type?: string
+          discount_value?: number
+          eligible_plans?: string[]
+          expiration_date?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          restrict_single_use_per_client?: boolean
+          start_date?: string
           updated_at?: string
         }
         Relationships: []
@@ -2582,6 +2743,16 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
+      register_coupon_usage: {
+        Args: {
+          p_client_id: string
+          p_coupon_id: string
+          p_cpf_cnpj: string
+          p_discount_applied: number
+          p_plan: string
+        }
+        Returns: boolean
+      }
       update_usage_metrics: {
         Args: { company_uuid: string }
         Returns: undefined
@@ -2607,6 +2778,10 @@ export type Database = {
       user_has_company_admin_role: {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
+      }
+      validate_and_apply_coupon: {
+        Args: { p_coupon_code: string; p_cpf_cnpj: string; p_plan: string }
+        Returns: Json
       }
     }
     Enums: {

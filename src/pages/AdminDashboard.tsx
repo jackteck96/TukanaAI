@@ -27,9 +27,12 @@ import {
   Crown,
   Mail,
   FolderOpen,
-  Building2
+  Building2,
+  Ticket
 } from "lucide-react";
 import GlobalDocumentCategoryManager from "@/components/GlobalDocumentCategoryManager";
+import B2BClientsManager from "@/components/admin/B2BClientsManager";
+import DiscountCouponsManager from "@/components/admin/DiscountCouponsManager";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -686,8 +689,16 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="admins" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+        <Tabs defaultValue="clients" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="clients" className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              Clientes B2B
+            </TabsTrigger>
+            <TabsTrigger value="coupons" className="flex items-center gap-2">
+              <Ticket className="w-4 h-4" />
+              Cupons
+            </TabsTrigger>
             <TabsTrigger value="admins" className="flex items-center gap-2">
               <Crown className="w-4 h-4" />
               Administradores
@@ -702,17 +713,27 @@ const AdminDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="document-types" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Tipos de Documentos
+              Tipos de Docs
             </TabsTrigger>
             <TabsTrigger value="templates" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              Modelos de Documentos
+              Modelos
             </TabsTrigger>
             <TabsTrigger value="ai-training" className="flex items-center gap-2">
               <Brain className="w-4 h-4" />
-              Treinamento da IA
+              IA
             </TabsTrigger>
           </TabsList>
+
+          {/* B2B Clients Tab */}
+          <TabsContent value="clients" className="space-y-6">
+            <B2BClientsManager />
+          </TabsContent>
+
+          {/* Coupons Tab */}
+          <TabsContent value="coupons" className="space-y-6">
+            <DiscountCouponsManager />
+          </TabsContent>
 
           {/* Admins Tab */}
           <TabsContent value="admins" className="space-y-6">
