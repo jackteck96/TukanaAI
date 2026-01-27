@@ -28,11 +28,13 @@ import {
   Mail,
   FolderOpen,
   Building2,
-  Ticket
+  Ticket,
+  CreditCard
 } from "lucide-react";
 import GlobalDocumentCategoryManager from "@/components/GlobalDocumentCategoryManager";
 import B2BClientsManager from "@/components/admin/B2BClientsManager";
 import DiscountCouponsManager from "@/components/admin/DiscountCouponsManager";
+import PlansManager from "@/components/admin/PlansManager";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -690,10 +692,14 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="clients" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="clients" className="flex items-center gap-2">
               <Building2 className="w-4 h-4" />
               Clientes B2B
+            </TabsTrigger>
+            <TabsTrigger value="plans" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Planos
             </TabsTrigger>
             <TabsTrigger value="coupons" className="flex items-center gap-2">
               <Ticket className="w-4 h-4" />
@@ -728,6 +734,11 @@ const AdminDashboard = () => {
           {/* B2B Clients Tab */}
           <TabsContent value="clients" className="space-y-6">
             <B2BClientsManager />
+          </TabsContent>
+
+          {/* Plans Tab */}
+          <TabsContent value="plans" className="space-y-6">
+            <PlansManager />
           </TabsContent>
 
           {/* Coupons Tab */}

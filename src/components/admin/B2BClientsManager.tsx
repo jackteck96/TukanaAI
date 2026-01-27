@@ -21,20 +21,35 @@ interface B2BClient {
   email: string;
   phone: string | null;
   status: 'pilot' | 'active' | 'cancelled';
-  plan: 'starter' | 'professional' | 'enterprise';
+  plan: string;
   started_at: string | null;
   cancelled_at: string | null;
   notes: string | null;
   created_at: string;
+  pilot_start_date: string | null;
+  pilot_end_date: string | null;
+  subscription_plan_id: string | null;
+  coupon_applied_id: string | null;
+  access_blocked: boolean;
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pilot: { label: "Piloto", variant: "secondary" },
   active: { label: "Ativo", variant: "default" },
-  cancelled: { label: "Cancelado", variant: "destructive" }
+  cancelled: { label: "Encerrado", variant: "destructive" }
 };
 
 const planLabels: Record<string, string> = {
+  essencial: "Essencial",
+  profissional: "Profissional",
+  estrategico: "Estratégico",
+  // Legacy support
   starter: "Starter",
   professional: "Professional",
   enterprise: "Enterprise"
@@ -43,34 +58,27 @@ const planLabels: Record<string, string> = {
 const B2BClientsManager = () => {
   const { toast } = useToast();
   const [clients, setClients] = useState<B2BClient[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<B2BClient | null>(null);
   
-  const [form, setForm] = useState<{
-    company_name: string;
-    cnpj: string;
-    cpf: string;
-    email: string;
-    phone: string;
-    status: 'pilot' | 'active' | 'cancelled';
-    plan: 'starter' | 'professional' | 'enterprise';
-    notes: string;
-  }>({
+  const [form, setForm] = useState({
     company_name: "",
     cnpj: "",
     cpf: "",
     email: "",
     phone: "",
-    status: "pilot",
-    plan: "starter",
+    status: "pilot" as 'pilot' | 'active' | 'cancelled',
+    plan: "essencial",
     notes: ""
   });
 
   useEffect(() => {
     fetchClients();
+    fetchPlans();
   }, []);
 
   const fetchClients = async () => {
@@ -87,6 +95,21 @@ const B2BClientsManager = () => {
       toast({ title: "Erro", description: "Erro ao carregar clientes", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('id, name, slug')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      
+      if (error) throw error;
+      setPlans((data || []) as SubscriptionPlan[]);
+    } catch (error: any) {
+      console.error('Error fetching plans:', error);
     }
   };
 
@@ -139,7 +162,7 @@ const B2BClientsManager = () => {
       email: "",
       phone: "",
       status: "pilot",
-      plan: "starter",
+      plan: plans.length > 0 ? plans[0].slug : "essencial",
       notes: ""
     });
   };
@@ -153,7 +176,7 @@ const B2BClientsManager = () => {
       email: client.email,
       phone: client.phone || "",
       status: client.status,
-      plan: client.plan,
+      plan: client.plan || "essencial",
       notes: client.notes || ""
     });
     setIsModalOpen(true);
@@ -291,20 +314,28 @@ const B2BClientsManager = () => {
                       <SelectContent>
                         <SelectItem value="pilot">Piloto</SelectItem>
                         <SelectItem value="active">Ativo</SelectItem>
-                        <SelectItem value="cancelled">Cancelado</SelectItem>
+                        <SelectItem value="cancelled">Encerrado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label htmlFor="plan">Plano</Label>
-                    <Select value={form.plan} onValueChange={(v: 'starter' | 'professional' | 'enterprise') => setForm({ ...form, plan: v })}>
+                    <Select value={form.plan} onValueChange={(v) => setForm({ ...form, plan: v })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="starter">Starter</SelectItem>
-                        <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                        {plans.length > 0 ? (
+                          plans.map((plan) => (
+                            <SelectItem key={plan.id} value={plan.slug}>{plan.name}</SelectItem>
+                          ))
+                        ) : (
+                          <>
+                            <SelectItem value="essencial">Essencial</SelectItem>
+                            <SelectItem value="profissional">Profissional</SelectItem>
+                            <SelectItem value="estrategico">Estratégico</SelectItem>
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
