@@ -136,51 +136,72 @@ export type Database = {
       }
       b2b_clients: {
         Row: {
+          access_blocked: boolean | null
+          blocked_at: string | null
+          blocked_reason: string | null
           cancelled_at: string | null
           cnpj: string | null
           company_id: string | null
           company_name: string
+          coupon_applied_id: string | null
           cpf: string | null
           created_at: string
           email: string
           id: string
           notes: string | null
           phone: string | null
+          pilot_end_date: string | null
+          pilot_start_date: string | null
           plan: string
           started_at: string | null
           status: string
+          subscription_plan_id: string | null
           updated_at: string
         }
         Insert: {
+          access_blocked?: boolean | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           cancelled_at?: string | null
           cnpj?: string | null
           company_id?: string | null
           company_name: string
+          coupon_applied_id?: string | null
           cpf?: string | null
           created_at?: string
           email: string
           id?: string
           notes?: string | null
           phone?: string | null
+          pilot_end_date?: string | null
+          pilot_start_date?: string | null
           plan?: string
           started_at?: string | null
           status?: string
+          subscription_plan_id?: string | null
           updated_at?: string
         }
         Update: {
+          access_blocked?: boolean | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           cancelled_at?: string | null
           cnpj?: string | null
           company_id?: string | null
           company_name?: string
+          coupon_applied_id?: string | null
           cpf?: string | null
           created_at?: string
           email?: string
           id?: string
           notes?: string | null
           phone?: string | null
+          pilot_end_date?: string | null
+          pilot_start_date?: string | null
           plan?: string
           started_at?: string | null
           status?: string
+          subscription_plan_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -189,6 +210,20 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "b2b_clients_coupon_applied_id_fkey"
+            columns: ["coupon_applied_id"]
+            isOneToOne: false
+            referencedRelation: "discount_coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "b2b_clients_subscription_plan_id_fkey"
+            columns: ["subscription_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -862,6 +897,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_uses: number
+          discount_duration_days: number | null
           discount_duration_months: number | null
           discount_type: string
           discount_value: number
@@ -869,6 +905,7 @@ export type Database = {
           expiration_date: string
           id: string
           is_active: boolean
+          is_pilot_coupon: boolean | null
           max_uses: number | null
           restrict_single_use_per_client: boolean
           start_date: string
@@ -879,6 +916,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_uses?: number
+          discount_duration_days?: number | null
           discount_duration_months?: number | null
           discount_type: string
           discount_value: number
@@ -886,6 +924,7 @@ export type Database = {
           expiration_date: string
           id?: string
           is_active?: boolean
+          is_pilot_coupon?: boolean | null
           max_uses?: number | null
           restrict_single_use_per_client?: boolean
           start_date: string
@@ -896,6 +935,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_uses?: number
+          discount_duration_days?: number | null
           discount_duration_months?: number | null
           discount_type?: string
           discount_value?: number
@@ -903,6 +943,7 @@ export type Database = {
           expiration_date?: string
           id?: string
           is_active?: boolean
+          is_pilot_coupon?: boolean | null
           max_uses?: number | null
           restrict_single_use_per_client?: boolean
           start_date?: string
@@ -2230,6 +2271,48 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          max_documents_month: number | null
+          max_users: number | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_documents_month?: number | null
+          max_users?: number | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_documents_month?: number | null
+          max_users?: number | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           company_id: string
@@ -2633,6 +2716,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_coupon_to_b2b_client: {
+        Args: { p_client_id: string; p_coupon_code: string }
+        Returns: Json
+      }
       can_access_process: { Args: { process_uuid: string }; Returns: boolean }
       can_create_client_invite: {
         Args: { target_client_email: string }
@@ -2662,6 +2749,7 @@ export type Database = {
           status: string
         }[]
       }
+      check_pilot_expiration: { Args: { client_uuid: string }; Returns: Json }
       check_plan_limits: {
         Args: { company_uuid: string; limit_type: string }
         Returns: Json

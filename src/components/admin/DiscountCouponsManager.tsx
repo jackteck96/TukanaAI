@@ -28,6 +28,8 @@ interface DiscountCoupon {
   restrict_single_use_per_client: boolean;
   eligible_plans: string[];
   discount_duration_months: number | null;
+  discount_duration_days: number | null;
+  is_pilot_coupon: boolean;
   is_active: boolean;
   created_at: string;
 }
@@ -40,6 +42,8 @@ interface CouponUsage {
   discount_applied: number;
   plan_at_use: string | null;
 }
+
+type DurationType = 'months' | 'days';
 
 const DiscountCouponsManager = () => {
   const { toast } = useToast();
@@ -59,8 +63,10 @@ const DiscountCouponsManager = () => {
     expiration_date: "",
     max_uses: "",
     restrict_single_use_per_client: true,
-    eligible_plans: ['starter', 'professional', 'enterprise'] as string[],
-    discount_duration_months: "1",
+    eligible_plans: ['essencial', 'profissional', 'estrategico'] as string[],
+    duration_type: "days" as DurationType,
+    duration_value: "14",
+    is_pilot_coupon: false,
     is_active: true
   });
 
@@ -106,6 +112,7 @@ const DiscountCouponsManager = () => {
     e.preventDefault();
     
     try {
+      const durationValue = parseInt(form.duration_value) || 14;
       const payload = {
         code: form.code.toUpperCase().trim(),
         discount_type: form.discount_type,
@@ -115,7 +122,9 @@ const DiscountCouponsManager = () => {
         max_uses: form.max_uses ? parseInt(form.max_uses) : null,
         restrict_single_use_per_client: form.restrict_single_use_per_client,
         eligible_plans: form.eligible_plans,
-        discount_duration_months: form.discount_duration_months ? parseInt(form.discount_duration_months) : 1,
+        discount_duration_months: form.duration_type === 'months' ? durationValue : null,
+        discount_duration_days: form.duration_type === 'days' ? durationValue : null,
+        is_pilot_coupon: form.is_pilot_coupon,
         is_active: form.is_active
       };
 
@@ -172,14 +181,17 @@ const DiscountCouponsManager = () => {
       expiration_date: "",
       max_uses: "",
       restrict_single_use_per_client: true,
-      eligible_plans: ['starter', 'professional', 'enterprise'],
-      discount_duration_months: "1",
+      eligible_plans: ['essencial', 'profissional', 'estrategico'],
+      duration_type: "days",
+      duration_value: "14",
+      is_pilot_coupon: false,
       is_active: true
     });
   };
 
   const openEditModal = (coupon: DiscountCoupon) => {
     setEditingCoupon(coupon);
+    const hasDays = coupon.discount_duration_days !== null;
     setForm({
       code: coupon.code,
       discount_type: coupon.discount_type,
@@ -189,7 +201,9 @@ const DiscountCouponsManager = () => {
       max_uses: coupon.max_uses?.toString() || "",
       restrict_single_use_per_client: coupon.restrict_single_use_per_client,
       eligible_plans: coupon.eligible_plans,
-      discount_duration_months: coupon.discount_duration_months?.toString() || "1",
+      duration_type: hasDays ? "days" : "months",
+      duration_value: (hasDays ? coupon.discount_duration_days : coupon.discount_duration_months)?.toString() || "14",
+      is_pilot_coupon: coupon.is_pilot_coupon,
       is_active: coupon.is_active
     });
     setIsModalOpen(true);
@@ -351,29 +365,59 @@ const DiscountCouponsManager = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="discount_duration_months">Duração do Desconto (meses)</Label>
-                        <Input
-                          id="discount_duration_months"
-                          type="number"
-                          min="1"
-                          value={form.discount_duration_months}
-                          onChange={(e) => setForm({ ...form, discount_duration_months: e.target.value })}
-                          placeholder="1"
-                        />
+                        <Label htmlFor="duration_value">
+                          Duração do Desconto ({form.duration_type === 'days' ? 'dias' : 'meses'})
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="duration_value"
+                            type="number"
+                            min="1"
+                            value={form.duration_value}
+                            onChange={(e) => setForm({ ...form, duration_value: e.target.value })}
+                            placeholder={form.duration_type === 'days' ? "14" : "1"}
+                            className="flex-1"
+                          />
+                          <Select 
+                            value={form.duration_type} 
+                            onValueChange={(v: DurationType) => setForm({ ...form, duration_type: v })}
+                          >
+                            <SelectTrigger className="w-28">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="days">Dias</SelectItem>
+                              <SelectItem value="months">Meses</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_pilot_coupon"
+                        checked={form.is_pilot_coupon}
+                        onCheckedChange={(checked) => setForm({ ...form, is_pilot_coupon: checked as boolean })}
+                      />
+                      <Label htmlFor="is_pilot_coupon">Cupom de Piloto Gratuito (100% de desconto)</Label>
                     </div>
                     
                     <div className="space-y-3">
                       <Label>Planos Elegíveis</Label>
                       <div className="flex flex-wrap gap-4">
-                        {['starter', 'professional', 'enterprise'].map((plan) => (
-                          <div key={plan} className="flex items-center space-x-2">
+                        {[
+                          { slug: 'essencial', label: 'Essencial' },
+                          { slug: 'profissional', label: 'Profissional' },
+                          { slug: 'estrategico', label: 'Estratégico' }
+                        ].map((plan) => (
+                          <div key={plan.slug} className="flex items-center space-x-2">
                             <Checkbox
-                              id={`plan-${plan}`}
-                              checked={form.eligible_plans.includes(plan)}
-                              onCheckedChange={() => handlePlanToggle(plan)}
+                              id={`plan-${plan.slug}`}
+                              checked={form.eligible_plans.includes(plan.slug)}
+                              onCheckedChange={() => handlePlanToggle(plan.slug)}
                             />
-                            <Label htmlFor={`plan-${plan}`} className="capitalize">{plan}</Label>
+                            <Label htmlFor={`plan-${plan.slug}`}>{plan.label}</Label>
                           </div>
                         ))}
                       </div>
