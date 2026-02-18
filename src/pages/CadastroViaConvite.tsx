@@ -234,10 +234,29 @@ export default function CadastroViaConvite() {
           }
         });
 
-        if (error || !data?.success) {
+        if (error) {
           console.error('Erro ao criar cliente:', error);
+          // Try to extract the real error message from the edge function response
+          let errorMessage = "Tente novamente mais tarde";
+          try {
+            if (error.context && typeof error.context.json === 'function') {
+              const errorBody = await error.context.json();
+              errorMessage = errorBody?.error || errorMessage;
+            } else if (data?.error) {
+              errorMessage = data.error;
+            } else if (error.message) {
+              errorMessage = error.message;
+            }
+          } catch {
+            errorMessage = data?.error || error?.message || errorMessage;
+          }
+          toast.error("Erro ao criar conta", { description: errorMessage });
+          return;
+        }
+
+        if (!data?.success) {
           toast.error("Erro ao criar conta", {
-            description: data?.error || error?.message || "Tente novamente mais tarde"
+            description: data?.error || "Tente novamente mais tarde"
           });
           return;
         }
