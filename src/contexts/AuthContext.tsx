@@ -63,32 +63,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [toast]);
 
-  // Logout on page close/refresh
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (user) {
-        try {
-          // Clear local session without network to avoid 403 "session_not_found" on unload
-          // This ensures the user must re-authenticate when returning
-          supabase.auth.signOut({ scope: 'local' });
-        } catch (error) {
-          // Silently ignore errors - session may already be invalid
-          console.log('Local signout on close:', error);
-        } finally {
-          // Fallback: ensure removal of persisted token in case supabase method fails
-          try {
-            localStorage.removeItem('sb-devnkdyfzlgspdlfuyam-auth-token');
-          } catch {}
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [user]);
+  // NOTE: Removed beforeunload logout handler.
+  // It was destroying sessions on every page close/refresh,
+  // preventing users from staying logged in.
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
