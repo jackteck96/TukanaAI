@@ -12,6 +12,7 @@ import { FileText, TrendingUp, Users, Clock, Search, Download, Filter, ArrowLeft
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import DocumentReport from "@/components/DocumentReport";
+import FirstVisitGuide from "@/components/FirstVisitGuide";
 
 interface Process {
   id: string;
@@ -181,6 +182,16 @@ const Relatorios = () => {
             Visualize e gerencie relatórios de documentos por processo
           </p>
         </div>
+
+        <FirstVisitGuide
+          pageKey="relatorios"
+          title="Acompanhe seus resultados"
+          items={[
+            { icon: <TrendingUp className="h-4 w-4" />, title: "Visão Geral", description: "Resumo de todos os processos e documentos." },
+            { icon: <FileText className="h-4 w-4" />, title: "Por Processo", description: "Gere relatórios detalhados de cada processo." },
+            { icon: <Download className="h-4 w-4" />, title: "Exportar", description: "Baixe relatórios em PDF para compartilhar." },
+          ]}
+        />
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>

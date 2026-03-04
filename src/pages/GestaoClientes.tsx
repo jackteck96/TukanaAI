@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import CreateClientDialog from '@/components/CreateClientDialog';
 import CustomFieldTemplatesManager from '@/components/CustomFieldTemplatesManager';
+import FirstVisitGuide from '@/components/FirstVisitGuide';
 
 interface Client {
   id: string;
@@ -180,6 +181,16 @@ const GestaoClientes = () => {
           </Button>
         </div>
       </div>
+
+      <FirstVisitGuide
+        pageKey="gestao-clientes"
+        title="Gerencie sua carteira de clientes"
+        items={[
+          { icon: <Users className="h-4 w-4" />, title: "Cadastro", description: "Adicione clientes com dados completos e CNPJ/CPF." },
+          { icon: <Mail className="h-4 w-4" />, title: "Convites", description: "Envie convites por e-mail para clientes se cadastrarem." },
+          { icon: <Eye className="h-4 w-4" />, title: "Acompanhamento", description: "Visualize status de cadastro e processos de cada cliente." },
+        ]}
+      />
 
       {/* Configurações de Campos Personalizados */}
       <Collapsible open={showCustomFields} onOpenChange={setShowCustomFields}>
