@@ -53,6 +53,8 @@ import CompanyNotifications from "@/components/CompanyNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ReportProblemDialog } from "@/components/ReportProblemDialog";
 import logo from "@/assets/logo.png";
+import FirstVisitGuide from "@/components/FirstVisitGuide";
+import { Lightbulb, FolderOpen as FolderOpenIcon, Users as UsersIcon, FileText as FileTextIcon, TrendingUp as TrendingUpIcon, PenTool as PenToolIcon } from "lucide-react";
 
 const EmpresaDashboard = () => {
   const navigate = useNavigate();
@@ -479,6 +481,20 @@ const EmpresaDashboard = () => {
               <CompanyLegalDataCard companyId={companyId} />
             )}
           </div>
+
+          {/* First Visit Guide */}
+          <FirstVisitGuide
+            pageKey="empresa-dashboard"
+            title="Bem-vindo ao seu painel! Veja o que você pode fazer:"
+            items={[
+              { icon: <FolderOpen className="h-4 w-4" />, title: "Processos", description: "Crie e gerencie processos jurídicos com seus clientes." },
+              { icon: <Users className="h-4 w-4" />, title: "Clientes", description: "Cadastre clientes e acompanhe documentações." },
+              { icon: <PenTool className="h-4 w-4" />, title: "Assinaturas", description: "Assine documentos digitalmente com validade jurídica." },
+              { icon: <FileText className="h-4 w-4" />, title: "Modelos", description: "Crie templates de documentos reutilizáveis." },
+              { icon: <TrendingUp className="h-4 w-4" />, title: "Relatórios", description: "Acompanhe métricas e progresso dos processos." },
+              { icon: <Brain className="h-4 w-4" />, title: "IA", description: "Analise documentos automaticamente com inteligência artificial." },
+            ]}
+          />
 
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

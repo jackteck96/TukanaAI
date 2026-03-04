@@ -15,6 +15,7 @@ import DocumentList from '@/components/DocumentList';
 import DocumentReport from '@/components/DocumentReport';
 import TaskManager from '@/components/TaskManager';
 import { useCompany } from '@/contexts/CompanyContext';
+import FirstVisitGuide from '@/components/FirstVisitGuide';
 
 interface Process {
   id: string;
@@ -160,6 +161,16 @@ export default function DocumentManagement() {
             Novo Processo
           </Button>
         </div>
+
+        <FirstVisitGuide
+          pageKey="document-management"
+          title="Gerencie seus documentos"
+          items={[
+            { icon: <Upload className="h-4 w-4" />, title: "Upload", description: "Envie documentos organizados por processo." },
+            { icon: <FileText className="h-4 w-4" />, title: "Organização", description: "Documentos ficam vinculados a cada processo." },
+            { icon: <BarChart3 className="h-4 w-4" />, title: "Relatórios", description: "Gere relatórios de progresso automaticamente." },
+          ]}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Lista de Processos */}

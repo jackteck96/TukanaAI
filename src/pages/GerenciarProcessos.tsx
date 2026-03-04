@@ -49,6 +49,7 @@ import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocument
 import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
 import { ProcessCalendar } from "@/components/ProcessCalendar";
 import { CompanyPendingStandaloneSignatures } from "@/components/CompanyPendingStandaloneSignatures";
+import FirstVisitGuide from "@/components/FirstVisitGuide";
 
 
 const GerenciarProcessos = () => {
@@ -731,6 +732,16 @@ const GerenciarProcessos = () => {
       </header>
 
       <div className="p-6 space-y-6">
+        <FirstVisitGuide
+          pageKey="gerenciar-processos"
+          title="Gerencie seus processos de forma eficiente"
+          items={[
+            { icon: <FileText className="h-4 w-4" />, title: "Processos", description: "Cada processo reúne cliente, documentos e prazos em um só lugar." },
+            { icon: <Send className="h-4 w-4" />, title: "Convites", description: "Envie convites para clientes enviarem documentos online." },
+            { icon: <CheckCircle className="h-4 w-4" />, title: "Aprovação", description: "Revise e aprove documentos recebidos diretamente aqui." },
+          ]}
+        />
+
         {/* Search and Create */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 max-w-md relative">
