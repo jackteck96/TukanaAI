@@ -79,6 +79,24 @@ const Auth = () => {
   useEffect(() => {
     const checkUserAndRedirect = async () => {
       if (user) {
+        // Retomar checkout pendente se houver
+        const pendingPlan = sessionStorage.getItem("pending_checkout_plan");
+        if (pendingPlan) {
+          sessionStorage.removeItem("pending_checkout_plan");
+          try {
+            const { data, error } = await supabase.functions.invoke("create-checkout", {
+              body: { plan_slug: pendingPlan },
+            });
+            if (error) throw error;
+            if (data?.url) {
+              window.location.href = data.url;
+              return;
+            }
+          } catch (e) {
+            console.error("Erro ao retomar checkout:", e);
+          }
+        }
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
