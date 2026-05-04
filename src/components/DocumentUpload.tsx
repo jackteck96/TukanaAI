@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import DocumentPreviewModal from './DocumentPreviewModal';
 import { updateProcessProgress } from '@/utils/processProgressUpdater';
+import { ensureCanAdd } from '@/lib/planLimits';
 
 interface DocumentType {
   id: string;
