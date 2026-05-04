@@ -101,8 +101,8 @@ const CadastroCliente = () => {
             role: 'client',
             full_name: formData.fullName,
             phone: formData.phone,
-            company_name: formData.companyName
-          })
+            company_name: formData.companyName,
+          } as any)
           .eq('id', authData.user.id);
 
         if (profileError) throw profileError;
