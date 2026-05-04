@@ -126,7 +126,7 @@ export default function PartnerDocumentsCard() {
 
       const { error: dbError } = await supabase
         .from('partner_documents')
-        .upsert(updateData, {
+        .upsert(updateData as any, {
           onConflict: 'client_email,company_id'
         });
 

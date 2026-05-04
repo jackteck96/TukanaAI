@@ -184,7 +184,7 @@ export default function EditProfileModal({ open, onOpenChange }: EditProfileModa
 
       const { error: legalError } = await supabase
         .from('client_legal_data')
-        .upsert(legalDataPayload, {
+        .upsert(legalDataPayload as any, {
           onConflict: 'client_email'
         });
 
