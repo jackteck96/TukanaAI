@@ -56,7 +56,7 @@ const Header = () => {
                   <Button variant="outline">Login</Button>
                 </Link>
                 <a href="#planos">
-                  <Button variant="hero">Solicitar Demonstração</Button>
+                  <Button variant="hero">Assine já</Button>
                 </a>
               </>
             )}
@@ -102,7 +102,7 @@ const Header = () => {
                       <Button variant="outline" className="w-full">Login</Button>
                     </Link>
                     <a href="#planos">
-                      <Button variant="hero" className="w-full">Solicitar Demonstração</Button>
+                      <Button variant="hero" className="w-full">Assine já</Button>
                     </a>
                   </>
                 )}
