@@ -45,7 +45,9 @@ const PlansSection = () => {
 
   const handleSubscribe = async (planSlug: string) => {
     if (!user) {
-      toast.info("Faça login para continuar com a assinatura.");
+      sessionStorage.setItem("pending_checkout_plan", planSlug);
+      toast.info("Faça login ou crie sua conta para continuar com a assinatura.");
+      window.location.href = "/auth";
       return;
     }
     setCheckoutLoading(planSlug);
@@ -130,7 +132,7 @@ const PlansSection = () => {
                           </Button>
                         }
                       />
-                    ) : user ? (
+                    ) : (
                       <Button
                         className="w-full"
                         variant={highlighted ? "default" : "outline"}
@@ -142,10 +144,6 @@ const PlansSection = () => {
                         ) : (
                           <>Assinar <ArrowRight className="ml-2 h-4 w-4" /></>
                         )}
-                      </Button>
-                    ) : (
-                      <Button asChild className="w-full" variant={highlighted ? "default" : "outline"}>
-                        <Link to="/login">Assinar <ArrowRight className="ml-2 h-4 w-4" /></Link>
                       </Button>
                     )}
                   </CardContent>
