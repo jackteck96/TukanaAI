@@ -67,11 +67,19 @@ const Auth = () => {
     checkRecoveryMode();
   }, []);
 
-  // Prefill email from invite
+  // Prefill email from invite + tab/plan from query
   useEffect(() => {
     const prefill = searchParams.get('prefill');
     if (prefill) {
       setLoginForm((prev) => ({ ...prev, email: prefill }));
+    }
+    const tab = searchParams.get('tab');
+    if (tab === 'signup' || tab === 'login') {
+      setActiveTab(tab);
+    }
+    const plan = searchParams.get('plan');
+    if (plan) {
+      sessionStorage.setItem('pending_checkout_plan', plan);
     }
   }, [searchParams]);
 

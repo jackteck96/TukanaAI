@@ -46,8 +46,8 @@ const PlansSection = () => {
   const handleSubscribe = async (planSlug: string) => {
     if (!user) {
       sessionStorage.setItem("pending_checkout_plan", planSlug);
-      toast.info("Faça login ou crie sua conta para continuar com a assinatura.");
-      window.location.href = "/auth";
+      toast.info("Crie sua conta para continuar com a assinatura.");
+      window.location.href = `/auth?tab=signup&plan=${planSlug}`;
       return;
     }
     setCheckoutLoading(planSlug);
