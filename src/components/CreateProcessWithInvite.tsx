@@ -97,6 +97,16 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     setLoading(true);
 
     try {
+      // Verificar limite de casos do mês
+      if (company?.id) {
+        try {
+          await ensureCanAdd(company.id, "active_cases");
+        } catch (limitErr: any) {
+          toast({ title: "Limite atingido", description: limitErr.message, variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+      }
       console.log('Creating process with company_id:', company?.id);
       
       // Pegar cliente primário
