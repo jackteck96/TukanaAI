@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import DocumentPreviewModal from './DocumentPreviewModal';
 import { updateProcessProgress } from '@/utils/processProgressUpdater';
+import { ensureCanAdd } from '@/lib/planLimits';
 
 interface DocumentType {
   id: string;
@@ -164,7 +165,20 @@ export default function DocumentUpload({ processId, open, onOpenChange, onUpload
     setIsUploading(true);
 
     try {
-      // Renomear o arquivo com o tipo do documento
+      // Verificar limite de armazenamento do plano
+      if (company?.id) {
+        try {
+          const info = await ensureCanAdd(company.id, 'storage');
+          if (info.limit !== -1 && (info.current_usage + (file.size || 0)) > info.limit) {
+            throw new Error('Você atingiu o limite do seu plano. Faça upgrade para continuar.');
+          }
+        } catch (limitErr: any) {
+          toast.error(limitErr.message);
+          setIsUploading(false);
+          return;
+        }
+      }
+
       const fileExtension = file.name.split('.').pop();
       const timestamp = Date.now();
       const sanitizedDocumentType = documentType.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');

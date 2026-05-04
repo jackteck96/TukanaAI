@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import PlansSection from "@/components/PlansSection";
 
 const Landing = () => {
   const problems = [
@@ -459,43 +460,7 @@ const Landing = () => {
         </section>
 
         {/* Plans Section */}
-        <section id="planos" className="py-24 lg:py-32">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Planos <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">sob medida</span>
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Os planos são personalizados de acordo com o volume de documentos, número de 
-                usuários e a complexidade dos processos da sua empresa. Cada negócio tem suas 
-                particularidades, e a Fuzen se adapta às suas necessidades específicas de 
-                organização documental e controle de processos internos.
-              </p>
-              
-              <Card className="border-2 border-primary/20 rounded-3xl overflow-hidden bg-gradient-to-br from-card to-primary/5">
-                <CardContent className="p-8 md:p-12">
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="text-left">
-                      <h3 className="text-2xl md:text-3xl font-bold mb-2">Quer saber qual plano é ideal para você?</h3>
-                      <p className="text-muted-foreground">Nossa equipe irá entender sua demanda e apresentar a melhor solução.</p>
-                    </div>
-                    <ContactFormDialog 
-                      trigger={
-                        <Button 
-                          size="lg" 
-                          className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105 whitespace-nowrap"
-                        >
-                          Solicitar Demonstração
-                          <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      }
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+        <PlansSection />
 
         {/* Final CTA Section */}
         <section className="py-24 lg:py-32 relative overflow-hidden">

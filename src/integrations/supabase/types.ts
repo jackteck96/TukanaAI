@@ -2274,41 +2274,65 @@ export type Database = {
       subscription_plans: {
         Row: {
           created_at: string
+          cta_type: string | null
           description: string | null
           display_order: number | null
           features: Json | null
           id: string
           is_active: boolean | null
+          is_highlighted: boolean | null
+          is_public: boolean | null
+          max_active_cases_month: number | null
           max_documents_month: number | null
+          max_storage_gb: number | null
           max_users: number | null
           name: string
+          price_cents: number | null
+          price_label: string | null
           slug: string
+          stripe_price_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          cta_type?: string | null
           description?: string | null
           display_order?: number | null
           features?: Json | null
           id?: string
           is_active?: boolean | null
+          is_highlighted?: boolean | null
+          is_public?: boolean | null
+          max_active_cases_month?: number | null
           max_documents_month?: number | null
+          max_storage_gb?: number | null
           max_users?: number | null
           name: string
+          price_cents?: number | null
+          price_label?: string | null
           slug: string
+          stripe_price_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          cta_type?: string | null
           description?: string | null
           display_order?: number | null
           features?: Json | null
           id?: string
           is_active?: boolean | null
+          is_highlighted?: boolean | null
+          is_public?: boolean | null
+          max_active_cases_month?: number | null
           max_documents_month?: number | null
+          max_storage_gb?: number | null
           max_users?: number | null
           name?: string
+          price_cents?: number | null
+          price_label?: string | null
           slug?: string
+          stripe_price_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -2322,7 +2346,10 @@ export type Database = {
           id: string
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          subscription_plan_id: string | null
           trial_ends_at: string | null
           updated_at: string
         }
@@ -2334,7 +2361,10 @@ export type Database = {
           id?: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_plan_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -2346,7 +2376,10 @@ export type Database = {
           id?: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_plan_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -2356,6 +2389,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: true
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_subscription_plan_id_fkey"
+            columns: ["subscription_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -2757,6 +2797,10 @@ export type Database = {
       collaborator_can_access_process: {
         Args: { _process_id: string; _user_id: string }
         Returns: boolean
+      }
+      count_active_cases_current_month: {
+        Args: { company_uuid: string }
+        Returns: number
       }
       generate_document_hash: {
         Args: { document_uuid: string; file_path_val: string }

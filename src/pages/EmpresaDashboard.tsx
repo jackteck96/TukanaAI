@@ -54,6 +54,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { ReportProblemDialog } from "@/components/ReportProblemDialog";
 import logo from "@/assets/logo.png";
 import FirstVisitGuide from "@/components/FirstVisitGuide";
+import CurrentPlanCard from "@/components/CurrentPlanCard";
 import { Lightbulb, FolderOpen as FolderOpenIcon, Users as UsersIcon, FileText as FileTextIcon, TrendingUp as TrendingUpIcon, PenTool as PenToolIcon } from "lucide-react";
 
 const EmpresaDashboard = () => {
@@ -495,6 +496,9 @@ const EmpresaDashboard = () => {
               { icon: <Brain className="h-4 w-4" />, title: "IA", description: "Analise documentos automaticamente com inteligência artificial." },
             ]}
           />
+
+          {/* Plano atual */}
+          <CurrentPlanCard />
 
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

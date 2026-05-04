@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { toast } from 'sonner';
+import { ensureCanAdd } from '@/lib/planLimits';
 
 interface InviteFormData {
   email: string;
@@ -173,6 +174,17 @@ export default function UserInviteSystem({ onInviteSent }: UserInviteSystemProps
     setSending(true);
 
     try {
+      // Verificar limite de usuários do plano
+      if (company?.id) {
+        try {
+          await ensureCanAdd(company.id, 'users');
+        } catch (limitErr: any) {
+          toast.error(limitErr.message);
+          setSending(false);
+          return;
+        }
+      }
+
       // Verificar se o email já possui uma conta
       const { data: existingUser } = await supabase
         .from('profiles')
