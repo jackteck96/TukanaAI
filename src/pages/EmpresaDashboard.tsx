@@ -497,6 +497,9 @@ const EmpresaDashboard = () => {
             ]}
           />
 
+          {/* Plano atual */}
+          <CurrentPlanCard />
+
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {kpis.map((kpi) => (
