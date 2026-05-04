@@ -54,6 +54,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { ReportProblemDialog } from "@/components/ReportProblemDialog";
 import logo from "@/assets/logo.png";
 import FirstVisitGuide from "@/components/FirstVisitGuide";
+import CurrentPlanCard from "@/components/CurrentPlanCard";
 import { Lightbulb, FolderOpen as FolderOpenIcon, Users as UsersIcon, FileText as FileTextIcon, TrendingUp as TrendingUpIcon, PenTool as PenToolIcon } from "lucide-react";
 
 const EmpresaDashboard = () => {
