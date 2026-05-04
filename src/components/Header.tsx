@@ -38,6 +38,9 @@ const Header = () => {
             <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
               Para Quem
             </a>
+            <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
+              Planos
+            </a>
           </nav>
 
           {/* Desktop CTA */}
@@ -83,6 +86,9 @@ const Header = () => {
               </a>
               <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
                 Para Quem
+              </a>
+              <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
+                Planos
               </a>
               <div className="flex flex-col space-y-2 pt-4">
                 {user ? (
