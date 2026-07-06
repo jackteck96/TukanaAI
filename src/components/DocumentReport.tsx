@@ -321,6 +321,10 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
       
       const processFolder = zip.folder(`${processData?.project_name || processData?.client_name || 'processo'}-documentos`);
       
+      const sanitize = (s: string) => (s || '').replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').trim();
+      const processLabel = sanitize(processData?.project_name || processData?.client_name || 'processo');
+      const usedNames = new Map<string, number>();
+
       for (const doc of report.report_data) {
         try {
           const { data, error } = await supabase.storage
@@ -332,7 +336,18 @@ export default function DocumentReport({ processId, refreshKey = 0 }: DocumentRe
             continue;
           }
           
-          processFolder?.file(doc.file_name, data);
+          const dotIdx = (doc.file_name || '').lastIndexOf('.');
+          const ext = dotIdx >= 0 ? doc.file_name.slice(dotIdx) : '';
+          const docType = sanitize(doc.document_type || 'documento');
+          let renamed = `${processLabel} - ${docType}${ext}`;
+          const count = usedNames.get(renamed) || 0;
+          if (count > 0) {
+            const base = renamed.slice(0, renamed.length - ext.length);
+            renamed = `${base} (${count + 1})${ext}`;
+          }
+          usedNames.set(`${processLabel} - ${docType}${ext}`, count + 1);
+          
+          processFolder?.file(renamed, data);
         } catch (error) {
           console.error(`Erro ao processar ${doc.file_name}:`, error);
         }
