@@ -545,6 +545,7 @@ const GerenciarProcessos = () => {
 
           {/* Documentos, Anotações e Relatórios */}
           <div className="space-y-6">
+            <DocumentChecklist processId={currentProcess.id} refreshKey={currentProcess.updated_at} />
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
             <ProcessNotes 
               processId={currentProcess.id} 
