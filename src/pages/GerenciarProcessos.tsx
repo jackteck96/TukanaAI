@@ -30,6 +30,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
 import DocumentList from "@/components/DocumentList";
+import DocumentChecklist from "@/components/DocumentChecklist";
 import DocumentProgressBattery from "@/components/DocumentProgressBattery";
 import DocumentProgressBar from "@/components/DocumentProgressBar";
 import ProcessTimeline from "@/components/ProcessTimeline";
@@ -544,6 +545,7 @@ const GerenciarProcessos = () => {
 
           {/* Documentos, Anotações e Relatórios */}
           <div className="space-y-6">
+            <DocumentChecklist processId={currentProcess.id} refreshKey={currentProcess.updated_at} />
             <DocumentList processId={currentProcess.id} refreshKey={Date.now()} />
             <ProcessNotes 
               processId={currentProcess.id} 
