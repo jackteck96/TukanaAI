@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useAuth } from '@/contexts/AuthContext';
-import PlanLimitChecker from './PlanLimitChecker';
+import PlanLimitChecker from '../billing/PlanLimitChecker';
 
 const CompanyDashboard = () => {
   const { company, subscription, usageMetrics, refreshMetrics } = useCompany();

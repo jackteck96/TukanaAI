@@ -28,29 +28,29 @@ import {
   Shield
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
-import DocumentList from "@/components/DocumentList";
-import DocumentChecklist from "@/components/DocumentChecklist";
-import DocumentProgressBattery from "@/components/DocumentProgressBattery";
-import DocumentProgressBar from "@/components/DocumentProgressBar";
-import ProcessTimeline from "@/components/ProcessTimeline";
-import EmailResendButton from "@/components/EmailResendButton";
-import DocumentReport from "@/components/DocumentReport";
+import CreateProcessWithInvite from "@/components/process/CreateProcessWithInvite";
+import DocumentList from "@/components/documents/DocumentList";
+import DocumentChecklist from "@/components/documents/DocumentChecklist";
+import DocumentProgressBattery from "@/components/documents/DocumentProgressBattery";
+import DocumentProgressBar from "@/components/documents/DocumentProgressBar";
+import ProcessTimeline from "@/components/process/ProcessTimeline";
+import EmailResendButton from "@/components/shared/EmailResendButton";
+import DocumentReport from "@/components/documents/DocumentReport";
 
-import ProcessNotes from "@/components/ProcessNotes";
-import { BusinessDocumentAnalyzer } from "@/components/BusinessDocumentAnalyzer";
-import ProcessEditDialog from "@/components/ProcessEditDialog";
-import { InternalProcessChat } from "@/components/InternalProcessChat";
-import { calculateProgressFromStatus } from "@/utils/progressCalculator";
+import ProcessNotes from "@/components/process/ProcessNotes";
+import { BusinessDocumentAnalyzer } from "@/components/documents/BusinessDocumentAnalyzer";
+import ProcessEditDialog from "@/components/process/ProcessEditDialog";
+import { InternalProcessChat } from "@/components/process/InternalProcessChat";
+import { calculateProgressFromStatus } from "@/lib/progressCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { updateProcessProgress } from "@/utils/processProgressUpdater";
-import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
-import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocuments";
-import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
-import { ProcessCalendar } from "@/components/ProcessCalendar";
-import { CompanyPendingStandaloneSignatures } from "@/components/CompanyPendingStandaloneSignatures";
-import FirstVisitGuide from "@/components/FirstVisitGuide";
+import { updateProcessProgress } from "@/lib/processProgressUpdater";
+import { StandaloneDocumentUpload } from "@/components/documents/StandaloneDocumentUpload";
+import { StandaloneSignedDocuments } from "@/components/signatures/StandaloneSignedDocuments";
+import { PendingSignatureDocuments } from "@/components/signatures/PendingSignatureDocuments";
+import { ProcessCalendar } from "@/components/process/ProcessCalendar";
+import { CompanyPendingStandaloneSignatures } from "@/components/signatures/CompanyPendingStandaloneSignatures";
+import FirstVisitGuide from "@/components/shared/FirstVisitGuide";
 
 
 const GerenciarProcessos = () => {

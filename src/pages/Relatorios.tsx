@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Header from "@/components/Header";
+import Header from "@/components/layout/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, TrendingUp, Users, Clock, Search, Download, Filter, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import DocumentReport from "@/components/DocumentReport";
-import FirstVisitGuide from "@/components/FirstVisitGuide";
+import DocumentReport from "@/components/documents/DocumentReport";
+import FirstVisitGuide from "@/components/shared/FirstVisitGuide";
 
 interface Process {
   id: string;

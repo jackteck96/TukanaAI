@@ -19,10 +19,10 @@ import {
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import PartnerDocumentsViewer from "@/components/PartnerDocumentsViewer";
+import PartnerDocumentsViewer from "@/components/documents/PartnerDocumentsViewer";
 import { useAuth } from "@/contexts/AuthContext";
-import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificationButton";
-import { LegalData } from "@/utils/legalQualification";
+import { CopyLegalQualificationButton } from "@/components/clients/CopyLegalQualificationButton";
+import { LegalData } from "@/lib/legalQualification";
 
 interface ClientProcess {
   id: string;

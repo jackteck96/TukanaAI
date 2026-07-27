@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
-import PontoClock from "@/components/PontoClock";
+import PontoClock from "@/components/process/PontoClock";
 import { 
   Users, 
   FileText, 
@@ -38,23 +38,23 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import CreateProcessWithInvite from "@/components/CreateProcessWithInvite";
-import CompletedTodayModal from "@/components/CompletedTodayModal";
-import DocumentSearchModal from "@/components/DocumentSearchModal";
+import CreateProcessWithInvite from "@/components/process/CreateProcessWithInvite";
+import CompletedTodayModal from "@/components/process/CompletedTodayModal";
+import DocumentSearchModal from "@/components/documents/DocumentSearchModal";
 import { supabase } from "@/integrations/supabase/client";
-import EditCompanyProfileModal from "@/components/EditCompanyProfileModal";
-import ExpiringDocumentsAlert from "@/components/ExpiringDocumentsAlert";
-import { PdfConverter } from "@/components/PdfConverter";
-import CreateClientDialog from "@/components/CreateClientDialog";
-import { CompanyLegalDataCard } from "@/components/CompanyLegalDataCard";
-import { CopyLegalQualificationButton } from "@/components/CopyLegalQualificationButton";
-import { LegalData } from "@/utils/legalQualification";
-import CompanyNotifications from "@/components/CompanyNotifications";
+import EditCompanyProfileModal from "@/components/company/EditCompanyProfileModal";
+import ExpiringDocumentsAlert from "@/components/documents/ExpiringDocumentsAlert";
+import { PdfConverter } from "@/components/documents/PdfConverter";
+import CreateClientDialog from "@/components/clients/CreateClientDialog";
+import { CompanyLegalDataCard } from "@/components/company/CompanyLegalDataCard";
+import { CopyLegalQualificationButton } from "@/components/clients/CopyLegalQualificationButton";
+import { LegalData } from "@/lib/legalQualification";
+import CompanyNotifications from "@/components/notifications/CompanyNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
-import { ReportProblemDialog } from "@/components/ReportProblemDialog";
+import { ReportProblemDialog } from "@/components/shared/ReportProblemDialog";
 import logo from "@/assets/logo.png";
-import FirstVisitGuide from "@/components/FirstVisitGuide";
-import CurrentPlanCard from "@/components/CurrentPlanCard";
+import FirstVisitGuide from "@/components/shared/FirstVisitGuide";
+import CurrentPlanCard from "@/components/billing/CurrentPlanCard";
 import { Lightbulb, FolderOpen as FolderOpenIcon, Users as UsersIcon, FileText as FileTextIcon, TrendingUp as TrendingUpIcon, PenTool as PenToolIcon } from "lucide-react";
 
 const EmpresaDashboard = () => {

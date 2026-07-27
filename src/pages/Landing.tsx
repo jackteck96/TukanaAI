@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { 
@@ -30,8 +30,8 @@ import {
   Target
 } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
-import { ContactFormDialog } from "@/components/ContactFormDialog";
-import PlansSection from "@/components/PlansSection";
+import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
+import PlansSection from "@/components/billing/PlansSection";
 
 const Landing = () => {
   const problems = [

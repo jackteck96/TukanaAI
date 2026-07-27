@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import Header from "@/components/Header";
+import Header from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataSubjectRightsPortal } from "@/components/DataSubjectRightsPortal";
-import { ConsentManagement } from "@/components/ConsentManagement";
+import { DataSubjectRightsPortal } from "@/components/privacy/DataSubjectRightsPortal";
+import { ConsentManagement } from "@/components/privacy/ConsentManagement";
 import { Shield, UserCheck, FileText, Info, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

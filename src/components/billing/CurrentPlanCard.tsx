@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Crown, ArrowUpRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
-import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 import { Link } from "react-router-dom";
 
 interface LimitInfo {

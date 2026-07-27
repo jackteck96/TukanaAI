@@ -31,7 +31,7 @@ import {
   Ticket,
   CreditCard
 } from "lucide-react";
-import GlobalDocumentCategoryManager from "@/components/GlobalDocumentCategoryManager";
+import GlobalDocumentCategoryManager from "@/components/documents/GlobalDocumentCategoryManager";
 import B2BClientsManager from "@/components/admin/B2BClientsManager";
 import DiscountCouponsManager from "@/components/admin/DiscountCouponsManager";
 import PlansManager from "@/components/admin/PlansManager";

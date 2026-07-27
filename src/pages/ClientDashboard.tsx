@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, PenTool, Plus, Calendar, FileText } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { StandaloneSignedDocuments } from "@/components/StandaloneSignedDocuments";
-import { PendingSignatureDocuments } from "@/components/PendingSignatureDocuments";
-import { StandaloneDocumentUpload } from "@/components/StandaloneDocumentUpload";
+import { StandaloneSignedDocuments } from "@/components/signatures/StandaloneSignedDocuments";
+import { PendingSignatureDocuments } from "@/components/signatures/PendingSignatureDocuments";
+import { StandaloneDocumentUpload } from "@/components/documents/StandaloneDocumentUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ClientAwaitingCompanySignatures } from "@/components/ClientAwaitingCompanySignatures";
+import { ClientAwaitingCompanySignatures } from "@/components/signatures/ClientAwaitingCompanySignatures";
 
 const ClientDashboard = () => {
   const navigate = useNavigate();

@@ -5,8 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Star, ChevronDown, ChevronUp } from 'lucide-react';
-import { ClientAutocomplete } from './ClientAutocomplete';
-import ClientCustomFields, { CustomField } from './ClientCustomFields';
+import { ClientAutocomplete } from '../clients/ClientAutocomplete';
+import ClientCustomFields, { CustomField } from '../clients/ClientCustomFields';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 export interface ProcessClient {

@@ -11,9 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Edit, Loader2, Shield, Users } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import UserInviteSystem from '@/components/UserInviteSystem';
-import { CollaboratorPermissionsModal } from '@/components/CollaboratorPermissionsModal';
-import ClientCollaboratorInvite from '@/components/ClientCollaboratorInvite';
+import UserInviteSystem from '@/components/shared/UserInviteSystem';
+import { CollaboratorPermissionsModal } from '@/components/shared/CollaboratorPermissionsModal';
+import ClientCollaboratorInvite from '@/components/clients/ClientCollaboratorInvite';
 
 interface Collaborator {
   id: string;

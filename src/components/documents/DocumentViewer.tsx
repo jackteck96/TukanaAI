@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import InternalSignatureManager from './InternalSignatureManager';
-import MultiSignatureManager from './MultiSignatureManager';
-import SignatureTermDownloadButton from './SignatureTermDownloadButton';
+import InternalSignatureManager from '../signatures/InternalSignatureManager';
+import MultiSignatureManager from '../signatures/MultiSignatureManager';
+import SignatureTermDownloadButton from '../signatures/SignatureTermDownloadButton';
 import PdfInlineRenderer from './PdfInlineRenderer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

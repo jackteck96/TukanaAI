@@ -1,9 +1,9 @@
 import { useCompany } from '@/contexts/CompanyContext';
-import { BusinessDocumentAnalyzer } from '@/components/BusinessDocumentAnalyzer';
+import { BusinessDocumentAnalyzer } from '@/components/documents/BusinessDocumentAnalyzer';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Brain, ArrowLeft } from 'lucide-react';
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 import { useNavigate } from 'react-router-dom';
 
 export default function AnaliseIA() {

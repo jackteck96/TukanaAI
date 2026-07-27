@@ -10,12 +10,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import DocumentUpload from '@/components/DocumentUpload';
-import DocumentList from '@/components/DocumentList';
-import DocumentReport from '@/components/DocumentReport';
-import TaskManager from '@/components/TaskManager';
+import DocumentUpload from '@/components/documents/DocumentUpload';
+import DocumentList from '@/components/documents/DocumentList';
+import DocumentReport from '@/components/documents/DocumentReport';
+import TaskManager from '@/components/process/TaskManager';
 import { useCompany } from '@/contexts/CompanyContext';
-import FirstVisitGuide from '@/components/FirstVisitGuide';
+import FirstVisitGuide from '@/components/shared/FirstVisitGuide';
 
 interface Process {
   id: string;

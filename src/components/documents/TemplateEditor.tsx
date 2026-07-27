@@ -8,7 +8,7 @@ import { FileText, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
-import { formatLegalQualification, LegalData } from "@/utils/legalQualification";
+import { formatLegalQualification, LegalData } from "@/lib/legalQualification";
 
 interface Template {
   id: string;

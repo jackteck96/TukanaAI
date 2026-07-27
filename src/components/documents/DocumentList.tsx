@@ -33,7 +33,7 @@ interface DocumentListProps {
   refreshKey?: number;
 }
 
-import { updateProcessProgress as updateProgress } from '@/utils/processProgressUpdater';
+import { updateProcessProgress as updateProgress } from '@/lib/processProgressUpdater';
 
 export default function DocumentList({ processId, refreshKey = 0 }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>([]);

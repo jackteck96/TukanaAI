@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";

@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
-import DocumentCategoryManager from "@/components/DocumentCategoryManager";
+import DocumentCategoryManager from "@/components/documents/DocumentCategoryManager";
 
 interface TipoDocumento {
   id: string;

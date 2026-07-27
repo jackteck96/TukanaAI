@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FileText, Download, Check, X, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import PdfInlineRenderer from './PdfInlineRenderer';
-import InternalSignatureManager from './InternalSignatureManager';
+import InternalSignatureManager from '../signatures/InternalSignatureManager';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface PreviewDocument {
