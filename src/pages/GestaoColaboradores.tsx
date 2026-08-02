@@ -25,8 +25,8 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
-import UserInviteSystem from '@/components/UserInviteSystem';
-import PlanLimitChecker from '@/components/PlanLimitChecker';
+import UserInviteSystem from '@/components/shared/UserInviteSystem';
+import PlanLimitChecker from '@/components/billing/PlanLimitChecker';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 

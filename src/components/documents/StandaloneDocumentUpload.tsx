@@ -12,9 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Upload, FileText, Search, Globe, User } from 'lucide-react';
-import InternalSignatureManager from './InternalSignatureManager';
+import InternalSignatureManager from '../signatures/InternalSignatureManager';
 import jsPDF from 'jspdf';
-import { formatLegalQualification, LegalData } from '@/utils/legalQualification';
+import { formatLegalQualification, LegalData } from '@/lib/legalQualification';
 import { cn } from '@/lib/utils';
 
 interface Client {

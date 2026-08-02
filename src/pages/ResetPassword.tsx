@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { z } from 'zod';
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 
 const passwordSchema = z.object({
   password: z.string()

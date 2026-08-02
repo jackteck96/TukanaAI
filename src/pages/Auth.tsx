@@ -12,7 +12,7 @@ import { ArrowLeft, Mail, Lock, User, Building2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import logo from '@/assets/logo.png';
+import { LOGO_URL as logo } from '@/lib/assets';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();

@@ -22,9 +22,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import CreateClientDialog from '@/components/CreateClientDialog';
-import CustomFieldTemplatesManager from '@/components/CustomFieldTemplatesManager';
-import FirstVisitGuide from '@/components/FirstVisitGuide';
+import CreateClientDialog from '@/components/clients/CreateClientDialog';
+import CustomFieldTemplatesManager from '@/components/documents/CustomFieldTemplatesManager';
+import FirstVisitGuide from '@/components/shared/FirstVisitGuide';
 
 interface Client {
   id: string;

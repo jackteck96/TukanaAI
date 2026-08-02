@@ -29,9 +29,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import CreateClientDialog from '@/components/CreateClientDialog';
-import { CopyLegalQualificationButton } from '@/components/CopyLegalQualificationButton';
-import { LegalData } from '@/utils/legalQualification';
+import CreateClientDialog from '@/components/clients/CreateClientDialog';
+import { CopyLegalQualificationButton } from '@/components/clients/CopyLegalQualificationButton';
+import { LegalData } from '@/lib/legalQualification';
 
 interface Client {
   id: string;

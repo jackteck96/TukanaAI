@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
 import { ProcessClientsManager, ProcessClient } from "./ProcessClientsManager";
-import DocumentSelector, { CustomDocumentConfig } from "./DocumentSelector";
+import DocumentSelector, { CustomDocumentConfig } from "../documents/DocumentSelector";
 import { ensureCanAdd } from "@/lib/planLimits";
 
 interface CreateProcessForm {

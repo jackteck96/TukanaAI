@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
-import { copyLegalQualificationToClipboard, LegalData } from '@/utils/legalQualification';
+import { copyLegalQualificationToClipboard, LegalData } from '@/lib/legalQualification';
 import { toast } from 'sonner';
 
 interface CopyLegalQualificationButtonProps {

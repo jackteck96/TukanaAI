@@ -8,7 +8,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, CheckCircle, Clock } from 'lucide-react';
-import DocumentViewer from './DocumentViewer';
+import DocumentViewer from '../documents/DocumentViewer';
 
 interface Document {
   id: string;

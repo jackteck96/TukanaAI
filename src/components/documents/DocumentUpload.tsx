@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import DocumentPreviewModal from './DocumentPreviewModal';
-import { updateProcessProgress } from '@/utils/processProgressUpdater';
+import { updateProcessProgress } from '@/lib/processProgressUpdater';
 import { ensureCanAdd } from '@/lib/planLimits';
 
 interface DocumentType {

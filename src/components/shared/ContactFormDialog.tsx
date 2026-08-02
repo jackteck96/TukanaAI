@@ -61,7 +61,6 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
       if (error) throw error;
 
       toast.success("Mensagem enviada com sucesso! Entraremos em contato em breve.");
-      reset();
       setIsOpen(false);
     } catch (error) {
       console.error("Erro ao enviar formulário:", error);
@@ -72,7 +71,13 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (open) reset();
+      }}
+    >
       <DialogTrigger asChild>
         {trigger || (
           <Button

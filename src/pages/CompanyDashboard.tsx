@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import CreateClientDialog from "@/components/CreateClientDialog";
+import CreateClientDialog from "@/components/clients/CreateClientDialog";
 
 const CompanyDashboard = () => {
   const stats = [
