@@ -52,7 +52,7 @@ import { LegalData } from "@/lib/legalQualification";
 import CompanyNotifications from "@/components/notifications/CompanyNotifications";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ReportProblemDialog } from "@/components/shared/ReportProblemDialog";
-import logo from "@/assets/logo.png";
+import { LOGO_URL as logo } from "@/lib/assets";
 import FirstVisitGuide from "@/components/shared/FirstVisitGuide";
 import CurrentPlanCard from "@/components/billing/CurrentPlanCard";
 import { Lightbulb, FolderOpen as FolderOpenIcon, Users as UsersIcon, FileText as FileTextIcon, TrendingUp as TrendingUpIcon, PenTool as PenToolIcon } from "lucide-react";

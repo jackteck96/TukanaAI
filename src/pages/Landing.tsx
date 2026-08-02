@@ -29,7 +29,7 @@ import {
   Layers,
   Target
 } from "lucide-react";
-import heroImage from "@/assets/hero-bg.jpg";
+import { HERO_BG_URL as heroImage } from "@/lib/assets";
 import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 import PlansSection from "@/components/billing/PlansSection";
 

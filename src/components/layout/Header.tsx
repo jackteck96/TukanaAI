@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/logo.png";
+import { LOGO_URL as logo } from "@/lib/assets";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
