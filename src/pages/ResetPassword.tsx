@@ -9,18 +9,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import Header from '@/components/layout/Header';
+import { useTranslation, TFunction } from 'react-i18next';
 
-const passwordSchema = z.object({
-  password: z.string()
-    .min(6, 'A senha deve ter no mínimo 6 caracteres')
-    .max(100, 'A senha deve ter no máximo 100 caracteres'),
-  confirmPassword: z.string().min(1, 'Confirme a senha')
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword']
-});
+const getPasswordSchema = (t: TFunction) =>
+  z.object({
+    password: z.string()
+      .min(6, t('resetPassword.validation.passwordMin'))
+      .max(100, t('resetPassword.validation.passwordMax')),
+    confirmPassword: z.string().min(1, t('resetPassword.validation.confirmRequired'))
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('resetPassword.validation.passwordMismatch'),
+    path: ['confirmPassword']
+  });
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -36,7 +39,7 @@ export default function ResetPassword() {
       
       if (error || !session) {
         setValidSession(false);
-        toast.error('Sessão inválida ou expirada. Solicite um novo link de recuperação.');
+        toast.error(t('resetPassword.toastInvalidSession'));
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
@@ -53,7 +56,7 @@ export default function ResetPassword() {
 
     try {
       // Validar dados
-      const validationResult = passwordSchema.safeParse({
+      const validationResult = getPasswordSchema(t).safeParse({
         password,
         confirmPassword
       });
@@ -72,15 +75,15 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
-      toast.success('Senha redefinida com sucesso! Faça login com sua nova senha.');
-      
+      toast.success(t('resetPassword.toastSuccess'));
+
       // Redirecionar para login após 2 segundos
       setTimeout(() => {
         navigate('/auth');
       }, 2000);
     } catch (error: any) {
       console.error('Erro ao redefinir senha:', error);
-      toast.error(error.message || 'Erro ao redefinir senha. Tente novamente.');
+      toast.error(error.message || t('resetPassword.toastErrorDefault'));
       setLoading(false);
     }
   };
@@ -100,9 +103,9 @@ export default function ResetPassword() {
         <main className="container mx-auto px-4 py-16">
           <Card className="max-w-md mx-auto">
             <CardHeader>
-              <CardTitle>Sessão Inválida</CardTitle>
+              <CardTitle>{t('resetPassword.invalidSessionTitle')}</CardTitle>
               <CardDescription>
-                O link de recuperação expirou ou é inválido. Você será redirecionado para solicitar um novo link.
+                {t('resetPassword.invalidSessionDescription')}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -117,15 +120,15 @@ export default function ResetPassword() {
       <main className="container mx-auto px-4 py-16">
         <Card className="max-w-md mx-auto">
           <CardHeader>
-            <CardTitle className="text-2xl">Redefinir Senha</CardTitle>
+            <CardTitle className="text-2xl">{t('resetPassword.title')}</CardTitle>
             <CardDescription>
-              Digite sua nova senha abaixo
+              {t('resetPassword.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Nova Senha</Label>
+                <Label htmlFor="password">{t('resetPassword.newPasswordLabel')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -133,7 +136,7 @@ export default function ResetPassword() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Digite sua nova senha (mínimo 6 caracteres)"
+                    placeholder={t('resetPassword.newPasswordPlaceholder')}
                     className="pl-10 pr-10"
                     required
                     maxLength={100}
@@ -155,7 +158,7 @@ export default function ResetPassword() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+                <Label htmlFor="confirmPassword">{t('resetPassword.confirmPasswordLabel')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -163,7 +166,7 @@ export default function ResetPassword() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Digite a senha novamente"
+                    placeholder={t('resetPassword.confirmPasswordPlaceholder')}
                     className="pl-10 pr-10"
                     required
                     maxLength={100}
@@ -190,7 +193,7 @@ export default function ResetPassword() {
                 disabled={loading || !password || !confirmPassword}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Redefinir Senha
+                {t('resetPassword.submitButton')}
               </Button>
           </form>
         </CardContent>

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -10,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export const AuthHashHandler = () => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   useEffect(() => {
     const hash = window.location.hash;
     if (!hash) return;
@@ -40,8 +42,8 @@ export const AuthHashHandler = () => {
         .catch(err => {
           console.error("[AuthHashHandler] Erro ao processar sessão de recuperação:", err);
           toast({
-            title: "Erro",
-            description: "Não foi possível processar o link de recuperação.",
+            title: t('authHashHandler.recoveryErrorTitle'),
+            description: t('authHashHandler.recoveryErrorDescription'),
             variant: "destructive",
           });
         });
@@ -57,14 +59,14 @@ export const AuthHashHandler = () => {
       // Feedback ao usuário
       if (code === "otp_expired") {
         toast({
-          title: "Link expirado",
-          description: "O link de acesso/convite expirou. Solicite um novo e-mail.",
+          title: t('authHashHandler.linkExpiredTitle'),
+          description: t('authHashHandler.linkExpiredDescription'),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Falha na autenticação",
-          description: description || "Não foi possível autenticar. Tente novamente.",
+          title: t('authHashHandler.authFailedTitle'),
+          description: description || t('authHashHandler.authFailedDescriptionDefault'),
           variant: "destructive",
         });
       }

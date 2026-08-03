@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import { 
   Shield, 
   Cloud, 
@@ -33,113 +34,45 @@ import { HERO_BG_URL as heroImage } from "@/lib/assets";
 import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 import PlansSection from "@/components/billing/PlansSection";
 
+type CardCopy = { title: string; description: string };
+type StepCopy = { number: string; title: string; description: string };
+
 const Landing = () => {
-  const problems = [
-    {
-      icon: FolderOpen,
-      title: "Documentos espalhados",
-      description: "Arquivos dispersos em e-mails, pastas, drives e sistemas dificultam o acesso e atrasam decisões."
-    },
-    {
-      icon: RefreshCw,
-      title: "Processos manuais",
-      description: "Controles em planilhas geram inconsistências, dependência de pessoas e falhas operacionais."
-    },
-    {
-      icon: AlertTriangle,
-      title: "Falta de controle",
-      description: "Sem padronização, é impossível saber o status de cada documento ou processo em tempo real."
-    },
-    {
-      icon: Clock,
-      title: "Riscos e retrabalho",
-      description: "Prazos perdidos, documentos vencidos e retrabalho constante comprometem a operação."
-    }
-  ];
+  const { t } = useTranslation();
 
-  const steps = [
-    {
-      number: "01",
-      icon: Cloud,
-      title: "Centralização dos documentos",
-      description: "Reúna todos os documentos, contratos e arquivos da empresa em um único ambiente seguro e acessível para toda a equipe."
-    },
-    {
-      number: "02",
-      icon: Layers,
-      title: "Organização automática e padronização",
-      description: "A Fuzen organiza e classifica documentos automaticamente, seguindo padrões definidos pela sua empresa. Sem bagunça, sem trabalho manual."
-    },
-    {
-      number: "03",
-      icon: BarChart3,
-      title: "Controle de prazos, relatórios e visão geral",
-      description: "Acompanhe o status de cada documento, receba alertas de vencimento e tenha relatórios claros para visão completa dos processos."
-    }
-  ];
+  const problemIcons = [FolderOpen, RefreshCw, AlertTriangle, Clock];
+  const problems = (t('landing.problems.items', { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: problemIcons[i],
+  }));
 
-  const benefits = [
-    {
-      icon: FolderOpen,
-      title: "Centralização de documentos empresariais",
-      description: "Todos os arquivos em um só lugar, organizados e acessíveis."
-    },
-    {
-      icon: Target,
-      title: "Padronização de processos",
-      description: "Fluxos documentais consistentes e organizados em toda a empresa."
-    },
-    {
-      icon: Shield,
-      title: "Redução de erros e retrabalho",
-      description: "Menos falhas com organização automática e alertas de vencimento."
-    },
-    {
-      icon: Zap,
-      title: "Mais produtividade para os times",
-      description: "Equipes focam no trabalho estratégico, não em buscar arquivos."
-    },
-    {
-      icon: Eye,
-      title: "Visão clara e organizada da documentação",
-      description: "Saiba exatamente onde está cada documento e qual seu status atual."
-    },
-    {
-      icon: BarChart3,
-      title: "Apoio à tomada de decisão",
-      description: "Relatórios e informações organizadas para decisões mais rápidas."
-    }
-  ];
+  const stepIcons = [Cloud, Layers, BarChart3];
+  const steps = (t('landing.howItWorks.items', { returnObjects: true }) as StepCopy[]).map((item, i) => ({
+    ...item,
+    icon: stepIcons[i],
+  }));
 
-  const audiences = [
-    {
-      icon: Scale,
-      title: "Escritórios jurídicos",
-      description: "Organização de contratos, processos e documentos legais com segurança e controle de prazos."
-    },
-    {
-      icon: Home,
-      title: "Imobiliárias",
-      description: "Controle de contratos, vistorias e documentação de imóveis e locatários em um só lugar."
-    },
-    {
-      icon: Building2,
-      title: "Empresas em crescimento",
-      description: "Gestão de documentos, contratos e processos internos de forma organizada e escalável."
-    },
-    {
-      icon: DollarSign,
-      title: "Times financeiros e operacionais",
-      description: "Controle de notas fiscais, compliance e documentos críticos com rastreabilidade."
-    }
-  ];
+  const benefitIcons = [FolderOpen, Target, Shield, Zap, Eye, BarChart3];
+  const benefits = (t('landing.benefits.items', { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: benefitIcons[i],
+  }));
+
+  const audienceIcons = [Scale, Home, Building2, DollarSign];
+  const audiences = (t('landing.audiences.items', { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: audienceIcons[i],
+  }));
+
+  const problemParagraphs = t('landing.problems.paragraphs', { returnObjects: true }) as string[];
+  const technologyParagraphs = t('landing.technology.paragraphs', { returnObjects: true }) as string[];
 
   return (
     <>
       <Helmet>
-        <title>Organização Inteligente de Documentos e Processos Empresariais | Fuzen</title>
-        <meta name="description" content="Centralize, organize e controle documentos, contratos e processos da sua empresa com eficiência. Plataforma de gestão documental para escritórios jurídicos, imobiliárias e times financeiros." />
-        <meta name="keywords" content="organização de documentos empresariais, gestão documental, controle de processos internos, documentos e contratos empresariais, organização documental profissional, software de gestão documental" />
+        <title>{t('landing.seo.title')}</title>
+        <meta name="description" content={t('landing.seo.description')} />
+        <meta name="keywords" content={t('landing.seo.keywords')} />
         <link rel="canonical" href="https://fuzen.online/" />
         
         <script type="application/ld+json">
@@ -148,7 +81,7 @@ const Landing = () => {
             "@type": "SoftwareApplication",
             "name": "Fuzen",
             "applicationCategory": "BusinessApplication",
-            "description": "Plataforma de organização inteligente de documentos e processos empresariais para centralização, controle e gestão documental",
+            "description": t('landing.seo.description'),
             "operatingSystem": "Web",
             "offers": {
               "@type": "Offer",
@@ -172,7 +105,7 @@ const Landing = () => {
             "@type": "Organization",
             "name": "Fuzen",
             "url": "https://fuzen.online",
-            "description": "Plataforma de organização inteligente de documentos e processos empresariais",
+            "description": t('landing.seo.description'),
             "logo": "https://fuzen.online/logo.png"
           })}
         </script>
@@ -184,9 +117,9 @@ const Landing = () => {
         {/* Hero Section */}
         <section className="relative py-24 lg:py-40 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
-            <img 
+            <img
               src={heroImage}
-              alt="Plataforma Fuzen - Organização inteligente de documentos empresariais"
+              alt={t('landing.seo.heroImageAlt')}
               className="absolute inset-0 w-full h-full object-cover opacity-5"
             />
             <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
@@ -198,57 +131,57 @@ const Landing = () => {
             <div className="max-w-5xl mx-auto text-center">
               <Badge className="mb-8 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
                 <FileCheck className="h-4 w-4 mr-2 inline" />
-                Controle total dos seus documentos
+                {t('landing.hero.badge')}
               </Badge>
-              
+
               <div className="mb-6 animate-fade-in animation-delay-200">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                   <span className="bg-gradient-to-r from-primary via-primary-light to-accent bg-clip-text text-transparent">
-                    Organização inteligente de documentos e processos empresariais
+                    {t('landing.hero.title')}
                   </span>
                 </h1>
               </div>
-              
+
               <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in animation-delay-400">
-                Centralize, organize e controle documentos, contratos e processos da sua empresa com eficiência — sem retrabalho, sem planilhas e sem perda de informação.
+                {t('landing.hero.subtitle')}
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in animation-delay-600">
-                <ContactFormDialog 
+                <ContactFormDialog
                   trigger={
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-primary-dark hover:shadow-elegant transition-all duration-300 hover:scale-105"
                     >
-                      Solicitar Demonstração
+                      {t('landing.hero.ctaDemo')}
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   }
                 />
                 <Link to="/auth">
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
+                  <Button
+                    size="lg"
+                    variant="outline"
                     className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
                   >
-                    Já tem conta? Entrar
+                    {t('landing.hero.ctaLogin')}
                     <FileCheck className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               </div>
-              
+
               <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm md:text-base text-muted-foreground animate-fade-in animation-delay-800">
                 <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
                   <Lock className="h-4 w-4 text-success" />
-                  <span>Dados seguros</span>
+                  <span>{t('landing.hero.trust.secureData')}</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
                   <Globe className="h-4 w-4 text-success" />
-                  <span>Conforme LGPD</span>
+                  <span>{t('landing.hero.trust.lgpd')}</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-success/5 rounded-full border border-success/20">
                   <Users className="h-4 w-4 text-success" />
-                  <span>Suporte especializado</span>
+                  <span>{t('landing.hero.trust.support')}</span>
                 </div>
               </div>
             </div>
@@ -262,29 +195,15 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative">
             <div className="max-w-4xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                O problema da desorganização documental nas empresas
+                {t('landing.problems.title')}
               </h2>
               <div className="text-lg md:text-xl text-muted-foreground leading-relaxed space-y-4 text-left md:text-center">
-                <p>
-                  A realidade de muitas empresas é a mesma: documentos espalhados entre e-mails, pastas locais, 
-                  drives compartilhados e sistemas diferentes. Cada pessoa guarda arquivos de um jeito, e 
-                  quando alguém precisa de um documento específico, começa uma verdadeira busca que consome 
-                  tempo e gera frustração.
-                </p>
-                <p>
-                  Processos manuais baseados em planilhas e controles individuais criam inconsistências graves. 
-                  Há dependência de pessoas específicas que "sabem onde está tudo", e quando elas saem de férias 
-                  ou deixam a empresa, o conhecimento vai junto. O retrabalho se torna rotina.
-                </p>
-                <p>
-                  Os riscos operacionais são concretos: prazos perdidos por falta de acompanhamento, documentos 
-                  vencidos sem aviso, erros em contratos por versões desatualizadas e dificuldade de localizar 
-                  arquivos críticos em momentos decisivos. A falta de visibilidade sobre a documentação 
-                  compromete a tomada de decisão e a eficiência do negócio.
-                </p>
+                {problemParagraphs.map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {problems.map((problem, index) => (
                 <Card 
@@ -309,10 +228,10 @@ const Landing = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Como a Fuzen <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">organiza documentos e processos</span>
+                {t('landing.howItWorks.titlePre')} <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{t('landing.howItWorks.titleHighlight')}</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Em três passos simples, transforme a gestão documental da sua empresa
+                {t('landing.howItWorks.subtitle')}
               </p>
             </div>
             
@@ -346,10 +265,10 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Benefícios da <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">organização inteligente</span> da documentação
+                {t('landing.benefits.titlePre')} <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{t('landing.benefits.titleHighlight')}</span> {t('landing.benefits.titlePost')}
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Transforme a gestão documental da sua empresa e ganhe controle, produtividade e eficiência
+                {t('landing.benefits.subtitle')}
               </p>
             </div>
             
@@ -371,13 +290,13 @@ const Landing = () => {
             </div>
             
             <div className="mt-12 text-center">
-              <ContactFormDialog 
+              <ContactFormDialog
                 trigger={
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105"
                   >
-                    Solicitar Demonstração
+                    {t('landing.finalCta.ctaDemo')}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 }
@@ -391,10 +310,10 @@ const Landing = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Para quem a <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Fuzen</span> é indicada
+                {t('landing.audiences.titlePre')} <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{t('landing.audiences.titleHighlight')}</span> {t('landing.audiences.titlePost')}
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Empresas e times que precisam de organização documental profissional e controle de processos internos
+                {t('landing.audiences.subtitle')}
               </p>
             </div>
             
@@ -425,10 +344,10 @@ const Landing = () => {
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                  Tecnologia como <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">apoio</span>
+                  {t('landing.technology.titlePre')} <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{t('landing.technology.titleHighlight')}</span>
                 </h2>
               </div>
-              
+
               <Card className="border-2 border-primary/20 rounded-3xl overflow-hidden bg-gradient-to-br from-card to-primary/5">
                 <CardContent className="p-8 md:p-12">
                   <div className="flex items-start gap-6">
@@ -436,21 +355,11 @@ const Landing = () => {
                       <Settings className="h-8 w-8 text-white" />
                     </div>
                     <div className="space-y-4">
-                      <p className="text-lg text-muted-foreground leading-relaxed">
-                        A Fuzen utiliza automação e inteligência para facilitar a organização documental 
-                        e o controle de processos da sua empresa. A tecnologia trabalha nos bastidores, 
-                        classificando arquivos, identificando padrões e gerando alertas de forma automática.
-                      </p>
-                      <p className="text-lg text-muted-foreground leading-relaxed">
-                        Você não precisa de conhecimento técnico para usar a plataforma. A interface é 
-                        simples e intuitiva, pensada para que qualquer pessoa da equipe consiga enviar, 
-                        organizar e encontrar documentos com facilidade. Sem complexidade operacional.
-                      </p>
-                      <p className="text-lg text-muted-foreground leading-relaxed">
-                        O foco está em resolver problemas práticos do dia a dia: localizar arquivos 
-                        rapidamente, saber o status de cada documento, receber lembretes de vencimento 
-                        e ter relatórios claros para apoiar a gestão.
-                      </p>
+                      {technologyParagraphs.map((paragraph, index) => (
+                        <p key={index} className="text-lg text-muted-foreground leading-relaxed">
+                          {paragraph}
+                        </p>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
@@ -472,51 +381,49 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 leading-tight">
-                Tenha <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">controle e organização</span> sobre sua documentação
+                {t('landing.finalCta.titlePre')} <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{t('landing.finalCta.titleHighlight')}</span> {t('landing.finalCta.titlePost')}
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-                Chega de documentos espalhados, processos manuais e retrabalho. Conheça a Fuzen na prática 
-                e veja como sua empresa pode ganhar organização, controle e eficiência na gestão documental. 
-                Solicite uma demonstração gratuita e descubra como funciona.
+                {t('landing.finalCta.description')}
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <ContactFormDialog 
+                <ContactFormDialog
                   trigger={
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="group text-lg px-10 py-6 rounded-2xl bg-gradient-to-r from-primary to-accent hover:shadow-elegant transition-all duration-300 hover:scale-105"
                     >
-                      Solicitar Demonstração
+                      {t('landing.finalCta.ctaDemo')}
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   }
                 />
                 <Link to="/auth">
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
+                  <Button
+                    size="lg"
+                    variant="outline"
                     className="text-lg px-10 py-6 rounded-2xl border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
                   >
-                    Já tem conta? Entrar
+                    {t('landing.finalCta.ctaLogin')}
                   </Button>
                 </Link>
               </div>
-              
+
               <div className="flex flex-wrap items-center justify-center gap-6 text-sm md:text-base text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success" />
-                  <span>Demonstração gratuita</span>
+                  <span>{t('landing.finalCta.freeDemo')}</span>
                 </div>
                 <span className="text-border">•</span>
                 <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4 text-success" />
-                  <span>Dados seguros</span>
+                  <span>{t('landing.finalCta.secureData')}</span>
                 </div>
                 <span className="text-border">•</span>
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-success" />
-                  <span>Conforme LGPD</span>
+                  <span>{t('landing.finalCta.lgpd')}</span>
                 </div>
               </div>
             </div>
