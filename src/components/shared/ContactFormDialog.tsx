@@ -17,22 +17,27 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Send, MessageSquare } from "lucide-react";
+import { useTranslation, TFunction } from "react-i18next";
 
-const contactSchema = z.object({
-  fullName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
-  email: z.string().email("E-mail inválido").max(255, "E-mail muito longo"),
-  phone: z.string().max(20, "Telefone muito longo").optional().or(z.literal("")),
-  company: z.string().max(100, "Nome da empresa muito longo").optional(),
-  message: z.string().min(10, "Mensagem deve ter pelo menos 10 caracteres").max(500, "Mensagem muito longa"),
-});
+// A function, not a module-level constant, because the validation messages need t()
+// which is only available inside the component (via the useTranslation hook).
+const getContactSchema = (t: TFunction) =>
+  z.object({
+    fullName: z.string().min(2, t('contactForm.validation.fullNameMin')).max(100, t('contactForm.validation.fullNameMax')),
+    email: z.string().email(t('contactForm.validation.emailInvalid')).max(255, t('contactForm.validation.emailMax')),
+    phone: z.string().max(20, t('contactForm.validation.phoneMax')).optional().or(z.literal("")),
+    company: z.string().max(100, t('contactForm.validation.companyMax')).optional(),
+    message: z.string().min(10, t('contactForm.validation.messageMin')).max(500, t('contactForm.validation.messageMax')),
+  });
 
-type ContactFormData = z.infer<typeof contactSchema>;
+type ContactFormData = z.infer<ReturnType<typeof getContactSchema>>;
 
 interface ContactFormDialogProps {
   trigger?: React.ReactNode;
 }
 
 export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,7 +47,7 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
     reset,
     formState: { errors },
   } = useForm<ContactFormData>({
-    resolver: zodResolver(contactSchema),
+    resolver: zodResolver(getContactSchema(t)),
   });
 
   const onSubmit = async (data: ContactFormData) => {
@@ -60,11 +65,11 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
 
       if (error) throw error;
 
-      toast.success("Mensagem enviada com sucesso! Entraremos em contato em breve.");
+      toast.success(t('contactForm.toastSuccess'));
       setIsOpen(false);
     } catch (error) {
       console.error("Erro ao enviar formulário:", error);
-      toast.error("Erro ao enviar mensagem. Tente novamente.");
+      toast.error(t('contactForm.toastError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -86,24 +91,24 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
             className="group text-lg px-10 py-6 rounded-2xl border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300 hover:scale-105"
           >
             <MessageSquare className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-            Quero saber mais
+            {t('contactForm.triggerButton')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Fale Conosco</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">{t('contactForm.dialogTitle')}</DialogTitle>
           <DialogDescription className="text-base">
-            Preencha o formulário abaixo e nossa equipe entrará em contato em breve.
+            {t('contactForm.dialogDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nome Completo *</Label>
+            <Label htmlFor="fullName">{t('contactForm.fullNameLabel')}</Label>
             <Input
               id="fullName"
-              placeholder="Seu nome completo"
+              placeholder={t('contactForm.fullNamePlaceholder')}
               {...register("fullName")}
               className={errors.fullName ? "border-destructive" : ""}
             />
@@ -113,11 +118,11 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">E-mail *</Label>
+            <Label htmlFor="email">{t('contactForm.emailLabel')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="seu@email.com"
+              placeholder={t('contactForm.emailPlaceholder')}
               {...register("email")}
               className={errors.email ? "border-destructive" : ""}
             />
@@ -127,11 +132,11 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Celular (opcional)</Label>
+            <Label htmlFor="phone">{t('contactForm.phoneLabel')}</Label>
             <Input
               id="phone"
               type="tel"
-              placeholder="(11) 99999-9999"
+              placeholder={t('contactForm.phonePlaceholder')}
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
             />
@@ -141,10 +146,10 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="company">Empresa (opcional)</Label>
+            <Label htmlFor="company">{t('contactForm.companyLabel')}</Label>
             <Input
               id="company"
-              placeholder="Nome da sua empresa"
+              placeholder={t('contactForm.companyPlaceholder')}
               {...register("company")}
               className={errors.company ? "border-destructive" : ""}
             />
@@ -154,10 +159,10 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="message">Mensagem *</Label>
+            <Label htmlFor="message">{t('contactForm.messageLabel')}</Label>
             <Textarea
               id="message"
-              placeholder="Como podemos ajudar você?"
+              placeholder={t('contactForm.messagePlaceholder')}
               rows={4}
               {...register("message")}
               className={errors.message ? "border-destructive" : ""}
@@ -175,12 +180,12 @@ export function ContactFormDialog({ trigger }: ContactFormDialogProps) {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enviando...
+                {t('contactForm.sendingButton')}
               </>
             ) : (
               <>
                 <Send className="mr-2 h-4 w-4" />
-                Enviar Mensagem
+                {t('contactForm.sendButton')}
               </>
             )}
           </Button>

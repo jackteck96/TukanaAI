@@ -1,0 +1,401 @@
+{
+  "header": {
+    "nav": {
+      "home": "Início",
+      "howItWorks": "Como Funciona",
+      "benefits": "Benefícios",
+      "forWho": "Para Quem",
+      "plans": "Planos"
+    },
+    "login": "Login",
+    "subscribe": "Assine já",
+    "logout": "Sair"
+  },
+  "footer": {
+    "description": "Plataforma completa para gestão de documentos empresariais com segurança e eficiência.",
+    "quickLinks": {
+      "title": "Links Rápidos",
+      "resources": "Recursos",
+      "pricing": "Preços",
+      "about": "Sobre",
+      "contact": "Contato"
+    },
+    "support": {
+      "title": "Suporte",
+      "helpCenter": "Central de Ajuda",
+      "tutorials": "Tutoriais",
+      "faq": "FAQ",
+      "status": "Status do Sistema"
+    },
+    "contact": {
+      "title": "Contato",
+      "location": "São Paulo, SP"
+    },
+    "copyright": "© 2024 Fuzen. Todos os direitos reservados.",
+    "privacyPolicy": "Política de Privacidade",
+    "termsOfService": "Termos de Uso",
+    "myData": "Meus Dados (LGPD)"
+  },
+  "landing": {
+    "seo": {
+      "title": "Organização Inteligente de Documentos e Processos Empresariais | Fuzen",
+      "description": "Centralize, organize e controle documentos, contratos e processos da sua empresa com eficiência. Plataforma de gestão documental para escritórios jurídicos, imobiliárias e times financeiros.",
+      "keywords": "organização de documentos empresariais, gestão documental, controle de processos internos, documentos e contratos empresariais, organização documental profissional, software de gestão documental",
+      "heroImageAlt": "Plataforma Fuzen - Organização inteligente de documentos empresariais"
+    },
+    "hero": {
+      "badge": "Controle total dos seus documentos",
+      "title": "Organização inteligente de documentos e processos empresariais",
+      "subtitle": "Centralize, organize e controle documentos, contratos e processos da sua empresa com eficiência — sem retrabalho, sem planilhas e sem perda de informação.",
+      "ctaDemo": "Solicitar Demonstração",
+      "ctaLogin": "Já tem conta? Entrar",
+      "trust": {
+        "secureData": "Dados seguros",
+        "lgpd": "Conforme LGPD",
+        "support": "Suporte especializado"
+      }
+    },
+    "problems": {
+      "title": "O problema da desorganização documental nas empresas",
+      "paragraphs": [
+        "A realidade de muitas empresas é a mesma: documentos espalhados entre e-mails, pastas locais, drives compartilhados e sistemas diferentes. Cada pessoa guarda arquivos de um jeito, e quando alguém precisa de um documento específico, começa uma verdadeira busca que consome tempo e gera frustração.",
+        "Processos manuais baseados em planilhas e controles individuais criam inconsistências graves. Há dependência de pessoas específicas que \"sabem onde está tudo\", e quando elas saem de férias ou deixam a empresa, o conhecimento vai junto. O retrabalho se torna rotina.",
+        "Os riscos operacionais são concretos: prazos perdidos por falta de acompanhamento, documentos vencidos sem aviso, erros em contratos por versões desatualizadas e dificuldade de localizar arquivos críticos em momentos decisivos. A falta de visibilidade sobre a documentação compromete a tomada de decisão e a eficiência do negócio."
+      ],
+      "items": [
+        { "title": "Documentos espalhados", "description": "Arquivos dispersos em e-mails, pastas, drives e sistemas dificultam o acesso e atrasam decisões." },
+        { "title": "Processos manuais", "description": "Controles em planilhas geram inconsistências, dependência de pessoas e falhas operacionais." },
+        { "title": "Falta de controle", "description": "Sem padronização, é impossível saber o status de cada documento ou processo em tempo real." },
+        { "title": "Riscos e retrabalho", "description": "Prazos perdidos, documentos vencidos e retrabalho constante comprometem a operação." }
+      ]
+    },
+    "howItWorks": {
+      "titlePre": "Como a Fuzen",
+      "titleHighlight": "organiza documentos e processos",
+      "subtitle": "Em três passos simples, transforme a gestão documental da sua empresa",
+      "items": [
+        { "number": "01", "title": "Centralização dos documentos", "description": "Reúna todos os documentos, contratos e arquivos da empresa em um único ambiente seguro e acessível para toda a equipe." },
+        { "number": "02", "title": "Organização automática e padronização", "description": "A Fuzen organiza e classifica documentos automaticamente, seguindo padrões definidos pela sua empresa. Sem bagunça, sem trabalho manual." },
+        { "number": "03", "title": "Controle de prazos, relatórios e visão geral", "description": "Acompanhe o status de cada documento, receba alertas de vencimento e tenha relatórios claros para visão completa dos processos." }
+      ]
+    },
+    "benefits": {
+      "titlePre": "Benefícios da",
+      "titleHighlight": "organização inteligente",
+      "titlePost": "da documentação",
+      "subtitle": "Transforme a gestão documental da sua empresa e ganhe controle, produtividade e eficiência",
+      "items": [
+        { "title": "Centralização de documentos empresariais", "description": "Todos os arquivos em um só lugar, organizados e acessíveis." },
+        { "title": "Padronização de processos", "description": "Fluxos documentais consistentes e organizados em toda a empresa." },
+        { "title": "Redução de erros e retrabalho", "description": "Menos falhas com organização automática e alertas de vencimento." },
+        { "title": "Mais produtividade para os times", "description": "Equipes focam no trabalho estratégico, não em buscar arquivos." },
+        { "title": "Visão clara e organizada da documentação", "description": "Saiba exatamente onde está cada documento e qual seu status atual." },
+        { "title": "Apoio à tomada de decisão", "description": "Relatórios e informações organizadas para decisões mais rápidas." }
+      ]
+    },
+    "audiences": {
+      "titlePre": "Para quem a",
+      "titleHighlight": "Fuzen",
+      "titlePost": "é indicada",
+      "subtitle": "Empresas e times que precisam de organização documental profissional e controle de processos internos",
+      "items": [
+        { "title": "Escritórios jurídicos", "description": "Organização de contratos, processos e documentos legais com segurança e controle de prazos." },
+        { "title": "Imobiliárias", "description": "Controle de contratos, vistorias e documentação de imóveis e locatários em um só lugar." },
+        { "title": "Empresas em crescimento", "description": "Gestão de documentos, contratos e processos internos de forma organizada e escalável." },
+        { "title": "Times financeiros e operacionais", "description": "Controle de notas fiscais, compliance e documentos críticos com rastreabilidade." }
+      ]
+    },
+    "technology": {
+      "titlePre": "Tecnologia como",
+      "titleHighlight": "apoio",
+      "paragraphs": [
+        "A Fuzen utiliza automação e inteligência para facilitar a organização documental e o controle de processos da sua empresa. A tecnologia trabalha nos bastidores, classificando arquivos, identificando padrões e gerando alertas de forma automática.",
+        "Você não precisa de conhecimento técnico para usar a plataforma. A interface é simples e intuitiva, pensada para que qualquer pessoa da equipe consiga enviar, organizar e encontrar documentos com facilidade. Sem complexidade operacional.",
+        "O foco está em resolver problemas práticos do dia a dia: localizar arquivos rapidamente, saber o status de cada documento, receber lembretes de vencimento e ter relatórios claros para apoiar a gestão."
+      ]
+    },
+    "finalCta": {
+      "titlePre": "Tenha",
+      "titleHighlight": "controle e organização",
+      "titlePost": "sobre sua documentação",
+      "description": "Chega de documentos espalhados, processos manuais e retrabalho. Conheça a Fuzen na prática e veja como sua empresa pode ganhar organização, controle e eficiência na gestão documental. Solicite uma demonstração gratuita e descubra como funciona.",
+      "ctaDemo": "Solicitar Demonstração",
+      "ctaLogin": "Já tem conta? Entrar",
+      "freeDemo": "Demonstração gratuita",
+      "secureData": "Dados seguros",
+      "lgpd": "Conforme LGPD"
+    },
+    "plans": {
+      "titlePre": "Planos",
+      "titleHighlight": "para cada estágio",
+      "subtitle": "Escolha o plano que se encaixa no tamanho da sua operação. Faça upgrade quando precisar.",
+      "mostPopular": "Mais popular",
+      "usersLimited": "Até {{count}} usuários",
+      "usersUnlimited": "Usuários ilimitados",
+      "activeCasesLimited": "Até {{count}} casos ativos/mês",
+      "activeCasesUnlimited": "Casos ativos ilimitados",
+      "storageLimited": "{{count}}GB de armazenamento",
+      "storageUnlimited": "Armazenamento ilimitado",
+      "talkToSales": "Falar com vendas",
+      "subscribe": "Assinar",
+      "toastSignupToSubscribe": "Crie sua conta para continuar com a assinatura.",
+      "toastCheckoutError": "Não foi possível iniciar o checkout",
+      "catalog": {
+        "starter": {
+          "description": "Para equipes pequenas começando a organizar processos",
+          "priceLabel": "R$ 297/mês",
+          "extraFeatures": ["Suporte padrão"]
+        },
+        "growth": {
+          "description": "Para empresas em crescimento que precisam de mais capacidade",
+          "priceLabel": "R$ 797/mês",
+          "extraFeatures": ["Suporte prioritário"]
+        },
+        "business": {
+          "description": "Para operações estruturadas com alto volume",
+          "priceLabel": "R$ 1.997/mês",
+          "extraFeatures": ["Suporte premium", "Onboarding dedicado"]
+        },
+        "enterprise": {
+          "description": "Solução personalizada para grandes operações",
+          "priceLabel": "Sob consulta",
+          "extraFeatures": ["SLA dedicado", "Integrações personalizadas"]
+        }
+      }
+    }
+  },
+  "auth": {
+    "errors": {
+      "otpExpired": "O link de acesso expirou. Solicite um novo e-mail e tente novamente.",
+      "generic": "Não foi possível concluir o login. Tente novamente.",
+      "invalidCredentials": "Email ou senha incorretos. Caso tenha acabado de criar a conta, confirme seu e-mail pelo link enviado.",
+      "emailNotConfirmed": "Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada e spam para confirmar.",
+      "loginFailed": "Não foi possível entrar. Tente novamente.",
+      "invalidEmailResend": "Informe um e-mail válido para reenviar a confirmação.",
+      "resendFailed": "Não foi possível reenviar o e-mail de confirmação. Tente novamente.",
+      "invalidEmail": "Por favor, informe um e-mail válido",
+      "resetFailed": "Erro ao enviar e-mail de recuperação. Tente novamente.",
+      "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
+      "passwordMismatch": "As senhas não coincidem",
+      "updatePasswordFailed": "Erro ao redefinir senha. Tente novamente.",
+      "invalidEmailField": "Email inválido",
+      "fullNameRequired": "Nome completo é obrigatório"
+    },
+    "success": {
+      "resendConfirmation": "Enviamos um novo e-mail de confirmação. Verifique sua caixa de entrada e spam.",
+      "resetSent": "E-mail de recuperação enviado! Verifique sua caixa de entrada.",
+      "passwordUpdated": "Senha redefinida com sucesso! Faça login com sua nova senha."
+    },
+    "backToHome": "Voltar para o início",
+    "notAuthenticatedTitle": "Não foi possível autenticar",
+    "loginErrorTitle": "Erro no login",
+    "resendConfirmationButton": "Reenviar e-mail de confirmação",
+    "welcomeTitle": "Bem-vindo à Fuzen",
+    "welcomeSubtitle": "Acesse sua conta para organizar, acompanhar e centralizar documentos",
+    "emailLabel": "Email",
+    "emailPlaceholder": "seu@email.com",
+    "passwordLabel": "Senha",
+    "forgotPassword": "Esqueci minha senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "enteringButton": "Entrando...",
+    "enterButton": "Entrar",
+    "noAccount": "Não tem uma conta?",
+    "createAccountLink": "Criar conta para minha empresa",
+    "tagline": "Menos planilhas. Mais controle.",
+    "termsAgreementPre": "Ao fazer login, você concorda com nossos",
+    "termsOfUse": "Termos de Uso",
+    "and": "e",
+    "privacyPolicy": "Política de Privacidade",
+    "forgotPasswordDialogTitle": "Recuperar Senha",
+    "forgotPasswordDialogDescription": "Informe seu e-mail e enviaremos um link para redefinir sua senha.",
+    "cancel": "Cancelar",
+    "sendingButton": "Enviando...",
+    "sendLinkButton": "Enviar Link",
+    "resetPasswordDialogTitle": "Redefinir Senha",
+    "resetPasswordDialogDescription": "Digite sua nova senha abaixo.",
+    "newPasswordLabel": "Nova Senha",
+    "newPasswordPlaceholder": "Digite sua nova senha",
+    "confirmNewPasswordLabel": "Confirmar Nova Senha",
+    "confirmNewPasswordPlaceholder": "Confirme sua nova senha",
+    "updatingButton": "Atualizando...",
+    "resetPasswordButton": "Redefinir Senha"
+  },
+  "login": {
+    "title": "Fazer Login",
+    "subtitle": "Selecione o tipo de acesso",
+    "companyArea": "Área da Empresa",
+    "companyAreaDesc": "Gerencie clientes e documentos",
+    "adminBadge": "Admin",
+    "clientArea": "Área do Cliente",
+    "clientAreaDesc": "Acompanhe seus processos",
+    "clientBadge": "Cliente",
+    "backToHome": "Voltar ao início",
+    "cardTitle": "Login - {{type}}",
+    "company": "Empresa",
+    "client": "Cliente",
+    "formSubtitle": "Entre com suas credenciais para acessar a plataforma",
+    "emailLabel": "Email",
+    "passwordLabel": "Senha",
+    "forgotPassword": "Esqueci minha senha",
+    "recoverPasswordTitle": "Recuperar Senha",
+    "sendingButton": "Enviando...",
+    "sendRecoveryLink": "Enviar Link de Recuperação",
+    "enteringButton": "Entrando...",
+    "enterButton": "Entrar",
+    "toastLoginSuccess": "Login realizado com sucesso!",
+    "toastLoginErrorDefault": "Erro ao fazer login",
+    "toastResetSuccess": "Email de recuperação enviado! Verifique sua caixa de entrada.",
+    "toastResetErrorDefault": "Erro ao enviar email de recuperação"
+  },
+  "signup": {
+    "errors": {
+      "companyNameRequired": "Nome da empresa é obrigatório",
+      "cnpjDigits": "CNPJ deve ter 14 dígitos",
+      "legalRepNameRequired": "Nome do representante legal é obrigatório",
+      "legalRepQualificationRequired": "Qualificação do representante legal é obrigatória",
+      "fullNameRequired": "Nome completo é obrigatório",
+      "cpfDigits": "CPF deve ter 11 dígitos",
+      "streetRequired": "Rua é obrigatória",
+      "numberRequired": "Número é obrigatório",
+      "neighborhoodRequired": "Bairro é obrigatório",
+      "cityRequired": "Cidade é obrigatória",
+      "stateRequired": "Estado é obrigatório",
+      "zipCodeRequired": "CEP é obrigatório",
+      "zipCodeFormat": "CEP deve estar no formato XXXXX-XXX",
+      "emailRequired": "E-mail é obrigatório",
+      "emailInvalid": "E-mail inválido",
+      "passwordRequired": "Senha é obrigatória",
+      "passwordMinLength": "Senha deve ter pelo menos 6 caracteres",
+      "passwordMismatch": "Senhas não coincidem",
+      "acceptTermsRequired": "Você deve aceitar os termos de uso para prosseguir"
+    },
+    "toast": {
+      "successTitle": "Conta criada com sucesso!",
+      "successDescription": "Verifique seu e-mail para confirmar sua conta.",
+      "errorTitle": "Erro no cadastro",
+      "errorDescriptionDefault": "Erro inesperado. Tente novamente."
+    },
+    "brand": "Fuzen",
+    "brandTagline": "Crie sua conta",
+    "cardTitle": "Cadastro",
+    "cardDescriptionPre": "Você será registrado como",
+    "cardDescriptionStrong": "administrador",
+    "cardDescriptionPost": "e terá acesso completo ao sistema",
+    "registrationType": "Tipo de Cadastro",
+    "legalEntity": "Pessoa Jurídica",
+    "individual": "Pessoa Física",
+    "companyNameLabel": "Nome da Empresa",
+    "companyNamePlaceholder": "Sua Empresa LTDA",
+    "cnpjLabel": "CNPJ (opcional)",
+    "cnpjPlaceholder": "00.000.000/0000-00",
+    "cpfLabel": "CPF (opcional)",
+    "cpfPlaceholder": "000.000.000-00",
+    "adminNoticeTitle": "Você será o Administrador",
+    "adminNoticePj": "Como responsável pela empresa, você terá acesso total ao sistema, incluindo relatórios, gerenciamento de usuários e todas as funcionalidades administrativas.",
+    "adminNoticePf": "Como profissional autônomo, você terá acesso total ao sistema para gerenciar seus processos e documentos.",
+    "headquartersAddress": "Endereço da Sede",
+    "address": "Endereço",
+    "streetLabel": "Rua",
+    "streetPlaceholder": "Nome da rua",
+    "numberLabel": "Número",
+    "numberPlaceholder": "123",
+    "complementLabel": "Complemento (opcional)",
+    "complementPlaceholderPj": "Sala 201",
+    "complementPlaceholderPf": "Apto 101",
+    "neighborhoodLabel": "Bairro",
+    "neighborhoodPlaceholder": "Centro",
+    "cityLabel": "Cidade",
+    "cityPlaceholder": "São Paulo",
+    "stateLabel": "Estado",
+    "statePlaceholder": "SP",
+    "zipCodeLabel": "CEP",
+    "zipCodePlaceholder": "01234-567",
+    "hasLegalRepresentative": "Possui representante legal diferente do cadastrante",
+    "legalRepNameLabel": "Nome do Representante Legal",
+    "legalRepNamePlaceholder": "Nome completo do representante legal",
+    "legalRepQualificationLabel": "Qualificação do Representante Legal",
+    "legalRepQualificationPlaceholder": "Ex: Sócio-administrador, Procurador, etc.",
+    "fullNameLabelPj": "Nome Completo do Cadastrante",
+    "fullNameLabelPf": "Nome Completo",
+    "fullNamePlaceholder": "Seu nome completo",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "seu@email.com",
+    "passwordLabel": "Senha",
+    "passwordPlaceholder": "Sua senha",
+    "confirmPasswordLabel": "Confirmar Senha",
+    "confirmPasswordPlaceholder": "Confirme sua senha",
+    "acceptTermsPre": "Li e aceito os",
+    "termsOfUse": "Termos de Uso",
+    "acceptTermsPost": "da plataforma",
+    "creatingAccountButton": "Criando conta...",
+    "createAccountButton": "Criar Conta",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "loginLink": "Fazer login"
+  },
+  "language": {
+    "label": "Idioma",
+    "pt": "Português",
+    "en": "Inglês"
+  },
+  "contactForm": {
+    "triggerButton": "Quero saber mais",
+    "dialogTitle": "Fale Conosco",
+    "dialogDescription": "Preencha o formulário abaixo e nossa equipe entrará em contato em breve.",
+    "fullNameLabel": "Nome Completo *",
+    "fullNamePlaceholder": "Seu nome completo",
+    "emailLabel": "E-mail *",
+    "emailPlaceholder": "seu@email.com",
+    "phoneLabel": "Celular (opcional)",
+    "phonePlaceholder": "(11) 99999-9999",
+    "companyLabel": "Empresa (opcional)",
+    "companyPlaceholder": "Nome da sua empresa",
+    "messageLabel": "Mensagem *",
+    "messagePlaceholder": "Como podemos ajudar você?",
+    "sendingButton": "Enviando...",
+    "sendButton": "Enviar Mensagem",
+    "toastSuccess": "Mensagem enviada com sucesso! Entraremos em contato em breve.",
+    "toastError": "Erro ao enviar mensagem. Tente novamente.",
+    "validation": {
+      "fullNameMin": "Nome deve ter pelo menos 2 caracteres",
+      "fullNameMax": "Nome muito longo",
+      "emailInvalid": "E-mail inválido",
+      "emailMax": "E-mail muito longo",
+      "phoneMax": "Telefone muito longo",
+      "companyMax": "Nome da empresa muito longo",
+      "messageMin": "Mensagem deve ter pelo menos 10 caracteres",
+      "messageMax": "Mensagem muito longa"
+    }
+  },
+  "resetPassword": {
+    "validation": {
+      "passwordMin": "A senha deve ter no mínimo 6 caracteres",
+      "passwordMax": "A senha deve ter no máximo 100 caracteres",
+      "confirmRequired": "Confirme a senha",
+      "passwordMismatch": "As senhas não coincidem"
+    },
+    "toastInvalidSession": "Sessão inválida ou expirada. Solicite um novo link de recuperação.",
+    "toastSuccess": "Senha redefinida com sucesso! Faça login com sua nova senha.",
+    "toastErrorDefault": "Erro ao redefinir senha. Tente novamente.",
+    "invalidSessionTitle": "Sessão Inválida",
+    "invalidSessionDescription": "O link de recuperação expirou ou é inválido. Você será redirecionado para solicitar um novo link.",
+    "title": "Redefinir Senha",
+    "subtitle": "Digite sua nova senha abaixo",
+    "newPasswordLabel": "Nova Senha",
+    "newPasswordPlaceholder": "Digite sua nova senha (mínimo 6 caracteres)",
+    "confirmPasswordLabel": "Confirmar Nova Senha",
+    "confirmPasswordPlaceholder": "Digite a senha novamente",
+    "submitButton": "Redefinir Senha"
+  },
+  "authHashHandler": {
+    "recoveryErrorTitle": "Erro",
+    "recoveryErrorDescription": "Não foi possível processar o link de recuperação.",
+    "linkExpiredTitle": "Link expirado",
+    "linkExpiredDescription": "O link de acesso/convite expirou. Solicite um novo e-mail.",
+    "authFailedTitle": "Falha na autenticação",
+    "authFailedDescriptionDefault": "Não foi possível autenticar. Tente novamente."
+  },
+  "notFound": {
+    "message": "Ops! Página não encontrada",
+    "returnHome": "Voltar para o início"
+  }
+}

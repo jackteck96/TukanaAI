@@ -9,10 +9,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 type PersonType = 'pj' | 'pf';
 
 const Signup = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -49,88 +51,88 @@ const Signup = () => {
 
     if (personType === 'pj') {
       if (!formData.companyName.trim()) {
-        newErrors.companyName = 'Nome da empresa é obrigatório';
+        newErrors.companyName = t('signup.errors.companyNameRequired');
       }
 
       // CNPJ é opcional, mas se preenchido, deve ter formato válido
       if (formData.cnpj.trim()) {
         const cleanDoc = formData.cnpj.replace(/\D/g, '');
         if (cleanDoc.length !== 14) {
-          newErrors.cnpj = 'CNPJ deve ter 14 dígitos';
+          newErrors.cnpj = t('signup.errors.cnpjDigits');
         }
       }
 
       if (formData.hasLegalRepresentative) {
         if (!formData.legalRepresentativeName.trim()) {
-          newErrors.legalRepresentativeName = 'Nome do representante legal é obrigatório';
+          newErrors.legalRepresentativeName = t('signup.errors.legalRepNameRequired');
         }
         if (!formData.legalRepresentativeQualification.trim()) {
-          newErrors.legalRepresentativeQualification = 'Qualificação do representante legal é obrigatória';
+          newErrors.legalRepresentativeQualification = t('signup.errors.legalRepQualificationRequired');
         }
       }
     } else {
       // Pessoa Física - nome completo é obrigatório (será usado como "nome da empresa")
       if (!formData.fullName.trim()) {
-        newErrors.fullName = 'Nome completo é obrigatório';
+        newErrors.fullName = t('signup.errors.fullNameRequired');
       }
 
       // CPF é opcional, mas se preenchido, deve ter formato válido
       if (formData.cpf.trim()) {
         const cleanDoc = formData.cpf.replace(/\D/g, '');
         if (cleanDoc.length !== 11) {
-          newErrors.cpf = 'CPF deve ter 11 dígitos';
+          newErrors.cpf = t('signup.errors.cpfDigits');
         }
       }
     }
 
     if (!formData.street.trim()) {
-      newErrors.street = 'Rua é obrigatória';
+      newErrors.street = t('signup.errors.streetRequired');
     }
 
     if (!formData.number.trim()) {
-      newErrors.number = 'Número é obrigatório';
+      newErrors.number = t('signup.errors.numberRequired');
     }
 
     if (!formData.neighborhood.trim()) {
-      newErrors.neighborhood = 'Bairro é obrigatório';
+      newErrors.neighborhood = t('signup.errors.neighborhoodRequired');
     }
 
     if (!formData.city.trim()) {
-      newErrors.city = 'Cidade é obrigatória';
+      newErrors.city = t('signup.errors.cityRequired');
     }
 
     if (!formData.state.trim()) {
-      newErrors.state = 'Estado é obrigatório';
+      newErrors.state = t('signup.errors.stateRequired');
     }
 
     if (!formData.zipCode.trim()) {
-      newErrors.zipCode = 'CEP é obrigatório';
+      newErrors.zipCode = t('signup.errors.zipCodeRequired');
     } else if (!/^\d{5}-?\d{3}$/.test(formData.zipCode)) {
-      newErrors.zipCode = 'CEP deve estar no formato XXXXX-XXX';
+      newErrors.zipCode = t('signup.errors.zipCodeFormat');
     }
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Nome completo é obrigatório';
+      newErrors.fullName = t('signup.errors.fullNameRequired');
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'E-mail é obrigatório';
+      newErrors.email = t('signup.errors.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'E-mail inválido';
+      newErrors.email = t('signup.errors.emailInvalid');
     }
 
     if (!formData.password) {
-      newErrors.password = 'Senha é obrigatória';
+      newErrors.password = t('signup.errors.passwordRequired');
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+      newErrors.password = t('signup.errors.passwordMinLength');
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Senhas não coincidem';
+      newErrors.confirmPassword = t('signup.errors.passwordMismatch');
     }
 
     if (!formData.acceptedTerms) {
-      newErrors.acceptedTerms = 'Você deve aceitar os termos de uso para prosseguir';
+      newErrors.acceptedTerms = t('signup.errors.acceptTermsRequired');
     }
 
     setErrors(newErrors);
@@ -240,8 +242,8 @@ const Signup = () => {
         });
 
         toast({
-          title: 'Conta criada com sucesso!',
-          description: 'Verifique seu e-mail para confirmar sua conta.',
+          title: t('signup.toast.successTitle'),
+          description: t('signup.toast.successDescription'),
         });
 
         navigate('/onboarding');
@@ -250,8 +252,8 @@ const Signup = () => {
       console.error('Signup error:', error);
       toast({
         variant: 'destructive',
-        title: 'Erro no cadastro',
-        description: error.message || 'Erro inesperado. Tente novamente.',
+        title: t('signup.toast.errorTitle'),
+        description: error.message || t('signup.toast.errorDescriptionDefault'),
       });
     } finally {
       setLoading(false);
@@ -274,35 +276,35 @@ const Signup = () => {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Fuzen</h1>
-            <p className="text-sm text-muted-foreground">Crie sua conta</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('signup.brand')}</h1>
+            <p className="text-sm text-muted-foreground">{t('signup.brandTagline')}</p>
           </div>
         </div>
 
         <Card className="shadow-lg border-border/50">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl font-semibold">Cadastro</CardTitle>
+            <CardTitle className="text-xl font-semibold">{t('signup.cardTitle')}</CardTitle>
             <CardDescription>
-              Você será registrado como <strong>administrador</strong> e terá acesso completo ao sistema
+              {t('signup.cardDescriptionPre')} <strong>{t('signup.cardDescriptionStrong')}</strong> {t('signup.cardDescriptionPost')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
               {/* Tipo de Pessoa */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium">Tipo de Cadastro</Label>
-                <RadioGroup 
-                  value={personType} 
+                <Label className="text-sm font-medium">{t('signup.registrationType')}</Label>
+                <RadioGroup
+                  value={personType}
                   onValueChange={(value) => setPersonType(value as PersonType)}
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="pj" id="pj" />
-                    <Label htmlFor="pj" className="cursor-pointer">Pessoa Jurídica</Label>
+                    <Label htmlFor="pj" className="cursor-pointer">{t('signup.legalEntity')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="pf" id="pf" />
-                    <Label htmlFor="pf" className="cursor-pointer">Pessoa Física</Label>
+                    <Label htmlFor="pf" className="cursor-pointer">{t('signup.individual')}</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -312,7 +314,7 @@ const Signup = () => {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="companyName" className="text-sm font-medium">
-                      Nome da Empresa
+                      {t('signup.companyNameLabel')}
                     </Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -320,7 +322,7 @@ const Signup = () => {
                         id="companyName"
                         name="companyName"
                         type="text"
-                        placeholder="Sua Empresa LTDA"
+                        placeholder={t('signup.companyNamePlaceholder')}
                         value={formData.companyName}
                         onChange={handleInputChange}
                         className="pl-10"
@@ -334,7 +336,7 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="cnpj" className="text-sm font-medium">
-                      CNPJ (opcional)
+                      {t('signup.cnpjLabel')}
                     </Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -342,7 +344,7 @@ const Signup = () => {
                         id="cnpj"
                         name="cnpj"
                         type="text"
-                        placeholder="00.000.000/0000-00"
+                        placeholder={t('signup.cnpjPlaceholder')}
                         value={formData.cnpj}
                         onChange={handleInputChange}
                         className="pl-10"
@@ -359,7 +361,7 @@ const Signup = () => {
               {personType === 'pf' && (
                 <div className="space-y-2">
                   <Label htmlFor="cpf" className="text-sm font-medium">
-                    CPF (opcional)
+                    {t('signup.cpfLabel')}
                   </Label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -367,7 +369,7 @@ const Signup = () => {
                       id="cpf"
                       name="cpf"
                       type="text"
-                      placeholder="000.000.000-00"
+                      placeholder={t('signup.cpfPlaceholder')}
                       value={formData.cpf}
                       onChange={handleInputChange}
                       className="pl-10"
@@ -383,23 +385,23 @@ const Signup = () => {
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
                     <User className="h-4 w-4" />
-                    <span className="font-semibold text-sm">Você será o Administrador</span>
+                    <span className="font-semibold text-sm">{t('signup.adminNoticeTitle')}</span>
                   </div>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                    {personType === 'pj' 
-                      ? 'Como responsável pela empresa, você terá acesso total ao sistema, incluindo relatórios, gerenciamento de usuários e todas as funcionalidades administrativas.'
-                      : 'Como profissional autônomo, você terá acesso total ao sistema para gerenciar seus processos e documentos.'}
+                    {personType === 'pj'
+                      ? t('signup.adminNoticePj')
+                      : t('signup.adminNoticePf')}
                   </p>
                 </div>
-                
+
                 <h3 className="text-sm font-medium text-foreground">
-                  {personType === 'pj' ? 'Endereço da Sede' : 'Endereço'}
+                  {personType === 'pj' ? t('signup.headquartersAddress') : t('signup.address')}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="street" className="text-sm font-medium">
-                      Rua
+                      {t('signup.streetLabel')}
                     </Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -407,7 +409,7 @@ const Signup = () => {
                         id="street"
                         name="street"
                         type="text"
-                        placeholder="Nome da rua"
+                        placeholder={t('signup.streetPlaceholder')}
                         value={formData.street}
                         onChange={handleInputChange}
                         className="pl-10"
@@ -421,13 +423,13 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="number" className="text-sm font-medium">
-                      Número
+                      {t('signup.numberLabel')}
                     </Label>
                     <Input
                       id="number"
                       name="number"
                       type="text"
-                      placeholder="123"
+                      placeholder={t('signup.numberPlaceholder')}
                       value={formData.number}
                       onChange={handleInputChange}
                       required
@@ -439,13 +441,13 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="complement" className="text-sm font-medium">
-                      Complemento (opcional)
+                      {t('signup.complementLabel')}
                     </Label>
                     <Input
                       id="complement"
                       name="complement"
                       type="text"
-                      placeholder={personType === 'pj' ? 'Sala 201' : 'Apto 101'}
+                      placeholder={personType === 'pj' ? t('signup.complementPlaceholderPj') : t('signup.complementPlaceholderPf')}
                       value={formData.complement}
                       onChange={handleInputChange}
                     />
@@ -453,13 +455,13 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="neighborhood" className="text-sm font-medium">
-                      Bairro
+                      {t('signup.neighborhoodLabel')}
                     </Label>
                     <Input
                       id="neighborhood"
                       name="neighborhood"
                       type="text"
-                      placeholder="Centro"
+                      placeholder={t('signup.neighborhoodPlaceholder')}
                       value={formData.neighborhood}
                       onChange={handleInputChange}
                       required
@@ -471,13 +473,13 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="city" className="text-sm font-medium">
-                      Cidade
+                      {t('signup.cityLabel')}
                     </Label>
                     <Input
                       id="city"
                       name="city"
                       type="text"
-                      placeholder="São Paulo"
+                      placeholder={t('signup.cityPlaceholder')}
                       value={formData.city}
                       onChange={handleInputChange}
                       required
@@ -489,13 +491,13 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="state" className="text-sm font-medium">
-                      Estado
+                      {t('signup.stateLabel')}
                     </Label>
                     <Input
                       id="state"
                       name="state"
                       type="text"
-                      placeholder="SP"
+                      placeholder={t('signup.statePlaceholder')}
                       value={formData.state}
                       onChange={handleInputChange}
                       required
@@ -507,13 +509,13 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="zipCode" className="text-sm font-medium">
-                      CEP
+                      {t('signup.zipCodeLabel')}
                     </Label>
                     <Input
                       id="zipCode"
                       name="zipCode"
                       type="text"
-                      placeholder="01234-567"
+                      placeholder={t('signup.zipCodePlaceholder')}
                       value={formData.zipCode}
                       onChange={handleInputChange}
                       required
@@ -542,7 +544,7 @@ const Signup = () => {
                       }
                     />
                     <Label htmlFor="hasLegalRepresentative" className="text-sm font-medium">
-                      Possui representante legal diferente do cadastrante
+                      {t('signup.hasLegalRepresentative')}
                     </Label>
                   </div>
 
@@ -550,7 +552,7 @@ const Signup = () => {
                     <div className="space-y-4 pl-6 border-l-2 border-border">
                       <div className="space-y-2">
                         <Label htmlFor="legalRepresentativeName" className="text-sm font-medium">
-                          Nome do Representante Legal
+                          {t('signup.legalRepNameLabel')}
                         </Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -558,7 +560,7 @@ const Signup = () => {
                             id="legalRepresentativeName"
                             name="legalRepresentativeName"
                             type="text"
-                            placeholder="Nome completo do representante legal"
+                            placeholder={t('signup.legalRepNamePlaceholder')}
                             value={formData.legalRepresentativeName}
                             onChange={handleInputChange}
                             className="pl-10"
@@ -571,7 +573,7 @@ const Signup = () => {
 
                       <div className="space-y-2">
                         <Label htmlFor="legalRepresentativeQualification" className="text-sm font-medium">
-                          Qualificação do Representante Legal
+                          {t('signup.legalRepQualificationLabel')}
                         </Label>
                         <div className="relative">
                           <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -579,7 +581,7 @@ const Signup = () => {
                             id="legalRepresentativeQualification"
                             name="legalRepresentativeQualification"
                             type="text"
-                            placeholder="Ex: Sócio-administrador, Procurador, etc."
+                            placeholder={t('signup.legalRepQualificationPlaceholder')}
                             value={formData.legalRepresentativeQualification}
                             onChange={handleInputChange}
                             className="pl-10"
@@ -596,7 +598,7 @@ const Signup = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-sm font-medium">
-                  {personType === 'pj' ? 'Nome Completo do Cadastrante' : 'Nome Completo'}
+                  {personType === 'pj' ? t('signup.fullNameLabelPj') : t('signup.fullNameLabelPf')}
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -604,7 +606,7 @@ const Signup = () => {
                     id="fullName"
                     name="fullName"
                     type="text"
-                    placeholder="Seu nome completo"
+                    placeholder={t('signup.fullNamePlaceholder')}
                     value={formData.fullName}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -618,7 +620,7 @@ const Signup = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  E-mail
+                  {t('signup.emailLabel')}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -626,7 +628,7 @@ const Signup = () => {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder={t('signup.emailPlaceholder')}
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -640,7 +642,7 @@ const Signup = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">
-                  Senha
+                  {t('signup.passwordLabel')}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -648,7 +650,7 @@ const Signup = () => {
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="Sua senha"
+                    placeholder={t('signup.passwordPlaceholder')}
                     value={formData.password}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -662,7 +664,7 @@ const Signup = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirmar Senha
+                  {t('signup.confirmPasswordLabel')}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -670,7 +672,7 @@ const Signup = () => {
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    placeholder="Confirme sua senha"
+                    placeholder={t('signup.confirmPasswordPlaceholder')}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -684,24 +686,24 @@ const Signup = () => {
 
               <div className="space-y-3 pt-4">
                 <div className="flex items-start space-x-2">
-                  <Checkbox 
+                  <Checkbox
                     id="acceptedTerms"
                     checked={formData.acceptedTerms}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData(prev => ({ ...prev, acceptedTerms: !!checked }))
                     }
                   />
                   <div className="space-y-1">
                     <Label htmlFor="acceptedTerms" className="text-sm font-medium cursor-pointer">
-                      Li e aceito os{' '}
-                      <Link 
-                        to="/termos-de-uso" 
+                      {t('signup.acceptTermsPre')}{' '}
+                      <Link
+                        to="/termos-de-uso"
                         target="_blank"
                         className="text-primary hover:underline"
                       >
-                        Termos de Uso
+                        {t('signup.termsOfUse')}
                       </Link>
-                      {' '}da plataforma
+                      {' '}{t('signup.acceptTermsPost')}
                     </Label>
                     {errors.acceptedTerms && (
                       <p className="text-sm text-destructive">{errors.acceptedTerms}</p>
@@ -711,15 +713,15 @@ const Signup = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Criando conta...' : 'Criar Conta'}
+                {loading ? t('signup.creatingAccountButton') : t('signup.createAccountButton')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Já tem uma conta?{' '}
+                {t('signup.alreadyHaveAccount')}{' '}
                 <Link to="/auth" className="text-primary hover:underline">
-                  Fazer login
+                  {t('signup.loginLink')}
                 </Link>
               </p>
             </div>

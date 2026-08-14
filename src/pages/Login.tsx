@@ -9,9 +9,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Building2, User, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { LOGO_URL as logo } from "@/lib/assets";
 
 const Login = () => {
+  const { t } = useTranslation();
   const [userType, setUserType] = useState<"empresa" | "cliente" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,8 +34,8 @@ const Login = () => {
 
       if (error) throw error;
 
-      toast.success("Login realizado com sucesso!");
-      
+      toast.success(t('login.toastLoginSuccess'));
+
       // Redirect based on user role
       const { data: profile } = await supabase
         .from('profiles')
@@ -47,7 +49,7 @@ const Login = () => {
         navigate('/empresa');
       }
     } catch (error: any) {
-      toast.error(error.message || "Erro ao fazer login");
+      toast.error(error.message || t('login.toastLoginErrorDefault'));
     } finally {
       setIsLoading(false);
     }
@@ -64,11 +66,11 @@ const Login = () => {
 
       if (error) throw error;
 
-      toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
+      toast.success(t('login.toastResetSuccess'));
       setIsResetModalOpen(false);
       setResetEmail("");
     } catch (error: any) {
-      toast.error(error.message || "Erro ao enviar email de recuperação");
+      toast.error(error.message || t('login.toastResetErrorDefault'));
     } finally {
       setIsLoading(false);
     }
@@ -82,12 +84,12 @@ const Login = () => {
             <div className="flex justify-center mb-6">
               <img src={logo} alt="Fuzen Logo" className="h-16 w-auto" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Fazer Login</h1>
-            <p className="text-muted-foreground">Selecione o tipo de acesso</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{t('login.title')}</h1>
+            <p className="text-muted-foreground">{t('login.subtitle')}</p>
           </div>
 
           <div className="space-y-4">
-            <Card 
+            <Card
               className="cursor-pointer hover:shadow-card transition-all duration-300 border-2 hover:border-primary/20"
               onClick={() => setUserType("empresa")}
             >
@@ -97,15 +99,15 @@ const Login = () => {
                     <Building2 className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">Área da Empresa</h3>
-                    <p className="text-sm text-muted-foreground">Gerencie clientes e documentos</p>
+                    <h3 className="font-semibold text-foreground">{t('login.companyArea')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('login.companyAreaDesc')}</p>
                   </div>
-                  <Badge variant="outline">Admin</Badge>
+                  <Badge variant="outline">{t('login.adminBadge')}</Badge>
                 </div>
               </CardContent>
             </Card>
 
-            <Card 
+            <Card
               className="cursor-pointer hover:shadow-card transition-all duration-300 border-2 hover:border-primary/20"
               onClick={() => setUserType("cliente")}
             >
@@ -115,10 +117,10 @@ const Login = () => {
                     <User className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">Área do Cliente</h3>
-                    <p className="text-sm text-muted-foreground">Acompanhe seus processos</p>
+                    <h3 className="font-semibold text-foreground">{t('login.clientArea')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('login.clientAreaDesc')}</p>
                   </div>
-                  <Badge variant="outline">Cliente</Badge>
+                  <Badge variant="outline">{t('login.clientBadge')}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -127,7 +129,7 @@ const Login = () => {
           <div className="text-center">
             <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Voltar ao início
+              {t('login.backToHome')}
             </Link>
           </div>
         </div>
@@ -144,10 +146,10 @@ const Login = () => {
           </div>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl">
-              Login - {userType === "empresa" ? "Empresa" : "Cliente"}
+              {t('login.cardTitle', { type: userType === "empresa" ? t('login.company') : t('login.client') })}
             </CardTitle>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setUserType(null)}
             >
@@ -155,13 +157,13 @@ const Login = () => {
             </Button>
           </div>
           <p className="text-muted-foreground">
-            Entre com suas credenciais para acessar a plataforma
+            {t('login.formSubtitle')}
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('login.emailLabel')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -173,23 +175,23 @@ const Login = () => {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                 <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
                   <DialogTrigger asChild>
-                    <button 
+                    <button
                       type="button"
                       className="text-sm text-primary hover:underline"
                     >
-                      Esqueci minha senha
+                      {t('login.forgotPassword')}
                     </button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Recuperar Senha</DialogTitle>
+                      <DialogTitle>{t('login.recoverPasswordTitle')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handlePasswordReset} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="reset-email">Email</Label>
+                        <Label htmlFor="reset-email">{t('login.emailLabel')}</Label>
                         <Input
                           id="reset-email"
                           type="email"
@@ -199,13 +201,13 @@ const Login = () => {
                           required
                         />
                       </div>
-                      <Button 
-                        type="submit" 
-                        className="w-full" 
+                      <Button
+                        type="submit"
+                        className="w-full"
                         variant="hero"
                         disabled={isLoading}
                       >
-                        {isLoading ? "Enviando..." : "Enviar Link de Recuperação"}
+                        {isLoading ? t('login.sendingButton') : t('login.sendRecoveryLink')}
                       </Button>
                     </form>
                   </DialogContent>
@@ -220,13 +222,13 @@ const Login = () => {
               />
             </div>
             <Button type="submit" className="w-full" variant="hero" disabled={isLoading}>
-              {isLoading ? "Entrando..." : "Entrar"}
+              {isLoading ? t('login.enteringButton') : t('login.enterButton')}
             </Button>
           </form>
-          
+
           <div className="mt-4 text-center text-sm">
             <Link to="/" className="text-muted-foreground hover:text-foreground">
-              Voltar ao início
+              {t('login.backToHome')}
             </Link>
           </div>
         </CardContent>

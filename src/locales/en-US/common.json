@@ -1,0 +1,401 @@
+{
+  "header": {
+    "nav": {
+      "home": "Home",
+      "howItWorks": "How It Works",
+      "benefits": "Benefits",
+      "forWho": "Who It's For",
+      "plans": "Plans"
+    },
+    "login": "Login",
+    "subscribe": "Subscribe now",
+    "logout": "Sign out"
+  },
+  "footer": {
+    "description": "Complete platform for business document management with security and efficiency.",
+    "quickLinks": {
+      "title": "Quick Links",
+      "resources": "Resources",
+      "pricing": "Pricing",
+      "about": "About",
+      "contact": "Contact"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "tutorials": "Tutorials",
+      "faq": "FAQ",
+      "status": "System Status"
+    },
+    "contact": {
+      "title": "Contact",
+      "location": "São Paulo, Brazil"
+    },
+    "copyright": "© 2024 Fuzen. All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "myData": "My Data (LGPD)"
+  },
+  "landing": {
+    "seo": {
+      "title": "Smart Document & Business Process Organization | Fuzen",
+      "description": "Centralize, organize, and control your company's documents, contracts, and processes efficiently. Document management platform for law firms, real estate agencies, and finance teams.",
+      "keywords": "business document organization, document management, internal process control, business documents and contracts, professional document organization, document management software",
+      "heroImageAlt": "Fuzen Platform - Smart organization for business documents"
+    },
+    "hero": {
+      "badge": "Total control of your documents",
+      "title": "Smart organization for business documents and processes",
+      "subtitle": "Centralize, organize, and control your company's documents, contracts, and processes efficiently — no rework, no spreadsheets, no lost information.",
+      "ctaDemo": "Request a Demo",
+      "ctaLogin": "Already have an account? Sign in",
+      "trust": {
+        "secureData": "Secure data",
+        "lgpd": "LGPD compliant",
+        "support": "Specialized support"
+      }
+    },
+    "problems": {
+      "title": "The problem of document disorganization in companies",
+      "paragraphs": [
+        "The reality for many companies is the same: documents scattered across emails, local folders, shared drives, and different systems. Everyone keeps files their own way, and when someone needs a specific document, a real search begins that wastes time and creates frustration.",
+        "Manual processes based on spreadsheets and individual controls create serious inconsistencies. There's dependence on specific people who \"know where everything is,\" and when they go on vacation or leave the company, that knowledge leaves with them. Rework becomes routine.",
+        "The operational risks are concrete: missed deadlines from lack of follow-up, expired documents with no warning, contract errors from outdated versions, and difficulty locating critical files at decisive moments. Lack of visibility over documentation undermines decision-making and business efficiency."
+      ],
+      "items": [
+        { "title": "Scattered documents", "description": "Files spread across emails, folders, drives, and systems make access harder and delay decisions." },
+        { "title": "Manual processes", "description": "Spreadsheet-based controls create inconsistencies, dependence on individuals, and operational failures." },
+        { "title": "Lack of control", "description": "Without standardization, it's impossible to know the real-time status of each document or process." },
+        { "title": "Risks and rework", "description": "Missed deadlines, expired documents, and constant rework compromise operations." }
+      ]
+    },
+    "howItWorks": {
+      "titlePre": "How Fuzen",
+      "titleHighlight": "organizes documents and processes",
+      "subtitle": "In three simple steps, transform your company's document management",
+      "items": [
+        { "number": "01", "title": "Centralize your documents", "description": "Bring all company documents, contracts, and files together in one secure environment accessible to the whole team." },
+        { "number": "02", "title": "Automatic organization and standardization", "description": "Fuzen automatically organizes and classifies documents, following the standards your company defines. No mess, no manual work." },
+        { "number": "03", "title": "Deadline control, reports, and overview", "description": "Track the status of every document, get expiration alerts, and access clear reports for a complete view of your processes." }
+      ]
+    },
+    "benefits": {
+      "titlePre": "Benefits of",
+      "titleHighlight": "smart organization",
+      "titlePost": "for your documentation",
+      "subtitle": "Transform your company's document management and gain control, productivity, and efficiency",
+      "items": [
+        { "title": "Centralized business documents", "description": "All files in one place, organized and accessible." },
+        { "title": "Standardized processes", "description": "Consistent, organized document workflows across the company." },
+        { "title": "Fewer errors and less rework", "description": "Fewer failures thanks to automatic organization and expiration alerts." },
+        { "title": "More productivity for teams", "description": "Teams focus on strategic work instead of hunting for files." },
+        { "title": "Clear, organized view of documentation", "description": "Know exactly where each document is and its current status." },
+        { "title": "Support for decision-making", "description": "Organized reports and information for faster decisions." }
+      ]
+    },
+    "audiences": {
+      "titlePre": "Who",
+      "titleHighlight": "Fuzen",
+      "titlePost": "is built for",
+      "subtitle": "Companies and teams that need professional document organization and internal process control",
+      "items": [
+        { "title": "Law firms", "description": "Organize contracts, cases, and legal documents with security and deadline control." },
+        { "title": "Real estate agencies", "description": "Control contracts, inspections, and property and tenant documentation in one place." },
+        { "title": "Growing companies", "description": "Manage documents, contracts, and internal processes in an organized, scalable way." },
+        { "title": "Finance and operations teams", "description": "Control invoices, compliance, and critical documents with full traceability." }
+      ]
+    },
+    "technology": {
+      "titlePre": "Technology as",
+      "titleHighlight": "support",
+      "paragraphs": [
+        "Fuzen uses automation and intelligence to simplify document organization and process control for your company. The technology works behind the scenes, classifying files, identifying patterns, and generating alerts automatically.",
+        "You don't need technical knowledge to use the platform. The interface is simple and intuitive, designed so anyone on the team can upload, organize, and find documents with ease. No operational complexity.",
+        "The focus is on solving practical day-to-day problems: finding files quickly, knowing the status of each document, getting expiration reminders, and having clear reports to support management."
+      ]
+    },
+    "finalCta": {
+      "titlePre": "Get",
+      "titleHighlight": "control and organization",
+      "titlePost": "over your documentation",
+      "description": "No more scattered documents, manual processes, and rework. See Fuzen in action and discover how your company can gain organization, control, and efficiency in document management. Request a free demo and find out how it works.",
+      "ctaDemo": "Request a Demo",
+      "ctaLogin": "Already have an account? Sign in",
+      "freeDemo": "Free demo",
+      "secureData": "Secure data",
+      "lgpd": "LGPD compliant"
+    },
+    "plans": {
+      "titlePre": "Plans",
+      "titleHighlight": "for every stage",
+      "subtitle": "Choose the plan that fits the size of your operation. Upgrade whenever you need to.",
+      "mostPopular": "Most popular",
+      "usersLimited": "Up to {{count}} users",
+      "usersUnlimited": "Unlimited users",
+      "activeCasesLimited": "Up to {{count}} active cases/month",
+      "activeCasesUnlimited": "Unlimited active cases",
+      "storageLimited": "{{count}}GB of storage",
+      "storageUnlimited": "Unlimited storage",
+      "talkToSales": "Talk to sales",
+      "subscribe": "Subscribe",
+      "toastSignupToSubscribe": "Create your account to continue with your subscription.",
+      "toastCheckoutError": "Couldn't start checkout",
+      "catalog": {
+        "starter": {
+          "description": "For small teams starting to organize their processes",
+          "priceLabel": "$297/month",
+          "extraFeatures": ["Standard support"]
+        },
+        "growth": {
+          "description": "For growing companies that need more capacity",
+          "priceLabel": "$797/month",
+          "extraFeatures": ["Priority support"]
+        },
+        "business": {
+          "description": "For structured, high-volume operations",
+          "priceLabel": "$1,997/month",
+          "extraFeatures": ["Premium support", "Dedicated onboarding"]
+        },
+        "enterprise": {
+          "description": "Custom solution for large operations",
+          "priceLabel": "Contact us",
+          "extraFeatures": ["Dedicated SLA", "Custom integrations"]
+        }
+      }
+    }
+  },
+  "auth": {
+    "errors": {
+      "otpExpired": "The access link has expired. Request a new email and try again.",
+      "generic": "Couldn't complete sign in. Please try again.",
+      "invalidCredentials": "Incorrect email or password. If you just created your account, confirm your email using the link we sent you.",
+      "emailNotConfirmed": "Your email hasn't been confirmed yet. Check your inbox and spam folder to confirm it.",
+      "loginFailed": "Couldn't sign in. Please try again.",
+      "invalidEmailResend": "Enter a valid email to resend the confirmation.",
+      "resendFailed": "Couldn't resend the confirmation email. Please try again.",
+      "invalidEmail": "Please enter a valid email",
+      "resetFailed": "Error sending recovery email. Please try again.",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords don't match",
+      "updatePasswordFailed": "Error resetting password. Please try again.",
+      "invalidEmailField": "Invalid email",
+      "fullNameRequired": "Full name is required"
+    },
+    "success": {
+      "resendConfirmation": "We've sent a new confirmation email. Check your inbox and spam folder.",
+      "resetSent": "Recovery email sent! Check your inbox.",
+      "passwordUpdated": "Password reset successfully! Sign in with your new password."
+    },
+    "backToHome": "Back to home",
+    "notAuthenticatedTitle": "Couldn't authenticate",
+    "loginErrorTitle": "Sign-in error",
+    "resendConfirmationButton": "Resend confirmation email",
+    "welcomeTitle": "Welcome to Fuzen",
+    "welcomeSubtitle": "Sign in to organize, track, and centralize your documents",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot my password",
+    "passwordPlaceholder": "Enter your password",
+    "enteringButton": "Signing in...",
+    "enterButton": "Sign in",
+    "noAccount": "Don't have an account?",
+    "createAccountLink": "Create an account for my company",
+    "tagline": "Fewer spreadsheets. More control.",
+    "termsAgreementPre": "By signing in, you agree to our",
+    "termsOfUse": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "forgotPasswordDialogTitle": "Recover Password",
+    "forgotPasswordDialogDescription": "Enter your email and we'll send you a link to reset your password.",
+    "cancel": "Cancel",
+    "sendingButton": "Sending...",
+    "sendLinkButton": "Send Link",
+    "resetPasswordDialogTitle": "Reset Password",
+    "resetPasswordDialogDescription": "Enter your new password below.",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "confirmNewPasswordLabel": "Confirm New Password",
+    "confirmNewPasswordPlaceholder": "Confirm your new password",
+    "updatingButton": "Updating...",
+    "resetPasswordButton": "Reset Password"
+  },
+  "login": {
+    "title": "Sign In",
+    "subtitle": "Select your access type",
+    "companyArea": "Company Area",
+    "companyAreaDesc": "Manage clients and documents",
+    "adminBadge": "Admin",
+    "clientArea": "Client Area",
+    "clientAreaDesc": "Track your processes",
+    "clientBadge": "Client",
+    "backToHome": "Back to home",
+    "cardTitle": "Sign In - {{type}}",
+    "company": "Company",
+    "client": "Client",
+    "formSubtitle": "Enter your credentials to access the platform",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot my password",
+    "recoverPasswordTitle": "Recover Password",
+    "sendingButton": "Sending...",
+    "sendRecoveryLink": "Send Recovery Link",
+    "enteringButton": "Signing in...",
+    "enterButton": "Sign in",
+    "toastLoginSuccess": "Signed in successfully!",
+    "toastLoginErrorDefault": "Error signing in",
+    "toastResetSuccess": "Recovery email sent! Check your inbox.",
+    "toastResetErrorDefault": "Error sending recovery email"
+  },
+  "signup": {
+    "errors": {
+      "companyNameRequired": "Company name is required",
+      "cnpjDigits": "CNPJ must have 14 digits",
+      "legalRepNameRequired": "Legal representative name is required",
+      "legalRepQualificationRequired": "Legal representative qualification is required",
+      "fullNameRequired": "Full name is required",
+      "cpfDigits": "CPF must have 11 digits",
+      "streetRequired": "Street is required",
+      "numberRequired": "Number is required",
+      "neighborhoodRequired": "Neighborhood is required",
+      "cityRequired": "City is required",
+      "stateRequired": "State is required",
+      "zipCodeRequired": "ZIP code is required",
+      "zipCodeFormat": "ZIP code must be in XXXXX-XXX format",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords don't match",
+      "acceptTermsRequired": "You must accept the terms of service to continue"
+    },
+    "toast": {
+      "successTitle": "Account created successfully!",
+      "successDescription": "Check your email to confirm your account.",
+      "errorTitle": "Sign-up error",
+      "errorDescriptionDefault": "Unexpected error. Please try again."
+    },
+    "brand": "Fuzen",
+    "brandTagline": "Create your account",
+    "cardTitle": "Sign Up",
+    "cardDescriptionPre": "You'll be registered as",
+    "cardDescriptionStrong": "administrator",
+    "cardDescriptionPost": "and have full access to the system",
+    "registrationType": "Registration Type",
+    "legalEntity": "Business (Legal Entity)",
+    "individual": "Individual",
+    "companyNameLabel": "Company Name",
+    "companyNamePlaceholder": "Your Company LLC",
+    "cnpjLabel": "CNPJ (optional)",
+    "cnpjPlaceholder": "00.000.000/0000-00",
+    "cpfLabel": "CPF (optional)",
+    "cpfPlaceholder": "000.000.000-00",
+    "adminNoticeTitle": "You'll be the Administrator",
+    "adminNoticePj": "As the person responsible for the company, you'll have full access to the system, including reports, user management, and all administrative features.",
+    "adminNoticePf": "As an independent professional, you'll have full access to the system to manage your processes and documents.",
+    "headquartersAddress": "Headquarters Address",
+    "address": "Address",
+    "streetLabel": "Street",
+    "streetPlaceholder": "Street name",
+    "numberLabel": "Number",
+    "numberPlaceholder": "123",
+    "complementLabel": "Complement (optional)",
+    "complementPlaceholderPj": "Suite 201",
+    "complementPlaceholderPf": "Apt 101",
+    "neighborhoodLabel": "Neighborhood",
+    "neighborhoodPlaceholder": "Downtown",
+    "cityLabel": "City",
+    "cityPlaceholder": "São Paulo",
+    "stateLabel": "State",
+    "statePlaceholder": "SP",
+    "zipCodeLabel": "ZIP Code",
+    "zipCodePlaceholder": "01234-567",
+    "hasLegalRepresentative": "Has a legal representative other than the registrant",
+    "legalRepNameLabel": "Legal Representative Name",
+    "legalRepNamePlaceholder": "Legal representative's full name",
+    "legalRepQualificationLabel": "Legal Representative Qualification",
+    "legalRepQualificationPlaceholder": "E.g., Managing Partner, Attorney-in-fact, etc.",
+    "fullNameLabelPj": "Registrant's Full Name",
+    "fullNameLabelPf": "Full Name",
+    "fullNamePlaceholder": "Your full name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Your password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "acceptTermsPre": "I have read and accept the",
+    "termsOfUse": "Terms of Service",
+    "acceptTermsPost": "of the platform",
+    "creatingAccountButton": "Creating account...",
+    "createAccountButton": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginLink": "Sign in"
+  },
+  "language": {
+    "label": "Language",
+    "pt": "Portuguese",
+    "en": "English"
+  },
+  "contactForm": {
+    "triggerButton": "I want to know more",
+    "dialogTitle": "Contact Us",
+    "dialogDescription": "Fill out the form below and our team will get in touch soon.",
+    "fullNameLabel": "Full Name *",
+    "fullNamePlaceholder": "Your full name",
+    "emailLabel": "Email *",
+    "emailPlaceholder": "you@email.com",
+    "phoneLabel": "Phone (optional)",
+    "phonePlaceholder": "(11) 99999-9999",
+    "companyLabel": "Company (optional)",
+    "companyPlaceholder": "Your company name",
+    "messageLabel": "Message *",
+    "messagePlaceholder": "How can we help you?",
+    "sendingButton": "Sending...",
+    "sendButton": "Send Message",
+    "toastSuccess": "Message sent successfully! We'll get in touch soon.",
+    "toastError": "Error sending message. Please try again.",
+    "validation": {
+      "fullNameMin": "Name must be at least 2 characters",
+      "fullNameMax": "Name is too long",
+      "emailInvalid": "Invalid email",
+      "emailMax": "Email is too long",
+      "phoneMax": "Phone number is too long",
+      "companyMax": "Company name is too long",
+      "messageMin": "Message must be at least 10 characters",
+      "messageMax": "Message is too long"
+    }
+  },
+  "resetPassword": {
+    "validation": {
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMax": "Password must be at most 100 characters",
+      "confirmRequired": "Confirm your password",
+      "passwordMismatch": "Passwords don't match"
+    },
+    "toastInvalidSession": "Invalid or expired session. Request a new recovery link.",
+    "toastSuccess": "Password reset successfully! Sign in with your new password.",
+    "toastErrorDefault": "Error resetting password. Please try again.",
+    "invalidSessionTitle": "Invalid Session",
+    "invalidSessionDescription": "The recovery link has expired or is invalid. You'll be redirected to request a new one.",
+    "title": "Reset Password",
+    "subtitle": "Enter your new password below",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter your new password (minimum 6 characters)",
+    "confirmPasswordLabel": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Enter the password again",
+    "submitButton": "Reset Password"
+  },
+  "authHashHandler": {
+    "recoveryErrorTitle": "Error",
+    "recoveryErrorDescription": "Couldn't process the recovery link.",
+    "linkExpiredTitle": "Link expired",
+    "linkExpiredDescription": "The access/invite link has expired. Request a new email.",
+    "authFailedTitle": "Authentication failed",
+    "authFailedDescriptionDefault": "Couldn't authenticate. Please try again."
+  },
+  "notFound": {
+    "message": "Oops! Page not found",
+    "returnHome": "Return to Home"
+  }
+}

@@ -7,6 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ReactMarkdown from 'react-markdown';
 
+// TODO(i18n): the rendered `terms.content` comes from the terms_of_service DB table
+// (Portuguese only, no locale columns) and is NOT translated. Unreviewed EN/ES drafts
+// (translated from the default seed migration, may be stale vs. the live DB row) live
+// in docs/legal/ pending legal sign-off. See docs/legal/README.md for the schema
+// options once approved.
 const TermsOfService = () => {
   const { toast } = useToast();
   const [terms, setTerms] = useState<{ version: string; content: string } | null>(null);

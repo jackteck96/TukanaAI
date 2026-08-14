@@ -5,6 +5,10 @@ import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Lock, User, FileText, Mail, Clock, AlertTriangle } from "lucide-react";
 
+// TODO(i18n): this page is Portuguese-only and NOT wired into react-i18next like the
+// rest of the site. Unreviewed EN/ES drafts of this content live in docs/legal/ —
+// they need legal sign-off before being moved into src/locales/*/common.json and
+// wired up with useTranslation(). See docs/legal/README.md for full context.
 const PoliticaPrivacidade = () => {
   useEffect(() => {
     window.scrollTo(0, 0);

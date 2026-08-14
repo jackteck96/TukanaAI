@@ -2,13 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { LOGO_URL as logo } from "@/lib/assets";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await signOut();
@@ -27,36 +30,37 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-              Início
+              {t('header.nav.home')}
             </Link>
             <a href="#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
-              Como Funciona
+              {t('header.nav.howItWorks')}
             </a>
             <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
-              Benefícios
+              {t('header.nav.benefits')}
             </a>
             <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
-              Para Quem
+              {t('header.nav.forWho')}
             </a>
             <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
-              Planos
+              {t('header.nav.plans')}
             </a>
           </nav>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
+            <LanguageSwitcher />
             {user ? (
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                {t('header.logout')}
               </Button>
             ) : (
               <>
                 <Link to="/auth">
-                  <Button variant="outline">Login</Button>
+                  <Button variant="outline">{t('header.login')}</Button>
                 </Link>
                 <a href="#planos">
-                  <Button variant="hero">Assine já</Button>
+                  <Button variant="hero">{t('header.subscribe')}</Button>
                 </a>
               </>
             )}
@@ -76,33 +80,36 @@ const Header = () => {
           <nav className="md:hidden mt-4 pb-4 border-t border-border pt-4">
             <div className="flex flex-col space-y-4">
               <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                Início
+                {t('header.nav.home')}
               </Link>
               <a href="#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
-                Como Funciona
+                {t('header.nav.howItWorks')}
               </a>
               <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
-                Benefícios
+                {t('header.nav.benefits')}
               </a>
               <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
-                Para Quem
+                {t('header.nav.forWho')}
               </a>
               <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
-                Planos
+                {t('header.nav.plans')}
               </a>
+              <div className="pt-2">
+                <LanguageSwitcher />
+              </div>
               <div className="flex flex-col space-y-2 pt-4">
                 {user ? (
                   <Button variant="outline" className="w-full" onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sair
+                    {t('header.logout')}
                   </Button>
                 ) : (
                   <>
                     <Link to="/auth">
-                      <Button variant="outline" className="w-full">Login</Button>
+                      <Button variant="outline" className="w-full">{t('header.login')}</Button>
                     </Link>
                     <a href="#planos">
-                      <Button variant="hero" className="w-full">Assine já</Button>
+                      <Button variant="hero" className="w-full">{t('header.subscribe')}</Button>
                     </a>
                   </>
                 )}
