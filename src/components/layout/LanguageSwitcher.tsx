@@ -11,7 +11,6 @@ import {
 const LANGUAGES = [
   { code: "pt-BR", labelKey: "language.pt" },
   { code: "en-US", labelKey: "language.en" },
-  { code: "es-419", labelKey: "language.es" },
 ] as const;
 
 const LanguageSwitcher = () => {
@@ -23,7 +22,7 @@ const LanguageSwitcher = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-1.5">
           <Globe className="h-4 w-4" />
-          {t(`language.${currentCode.split("-")[0] as "pt" | "en" | "es"}`)}
+          {t(`language.${currentCode.split("-")[0] as "pt" | "en"}`)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
