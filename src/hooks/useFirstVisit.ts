@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const STORAGE_KEY = 'fuzen-visited-pages';
+const STORAGE_KEY = 'tukana-ai-visited-pages';
 
 export const useFirstVisit = (pageKey: string) => {
   const [isFirstVisit, setIsFirstVisit] = useState(false);

@@ -266,8 +266,8 @@ const EmpresaDashboard = () => {
         {/* Logo */}
         <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
           <Link to="/empresa" className="flex items-center gap-3">
-            <img src={logo} alt="Fuzen" className="h-8 w-auto" />
-            <span className="text-sidebar-foreground font-semibold text-lg tracking-tight">Fuzen</span>
+            <img src={logo} alt="Tukana AI" className="h-8 w-auto" />
+            <span className="text-sidebar-foreground font-semibold text-lg tracking-tight">Tukana AI</span>
           </Link>
         </div>
 
@@ -324,8 +324,8 @@ const EmpresaDashboard = () => {
           <aside className="fixed left-0 top-0 h-full w-72 bg-sidebar-background border-r border-sidebar-border animate-slide-in-right">
             <div className="h-16 flex items-center justify-between px-5 border-b border-sidebar-border">
               <Link to="/empresa" className="flex items-center gap-3">
-                <img src={logo} alt="Fuzen" className="h-8 w-auto" />
-                <span className="text-sidebar-foreground font-semibold text-lg">Fuzen</span>
+                <img src={logo} alt="Tukana AI" className="h-8 w-auto" />
+                <span className="text-sidebar-foreground font-semibold text-lg">Tukana AI</span>
               </Link>
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="text-sidebar-foreground">
                 <X className="h-5 w-5" />

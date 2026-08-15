@@ -143,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
     const clientEmail = process.client_email;
     const clientName = process.client_name || 'Cliente';
     const processName = process.project_name || process.process_type || 'Processo';
-    const companyName = (process.companies as any)?.name || "Fuzen";
+    const companyName = (process.companies as any)?.name || "Tukana AI";
 
     // Escape HTML to prevent injection
     const safeClientName = escapeHtml(clientName);
@@ -298,7 +298,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div class="footer">
-            <p class="company-name"><strong>Fuzen - Sistema de Gestão Documental</strong></p>
+            <p class="company-name"><strong>Tukana AI - Sistema de Gestão Documental</strong></p>
             <p>Sistema de Gestão Documental Inteligente</p>
           </div>
         </div>
@@ -309,7 +309,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('[notify-document-request] Sending email to:', clientEmail);
     
     const emailResponse = await sendEmail({
-      from: `Fuzen <${fromEmail}>`,
+      from: `Tukana AI <${fromEmail}>`,
       to: [clientEmail],
       subject,
       html: emailHtml,

@@ -17,8 +17,8 @@ const PoliticaPrivacidade = () => {
   return (
     <>
       <Helmet>
-        <title>Política de Privacidade | Fuzen - LGPD e GDPR</title>
-        <meta name="description" content="Política de privacidade da Fuzen em conformidade com LGPD e GDPR. Saiba como coletamos, usamos e protegemos seus dados pessoais." />
+        <title>Política de Privacidade | Tukana AI - LGPD e GDPR</title>
+        <meta name="description" content="Política de privacidade da Tukana AI em conformidade com LGPD e GDPR. Saiba como coletamos, usamos e protegemos seus dados pessoais." />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -46,7 +46,7 @@ const PoliticaPrivacidade = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p><strong>Controlador:</strong> Fuzen Tecnologia Ltda.</p>
+                <p><strong>Controlador:</strong> Tukana AI Ltda.</p>
                 <p><strong>CNPJ:</strong> [Inserir CNPJ]</p>
                 <p><strong>Endereço:</strong> [Inserir endereço completo]</p>
                 <div className="border-l-4 border-primary pl-4 bg-primary/5 p-4 rounded">

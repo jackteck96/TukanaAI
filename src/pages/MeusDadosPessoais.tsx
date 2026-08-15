@@ -31,7 +31,7 @@ const MeusDadosPessoais = () => {
   return (
     <>
       <Helmet>
-        <title>Meus Dados Pessoais | Fuzen - LGPD</title>
+        <title>Meus Dados Pessoais | Tukana AI - LGPD</title>
         <meta name="description" content="Gerencie seus dados pessoais, consentimentos e exerça seus direitos conforme LGPD." />
       </Helmet>
 

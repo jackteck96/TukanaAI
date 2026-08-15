@@ -82,7 +82,7 @@ const Login = () => {
         <div className="max-w-md w-full space-y-6">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <img src={logo} alt="Fuzen Logo" className="h-16 w-auto" />
+              <img src={logo} alt="Tukana AI Logo" className="h-16 w-auto" />
             </div>
             <h1 className="text-3xl font-bold text-foreground mb-2">{t('login.title')}</h1>
             <p className="text-muted-foreground">{t('login.subtitle')}</p>
@@ -142,7 +142,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <img src={logo} alt="Fuzen Logo" className="h-12 w-auto" />
+            <img src={logo} alt="Tukana AI Logo" className="h-12 w-auto" />
           </div>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl">

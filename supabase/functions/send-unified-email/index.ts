@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
     const accessLink = directAccessLink || inviteLink || "";
     const isClientInvite = !isCollaborator && processId;
     const isDirectAccess = isExistingClient && directAccessLink;
-    const companyName = "Fuzen - Sistema de Gestão Documental";
+    const companyName = "Tukana AI - Sistema de Gestão Documental";
     
     // Se for um template de notificação, usar o subject customizado
     const isNotification = template && ['signatures_complete', 'signature_request', 'pending_signature'].includes(template);
@@ -617,14 +617,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build base payload
     const payload = {
-      from: `Fuzen <${fromEmail}>`,
+      from: `Tukana AI <${fromEmail}>`,
       to: [email],
       subject,
       html: emailHtml,
     };
 
     // Use only verified domain address
-    const fromCandidates = ['Fuzen <convites@fuzen.online>'];
+    const fromCandidates = ['Tukana AI <convites@fuzen.online>'];
 
     let emailResponse = { data: null as any, error: null as any };
     for (const from of fromCandidates) {

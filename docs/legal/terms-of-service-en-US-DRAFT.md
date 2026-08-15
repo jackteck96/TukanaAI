@@ -18,15 +18,15 @@
 
 ---
 
-## Terms of Service — Fuzen Platform
+## Terms of Service — Tukana AI Platform
 
 ### 1. Acceptance of Terms
 
-By using the Fuzen platform, you agree to these Terms of Service.
+By using the Tukana AI platform, you agree to these Terms of Service.
 
 ### 2. Description of Service
 
-Fuzen is a document management and storage platform.
+Tukana AI is a document management and storage platform.
 
 ### 3. User Responsibilities
 
@@ -44,7 +44,7 @@ All content on the platform is protected by copyright.
 
 ### 6. Limitation of Liability
 
-Fuzen is not liable for indirect damages arising from use of the
+Tukana AI is not liable for indirect damages arising from use of the
 platform.
 
 ### 7. Modifications

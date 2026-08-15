@@ -154,7 +154,7 @@ serve(async (req) => {
 
         try {
           const { error: emailError } = await resend.emails.send({
-            from: "Fuzen <onboarding@resend.dev>",
+            from: "Tukana AI <onboarding@resend.dev>",
             to: [doc.client_email],
             subject: emailSubject,
             html: emailHtml,

@@ -307,7 +307,7 @@ const Auth = () => {
             {t('auth.backToHome')}
           </Link>
           <div className="flex items-center gap-2">
-            <img src={logo} alt="Fuzen Logo" className="h-8 w-auto" />
+            <img src={logo} alt="Tukana AI Logo" className="h-8 w-auto" />
           </div>
         </div>
 
@@ -340,7 +340,7 @@ const Auth = () => {
           <Card className="shadow-xl border-border/50">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
-                <img src={logo} alt="Fuzen Logo" className="h-16 w-auto" />
+                <img src={logo} alt="Tukana AI Logo" className="h-16 w-auto" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 {t('auth.welcomeTitle')}

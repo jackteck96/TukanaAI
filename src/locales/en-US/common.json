@@ -31,17 +31,17 @@
       "title": "Contact",
       "location": "São Paulo, Brazil"
     },
-    "copyright": "© 2024 Fuzen. All rights reserved.",
+    "copyright": "© 2024 Tukana AI. All rights reserved.",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "myData": "My Data (LGPD)"
   },
   "landing": {
     "seo": {
-      "title": "Smart Document & Business Process Organization | Fuzen",
+      "title": "Smart Document & Business Process Organization | Tukana AI",
       "description": "Centralize, organize, and control your company's documents, contracts, and processes efficiently. Document management platform for law firms, real estate agencies, and finance teams.",
       "keywords": "business document organization, document management, internal process control, business documents and contracts, professional document organization, document management software",
-      "heroImageAlt": "Fuzen Platform - Smart organization for business documents"
+      "heroImageAlt": "Tukana AI Platform - Smart organization for business documents"
     },
     "hero": {
       "badge": "Total control of your documents",
@@ -70,12 +70,12 @@
       ]
     },
     "howItWorks": {
-      "titlePre": "How Fuzen",
+      "titlePre": "How Tukana AI",
       "titleHighlight": "organizes documents and processes",
       "subtitle": "In three simple steps, transform your company's document management",
       "items": [
         { "number": "01", "title": "Centralize your documents", "description": "Bring all company documents, contracts, and files together in one secure environment accessible to the whole team." },
-        { "number": "02", "title": "Automatic organization and standardization", "description": "Fuzen automatically organizes and classifies documents, following the standards your company defines. No mess, no manual work." },
+        { "number": "02", "title": "Automatic organization and standardization", "description": "Tukana AI automatically organizes and classifies documents, following the standards your company defines. No mess, no manual work." },
         { "number": "03", "title": "Deadline control, reports, and overview", "description": "Track the status of every document, get expiration alerts, and access clear reports for a complete view of your processes." }
       ]
     },
@@ -95,7 +95,7 @@
     },
     "audiences": {
       "titlePre": "Who",
-      "titleHighlight": "Fuzen",
+      "titleHighlight": "Tukana AI",
       "titlePost": "is built for",
       "subtitle": "Companies and teams that need professional document organization and internal process control",
       "items": [
@@ -109,7 +109,7 @@
       "titlePre": "Technology as",
       "titleHighlight": "support",
       "paragraphs": [
-        "Fuzen uses automation and intelligence to simplify document organization and process control for your company. The technology works behind the scenes, classifying files, identifying patterns, and generating alerts automatically.",
+        "Tukana AI uses automation and intelligence to simplify document organization and process control for your company. The technology works behind the scenes, classifying files, identifying patterns, and generating alerts automatically.",
         "You don't need technical knowledge to use the platform. The interface is simple and intuitive, designed so anyone on the team can upload, organize, and find documents with ease. No operational complexity.",
         "The focus is on solving practical day-to-day problems: finding files quickly, knowing the status of each document, getting expiration reminders, and having clear reports to support management."
       ]
@@ -118,7 +118,7 @@
       "titlePre": "Get",
       "titleHighlight": "control and organization",
       "titlePost": "over your documentation",
-      "description": "No more scattered documents, manual processes, and rework. See Fuzen in action and discover how your company can gain organization, control, and efficiency in document management. Request a free demo and find out how it works.",
+      "description": "No more scattered documents, manual processes, and rework. See Tukana AI in action and discover how your company can gain organization, control, and efficiency in document management. Request a free demo and find out how it works.",
       "ctaDemo": "Request a Demo",
       "ctaLogin": "Already have an account? Sign in",
       "freeDemo": "Free demo",
@@ -190,7 +190,7 @@
     "notAuthenticatedTitle": "Couldn't authenticate",
     "loginErrorTitle": "Sign-in error",
     "resendConfirmationButton": "Resend confirmation email",
-    "welcomeTitle": "Welcome to Fuzen",
+    "welcomeTitle": "Welcome to Tukana AI",
     "welcomeSubtitle": "Sign in to organize, track, and centralize your documents",
     "emailLabel": "Email",
     "emailPlaceholder": "you@email.com",
@@ -275,7 +275,7 @@
       "errorTitle": "Sign-up error",
       "errorDescriptionDefault": "Unexpected error. Please try again."
     },
-    "brand": "Fuzen",
+    "brand": "Tukana AI",
     "brandTagline": "Create your account",
     "cardTitle": "Sign Up",
     "cardDescriptionPre": "You'll be registered as",

@@ -40,9 +40,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to admin
     const emailResponse = await resend.emails.send({
-      from: `Fuzen <${adminEmail}>`,
+      from: `Tukana AI <${adminEmail}>`,
       to: ["raul-cordoni@hotmail.com"],
-      subject: `[Fuzen] Nova solicitação de contato - ${fullName}`,
+      subject: `[Tukana AI] Nova solicitação de contato - ${fullName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="padding: 30px;">
               <p style="color: #3f3f46; font-size: 16px; margin-bottom: 20px;">
-                Um visitante preencheu o formulário de contato em <strong>Fuzen</strong>.
+                Um visitante preencheu o formulário de contato em <strong>Tukana AI</strong>.
               </p>
               
               <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
@@ -94,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div style="text-align: center; margin-top: 25px;">
-                <a href="mailto:${email}?subject=Re: Contato via Fuzen" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: 600;">
+                <a href="mailto:${email}?subject=Re: Contato via Tukana AI" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: 600;">
                   Responder Agora
                 </a>
               </div>
@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="background-color: #f4f4f5; padding: 20px; text-align: center;">
               <p style="color: #71717a; font-size: 14px; margin: 0;">
-                Este e-mail foi gerado automaticamente pela plataforma <strong>Fuzen</strong>.
+                Este e-mail foi gerado automaticamente pela plataforma <strong>Tukana AI</strong>.
               </p>
             </div>
           </div>

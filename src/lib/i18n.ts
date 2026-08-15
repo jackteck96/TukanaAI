@@ -26,7 +26,7 @@ i18n
     detection: {
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
-      lookupLocalStorage: "fuzen_language",
+      lookupLocalStorage: "tukana_ai_language",
     },
     interpolation: {
       escapeValue: false,

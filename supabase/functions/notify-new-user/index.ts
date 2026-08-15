@@ -45,9 +45,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email notification to admin
     const emailResponse = await resend.emails.send({
-      from: `Fuzen <${adminEmail}>`,
+      from: `Tukana AI <${adminEmail}>`,
       to: ["raul-cordoni@hotmail.com"],
-      subject: `[Fuzen] 🎉 Novo usuário cadastrado - ${userName}`,
+      subject: `[Tukana AI] 🎉 Novo usuário cadastrado - ${userName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -63,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="padding: 30px;">
               <p style="color: #3f3f46; font-size: 16px; margin-bottom: 20px;">
-                Parabéns! Um novo usuário se cadastrou na plataforma <strong>Fuzen</strong>.
+                Parabéns! Um novo usuário se cadastrou na plataforma <strong>Tukana AI</strong>.
               </p>
               
               <div style="background-color: #ecfdf5; border-radius: 8px; padding: 20px; margin-bottom: 20px; border: 1px solid #a7f3d0;">
@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="background-color: #f4f4f5; padding: 20px; text-align: center;">
               <p style="color: #71717a; font-size: 14px; margin: 0;">
-                Este e-mail foi gerado automaticamente pela plataforma <strong>Fuzen</strong>.
+                Este e-mail foi gerado automaticamente pela plataforma <strong>Tukana AI</strong>.
               </p>
             </div>
           </div>

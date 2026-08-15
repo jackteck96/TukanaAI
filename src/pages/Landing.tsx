@@ -79,7 +79,7 @@ const Landing = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            "name": "Fuzen",
+            "name": "Tukana AI",
             "applicationCategory": "BusinessApplication",
             "description": t('landing.seo.description'),
             "operatingSystem": "Web",
@@ -103,7 +103,7 @@ const Landing = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "Fuzen",
+            "name": "Tukana AI",
             "url": "https://fuzen.online",
             "description": t('landing.seo.description'),
             "logo": "https://fuzen.online/logo.png"

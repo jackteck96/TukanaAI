@@ -21,15 +21,15 @@
 
 ---
 
-## Términos de Uso — Plataforma Fuzen
+## Términos de Uso — Plataforma Tukana AI
 
 ### 1. Aceptación de los Términos
 
-Al utilizar la plataforma Fuzen, aceptas estos Términos de Uso.
+Al utilizar la plataforma Tukana AI, aceptas estos Términos de Uso.
 
 ### 2. Descripción del Servicio
 
-Fuzen es una plataforma de gestión y almacenamiento de documentos.
+Tukana AI es una plataforma de gestión y almacenamiento de documentos.
 
 ### 3. Responsabilidades del Usuario
 
@@ -48,7 +48,7 @@ autor.
 
 ### 6. Limitación de Responsabilidad
 
-Fuzen no se hace responsable por daños indirectos derivados del uso de
+Tukana AI no se hace responsable por daños indirectos derivados del uso de
 la plataforma.
 
 ### 7. Modificaciones
