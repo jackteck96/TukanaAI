@@ -201,7 +201,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("Gerado automaticamente por Fuzen", 105, y, { align: "center" });
+    doc.text("Gerado automaticamente por Tukana AI", 105, y, { align: "center" });
     y += 5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);

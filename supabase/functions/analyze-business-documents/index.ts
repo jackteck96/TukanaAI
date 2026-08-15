@@ -153,7 +153,7 @@ serve(async (req) => {
     ).join(', ') || '';
 
     // Preparar prompt para IA - Sistema unificado e profissional
-    const systemPrompt = `Você é a IA de Análise de Documentos da Fuzen. Sua missão:
+    const systemPrompt = `Você é a IA de Análise de Documentos da Tukana AI. Sua missão:
 
 🔍 IDENTIFICAÇÃO AUTOMÁTICA DE TIPOS:
 Identifique automaticamente o tipo de documento, incluindo (mas não se limitando a):

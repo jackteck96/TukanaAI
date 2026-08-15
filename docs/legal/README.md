@@ -1,6 +1,6 @@
 # Legal translation drafts — status
 
-Fuzen's public pages were internationalized (pt-BR / en-US / es-419) in
+Tukana AI's public pages were internationalized (pt-BR / en-US / es-419) in
 [date of this work]. Two pieces of legal content were **intentionally
 left out of that rollout** and are not wired into the language
 switcher yet:

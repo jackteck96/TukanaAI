@@ -333,7 +333,7 @@ const VerifySignature: React.FC = () => {
 
         {/* Rodapé */}
         <div className="text-center text-sm text-muted-foreground">
-          <p>Gerado automaticamente por Fuzen</p>
+          <p>Gerado automaticamente por Tukana AI</p>
           <p className="mt-1">Este documento possui validade jurídica conforme MP 2.200-2/2001</p>
         </div>
       </div>

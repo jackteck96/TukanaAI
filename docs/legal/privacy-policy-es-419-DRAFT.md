@@ -28,7 +28,7 @@ Protección de Datos de la UE (GDPR – Reglamento (UE) 2016/679).
 
 ### 1. Responsable del Tratamiento y Encargado de Protección de Datos (DPO)
 
-**Responsable:** Fuzen Tecnologia Ltda.
+**Responsable:** Tukana AI Ltda.
 **CNPJ:** [Insertar CNPJ]
 **Dirección:** [Insertar dirección completa]
 

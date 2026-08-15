@@ -72,7 +72,7 @@ const TermsOfService = () => {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Termos de Uso da Plataforma Fuzen</span>
+              <span>Termos de Uso da Plataforma Tukana AI</span>
               {terms && (
                 <span className="text-sm font-normal text-muted-foreground">
                   Versão {terms.version}

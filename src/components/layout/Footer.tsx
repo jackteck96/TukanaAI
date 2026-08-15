@@ -15,7 +15,7 @@ const Footer = () => {
               <div className="p-2 bg-gradient-to-r from-primary to-accent rounded-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground">Fuzen</span>
+              <span className="text-xl font-bold text-foreground">Tukana AI</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               {t('footer.description')}

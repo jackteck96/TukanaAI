@@ -272,7 +272,7 @@ export const PdfConverter = () => {
         <Alert className="border-primary/20 bg-primary/5">
           <Shield className="h-4 w-4 text-primary" />
           <AlertDescription className="text-sm">
-            A conversão é segura e feita internamente pela Fuzen. Nenhum arquivo é enviado para serviços externos.
+            A conversão é segura e feita internamente pela Tukana AI. Nenhum arquivo é enviado para serviços externos.
           </AlertDescription>
         </Alert>
 

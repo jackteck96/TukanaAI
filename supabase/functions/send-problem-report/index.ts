@@ -50,9 +50,9 @@ const handler = async (req: Request): Promise<Response> => {
     const categoryLabel = categoryLabels[category] || category;
 
     const emailResponse = await resend.emails.send({
-      from: `Fuzen <${adminEmail}>`,
+      from: `Tukana AI <${adminEmail}>`,
       to: ["raul-cordoni@hotmail.com"],
-      subject: `[Fuzen] 🚨 Problema Relatado - ${subject}`,
+      subject: `[Tukana AI] 🚨 Problema Relatado - ${subject}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -68,7 +68,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="padding: 30px;">
               <p style="color: #3f3f46; font-size: 16px; margin-bottom: 20px;">
-                Um usuário relatou um problema na plataforma <strong>Fuzen</strong>.
+                Um usuário relatou um problema na plataforma <strong>Tukana AI</strong>.
               </p>
               
               <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 15px; margin-bottom: 20px;">
@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div style="background-color: #f4f4f5; padding: 20px; text-align: center;">
               <p style="color: #71717a; font-size: 14px; margin: 0;">
-                Este relatório foi gerado automaticamente pela plataforma <strong>Fuzen</strong>.
+                Este relatório foi gerado automaticamente pela plataforma <strong>Tukana AI</strong>.
               </p>
             </div>
           </div>

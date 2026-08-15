@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         {
           price_data: {
             currency: "brl",
-            product_data: { name: `Fuzen ${plan.name}` },
+            product_data: { name: `Tukana AI ${plan.name}` },
             unit_amount: plan.price_cents,
             recurring: { interval: "month" },
           },

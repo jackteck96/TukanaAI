@@ -115,7 +115,7 @@ const CadastroCliente = () => {
               full_name: formData.fullName,
               companyId: authData.user.id,
               inviteLink: `${window.location.origin}/login`,
-              inviterName: "Equipe Fuzen",
+              inviterName: "Equipe Tukana AI",
               role: 'client',
               isCollaborator: false
             },
@@ -167,7 +167,7 @@ const CadastroCliente = () => {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Cadastro de Cliente</h1>
-            <p className="text-lg text-muted-foreground">Crie sua conta para acessar a plataforma Fuzen</p>
+            <p className="text-lg text-muted-foreground">Crie sua conta para acessar a plataforma Tukana AI</p>
           </div>
         </div>
 

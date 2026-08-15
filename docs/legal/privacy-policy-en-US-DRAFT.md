@@ -26,7 +26,7 @@ Regulation (EU) 2016/679).
 
 ### 1. Data Controller and Data Protection Officer (DPO)
 
-**Controller:** Fuzen Tecnologia Ltda.
+**Controller:** Tukana AI Ltda.
 **Company ID (CNPJ):** [Insert CNPJ]
 **Address:** [Insert full address]
 
