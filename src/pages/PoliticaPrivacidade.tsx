@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +12,23 @@ import { Shield, Lock, User, FileText, Mail, Clock, AlertTriangle } from "lucide
 // they need legal sign-off before being moved into src/locales/*/common.json and
 // wired up with useTranslation(). See docs/legal/README.md for full context.
 const PoliticaPrivacidade = () => {
+  const { i18n } = useTranslation();
+  const navigate = useNavigate();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // This page is Portuguese-only; the English text lives on its own route
+  // (/privacy-policy) rather than being wired into this component. Without
+  // this redirect, switching the language switcher to English while on this
+  // page silently does nothing — the language state changes but the content
+  // (and URL) stay Portuguese.
+  useEffect(() => {
+    if (i18n.language.startsWith("en")) {
+      navigate("/privacy-policy", { replace: true });
+    }
+  }, [i18n.language, navigate]);
 
   return (
     <>
@@ -53,7 +69,7 @@ const PoliticaPrivacidade = () => {
                   <p className="font-semibold mb-2">Encarregado de Dados (DPO):</p>
                   <p className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    Email: <a href="mailto:dpo@fuzen.app" className="text-primary hover:underline">dpo@fuzen.app</a>
+                    Email: <a href="mailto:tukanaai@gmail.com" className="text-primary hover:underline">tukanaai@gmail.com</a>
                   </p>
                   <p className="text-sm mt-2 text-muted-foreground">
                     Para exercer seus direitos ou fazer perguntas sobre o tratamento de seus dados, 
@@ -274,7 +290,7 @@ const PoliticaPrivacidade = () => {
                   <p className="font-semibold mb-2">Para exercer seus direitos:</p>
                   <ol className="list-decimal list-inside space-y-1 text-sm">
                     <li>Acesse seu perfil e vá em "Meus Dados Pessoais"</li>
-                    <li>Ou entre em contato com nosso DPO: <a href="mailto:dpo@fuzen.app" className="text-primary hover:underline">dpo@fuzen.app</a></li>
+                    <li>Ou entre em contato com nosso DPO: <a href="mailto:tukanaai@gmail.com" className="text-primary hover:underline">tukanaai@gmail.com</a></li>
                   </ol>
                   <p className="text-sm text-muted-foreground mt-2">
                     Responderemos sua solicitação em até 15 dias conforme LGPD Art. 18 § 3º.
@@ -395,7 +411,7 @@ const PoliticaPrivacidade = () => {
               <CardContent>
                 <div className="space-y-2">
                   <p className="font-semibold">Entre em contato com nosso DPO:</p>
-                  <p>Email: <a href="mailto:dpo@fuzen.app" className="text-primary hover:underline">dpo@fuzen.app</a></p>
+                  <p>Email: <a href="mailto:tukanaai@gmail.com" className="text-primary hover:underline">tukanaai@gmail.com</a></p>
                   <p>Ou acesse "Meus Dados Pessoais" no seu perfil para exercer seus direitos.</p>
                 </div>
               </CardContent>
