@@ -4,7 +4,10 @@ import { useTranslation } from "react-i18next";
 import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 
 const Footer = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const privacyPolicyPath = i18n.language.startsWith("en")
+    ? "/privacy-policy"
+    : "/politica-privacidade";
   return (
     <footer className="bg-muted/50 border-t border-border">
       <div className="container mx-auto px-4 py-12">
@@ -93,7 +96,7 @@ const Footer = () => {
               {t('footer.copyright')}
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link to="/politica-privacidade" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link to={privacyPolicyPath} className="text-muted-foreground hover:text-primary transition-colors text-sm">
                 {t('footer.privacyPolicy')}
               </Link>
               <Link to="/termos-de-uso" className="text-muted-foreground hover:text-primary transition-colors text-sm">

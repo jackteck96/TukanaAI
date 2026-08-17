@@ -44,6 +44,7 @@ import GestaoPermissoes from "./pages/GestaoPermissoes";
 import GestaoClientesQualificacao from "./pages/GestaoClientesQualificacao";
 import ClientDashboard from "./pages/ClientDashboard";
 import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import MeusDadosPessoais from "./pages/MeusDadosPessoais";
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/termos-de-uso" element={<TermsOfService />} />
                 <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/verify-signature/:signatureHash" element={<VerifySignature />} />
               <Route path="/gestao-colaboradores" element={
                 <ProtectedRoute>

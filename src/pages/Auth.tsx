@@ -16,11 +16,14 @@ import { useTranslation } from 'react-i18next';
 import { LOGO_URL as logo } from '@/lib/assets';
 
 const Auth = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('login');
   const [searchParams] = useSearchParams();
+  const privacyPolicyPath = i18n.language.startsWith('en')
+    ? '/privacy-policy'
+    : '/politica-privacidade';
   
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -427,7 +430,7 @@ const Auth = () => {
                     {t('auth.termsOfUse')}
                   </Link>{' '}
                   {t('auth.and')}{' '}
-                  <Link to="/politica-privacidade" className="text-primary hover:underline">
+                  <Link to={privacyPolicyPath} className="text-primary hover:underline">
                     {t('auth.privacyPolicy')}
                   </Link>
                 </p>

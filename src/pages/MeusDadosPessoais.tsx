@@ -203,8 +203,8 @@ const MeusDadosPessoais = () => {
                     </p>
                     <p className="text-sm">
                       <strong>Email:</strong>{" "}
-                      <a href="mailto:dpo@fuzen.app" className="text-primary hover:underline">
-                        dpo@fuzen.app
+                      <a href="mailto:tukanaai@gmail.com" className="text-primary hover:underline">
+                        tukanaai@gmail.com
                       </a>
                     </p>
                     <p className="text-sm text-muted-foreground">
