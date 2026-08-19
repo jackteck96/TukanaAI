@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
       'tukanaai.com',
       'www.tukanaai.com'
     ]
+  },
   plugins: [
     react(),
     mode === 'development' &&
