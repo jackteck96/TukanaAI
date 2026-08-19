@@ -11,7 +11,10 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: [
       'tukanaai.com',
       'www.tukanaai.com'
-    ]
+    ],
+    hmr: {
+      overlay: false
+    }
   },
   plugins: [
     react(),
