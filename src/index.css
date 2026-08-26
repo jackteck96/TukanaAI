@@ -134,15 +134,15 @@
     --shadow-lg: 0 12px 32px hsl(200 60% 4% / 0.4);
     --shadow-glow: 0 0 60px hsl(38 100% 55% / 0.25);
 
-    --sidebar-background: 200 48% 6%;
-    --sidebar-foreground: 190 12% 80%;
-    --sidebar-primary: 162 68% 50%;
-    --sidebar-primary-foreground: 200 45% 8%;
-    --sidebar-accent: 200 40% 12%;
+    --sidebar-background: 165 50% 6%;
+    --sidebar-foreground: 120 12% 80%;
+    --sidebar-primary: 38 100% 55%;
+    --sidebar-primary-foreground: 25 80% 10%;
+    --sidebar-accent: 160 40% 11%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 200 40% 12%;
-    --sidebar-ring: 162 68% 50%;
-    --sidebar-muted: 195 15% 52%;
+    --sidebar-border: 160 40% 12%;
+    --sidebar-ring: 38 100% 55%;
+    --sidebar-muted: 130 12% 52%;
   }
 }
 
