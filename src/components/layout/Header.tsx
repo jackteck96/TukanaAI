@@ -19,7 +19,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+    <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-gradient-rainbow after:opacity-80">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { FileText, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
+import { LOGO_URL as logo } from "@/lib/assets";
 import { useTranslation } from "react-i18next";
 import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 
@@ -10,15 +11,13 @@ const Footer = () => {
     : "/politica-privacidade";
   return (
     <footer className="bg-muted/50 border-t border-border">
+      <div className="rainbow-rule rounded-none" />
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo e descrição */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="p-2 bg-gradient-to-r from-primary to-accent rounded-lg">
-                <FileText className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Tukana AI</span>
+            <Link to="/" className="flex items-center">
+              <img src={logo} alt="Tukana AI" className="h-10 w-auto" />
             </Link>
             <p className="text-muted-foreground text-sm">
               {t('footer.description')}

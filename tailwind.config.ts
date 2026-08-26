@@ -66,6 +66,11 @@ export default {
 					DEFAULT: 'hsl(var(--info))',
 					foreground: 'hsl(var(--info-foreground))'
 				},
+				brand: {
+					blue: 'hsl(var(--brand-blue))',
+					green: 'hsl(var(--brand-green))',
+					orange: 'hsl(var(--brand-orange))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -152,7 +157,8 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-hero': 'var(--gradient-hero)',
 				'gradient-card': 'var(--gradient-card)',
-				'gradient-glow': 'var(--gradient-glow)'
+				'gradient-glow': 'var(--gradient-glow)',
+				'gradient-rainbow': 'var(--gradient-rainbow)'
 			},
 			animationDelay: {
 				'200': '200ms',

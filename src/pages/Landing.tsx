@@ -129,7 +129,7 @@ const Landing = () => {
           
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-5xl mx-auto text-center">
-              <Badge className="mb-8 px-4 py-1.5 bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
+              <Badge variant="outline" className="mb-8 px-4 py-1.5 bg-primary/10 text-primary border-primary/20 backdrop-blur-sm animate-fade-in shadow-sm">
                 <FileCheck className="h-4 w-4 mr-2 inline" />
                 {t('landing.hero.badge')}
               </Badge>

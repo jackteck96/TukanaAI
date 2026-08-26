@@ -9,7 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import Header from '@/components/layout/Header';
-import { useTranslation, TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 const getPasswordSchema = (t: TFunction) =>
   z.object({
