@@ -17,7 +17,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Send, MessageSquare } from "lucide-react";
-import { useTranslation, TFunction } from "react-i18next";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 // A function, not a module-level constant, because the validation messages need t()
 // which is only available inside the component (via the useTranslation hook).
