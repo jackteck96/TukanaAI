@@ -47,7 +47,7 @@
 
     --border: 195 18% 90%;
     --input: 195 18% 90%;
-    --ring: 168 72% 38%;
+    --ring: 155 84% 40%;
 
     /* Semantic colors */
     --success: 150 72% 38%;
@@ -94,23 +94,23 @@
     --popover: 200 40% 10%;
     --popover-foreground: 190 15% 95%;
 
-    --primary: 162 68% 46%;
-    --primary-foreground: 200 45% 8%;
-    --primary-light: 158 66% 56%;
-    --primary-dark: 170 74% 34%;
+    --primary: 150 85% 50%;
+    --primary-foreground: 160 60% 8%;
+    --primary-light: 145 90% 60%;
+    --primary-dark: 160 85% 38%;
 
-    --secondary: 200 30% 18%;
-    --secondary-foreground: 190 12% 90%;
+    --secondary: 160 30% 16%;
+    --secondary-foreground: 90 15% 90%;
 
-    --muted: 200 28% 15%;
-    --muted-foreground: 195 12% 62%;
+    --muted: 170 25% 14%;
+    --muted-foreground: 130 10% 62%;
 
-    --accent: 42 96% 58%;
-    --accent-foreground: 200 45% 10%;
+    --accent: 38 100% 55%;
+    --accent-foreground: 25 80% 12%;
 
-    --brand-blue: 214 84% 58%;
-    --brand-green: 140 60% 52%;
-    --brand-orange: 24 92% 60%;
+    --brand-blue: 210 95% 60%;
+    --brand-green: 140 85% 52%;
+    --brand-orange: 20 100% 60%;
 
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
