@@ -19,28 +19,28 @@
     --popover: 0 0% 100%;
     --popover-foreground: 200 30% 12%;
 
-    /* Primary - toucan teal/green */
-    --primary: 168 72% 38%;
+    /* Primary - vivid toucan green */
+    --primary: 155 84% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 162 68% 48%;
-    --primary-dark: 174 78% 28%;
+    --primary-light: 150 88% 52%;
+    --primary-dark: 165 90% 30%;
 
-    /* Secondary - soft cool gray */
-    --secondary: 195 20% 94%;
-    --secondary-foreground: 200 25% 25%;
+    /* Secondary - soft warm green tint */
+    --secondary: 90 30% 94%;
+    --secondary-foreground: 160 40% 20%;
 
     /* Muted */
-    --muted: 195 20% 96%;
-    --muted-foreground: 200 12% 46%;
+    --muted: 90 25% 96%;
+    --muted-foreground: 180 10% 40%;
 
-    /* Accent - tropical yellow/orange from the plumage */
-    --accent: 42 96% 52%;
-    --accent-foreground: 200 30% 12%;
+    /* Accent - blazing tropical yellow/orange */
+    --accent: 38 100% 50%;
+    --accent-foreground: 25 80% 15%;
 
-    /* Brand support - deep toucan blue */
-    --brand-blue: 214 84% 44%;
-    --brand-green: 140 62% 44%;
-    --brand-orange: 24 92% 55%;
+    /* Brand support - vivid tropical spectrum */
+    --brand-blue: 210 92% 52%;
+    --brand-green: 140 80% 45%;
+    --brand-orange: 20 100% 55%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
