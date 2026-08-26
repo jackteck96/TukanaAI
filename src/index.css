@@ -176,7 +176,17 @@
   }
   
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+    background-image: var(--gradient-rainbow);
+    @apply bg-clip-text text-transparent;
+  }
+
+  .bg-rainbow {
+    background-image: var(--gradient-rainbow);
+  }
+
+  .rainbow-rule {
+    background-image: var(--gradient-rainbow);
+    @apply h-1 w-full rounded-full;
   }
   
   .glow {
