@@ -57,12 +57,12 @@
     --info: 214 84% 44%;
     --info-foreground: 0 0% 100%;
 
-    /* Tropical gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(214 84% 44%), hsl(168 72% 40%), hsl(140 62% 46%));
-    --gradient-rainbow: linear-gradient(100deg, hsl(214 84% 46%), hsl(168 72% 42%), hsl(140 62% 48%), hsl(42 96% 54%), hsl(24 92% 56%));
-    --gradient-hero: linear-gradient(135deg, hsl(200 45% 10%), hsl(190 40% 16%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(190 25% 98%));
-    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(168 72% 42% / 0.12), transparent 55%);
+    /* Tropical gradients - vivid green → yellow → orange */
+    --gradient-primary: linear-gradient(120deg, hsl(140 85% 42%), hsl(80 90% 45%), hsl(48 100% 50%), hsl(20 100% 55%));
+    --gradient-rainbow: linear-gradient(100deg, hsl(210 92% 52%), hsl(160 85% 42%), hsl(120 85% 45%), hsl(48 100% 50%), hsl(20 100% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(160 60% 8%), hsl(150 50% 14%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(80 35% 98%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(48 100% 50% / 0.14), hsl(20 100% 55% / 0.08) 40%, transparent 65%);
 
     /* Modern shadows */
     --shadow-sm: 0 1px 2px hsl(200 30% 12% / 0.04);
