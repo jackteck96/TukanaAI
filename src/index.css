@@ -19,11 +19,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 200 30% 12%;
 
-    /* Primary - vivid toucan green */
-    --primary: 155 84% 40%;
+    /* Primary - electric emerald */
+    --primary: 160 95% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 150 88% 52%;
-    --primary-dark: 165 90% 30%;
+    --primary-light: 150 95% 50%;
+    --primary-dark: 170 95% 30%;
 
     /* Secondary - soft cool blue-gray */
     --secondary: 215 35% 94%;
@@ -94,10 +94,10 @@
     --popover: 200 40% 10%;
     --popover-foreground: 190 15% 95%;
 
-    --primary: 150 85% 50%;
+    --primary: 155 95% 48%;
     --primary-foreground: 160 60% 8%;
-    --primary-light: 145 90% 60%;
-    --primary-dark: 160 85% 38%;
+    --primary-light: 145 95% 60%;
+    --primary-dark: 165 90% 38%;
 
     --secondary: 218 35% 16%;
     --secondary-foreground: 210 20% 90%;
