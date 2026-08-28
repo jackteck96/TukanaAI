@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("i18next")) return "vendor-i18n";
           if (id.includes("@radix-ui")) return "vendor-radix";
           if (id.includes("@tanstack")) return "vendor-query";
-          return "vendor";
+          if (id.includes("react-router")) return "vendor-router";
         },
       },
     },
