@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,44 +9,52 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CompanyProvider } from "./contexts/CompanyContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
-import EmpresaDashboard from "./pages/EmpresaDashboard";
-import AreaCliente from "./pages/AreaCliente";
-import ModelosDocumentos from "./pages/ModelosDocumentos";
-import GerenciarProcessos from "./pages/GerenciarProcessos";
-import SignatureCallback from "./pages/SignatureCallback";
-import TreinarIA from "./pages/TreinarIA";
-import CadastroTiposDocumentos from "./pages/CadastroTiposDocumentos";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Onboarding from "./pages/Onboarding";
-import NotFound from "./pages/NotFound";
-import DocumentManagement from "./pages/DocumentManagement";
-import Relatorios from "./pages/Relatorios";
-import CompanyDashboard from "@/components/company/CompanyDashboard";
-import CadastroCliente from "./pages/CadastroCliente";
-import CadastroViaConvite from "./pages/CadastroViaConvite";
-import GestaoColaboradores from "./pages/GestaoColaboradores";
-import GestaoClientes from "./pages/GestaoClientes";
-import GestaoUsuarios from "./pages/GestaoUsuarios";
-import RelatoriosPonto from "./pages/RelatoriosPonto";
-import ClientInfo from "./pages/ClientInfo";
 import AuthHashHandler from "./components/auth/AuthHashHandler";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 import GlobalErrorLogger from "./components/shared/GlobalErrorLogger";
 import AdminRoute from "./components/auth/AdminRoute";
-import AdminDashboard from "./pages/AdminDashboard";
-import AnaliseIA from "./pages/AnaliseIA";
-import VerifySignature from "./pages/VerifySignature";
-import ApproveAdmin from "./pages/ApproveAdmin";
-import ResetPassword from "./pages/ResetPassword";
-import TermsOfService from "./pages/TermsOfService";
-import GestaoPermissoes from "./pages/GestaoPermissoes";
-import GestaoClientesQualificacao from "./pages/GestaoClientesQualificacao";
-import ClientDashboard from "./pages/ClientDashboard";
-import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import MeusDadosPessoais from "./pages/MeusDadosPessoais";
+
+const Auth = lazy(() => import("./pages/Auth"));
+const EmpresaDashboard = lazy(() => import("./pages/EmpresaDashboard"));
+const AreaCliente = lazy(() => import("./pages/AreaCliente"));
+const ModelosDocumentos = lazy(() => import("./pages/ModelosDocumentos"));
+const GerenciarProcessos = lazy(() => import("./pages/GerenciarProcessos"));
+const SignatureCallback = lazy(() => import("./pages/SignatureCallback"));
+const TreinarIA = lazy(() => import("./pages/TreinarIA"));
+const CadastroTiposDocumentos = lazy(() => import("./pages/CadastroTiposDocumentos"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const DocumentManagement = lazy(() => import("./pages/DocumentManagement"));
+const Relatorios = lazy(() => import("./pages/Relatorios"));
+const CompanyDashboard = lazy(() => import("@/components/company/CompanyDashboard"));
+const CadastroCliente = lazy(() => import("./pages/CadastroCliente"));
+const CadastroViaConvite = lazy(() => import("./pages/CadastroViaConvite"));
+const GestaoColaboradores = lazy(() => import("./pages/GestaoColaboradores"));
+const GestaoClientes = lazy(() => import("./pages/GestaoClientes"));
+const GestaoUsuarios = lazy(() => import("./pages/GestaoUsuarios"));
+const RelatoriosPonto = lazy(() => import("./pages/RelatoriosPonto"));
+const ClientInfo = lazy(() => import("./pages/ClientInfo"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AnaliseIA = lazy(() => import("./pages/AnaliseIA"));
+const VerifySignature = lazy(() => import("./pages/VerifySignature"));
+const ApproveAdmin = lazy(() => import("./pages/ApproveAdmin"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const GestaoPermissoes = lazy(() => import("./pages/GestaoPermissoes"));
+const GestaoClientesQualificacao = lazy(() => import("./pages/GestaoClientesQualificacao"));
+const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
+const PoliticaPrivacidade = lazy(() => import("./pages/PoliticaPrivacidade"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const MeusDadosPessoais = lazy(() => import("./pages/MeusDadosPessoais"));
+
+const PageFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+  </div>
+);
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -61,6 +70,7 @@ const App = () => (
             {/* Processa hash de autenticação do Supabase e limpa a URL */}
             <AuthHashHandler />
             <BrowserRouter>
+              <Suspense fallback={<PageFallback />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Landing />} />
@@ -193,6 +203,7 @@ const App = () => (
                 {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
               </BrowserRouter>
             </ErrorBoundary>
           </TooltipProvider>
