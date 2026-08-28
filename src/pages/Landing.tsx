@@ -120,6 +120,9 @@ const Landing = () => {
             <img
               src={heroImage}
               alt={t('landing.seo.heroImageAlt')}
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
               className="absolute inset-0 w-full h-full object-cover opacity-5"
             />
             <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
