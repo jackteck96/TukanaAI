@@ -63,10 +63,22 @@
         "Os riscos operacionais são concretos: prazos perdidos por falta de acompanhamento, documentos vencidos sem aviso, erros em contratos por versões desatualizadas e dificuldade de localizar arquivos críticos em momentos decisivos. A falta de visibilidade sobre a documentação compromete a tomada de decisão e a eficiência do negócio."
       ],
       "items": [
-        { "title": "Documentos espalhados", "description": "Arquivos dispersos em e-mails, pastas, drives e sistemas dificultam o acesso e atrasam decisões." },
-        { "title": "Processos manuais", "description": "Controles em planilhas geram inconsistências, dependência de pessoas e falhas operacionais." },
-        { "title": "Falta de controle", "description": "Sem padronização, é impossível saber o status de cada documento ou processo em tempo real." },
-        { "title": "Riscos e retrabalho", "description": "Prazos perdidos, documentos vencidos e retrabalho constante comprometem a operação." }
+        {
+          "title": "Documentos espalhados",
+          "description": "Arquivos dispersos em e-mails, pastas, drives e sistemas dificultam o acesso e atrasam decisões."
+        },
+        {
+          "title": "Processos manuais",
+          "description": "Controles em planilhas geram inconsistências, dependência de pessoas e falhas operacionais."
+        },
+        {
+          "title": "Falta de controle",
+          "description": "Sem padronização, é impossível saber o status de cada documento ou processo em tempo real."
+        },
+        {
+          "title": "Riscos e retrabalho",
+          "description": "Prazos perdidos, documentos vencidos e retrabalho constante comprometem a operação."
+        }
       ]
     },
     "howItWorks": {
@@ -74,9 +86,21 @@
       "titleHighlight": "organiza documentos e processos",
       "subtitle": "Em três passos simples, transforme a gestão documental da sua empresa",
       "items": [
-        { "number": "01", "title": "Centralização dos documentos", "description": "Reúna todos os documentos, contratos e arquivos da empresa em um único ambiente seguro e acessível para toda a equipe." },
-        { "number": "02", "title": "Organização automática e padronização", "description": "A Tukana AI organiza e classifica documentos automaticamente, seguindo padrões definidos pela sua empresa. Sem bagunça, sem trabalho manual." },
-        { "number": "03", "title": "Controle de prazos, relatórios e visão geral", "description": "Acompanhe o status de cada documento, receba alertas de vencimento e tenha relatórios claros para visão completa dos processos." }
+        {
+          "number": "01",
+          "title": "Centralização dos documentos",
+          "description": "Reúna todos os documentos, contratos e arquivos da empresa em um único ambiente seguro e acessível para toda a equipe."
+        },
+        {
+          "number": "02",
+          "title": "Organização automática e padronização",
+          "description": "A Tukana AI organiza e classifica documentos automaticamente, seguindo padrões definidos pela sua empresa. Sem bagunça, sem trabalho manual."
+        },
+        {
+          "number": "03",
+          "title": "Controle de prazos, relatórios e visão geral",
+          "description": "Acompanhe o status de cada documento, receba alertas de vencimento e tenha relatórios claros para visão completa dos processos."
+        }
       ]
     },
     "benefits": {
@@ -85,12 +109,30 @@
       "titlePost": "da documentação",
       "subtitle": "Transforme a gestão documental da sua empresa e ganhe controle, produtividade e eficiência",
       "items": [
-        { "title": "Centralização de documentos empresariais", "description": "Todos os arquivos em um só lugar, organizados e acessíveis." },
-        { "title": "Padronização de processos", "description": "Fluxos documentais consistentes e organizados em toda a empresa." },
-        { "title": "Redução de erros e retrabalho", "description": "Menos falhas com organização automática e alertas de vencimento." },
-        { "title": "Mais produtividade para os times", "description": "Equipes focam no trabalho estratégico, não em buscar arquivos." },
-        { "title": "Visão clara e organizada da documentação", "description": "Saiba exatamente onde está cada documento e qual seu status atual." },
-        { "title": "Apoio à tomada de decisão", "description": "Relatórios e informações organizadas para decisões mais rápidas." }
+        {
+          "title": "Centralização de documentos empresariais",
+          "description": "Todos os arquivos em um só lugar, organizados e acessíveis."
+        },
+        {
+          "title": "Padronização de processos",
+          "description": "Fluxos documentais consistentes e organizados em toda a empresa."
+        },
+        {
+          "title": "Redução de erros e retrabalho",
+          "description": "Menos falhas com organização automática e alertas de vencimento."
+        },
+        {
+          "title": "Mais produtividade para os times",
+          "description": "Equipes focam no trabalho estratégico, não em buscar arquivos."
+        },
+        {
+          "title": "Visão clara e organizada da documentação",
+          "description": "Saiba exatamente onde está cada documento e qual seu status atual."
+        },
+        {
+          "title": "Apoio à tomada de decisão",
+          "description": "Relatórios e informações organizadas para decisões mais rápidas."
+        }
       ]
     },
     "audiences": {
@@ -99,10 +141,22 @@
       "titlePost": "é indicada",
       "subtitle": "Empresas e times que precisam de organização documental profissional e controle de processos internos",
       "items": [
-        { "title": "Escritórios jurídicos", "description": "Organização de contratos, processos e documentos legais com segurança e controle de prazos." },
-        { "title": "Imobiliárias", "description": "Controle de contratos, vistorias e documentação de imóveis e locatários em um só lugar." },
-        { "title": "Empresas em crescimento", "description": "Gestão de documentos, contratos e processos internos de forma organizada e escalável." },
-        { "title": "Times financeiros e operacionais", "description": "Controle de notas fiscais, compliance e documentos críticos com rastreabilidade." }
+        {
+          "title": "Escritórios jurídicos",
+          "description": "Organização de contratos, processos e documentos legais com segurança e controle de prazos."
+        },
+        {
+          "title": "Imobiliárias",
+          "description": "Controle de contratos, vistorias e documentação de imóveis e locatários em um só lugar."
+        },
+        {
+          "title": "Empresas em crescimento",
+          "description": "Gestão de documentos, contratos e processos internos de forma organizada e escalável."
+        },
+        {
+          "title": "Times financeiros e operacionais",
+          "description": "Controle de notas fiscais, compliance e documentos críticos com rastreabilidade."
+        }
       ]
     },
     "technology": {
@@ -144,23 +198,170 @@
         "starter": {
           "description": "Para equipes pequenas começando a organizar processos",
           "priceLabel": "R$ 297/mês",
-          "extraFeatures": ["Suporte padrão"]
+          "extraFeatures": [
+            "Suporte padrão"
+          ]
         },
         "growth": {
           "description": "Para empresas em crescimento que precisam de mais capacidade",
           "priceLabel": "R$ 797/mês",
-          "extraFeatures": ["Suporte prioritário"]
+          "extraFeatures": [
+            "Suporte prioritário"
+          ]
         },
         "business": {
           "description": "Para operações estruturadas com alto volume",
           "priceLabel": "R$ 1.997/mês",
-          "extraFeatures": ["Suporte premium", "Onboarding dedicado"]
+          "extraFeatures": [
+            "Suporte premium",
+            "Onboarding dedicado"
+          ]
         },
         "enterprise": {
           "description": "Solução personalizada para grandes operações",
           "priceLabel": "Sob consulta",
-          "extraFeatures": ["SLA dedicado", "Integrações personalizadas"]
+          "extraFeatures": [
+            "SLA dedicado",
+            "Integrações personalizadas"
+          ]
         }
+      }
+    },
+    "v2": {
+      "hero": {
+        "eyebrow": "GESTÃO DOCUMENTAL INTELIGENTE",
+        "titleLine1": "Um documento entra.",
+        "titleAccent": "O processo inteiro",
+        "titleLine3": "sai organizado.",
+        "subtitle": "A Tukana centraliza documentos, contratos e prazos, aplica o fluxo que a sua empresa já usa e mantém tudo rastreável. O seu time revisa e decide.",
+        "ctaPrimary": "Solicitar demonstração",
+        "ctaSecondary": "Já tem conta? Entrar"
+      },
+      "problem": {
+        "eyebrow": "O PROBLEMA",
+        "titlePre": "A sua próxima operação",
+        "titleHighlight": "vai consumir isto.",
+        "stats": [
+          {
+            "value": "4 a 6",
+            "label": "sistemas diferentes guardando o mesmo documento"
+          },
+          {
+            "value": "11 h",
+            "label": "por semana, por pessoa, procurando arquivo"
+          },
+          {
+            "value": "30%",
+            "label": "dos contratos com versão desatualizada em uso"
+          },
+          {
+            "value": "1 em 5",
+            "label": "prazos descobertos em cima da hora"
+          }
+        ],
+        "note": "Boa parte dessas horas vai para procurar, conferir e refazer documento. É trabalho que não se cobra bem e que ninguém quer fazer."
+      },
+      "solution": {
+        "eyebrow": "ESCOPO DA SOLUÇÃO",
+        "titlePre": "Entra arquivo solto.",
+        "titleHighlight": "Sai processo controlado.",
+        "inputsTitle": "ENTRA",
+        "groups": [
+          {
+            "title": "Documentos e contratos",
+            "items": [
+              "Contratos",
+              "Procurações",
+              "Certidões",
+              "Comprovantes",
+              "Anexos"
+            ]
+          },
+          {
+            "title": "Cadastros",
+            "items": [
+              "Clientes",
+              "Sócios",
+              "Colaboradores"
+            ]
+          },
+          {
+            "title": "Prazos e obrigações",
+            "items": [
+              "Vencimentos",
+              "Assinaturas",
+              "Renovações",
+              "Tarefas"
+            ]
+          }
+        ],
+        "outputsTitle": "SAI • PRONTO PARA USO",
+        "outputs": [
+          "Processo com checklist completo",
+          "Documentos assinados e verificáveis",
+          "Alertas de vencimento e pendência",
+          "Relatórios e exportação organizada"
+        ],
+        "centerLabel": "IA",
+        "centerCaption": "Identifica o tipo de documento, extrai os dados e encaixa cada arquivo na etapa certa do processo.",
+        "footnote": "A PLATAFORMA USA OS MODELOS QUE A SUA EMPRESA JÁ TEM. CADA SAÍDA CARREGA A ORIGEM DO DADO QUE A GEROU."
+      },
+      "comparison": {
+        "eyebrow": "VANTAGEM OPERACIONAL",
+        "titlePre": "A mesma operação,",
+        "titleHighlight": "com e sem a Tukana",
+        "headers": [
+          "MÉTRICA",
+          "COMO É HOJE",
+          "COM A TUKANA",
+          "IMPACTO"
+        ],
+        "rows": [
+          {
+            "metric": "Busca de documentos",
+            "before": "Minutos a horas por arquivo",
+            "after": "Busca única e imediata",
+            "impact": "-90%"
+          },
+          {
+            "metric": "Montagem do processo",
+            "before": "Checklist manual em planilha",
+            "after": "Checklist automático por categoria",
+            "impact": "-60%"
+          },
+          {
+            "metric": "Assinaturas",
+            "before": "E-mail, idas e vindas",
+            "after": "Fluxo com status em tempo real",
+            "impact": "-50%"
+          },
+          {
+            "metric": "Prazos e vencimentos",
+            "before": "Controle individual e falho",
+            "after": "Alertas automáticos",
+            "impact": "-80%"
+          }
+        ],
+        "note": "As medições variam conforme o volume de documentos, o número de pessoas envolvidas e o grau de padronização atual da operação."
+      },
+      "gains": {
+        "title": "O que você ganha de volta.",
+        "description": "Cada operação organizada na Tukana devolve tempo real para a sua equipe.",
+        "ctaEyebrow": "PRÓXIMO PASSO",
+        "ctaTitle": "Demonstração guiada",
+        "ctaDescription": "Sua operação real. Seus documentos. Sem compromisso.",
+        "ctaButton": "Solicitar demonstração",
+        "statLabel": "HORAS RECUPERADAS",
+        "statValue": "20-40 h",
+        "statUnit": "por mês, por equipe",
+        "statNote": "De trabalho mecânico devolvido ao seu time.",
+        "listTitle": "O QUE FAZER COM ELAS",
+        "listSubtitle": "3 escolhas",
+        "listItems": [
+          "Atender mais clientes",
+          "Reduzir retrabalho e erro",
+          "Entregar mais rápido"
+        ]
       }
     }
   },

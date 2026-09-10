@@ -37,9 +37,6 @@ const Header = () => {
             <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.benefits')}
             </a>
-            <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
-              {t('header.nav.forWho')}
-            </a>
             <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.plans')}
             </a>
@@ -86,9 +83,6 @@ const Header = () => {
               </a>
               <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.benefits')}
-              </a>
-              <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
-                {t('header.nav.forWho')}
               </a>
               <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.plans')}

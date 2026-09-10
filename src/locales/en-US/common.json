@@ -63,10 +63,22 @@
         "The operational risks are concrete: missed deadlines from lack of follow-up, expired documents with no warning, contract errors from outdated versions, and difficulty locating critical files at decisive moments. Lack of visibility over documentation undermines decision-making and business efficiency."
       ],
       "items": [
-        { "title": "Scattered documents", "description": "Files spread across emails, folders, drives, and systems make access harder and delay decisions." },
-        { "title": "Manual processes", "description": "Spreadsheet-based controls create inconsistencies, dependence on individuals, and operational failures." },
-        { "title": "Lack of control", "description": "Without standardization, it's impossible to know the real-time status of each document or process." },
-        { "title": "Risks and rework", "description": "Missed deadlines, expired documents, and constant rework compromise operations." }
+        {
+          "title": "Scattered documents",
+          "description": "Files spread across emails, folders, drives, and systems make access harder and delay decisions."
+        },
+        {
+          "title": "Manual processes",
+          "description": "Spreadsheet-based controls create inconsistencies, dependence on individuals, and operational failures."
+        },
+        {
+          "title": "Lack of control",
+          "description": "Without standardization, it's impossible to know the real-time status of each document or process."
+        },
+        {
+          "title": "Risks and rework",
+          "description": "Missed deadlines, expired documents, and constant rework compromise operations."
+        }
       ]
     },
     "howItWorks": {
@@ -74,9 +86,21 @@
       "titleHighlight": "organizes documents and processes",
       "subtitle": "In three simple steps, transform your company's document management",
       "items": [
-        { "number": "01", "title": "Centralize your documents", "description": "Bring all company documents, contracts, and files together in one secure environment accessible to the whole team." },
-        { "number": "02", "title": "Automatic organization and standardization", "description": "Tukana AI automatically organizes and classifies documents, following the standards your company defines. No mess, no manual work." },
-        { "number": "03", "title": "Deadline control, reports, and overview", "description": "Track the status of every document, get expiration alerts, and access clear reports for a complete view of your processes." }
+        {
+          "number": "01",
+          "title": "Centralize your documents",
+          "description": "Bring all company documents, contracts, and files together in one secure environment accessible to the whole team."
+        },
+        {
+          "number": "02",
+          "title": "Automatic organization and standardization",
+          "description": "Tukana AI automatically organizes and classifies documents, following the standards your company defines. No mess, no manual work."
+        },
+        {
+          "number": "03",
+          "title": "Deadline control, reports, and overview",
+          "description": "Track the status of every document, get expiration alerts, and access clear reports for a complete view of your processes."
+        }
       ]
     },
     "benefits": {
@@ -85,12 +109,30 @@
       "titlePost": "for your documentation",
       "subtitle": "Transform your company's document management and gain control, productivity, and efficiency",
       "items": [
-        { "title": "Centralized business documents", "description": "All files in one place, organized and accessible." },
-        { "title": "Standardized processes", "description": "Consistent, organized document workflows across the company." },
-        { "title": "Fewer errors and less rework", "description": "Fewer failures thanks to automatic organization and expiration alerts." },
-        { "title": "More productivity for teams", "description": "Teams focus on strategic work instead of hunting for files." },
-        { "title": "Clear, organized view of documentation", "description": "Know exactly where each document is and its current status." },
-        { "title": "Support for decision-making", "description": "Organized reports and information for faster decisions." }
+        {
+          "title": "Centralized business documents",
+          "description": "All files in one place, organized and accessible."
+        },
+        {
+          "title": "Standardized processes",
+          "description": "Consistent, organized document workflows across the company."
+        },
+        {
+          "title": "Fewer errors and less rework",
+          "description": "Fewer failures thanks to automatic organization and expiration alerts."
+        },
+        {
+          "title": "More productivity for teams",
+          "description": "Teams focus on strategic work instead of hunting for files."
+        },
+        {
+          "title": "Clear, organized view of documentation",
+          "description": "Know exactly where each document is and its current status."
+        },
+        {
+          "title": "Support for decision-making",
+          "description": "Organized reports and information for faster decisions."
+        }
       ]
     },
     "audiences": {
@@ -99,10 +141,22 @@
       "titlePost": "is built for",
       "subtitle": "Companies and teams that need professional document organization and internal process control",
       "items": [
-        { "title": "Law firms", "description": "Organize contracts, cases, and legal documents with security and deadline control." },
-        { "title": "Real estate agencies", "description": "Control contracts, inspections, and property and tenant documentation in one place." },
-        { "title": "Growing companies", "description": "Manage documents, contracts, and internal processes in an organized, scalable way." },
-        { "title": "Finance and operations teams", "description": "Control invoices, compliance, and critical documents with full traceability." }
+        {
+          "title": "Law firms",
+          "description": "Organize contracts, cases, and legal documents with security and deadline control."
+        },
+        {
+          "title": "Real estate agencies",
+          "description": "Control contracts, inspections, and property and tenant documentation in one place."
+        },
+        {
+          "title": "Growing companies",
+          "description": "Manage documents, contracts, and internal processes in an organized, scalable way."
+        },
+        {
+          "title": "Finance and operations teams",
+          "description": "Control invoices, compliance, and critical documents with full traceability."
+        }
       ]
     },
     "technology": {
@@ -144,23 +198,170 @@
         "starter": {
           "description": "For small teams starting to organize their processes",
           "priceLabel": "$297/month",
-          "extraFeatures": ["Standard support"]
+          "extraFeatures": [
+            "Standard support"
+          ]
         },
         "growth": {
           "description": "For growing companies that need more capacity",
           "priceLabel": "$797/month",
-          "extraFeatures": ["Priority support"]
+          "extraFeatures": [
+            "Priority support"
+          ]
         },
         "business": {
           "description": "For structured, high-volume operations",
           "priceLabel": "$1,997/month",
-          "extraFeatures": ["Premium support", "Dedicated onboarding"]
+          "extraFeatures": [
+            "Premium support",
+            "Dedicated onboarding"
+          ]
         },
         "enterprise": {
           "description": "Custom solution for large operations",
           "priceLabel": "Contact us",
-          "extraFeatures": ["Dedicated SLA", "Custom integrations"]
+          "extraFeatures": [
+            "Dedicated SLA",
+            "Custom integrations"
+          ]
         }
+      }
+    },
+    "v2": {
+      "hero": {
+        "eyebrow": "INTELLIGENT DOCUMENT MANAGEMENT",
+        "titleLine1": "One document goes in.",
+        "titleAccent": "The whole process",
+        "titleLine3": "comes out organized.",
+        "subtitle": "Tukana centralizes documents, contracts and deadlines, applies the workflow your company already uses and keeps everything traceable. Your team reviews and decides.",
+        "ctaPrimary": "Request a demo",
+        "ctaSecondary": "Already have an account? Sign in"
+      },
+      "problem": {
+        "eyebrow": "THE PROBLEM",
+        "titlePre": "Your next operation",
+        "titleHighlight": "will cost you this.",
+        "stats": [
+          {
+            "value": "4 to 6",
+            "label": "different systems holding the same document"
+          },
+          {
+            "value": "11 h",
+            "label": "per week, per person, searching for files"
+          },
+          {
+            "value": "30%",
+            "label": "of contracts in use are outdated versions"
+          },
+          {
+            "value": "1 in 5",
+            "label": "deadlines discovered at the last minute"
+          }
+        ],
+        "note": "Most of those hours go into searching, checking and redoing documents. Work nobody bills well and nobody wants to do."
+      },
+      "solution": {
+        "eyebrow": "SCOPE OF THE SOLUTION",
+        "titlePre": "Loose files go in.",
+        "titleHighlight": "A controlled process comes out.",
+        "inputsTitle": "IN",
+        "groups": [
+          {
+            "title": "Documents and contracts",
+            "items": [
+              "Contracts",
+              "Powers of attorney",
+              "Certificates",
+              "Receipts",
+              "Attachments"
+            ]
+          },
+          {
+            "title": "Records",
+            "items": [
+              "Clients",
+              "Partners",
+              "Team members"
+            ]
+          },
+          {
+            "title": "Deadlines and obligations",
+            "items": [
+              "Due dates",
+              "Signatures",
+              "Renewals",
+              "Tasks"
+            ]
+          }
+        ],
+        "outputsTitle": "OUT • READY TO USE",
+        "outputs": [
+          "Process with a complete checklist",
+          "Signed, verifiable documents",
+          "Expiry and pending-item alerts",
+          "Organized reports and exports"
+        ],
+        "centerLabel": "AI",
+        "centerCaption": "Identifies the document type, extracts the data and files each document at the right stage of the process.",
+        "footnote": "THE PLATFORM USES THE TEMPLATES YOUR COMPANY ALREADY HAS. EVERY OUTPUT CARRIES THE SOURCE OF THE DATA BEHIND IT."
+      },
+      "comparison": {
+        "eyebrow": "OPERATIONAL ADVANTAGE",
+        "titlePre": "The same operation,",
+        "titleHighlight": "with and without Tukana",
+        "headers": [
+          "METRIC",
+          "TODAY",
+          "WITH TUKANA",
+          "IMPACT"
+        ],
+        "rows": [
+          {
+            "metric": "Finding documents",
+            "before": "Minutes to hours per file",
+            "after": "One immediate search",
+            "impact": "-90%"
+          },
+          {
+            "metric": "Building the process",
+            "before": "Manual checklist in a spreadsheet",
+            "after": "Automatic checklist by category",
+            "impact": "-60%"
+          },
+          {
+            "metric": "Signatures",
+            "before": "Email back and forth",
+            "after": "Workflow with real-time status",
+            "impact": "-50%"
+          },
+          {
+            "metric": "Deadlines and expiries",
+            "before": "Individual, error-prone control",
+            "after": "Automatic alerts",
+            "impact": "-80%"
+          }
+        ],
+        "note": "Results vary with document volume, the number of people involved and how standardized the operation already is."
+      },
+      "gains": {
+        "title": "What you get back.",
+        "description": "Every operation organized in Tukana gives real time back to your team.",
+        "ctaEyebrow": "NEXT STEP",
+        "ctaTitle": "Guided demo",
+        "ctaDescription": "Your real operation. Your documents. No commitment.",
+        "ctaButton": "Request a demo",
+        "statLabel": "HOURS RECOVERED",
+        "statValue": "20-40 h",
+        "statUnit": "per month, per team",
+        "statNote": "Of mechanical work handed back to your team.",
+        "listTitle": "WHAT TO DO WITH THEM",
+        "listSubtitle": "3 choices",
+        "listItems": [
+          "Serve more clients",
+          "Cut rework and errors",
+          "Deliver faster"
+        ]
       }
     }
   },
