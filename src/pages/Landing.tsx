@@ -42,7 +42,7 @@ const Landing = () => {
   const rows = t("landing.v2.comparison.rows", { returnObjects: true }) as Row[];
   const listItems = t("landing.v2.gains.listItems", { returnObjects: true }) as string[];
 
-  const problemParagraphs = t("landing.problems.paragraphs", { returnObjects: true }) as string[];
+  const problemHighlights = t("landing.problems.highlights", { returnObjects: true }) as string[];
   const problemIcons = [FolderOpen, RefreshCw, AlertTriangle, Clock];
   const problems = (t("landing.problems.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
     ...item,
