@@ -79,6 +79,12 @@
           "title": "Riscos e retrabalho",
           "description": "Prazos perdidos, documentos vencidos e retrabalho constante comprometem a operação."
         }
+      ],
+      "lead": "Documentos espalhados, planilhas manuais e nenhuma visibilidade. O resultado é sempre o mesmo: tempo perdido e risco.",
+      "highlights": [
+        "Ninguém sabe onde está a versão correta",
+        "O controle depende de uma única pessoa",
+        "Prazos e vencimentos passam sem aviso"
       ]
     },
     "howItWorks": {
