@@ -4,13 +4,33 @@ import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Check } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  FolderOpen,
+  RefreshCw,
+  AlertTriangle,
+  Clock,
+  Cloud,
+  Layers,
+  BarChart3,
+  Shield,
+  Zap,
+  Eye,
+  Target,
+  Scale,
+  Home,
+  Building2,
+  DollarSign,
+} from "lucide-react";
 import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 import PlansSection from "@/components/billing/PlansSection";
 
 type Stat = { value: string; label: string };
 type Group = { title: string; items: string[] };
 type Row = { metric: string; before: string; after: string; impact: string };
+type CardCopy = { title: string; description: string };
+type StepCopy = { number: string; title: string; description: string };
 
 const Landing = () => {
   const { t } = useTranslation();
