@@ -162,24 +162,50 @@ const Landing = () => {
                 </div>
               </div>
 
-              {/* Abstract orbit visual */}
-              <div className="relative hidden lg:block h-[340px]" aria-hidden="true">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-64 w-64 rounded-full border border-border/70" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-40 w-40 rounded-full border border-accent/40" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-24 w-24 rounded-full bg-gradient-glow" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-2 w-2 rounded-full bg-accent glow" />
-                </div>
-                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-rainbow opacity-40" />
-                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-rainbow opacity-20 rotate-12" />
-                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-rainbow opacity-20 -rotate-12" />
+              {/* Abstract connections visual */}
+              <div className="relative h-[240px] sm:h-[300px] lg:h-[380px]" aria-hidden="true">
+                <svg viewBox="0 0 400 320" className="h-full w-full overflow-visible">
+                  <defs>
+                    <linearGradient id="lineA" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--brand-blue))" stopOpacity="0.15" />
+                      <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.2" />
+                    </linearGradient>
+                    <linearGradient id="lineB" x1="0" y1="1" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.15" />
+                      <stop offset="55%" stopColor="hsl(var(--brand-orange))" stopOpacity="0.85" />
+                      <stop offset="100%" stopColor="hsl(var(--brand-blue))" stopOpacity="0.2" />
+                    </linearGradient>
+                    <linearGradient id="lineC" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(var(--brand-green))" stopOpacity="0.1" />
+                      <stop offset="60%" stopColor="hsl(var(--brand-blue))" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* connection strands */}
+                  <path d="M-20 250 C 90 250, 130 120, 250 110 S 380 60, 430 40" fill="none" stroke="url(#lineA)" strokeWidth="1.5" />
+                  <path d="M-20 300 C 110 300, 150 200, 260 180 S 390 170, 430 130" fill="none" stroke="url(#lineB)" strokeWidth="1.5" />
+                  <path d="M-20 190 C 100 180, 150 60, 270 55 S 400 110, 430 200" fill="none" stroke="url(#lineC)" strokeWidth="1.5" />
+                  <path d="M40 320 C 140 260, 200 240, 300 250 S 400 260, 430 280" fill="none" stroke="url(#lineA)" strokeWidth="1" opacity="0.5" />
+
+                  {/* rings */}
+                  <circle cx="262" cy="150" r="86" fill="none" stroke="hsl(var(--border))" strokeOpacity="0.6" />
+                  <circle cx="262" cy="150" r="52" fill="none" stroke="hsl(var(--accent))" strokeOpacity="0.35" />
+
+                  {/* nodes */}
+                  <circle cx="262" cy="150" r="4.5" fill="hsl(var(--accent))" />
+                  <circle cx="262" cy="150" r="12" fill="hsl(var(--accent))" opacity="0.15" />
+                  <circle cx="250" cy="110" r="3" fill="hsl(var(--primary))" />
+                  <circle cx="270" cy="55" r="2.5" fill="hsl(var(--brand-blue))" />
+                  <circle cx="260" cy="180" r="2.5" fill="hsl(var(--brand-orange))" />
+                  <circle cx="300" cy="250" r="2.5" fill="hsl(var(--brand-green))" />
+                  <circle cx="120" cy="215" r="2" fill="hsl(var(--primary))" opacity="0.7" />
+                  <circle cx="170" cy="95" r="2" fill="hsl(var(--brand-blue))" opacity="0.6" />
+                </svg>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-glow opacity-60" />
               </div>
+
             </div>
           </div>
         </section>
