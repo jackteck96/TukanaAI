@@ -377,7 +377,7 @@ const Landing = () => {
               </div>
 
               {/* Center */}
-              <div className="flex flex-col items-center text-center">
+              <div className="relative flex flex-col items-center text-center">
                 <div className="relative h-40 w-40 rounded-full border border-accent/40 flex items-center justify-center bg-gradient-glow">
                   <span className="text-lg font-semibold text-accent">
                     {t("landing.v2.solution.centerLabel")}
@@ -389,7 +389,7 @@ const Landing = () => {
               </div>
 
               {/* Outputs */}
-              <div>
+              <div className="relative">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border pb-3 mb-6">
                   {t("landing.v2.solution.outputsTitle")}
                 </p>
