@@ -292,9 +292,68 @@ const Landing = () => {
               <span className="text-accent">{t("landing.v2.solution.titleHighlight")}</span>
             </h2>
 
-            <div className="grid lg:grid-cols-3 gap-12 items-start">
+            <div className="relative grid lg:grid-cols-3 gap-12 items-start">
+              {/* Connections */}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 1000 400"
+                preserveAspectRatio="none"
+                className="pointer-events-none absolute inset-0 hidden lg:block h-full w-full opacity-70"
+              >
+                <defs>
+                  <linearGradient id="scope-in" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0.55" />
+                  </linearGradient>
+                  <linearGradient id="scope-out" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.55" />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                  </linearGradient>
+                </defs>
+                {[80, 175, 275].map((y, i) => (
+                  <path
+                    key={`in-${i}`}
+                    d={`M 300 ${y} C 380 ${y}, 400 150, 445 150`}
+                    fill="none"
+                    stroke="url(#scope-in)"
+                    strokeWidth="1.5"
+                    strokeDasharray="5 7"
+                  >
+                    <animate
+                      attributeName="stroke-dashoffset"
+                      from="48"
+                      to="0"
+                      dur="2.4s"
+                      repeatCount="indefinite"
+                    />
+                  </path>
+                ))}
+                {[70, 125, 180, 235].map((y, i) => (
+                  <path
+                    key={`out-${i}`}
+                    d={`M 555 150 C 610 150, 630 ${y}, 700 ${y}`}
+                    fill="none"
+                    stroke="url(#scope-out)"
+                    strokeWidth="1.5"
+                    strokeDasharray="5 7"
+                  >
+                    <animate
+                      attributeName="stroke-dashoffset"
+                      from="48"
+                      to="0"
+                      dur="2.4s"
+                      repeatCount="indefinite"
+                    />
+                  </path>
+                ))}
+                {[70, 125, 180, 235].map((y, i) => (
+                  <circle key={`dot-${i}`} cx="700" cy={y} r="3" fill="hsl(var(--accent))" opacity="0.7" />
+                ))}
+              </svg>
+
               {/* Inputs */}
-              <div>
+              <div className="relative">
+
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border pb-3 mb-6">
                   {t("landing.v2.solution.inputsTitle")}
                 </p>
@@ -318,7 +377,7 @@ const Landing = () => {
               </div>
 
               {/* Center */}
-              <div className="flex flex-col items-center text-center">
+              <div className="relative flex flex-col items-center text-center">
                 <div className="relative h-40 w-40 rounded-full border border-accent/40 flex items-center justify-center bg-gradient-glow">
                   <span className="text-lg font-semibold text-accent">
                     {t("landing.v2.solution.centerLabel")}
@@ -330,7 +389,7 @@ const Landing = () => {
               </div>
 
               {/* Outputs */}
-              <div>
+              <div className="relative">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border pb-3 mb-6">
                   {t("landing.v2.solution.outputsTitle")}
                 </p>
