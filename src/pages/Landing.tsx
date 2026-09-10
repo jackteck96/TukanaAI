@@ -42,6 +42,31 @@ const Landing = () => {
   const rows = t("landing.v2.comparison.rows", { returnObjects: true }) as Row[];
   const listItems = t("landing.v2.gains.listItems", { returnObjects: true }) as string[];
 
+  const problemParagraphs = t("landing.problems.paragraphs", { returnObjects: true }) as string[];
+  const problemIcons = [FolderOpen, RefreshCw, AlertTriangle, Clock];
+  const problems = (t("landing.problems.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: problemIcons[i],
+  }));
+
+  const stepIcons = [Cloud, Layers, BarChart3];
+  const steps = (t("landing.howItWorks.items", { returnObjects: true }) as StepCopy[]).map((item, i) => ({
+    ...item,
+    icon: stepIcons[i],
+  }));
+
+  const benefitIcons = [FolderOpen, Target, Shield, Zap, Eye, BarChart3];
+  const benefits = (t("landing.benefits.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: benefitIcons[i],
+  }));
+
+  const audienceIcons = [Scale, Home, Building2, DollarSign];
+  const audiences = (t("landing.audiences.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: audienceIcons[i],
+  }));
+
   const statAccents = [
     "bg-destructive",
     "bg-accent",
