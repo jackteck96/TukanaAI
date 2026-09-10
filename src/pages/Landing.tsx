@@ -4,13 +4,33 @@ import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Check } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  FolderOpen,
+  RefreshCw,
+  AlertTriangle,
+  Clock,
+  Cloud,
+  Layers,
+  BarChart3,
+  Shield,
+  Zap,
+  Eye,
+  Target,
+  Scale,
+  Home,
+  Building2,
+  DollarSign,
+} from "lucide-react";
 import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 import PlansSection from "@/components/billing/PlansSection";
 
 type Stat = { value: string; label: string };
 type Group = { title: string; items: string[] };
 type Row = { metric: string; before: string; after: string; impact: string };
+type CardCopy = { title: string; description: string };
+type StepCopy = { number: string; title: string; description: string };
 
 const Landing = () => {
   const { t } = useTranslation();
@@ -21,6 +41,31 @@ const Landing = () => {
   const headers = t("landing.v2.comparison.headers", { returnObjects: true }) as string[];
   const rows = t("landing.v2.comparison.rows", { returnObjects: true }) as Row[];
   const listItems = t("landing.v2.gains.listItems", { returnObjects: true }) as string[];
+
+  const problemParagraphs = t("landing.problems.paragraphs", { returnObjects: true }) as string[];
+  const problemIcons = [FolderOpen, RefreshCw, AlertTriangle, Clock];
+  const problems = (t("landing.problems.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: problemIcons[i],
+  }));
+
+  const stepIcons = [Cloud, Layers, BarChart3];
+  const steps = (t("landing.howItWorks.items", { returnObjects: true }) as StepCopy[]).map((item, i) => ({
+    ...item,
+    icon: stepIcons[i],
+  }));
+
+  const benefitIcons = [FolderOpen, Target, Shield, Zap, Eye, BarChart3];
+  const benefits = (t("landing.benefits.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: benefitIcons[i],
+  }));
+
+  const audienceIcons = [Scale, Home, Building2, DollarSign];
+  const audiences = (t("landing.audiences.items", { returnObjects: true }) as CardCopy[]).map((item, i) => ({
+    ...item,
+    icon: audienceIcons[i],
+  }));
 
   const statAccents = [
     "bg-destructive",
@@ -166,6 +211,32 @@ const Landing = () => {
           </div>
         </section>
 
+        {/* Problem in depth */}
+        <section id="desorganizacao" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">{t("landing.problems.title")}</h2>
+              <div className="space-y-4 text-sm md:text-base text-muted-foreground leading-relaxed">
+                {problemParagraphs.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {problems.map((problem, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-6">
+                  <div className="w-10 h-10 mb-4 rounded-lg bg-destructive/10 flex items-center justify-center">
+                    <problem.icon className="h-5 w-5 text-destructive" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{problem.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{problem.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Solution scope */}
         <section id="como-funciona" className="py-20 lg:py-28 border-b border-border/60">
           <div className="container mx-auto px-4">
@@ -233,6 +304,32 @@ const Landing = () => {
             <p className="mt-14 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70">
               {t("landing.v2.solution.footnote")}
             </p>
+          </div>
+        </section>
+
+        {/* Steps */}
+        <section id="passos" className="py-20 lg:py-28 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                {t("landing.howItWorks.titlePre")}{" "}
+                <span className="text-accent">{t("landing.howItWorks.titleHighlight")}</span>
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground">{t("landing.howItWorks.subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {steps.map((step, i) => (
+                <div key={i} className="relative overflow-hidden rounded-xl border border-border bg-card p-7">
+                  <span className="absolute top-5 right-6 text-4xl font-bold text-accent/20">{step.number}</span>
+                  <div className="w-10 h-10 mb-5 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <step.icon className="h-5 w-5 text-accent" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -340,6 +437,70 @@ const Landing = () => {
             </div>
           </div>
         </section>
+
+        {/* Benefits */}
+        <section id="vantagens" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                {t("landing.benefits.titlePre")}{" "}
+                <span className="text-accent">{t("landing.benefits.titleHighlight")}</span>{" "}
+                {t("landing.benefits.titlePost")}
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground">{t("landing.benefits.subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {benefits.map((benefit, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-6">
+                  <div className="w-10 h-10 mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <benefit.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10">
+              <ContactFormDialog
+                trigger={
+                  <Button size="lg" className="group rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8">
+                    {t("landing.finalCta.ctaDemo")}
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Audiences */}
+        <section id="para-quem" className="py-20 lg:py-28 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                {t("landing.audiences.titlePre")}{" "}
+                <span className="text-accent">{t("landing.audiences.titleHighlight")}</span>{" "}
+                {t("landing.audiences.titlePost")}
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground">{t("landing.audiences.subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {audiences.map((audience, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-6">
+                  <div className="w-10 h-10 mb-4 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+                    <audience.icon className="h-5 w-5 text-brand-blue" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{audience.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{audience.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
 
         {/* Plans */}
         <PlansSection />
