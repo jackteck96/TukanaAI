@@ -438,6 +438,70 @@ const Landing = () => {
           </div>
         </section>
 
+        {/* Benefits */}
+        <section id="vantagens" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                {t("landing.benefits.titlePre")}{" "}
+                <span className="text-accent">{t("landing.benefits.titleHighlight")}</span>{" "}
+                {t("landing.benefits.titlePost")}
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground">{t("landing.benefits.subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {benefits.map((benefit, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-6">
+                  <div className="w-10 h-10 mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <benefit.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10">
+              <ContactFormDialog
+                trigger={
+                  <Button size="lg" className="group rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8">
+                    {t("landing.finalCta.ctaDemo")}
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Audiences */}
+        <section id="para-quem" className="py-20 lg:py-28 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                {t("landing.audiences.titlePre")}{" "}
+                <span className="text-accent">{t("landing.audiences.titleHighlight")}</span>{" "}
+                {t("landing.audiences.titlePost")}
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground">{t("landing.audiences.subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {audiences.map((audience, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-6">
+                  <div className="w-10 h-10 mb-4 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+                    <audience.icon className="h-5 w-5 text-brand-blue" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{audience.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{audience.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+
         {/* Plans */}
         <PlansSection />
 
