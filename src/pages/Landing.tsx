@@ -413,7 +413,7 @@ const Landing = () => {
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-accent text-accent-foreground p-6">
+                <div className="rounded-[2rem] bg-accent text-accent-foreground p-7">
                   <p className="text-[11px] uppercase tracking-[0.2em] mb-4 opacity-80">
                     {t("landing.v2.gains.ctaEyebrow")}
                   </p>
@@ -429,7 +429,7 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card p-8 flex flex-col justify-between">
+              <div className="rounded-[2rem] border border-border/50 bg-card/70 p-8 flex flex-col justify-between">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                   {t("landing.v2.gains.statLabel")}
                 </p>
@@ -440,7 +440,7 @@ const Landing = () => {
                 <p className="text-sm text-muted-foreground">{t("landing.v2.gains.statNote")}</p>
               </div>
 
-              <div className="rounded-xl border border-border bg-secondary/40 p-8">
+              <div className="rounded-[2rem] rounded-tr-md border border-border/50 bg-secondary/30 p-8">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-6">
                   {t("landing.v2.gains.listTitle")}
                 </p>
