@@ -223,12 +223,18 @@ const Landing = () => {
           <div className="container mx-auto px-4 relative">
             <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-16 items-start">
               <div className="lg:sticky lg:top-28">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6">{t("landing.problems.title")}</h2>
-                <div className="space-y-4 text-sm md:text-base text-muted-foreground leading-relaxed">
-                  {problemParagraphs.map((paragraph, i) => (
-                    <p key={i}>{paragraph}</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-5">{t("landing.problems.title")}</h2>
+                <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-md">
+                  {t("landing.problems.lead")}
+                </p>
+                <ul className="mt-7 space-y-3">
+                  {problemHighlights.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {item}
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
