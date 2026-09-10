@@ -307,6 +307,32 @@ const Landing = () => {
           </div>
         </section>
 
+        {/* Steps */}
+        <section id="passos" className="py-20 lg:py-28 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                {t("landing.howItWorks.titlePre")}{" "}
+                <span className="text-accent">{t("landing.howItWorks.titleHighlight")}</span>
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground">{t("landing.howItWorks.subtitle")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {steps.map((step, i) => (
+                <div key={i} className="relative overflow-hidden rounded-xl border border-border bg-card p-7">
+                  <span className="absolute top-5 right-6 text-4xl font-bold text-accent/20">{step.number}</span>
+                  <div className="w-10 h-10 mb-5 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <step.icon className="h-5 w-5 text-accent" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Comparison */}
         <section id="comparativo" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
           <div className="container mx-auto px-4">
