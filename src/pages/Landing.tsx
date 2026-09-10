@@ -193,17 +193,22 @@ const Landing = () => {
               <span className="text-accent">{t("landing.v2.problem.titleHighlight")}</span>
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, i) => (
-                <div key={i} className="relative overflow-hidden rounded-xl border border-border bg-card p-6">
-                  <span className={`absolute inset-x-0 top-0 h-0.5 ${statAccents[i % 4]}`} />
+                <div
+                  key={i}
+                  className={`relative overflow-hidden rounded-[1.75rem] border border-border/50 bg-card/70 p-7 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1 ${
+                    i % 2 === 1 ? "lg:translate-y-8" : ""
+                  }`}
+                >
+                  <span className={`absolute -top-10 -right-8 h-24 w-24 rounded-full blur-2xl opacity-30 ${statAccents[i % 4]}`} />
                   <p className={`text-3xl md:text-4xl font-bold mb-3 ${statText[i % 4]}`}>{stat.value}</p>
                   <p className="text-sm text-muted-foreground leading-snug">{stat.label}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 rounded-xl border border-border border-l-2 border-l-primary bg-card/60 p-6">
+            <div className="mt-16 lg:mt-24 max-w-2xl lg:ml-auto rounded-[2rem] rounded-tl-md border border-border/50 bg-card/50 p-8">
               <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                 {t("landing.v2.problem.note")}
               </p>
@@ -212,27 +217,36 @@ const Landing = () => {
         </section>
 
         {/* Problem in depth */}
-        <section id="desorganizacao" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold mb-6">{t("landing.problems.title")}</h2>
-              <div className="space-y-4 text-sm md:text-base text-muted-foreground leading-relaxed">
-                {problemParagraphs.map((paragraph, i) => (
-                  <p key={i}>{paragraph}</p>
+        <section id="desorganizacao" className="relative overflow-hidden py-20 lg:py-28 bg-card/30 border-b border-border/60">
+          <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
+          <div className="container mx-auto px-4 relative">
+            <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-16 items-start">
+              <div className="lg:sticky lg:top-28">
+                <h2 className="text-2xl md:text-3xl font-bold mb-6">{t("landing.problems.title")}</h2>
+                <div className="space-y-4 text-sm md:text-base text-muted-foreground leading-relaxed">
+                  {problemParagraphs.map((paragraph, i) => (
+                    <p key={i}>{paragraph}</p>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {problems.map((problem, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-[1.75rem] border border-border/50 bg-card/70 p-7 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1 ${
+                      i % 2 === 1 ? "sm:translate-y-10" : ""
+                    } ${i % 2 === 0 ? "rounded-tl-md" : "rounded-br-md"}`}
+                  >
+                    <div className="w-11 h-11 mb-5 rounded-2xl bg-destructive/10 flex items-center justify-center">
+                      <problem.icon className="h-5 w-5 text-destructive" />
+                    </div>
+                    <h3 className="text-base font-semibold mb-2">{problem.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{problem.description}</p>
+                  </div>
                 ))}
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {problems.map((problem, i) => (
-                <div key={i} className="rounded-xl border border-border bg-card p-6">
-                  <div className="w-10 h-10 mb-4 rounded-lg bg-destructive/10 flex items-center justify-center">
-                    <problem.icon className="h-5 w-5 text-destructive" />
-                  </div>
-                  <h3 className="text-base font-semibold mb-2">{problem.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{problem.description}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -308,9 +322,10 @@ const Landing = () => {
         </section>
 
         {/* Steps */}
-        <section id="passos" className="py-20 lg:py-28 border-b border-border/60">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mb-12">
+        <section id="passos" className="relative overflow-hidden py-20 lg:py-28 border-b border-border/60">
+          <div className="pointer-events-none absolute left-1/3 -top-20 h-72 w-72 rounded-full bg-accent/5 blur-3xl" />
+          <div className="container mx-auto px-4 relative">
+            <div className="max-w-2xl mx-auto text-center mb-14">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
                 {t("landing.howItWorks.titlePre")}{" "}
                 <span className="text-accent">{t("landing.howItWorks.titleHighlight")}</span>
@@ -318,11 +333,16 @@ const Landing = () => {
               <p className="text-sm md:text-base text-muted-foreground">{t("landing.howItWorks.subtitle")}</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {steps.map((step, i) => (
-                <div key={i} className="relative overflow-hidden rounded-xl border border-border bg-card p-7">
-                  <span className="absolute top-5 right-6 text-4xl font-bold text-accent/20">{step.number}</span>
-                  <div className="w-10 h-10 mb-5 rounded-lg bg-accent/10 flex items-center justify-center">
+                <div
+                  key={i}
+                  className={`relative overflow-hidden rounded-[2rem] border border-border/50 bg-card/70 p-8 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1 ${
+                    i === 1 ? "lg:-translate-y-6" : i === 2 ? "lg:translate-y-6" : ""
+                  }`}
+                >
+                  <span className="absolute top-6 right-7 text-5xl font-bold text-accent/15">{step.number}</span>
+                  <div className="w-11 h-11 mb-5 rounded-2xl bg-accent/10 flex items-center justify-center">
                     <step.icon className="h-5 w-5 text-accent" />
                   </div>
                   <h3 className="text-base font-semibold mb-2">{step.title}</h3>
@@ -439,9 +459,10 @@ const Landing = () => {
         </section>
 
         {/* Benefits */}
-        <section id="vantagens" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mb-12">
+        <section id="vantagens" className="relative overflow-hidden py-20 lg:py-28 bg-card/30 border-b border-border/60">
+          <div className="pointer-events-none absolute -right-24 top-1/4 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+          <div className="container mx-auto px-4 relative">
+            <div className="max-w-2xl mb-14 lg:ml-8">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
                 {t("landing.benefits.titlePre")}{" "}
                 <span className="text-accent">{t("landing.benefits.titleHighlight")}</span>{" "}
@@ -450,10 +471,15 @@ const Landing = () => {
               <p className="text-sm md:text-base text-muted-foreground">{t("landing.benefits.subtitle")}</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {benefits.map((benefit, i) => (
-                <div key={i} className="rounded-xl border border-border bg-card p-6">
-                  <div className="w-10 h-10 mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div
+                  key={i}
+                  className={`rounded-[1.75rem] border border-border/50 bg-card/70 p-7 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1 ${
+                    i % 3 === 1 ? "lg:translate-y-8" : i % 3 === 2 ? "lg:translate-y-4" : ""
+                  } ${i % 2 === 0 ? "rounded-br-md" : "rounded-tl-md"}`}
+                >
+                  <div className="w-11 h-11 mb-5 rounded-2xl bg-primary/10 flex items-center justify-center">
                     <benefit.icon className="h-5 w-5 text-primary" />
                   </div>
                   <h3 className="text-base font-semibold mb-2">{benefit.title}</h3>
@@ -462,7 +488,7 @@ const Landing = () => {
               ))}
             </div>
 
-            <div className="mt-10">
+            <div className="mt-16 lg:mt-24 flex justify-center">
               <ContactFormDialog
                 trigger={
                   <Button size="lg" className="group rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8">
