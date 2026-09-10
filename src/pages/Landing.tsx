@@ -211,6 +211,32 @@ const Landing = () => {
           </div>
         </section>
 
+        {/* Problem in depth */}
+        <section id="desorganizacao" className="py-20 lg:py-28 bg-card/40 border-b border-border/60">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">{t("landing.problems.title")}</h2>
+              <div className="space-y-4 text-sm md:text-base text-muted-foreground leading-relaxed">
+                {problemParagraphs.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {problems.map((problem, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-6">
+                  <div className="w-10 h-10 mb-4 rounded-lg bg-destructive/10 flex items-center justify-center">
+                    <problem.icon className="h-5 w-5 text-destructive" />
+                  </div>
+                  <h3 className="text-base font-semibold mb-2">{problem.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{problem.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Solution scope */}
         <section id="como-funciona" className="py-20 lg:py-28 border-b border-border/60">
           <div className="container mx-auto px-4">
