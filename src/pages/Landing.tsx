@@ -502,9 +502,10 @@ const Landing = () => {
         </section>
 
         {/* Audiences */}
-        <section id="para-quem" className="py-20 lg:py-28 border-b border-border/60">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mb-12">
+        <section id="para-quem" className="relative overflow-hidden py-20 lg:py-28 border-b border-border/60">
+          <div className="pointer-events-none absolute -left-28 bottom-0 h-72 w-72 rounded-full bg-brand-blue/10 blur-3xl" />
+          <div className="container mx-auto px-4 relative">
+            <div className="max-w-2xl mx-auto text-center mb-14">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
                 {t("landing.audiences.titlePre")}{" "}
                 <span className="text-accent">{t("landing.audiences.titleHighlight")}</span>{" "}
@@ -513,10 +514,15 @@ const Landing = () => {
               <p className="text-sm md:text-base text-muted-foreground">{t("landing.audiences.subtitle")}</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {audiences.map((audience, i) => (
-                <div key={i} className="rounded-xl border border-border bg-card p-6">
-                  <div className="w-10 h-10 mb-4 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+                <div
+                  key={i}
+                  className={`rounded-[1.75rem] border border-border/50 bg-card/70 p-7 backdrop-blur-sm transition-transform duration-500 hover:-translate-y-1 ${
+                    i % 2 === 1 ? "lg:translate-y-8" : ""
+                  } ${i % 2 === 0 ? "rounded-tr-md" : "rounded-bl-md"}`}
+                >
+                  <div className="w-11 h-11 mb-5 rounded-2xl bg-brand-blue/10 flex items-center justify-center">
                     <audience.icon className="h-5 w-5 text-brand-blue" />
                   </div>
                   <h3 className="text-base font-semibold mb-2">{audience.title}</h3>
