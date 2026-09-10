@@ -296,9 +296,9 @@ const Landing = () => {
               {/* Connections */}
               <svg
                 aria-hidden="true"
-                viewBox="0 0 1000 400"
+                viewBox="0 0 1000 160"
                 preserveAspectRatio="none"
-                className="pointer-events-none absolute inset-0 hidden lg:block h-full w-full opacity-70"
+                className="pointer-events-none absolute left-0 top-0 hidden lg:block h-40 w-full opacity-70"
               >
                 <defs>
                   <linearGradient id="scope-in" x1="0" y1="0" x2="1" y2="0">
@@ -310,10 +310,10 @@ const Landing = () => {
                     <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
                   </linearGradient>
                 </defs>
-                {[80, 175, 275].map((y, i) => (
+                {[40, 80, 120].map((y, i) => (
                   <path
                     key={`in-${i}`}
-                    d={`M 300 ${y} C 380 ${y}, 400 150, 445 150`}
+                    d={`M 300 ${y} C 380 ${y}, 400 80, 452 80`}
                     fill="none"
                     stroke="url(#scope-in)"
                     strokeWidth="1.5"
@@ -328,10 +328,10 @@ const Landing = () => {
                     />
                   </path>
                 ))}
-                {[70, 125, 180, 235].map((y, i) => (
+                {[35, 65, 95, 125].map((y, i) => (
                   <path
                     key={`out-${i}`}
-                    d={`M 555 150 C 610 150, 630 ${y}, 700 ${y}`}
+                    d={`M 548 80 C 610 80, 630 ${y}, 700 ${y}`}
                     fill="none"
                     stroke="url(#scope-out)"
                     strokeWidth="1.5"
@@ -346,10 +346,11 @@ const Landing = () => {
                     />
                   </path>
                 ))}
-                {[70, 125, 180, 235].map((y, i) => (
+                {[35, 65, 95, 125].map((y, i) => (
                   <circle key={`dot-${i}`} cx="700" cy={y} r="3" fill="hsl(var(--accent))" opacity="0.7" />
                 ))}
               </svg>
+
 
               {/* Inputs */}
               <div className="relative">
