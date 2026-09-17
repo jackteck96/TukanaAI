@@ -1,10 +1,33 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowRight, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LOGO_URL } from "@/lib/assets";
 
 const PlansSection = lazy(() => import("@/components/billing/PlansSection"));
 const ContactFormDialog = lazy(() => import("@/components/shared/ContactFormDialog").then((module) => ({ default: module.ContactFormDialog })));
+
+const DeferredPlans = () => {
+  const container = useRef<HTMLElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const element = container.current;
+    if (!element || ready) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setReady(true);
+      observer.disconnect();
+    }, { rootMargin: "900px 0px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ready]);
+
+  return (
+    <section ref={container} id={ready ? undefined : "planos"} className={ready ? undefined : "min-h-[36rem]"} aria-label={ready ? undefined : "Planos"}>
+      {ready && <Suspense fallback={<div className="min-h-[36rem]" />}><PlansSection /></Suspense>}
+    </section>
+  );
+};
 
 const dataNodes = [
   { label: "EMPRESA", className: "left-[7%] top-[25%] md:left-[16%]" },
@@ -323,9 +346,7 @@ const ScrollyLanding = () => {
         <div className="container mx-auto px-5"><h2 className="mx-auto mb-16 max-w-4xl text-center text-3xl font-bold md:text-5xl">Para quem conduz operações complexas.</h2><div className="relative mx-auto grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">{["M&A", "Jurídico", "Financeiro", "Operações"].map((item) => <div key={item} className="flex min-h-36 items-center justify-center bg-card p-5 text-center text-lg font-semibold md:min-h-48 md:text-xl">{item}</div>)}</div></div>
       </section>
 
-      <Suspense fallback={<section id="planos" className="min-h-[36rem]" aria-label="Carregando planos" />}>
-        <PlansSection />
-      </Suspense>
+      <DeferredPlans />
 
       <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center">
         <ConnectionField className="opacity-25" />
