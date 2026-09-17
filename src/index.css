@@ -190,6 +190,11 @@
     will-change: transform;
   }
 
+  .story-scene:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 100svh;
+  }
+
   @media (max-width: 767px) {
     .story-scene {
       background-size: 44px 44px, 44px 44px, auto;

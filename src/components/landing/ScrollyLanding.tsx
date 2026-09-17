@@ -1,13 +1,33 @@
-import { useLayoutEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowRight, Check, FileText } from "lucide-react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/button";
-import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
-import PlansSection from "@/components/billing/PlansSection";
 import { LOGO_URL } from "@/lib/assets";
 
-gsap.registerPlugin(ScrollTrigger);
+const PlansSection = lazy(() => import("@/components/billing/PlansSection"));
+const ContactFormDialog = lazy(() => import("@/components/shared/ContactFormDialog").then((module) => ({ default: module.ContactFormDialog })));
+
+const DeferredPlans = () => {
+  const container = useRef<HTMLElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const element = container.current;
+    if (!element || ready) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setReady(true);
+      observer.disconnect();
+    }, { rootMargin: "900px 0px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ready]);
+
+  return (
+    <section ref={container} id={ready ? undefined : "planos"} className={ready ? undefined : "min-h-[36rem]"} aria-label={ready ? undefined : "Planos"}>
+      {ready && <Suspense fallback={<div className="min-h-[36rem]" />}><PlansSection /></Suspense>}
+    </section>
+  );
+};
 
 const dataNodes = [
   { label: "EMPRESA", className: "left-[7%] top-[25%] md:left-[16%]" },
@@ -92,12 +112,24 @@ const ScrollyLanding = () => {
   const how = useRef<HTMLElement>(null);
   const team = useRef<HTMLElement>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!root.current) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) return;
 
-    const context = gsap.context(() => {
+    let context: { revert: () => void } | undefined;
+    let refresh: number | undefined;
+    let cancelled = false;
+
+    const prepareStory = async () => {
+      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (cancelled || !root.current) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      context = gsap.context(() => {
       const pinTimeline = (element: HTMLElement | null, distance: number) => {
         if (!element) return gsap.timeline();
         return gsap.timeline({
@@ -186,12 +218,22 @@ const ScrollyLanding = () => {
         .fromTo("[data-team-task]", { opacity: 0, scale: 0.7, x: (i) => (i % 2 ? 190 : -190), y: (i) => (i - 2) * 48 }, { opacity: 1, scale: 1, x: 0, y: 0, stagger: 0.14, duration: 0.75 })
         .to("[data-team-task]", { opacity: 0.15, scale: 0.55, x: (i) => (i % 2 ? 280 : -280), stagger: 0.08, duration: 0.9 }, 1.15)
         .fromTo("[data-team-final]", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.9 }, 1.55);
-    }, root);
+      }, root);
 
-    const refresh = window.setTimeout(() => ScrollTrigger.refresh(), 300);
+      refresh = window.setTimeout(() => ScrollTrigger.refresh(), 100);
+    };
+
+    const idleWindow = window as Window & { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    const idleId = idleWindow.requestIdleCallback
+      ? idleWindow.requestIdleCallback(() => void prepareStory(), { timeout: 350 })
+      : window.setTimeout(() => void prepareStory(), 0);
+
     return () => {
-      window.clearTimeout(refresh);
-      context.revert();
+      cancelled = true;
+      if (idleWindow.cancelIdleCallback) idleWindow.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId);
+      if (refresh !== undefined) window.clearTimeout(refresh);
+      context?.revert();
     };
   }, []);
 
@@ -304,7 +346,7 @@ const ScrollyLanding = () => {
         <div className="container mx-auto px-5"><h2 className="mx-auto mb-16 max-w-4xl text-center text-3xl font-bold md:text-5xl">Para quem conduz operações complexas.</h2><div className="relative mx-auto grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">{["M&A", "Jurídico", "Financeiro", "Operações"].map((item) => <div key={item} className="flex min-h-36 items-center justify-center bg-card p-5 text-center text-lg font-semibold md:min-h-48 md:text-xl">{item}</div>)}</div></div>
       </section>
 
-      <PlansSection />
+      <DeferredPlans />
 
       <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center">
         <ConnectionField className="opacity-25" />
@@ -313,7 +355,9 @@ const ScrollyLanding = () => {
           <img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-10 h-20 w-auto" />
           <p className="mb-10 text-xl font-semibold text-accent md:text-3xl">TUKANA AI</p>
           <p className="mb-10 text-lg text-muted-foreground md:text-2xl">Menos trabalho manual. Mais tempo para a operação.</p>
-          <ContactFormDialog trigger={<Button size="lg" className="group rounded-full bg-accent px-8 text-accent-foreground hover:bg-accent/90">Solicitar demonstração <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button>} />
+          <Suspense fallback={<Button size="lg" disabled className="rounded-full px-8">Solicitar demonstração</Button>}>
+            <ContactFormDialog trigger={<Button size="lg" className="group rounded-full bg-accent px-8 text-accent-foreground hover:bg-accent/90">Solicitar demonstração <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button>} />
+          </Suspense>
         </div>
       </section>
     </div>
