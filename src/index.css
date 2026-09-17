@@ -165,6 +165,55 @@
   }
 }
 
+@layer components {
+  .scrolly-root {
+    isolation: isolate;
+    overflow: clip;
+  }
+
+  .story-scene {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.12) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.08) 1px, transparent 1px),
+      var(--gradient-hero);
+    background-size: 80px 80px, 80px 80px, auto;
+  }
+
+  .story-stage {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  @media (max-width: 767px) {
+    .story-scene {
+      background-size: 44px 44px, 44px 44px, auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .story-scene {
+      min-height: auto;
+    }
+
+    .story-stage {
+      min-height: 100svh;
+    }
+
+    .story-stage [data-node],
+    .story-stage [data-document],
+    .story-stage [data-ready-doc],
+    .story-stage [data-complexity],
+    .story-stage [data-metric],
+    .story-stage [data-transform-object],
+    .story-stage [data-transform-doc],
+    .story-stage [data-less],
+    .story-stage [data-how-item],
+    .story-stage [data-team-task] {
+      opacity: 1;
+    }
+  }
+}
+
 /* Custom utility classes for the new design */
 @layer utilities {
   .glass {
