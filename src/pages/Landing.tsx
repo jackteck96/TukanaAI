@@ -25,7 +25,7 @@ const Landing = () => {
           })}
         </script>
       </Helmet>
-      <div className="dark min-h-screen bg-background text-foreground">
+      <div className="dark landing-scrolly min-h-screen bg-background text-foreground">
         <Header />
         <main>
           <ScrollyLanding />

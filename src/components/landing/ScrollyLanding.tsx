@@ -235,7 +235,7 @@ const ScrollyLanding = () => {
           <p data-doc-copy className="mx-auto mt-2 max-w-3xl text-xs text-muted-foreground md:text-base">A partir das informações encontradas pela IA, a Tukana preenche os documentos com os dados da empresa e dos sócios.</p>
         </div>
         <div className="absolute left-1/2 top-[58%] h-[46vh] w-full max-w-5xl -translate-x-1/2 -translate-y-1/2">
-          {["CNPJ", "EMPRESA", "SÓCIOS", "DADOS", "QUALIFICAÇÕES"].map((item, i) => <span key={item} data-data-chip className="absolute left-1/2 top-1/2 z-20 rounded-full border border-primary/40 bg-background px-3 py-1 text-[9px] font-semibold text-primary md:text-xs" style={{ marginLeft: `${(i - 2) * 54}px`, marginTop: `${(i % 2 ? 1 : -1) * 34}px` }}>{item}</span>)}
+          {["CNPJ", "EMPRESA", "SÓCIOS", "DADOS", "QUALIFICAÇÕES"].map((item, i) => <span key={item} data-data-chip className={`absolute top-1/2 z-20 rounded-full border border-primary/40 bg-background px-3 py-1 text-[9px] font-semibold text-primary md:text-xs ${i < 2 ? "left-[12%] md:left-[30%]" : i > 2 ? "right-[12%] md:right-[30%]" : "left-1/2 -translate-x-1/2"}`} style={{ marginTop: `${(i - 2) * 27}px` }}>{item}</span>)}
           {[0, 1, 2, 3].map((i) => <DocumentSheet key={i} index={i} />)}
         </div>
         <p data-doc-final className="absolute inset-x-5 bottom-8 z-30 text-center text-lg font-semibold text-accent md:bottom-12 md:text-2xl">Você fornece o CNPJ. A Tukana cuida da documentação completa.</p>
