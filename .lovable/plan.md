@@ -15,9 +15,9 @@ Transformar a landing atual em uma experiência contínua de scrollytelling, pre
    - Conectar visualmente cenas consecutivas, reaproveitando linhas, nós, dados e folhas documentais na transição.
 
 3. **Conteúdo e fluxos existentes**
-   - Substituir a composição estática atual pelas 13 cenas e pela copy exata do pedido.
+   - Transformar a composição atual nas 13 cenas e usar exatamente a copy revisada do pedido.
    - Preservar os botões de login, contato e assinatura, incluindo cadastro e redirecionamento ao checkout.
-   - Manter os planos carregados do cadastro atual, mas apresentar Starter, Growth, Enterprise e Custom com a nomenclatura, limites e CTAs definidos.
+   - Manter a seção de planos carregada integralmente do cadastro atual, sem alterar ou inventar nomes, preços, limites, funcionalidades ou CTAs.
 
 4. **Responsividade e desempenho**
    - Desktop terá a composição completa em camadas.
