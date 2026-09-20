@@ -149,7 +149,6 @@ const ScrollyLanding = () => {
         <ConnectionField id="line-product-intro" className="opacity-35" />
         <div data-product-copy className="relative z-20 flex max-w-5xl flex-col items-center px-5 text-center">
           <img src={LOGO_URL} alt="Tukana AI" className="mb-5 h-14 w-auto md:h-20" />
-          <p className="mb-3 text-xs font-semibold uppercase text-primary">TUKANA AI</p>
           <h1 className="text-4xl font-bold leading-tight md:text-7xl">Tudo começa com um CNPJ.</h1>
           <p className="mt-5 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-xl">Você fornece um CNPJ. A Tukana encontra a empresa e seus sócios, prepara a documentação e organiza o processo de M&amp;A para você.</p>
           <a href="#como-funciona" className="mt-6"><Button size="lg" className="group rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90">Conhecer a Tukana <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button></a>
