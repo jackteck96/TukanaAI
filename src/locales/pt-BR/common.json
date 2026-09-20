@@ -5,7 +5,8 @@
       "howItWorks": "Como Funciona",
       "benefits": "Benefícios",
       "forWho": "Para Quem",
-      "plans": "Planos"
+      "plans": "Planos",
+      "contact": "Contato"
     },
     "login": "Login",
     "subscribe": "Assine já",
@@ -552,7 +553,7 @@
     "fullNamePlaceholder": "Seu nome completo",
     "emailLabel": "E-mail *",
     "emailPlaceholder": "seu@email.com",
-    "phoneLabel": "Celular (opcional)",
+    "phoneLabel": "Celular *",
     "phonePlaceholder": "(11) 99999-9999",
     "companyLabel": "Empresa (opcional)",
     "companyPlaceholder": "Nome da sua empresa",
@@ -567,6 +568,8 @@
       "fullNameMax": "Nome muito longo",
       "emailInvalid": "E-mail inválido",
       "emailMax": "E-mail muito longo",
+      "phoneMin": "Informe um celular válido",
+      "phoneInvalid": "Informe um celular válido",
       "phoneMax": "Telefone muito longo",
       "companyMax": "Nome da empresa muito longo",
       "messageMin": "Mensagem deve ter pelo menos 10 caracteres",
