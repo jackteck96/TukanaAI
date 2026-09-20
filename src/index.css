@@ -232,11 +232,19 @@
     .story-stage [data-more],
     .story-stage [data-more-copy],
     .story-stage [data-team-final],
-    .story-stage [data-audience-item] {
+    .story-stage [data-audience-item],
+    .story-stage [data-product-flow],
+    .story-stage [data-demo-node],
+    .story-stage [data-demo-info],
+    .story-stage [data-demo-doc],
+    .story-stage [data-demo-final],
+    .story-stage [data-cost-final] {
       opacity: 1;
     }
 
-    .story-stage [data-product-fill] {
+    .story-stage [data-product-fill],
+    .story-stage [data-demo-fill],
+    .story-stage [data-product-rail] {
       transform: scaleX(1);
     }
   }
