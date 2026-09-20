@@ -23,7 +23,7 @@ const DeferredPlans = () => {
   }, [ready]);
 
   return (
-    <section ref={container} id={ready ? undefined : "planos"} className={ready ? undefined : "min-h-[36rem]"} aria-label={ready ? undefined : "Planos"}>
+    <section ref={container} id="planos" className={ready ? undefined : "min-h-[36rem]"} aria-label={ready ? undefined : "Planos"}>
       {ready && <Suspense fallback={<div className="min-h-[36rem]" />}><PlansSection /></Suspense>}
     </section>
   );
@@ -44,7 +44,7 @@ const workflow = [
 ];
 const teamTasks = ["Pesquisar informações", "Preencher documentos", "Encontrar arquivos", "Controlar etapas", "Controlar prazos"];
 
-const ConnectionField = ({ className = "" }: { className?: string }) => (
+const ConnectionField = ({ id = "story-line", className = "" }: { id?: string; className?: string }) => (
   <svg aria-hidden="true" viewBox="0 0 1000 600" className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}>
     <defs>
       <linearGradient id="story-line-$RANDOM" x1="0" y1="0" x2="1" y2="1">
@@ -54,10 +54,10 @@ const ConnectionField = ({ className = "" }: { className?: string }) => (
         <stop offset="1" stopColor="hsl(var(--brand-orange))" />
       </linearGradient>
     </defs>
-    <path data-line d="M500 300 C330 280 280 140 130 145" fill="none" stroke="url(#story-line)" strokeWidth="1.5" />
-    <path data-line d="M500 300 C680 285 720 145 875 145" fill="none" stroke="url(#story-line)" strokeWidth="1.5" />
-    <path data-line d="M500 300 C340 330 290 470 145 475" fill="none" stroke="url(#story-line)" strokeWidth="1.5" />
-    <path data-line d="M500 300 C665 340 720 465 860 470" fill="none" stroke="url(#story-line)" strokeWidth="1.5" />
+    <path data-line d="M500 300 C330 280 280 140 130 145" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
+    <path data-line d="M500 300 C680 285 720 145 875 145" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
+    <path data-line d="M500 300 C340 330 290 470 145 475" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
+    <path data-line d="M500 300 C665 340 720 465 860 470" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
     <circle cx="500" cy="300" r="115" fill="none" stroke="hsl(var(--border))" strokeOpacity="0.45" />
     <circle cx="500" cy="300" r="190" fill="none" stroke="hsl(var(--border))" strokeOpacity="0.22" />
   </svg>
@@ -118,16 +118,19 @@ const ScrollyLanding = () => {
           .fromTo("[data-line]", { strokeDasharray: 900, strokeDashoffset: 900, opacity: 0 }, { strokeDashoffset: 0, opacity: 0.7, stagger: 0.08, duration: 0.8 }, 0.05)
           .fromTo("[data-product-node]", { opacity: 0, scale: 0.3, x: 0, y: 0 }, { opacity: 1, scale: 1, x: (i) => [-150, 0, 150][i], y: -25, stagger: 0.12, duration: 0.55 }, 0.3)
           .fromTo("[data-product-message='0']", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 0.4)
+          .to("[data-product-message='0']", { opacity: 0, y: -18, duration: 0.35 }, 1.0)
           .to("[data-product-cnpj]", { opacity: 0, scale: 0.45, duration: 0.35 }, 0.92)
           .to("[data-product-message='0']", { opacity: 0, y: -12, duration: 0.3 }, 0.95)
           .to("[data-product-node]", { x: 0, y: 12, scale: 0.55, opacity: 0.35, stagger: 0.05, duration: 0.5 }, 1.0)
           .fromTo("[data-info-core]", { opacity: 0, scale: 0.45 }, { opacity: 1, scale: 1, duration: 0.5 }, 1.05)
           .fromTo("[data-product-message='1']", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 1.1)
+          .to("[data-product-message='1']", { opacity: 0, y: -18, duration: 0.35 }, 1.65)
           .to("[data-product-message='1']", { opacity: 0, y: -12, duration: 0.3 }, 1.58)
           .to("[data-info-core]", { opacity: 0, scale: 0.4, y: 55, duration: 0.5 }, 1.65)
           .to("[data-product-node]", { opacity: 0, scale: 0.25, duration: 0.35 }, 1.6)
           .fromTo("[data-product-doc]", { opacity: 0, scale: 0.35, rotate: (i) => (i - 1) * 12 }, { opacity: 1, scale: 0.8, rotate: (i) => (i - 1) * 5, x: (i) => (i - 1) * 115, stagger: 0.08, duration: 0.65 }, 1.65)
           .fromTo("[data-product-message='2']", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 1.72)
+          .to("[data-product-message='2']", { opacity: 0, y: -18, duration: 0.35 }, 2.45)
           .to("[data-product-fill]", { scaleX: 1, stagger: 0.025, duration: 0.55 }, 2.15)
           .to("[data-product-doc]", { rotate: 0, x: (i) => (i - 1) * 72, y: -8, scale: 0.9, stagger: 0.05, duration: 0.55 }, 2.45)
           .to("[data-product-message='2']", { opacity: 0, y: -12, duration: 0.3 }, 2.45)
@@ -177,7 +180,7 @@ const ScrollyLanding = () => {
   return (
     <div ref={root} className="scrolly-root bg-background text-foreground">
       <PinnedScene sceneRef={intro}>
-        <div data-intro-lines className="absolute inset-0 scale-75 opacity-0"><ConnectionField /></div>
+        <div data-intro-lines className="absolute inset-0 scale-75 opacity-0"><ConnectionField id="line-intro" /></div>
         <div data-hero-copy className="relative z-10 flex max-w-5xl flex-col items-center px-5 text-center">
           <img src={LOGO_URL} alt="Tukana AI" className="mb-7 h-16 w-auto md:h-24" />
           <p className="mb-4 text-xs font-semibold uppercase text-primary">TUKANA AI</p>
@@ -189,7 +192,7 @@ const ScrollyLanding = () => {
       </PinnedScene>
 
       <PinnedScene sceneRef={product} id="como-funciona" className="bg-card/20">
-        <ConnectionField className="opacity-55" />
+        <ConnectionField id="line-product" className="opacity-55" />
         <div className="absolute inset-x-5 top-24 z-30 text-center md:top-20"><h2 className="text-2xl font-bold md:text-5xl">Você fornece um CNPJ. A Tukana faz o resto.</h2></div>
         <div className="absolute left-1/2 top-[46%] h-[56vh] w-full max-w-5xl -translate-x-1/2 -translate-y-1/2">
           <div data-product-cnpj className="absolute left-1/2 top-1/2 z-20 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-background shadow-glow md:h-36 md:w-36"><span className="text-xl font-bold text-accent md:text-2xl">CNPJ</span></div>
@@ -241,7 +244,7 @@ const ScrollyLanding = () => {
 
       <DeferredPlans />
 
-      <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center"><ConnectionField className="opacity-25" /><div className="relative z-10 max-w-5xl"><h2 className="text-4xl font-bold leading-tight md:text-7xl">Sua operação já é complexa. A documentação não precisa ser.</h2><img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-9 h-20 w-auto" /><p className="mb-4 text-xl font-semibold text-accent md:text-3xl">TUKANA AI</p><p className="mb-9 text-lg text-muted-foreground md:text-2xl">Menos trabalho manual. Mais tempo para a operação.</p><Suspense fallback={<Button size="lg" disabled className="rounded-full px-8">Solicitar demonstração</Button>}><ContactFormDialog trigger={<Button size="lg" className="group rounded-full bg-accent px-8 text-accent-foreground hover:bg-accent/90">Solicitar demonstração <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button>} /></Suspense></div></section>
+      <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center"><ConnectionField id="line-footer" className="opacity-25" /><div className="relative z-10 max-w-5xl"><h2 className="text-4xl font-bold leading-tight md:text-7xl">Sua operação já é complexa. A documentação não precisa ser.</h2><img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-9 h-20 w-auto" /><p className="mb-4 text-xl font-semibold text-accent md:text-3xl">TUKANA AI</p><p className="mb-9 text-lg text-muted-foreground md:text-2xl">Menos trabalho manual. Mais tempo para a operação.</p><Suspense fallback={<Button size="lg" disabled className="rounded-full px-8">Solicitar demonstração</Button>}><ContactFormDialog trigger={<Button size="lg" className="group rounded-full bg-accent px-8 text-accent-foreground hover:bg-accent/90">Solicitar demonstração <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button>} /></Suspense></div></section>
     </div>
   );
 };
