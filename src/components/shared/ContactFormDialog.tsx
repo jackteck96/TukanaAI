@@ -26,7 +26,7 @@ const getContactSchema = (t: TFunction) =>
   z.object({
     fullName: z.string().min(2, t('contactForm.validation.fullNameMin')).max(100, t('contactForm.validation.fullNameMax')),
     email: z.string().email(t('contactForm.validation.emailInvalid')).max(255, t('contactForm.validation.emailMax')),
-    phone: z.string().max(20, t('contactForm.validation.phoneMax')).optional().or(z.literal("")),
+    phone: z.string().trim().min(8, t('contactForm.validation.phoneMin')).max(20, t('contactForm.validation.phoneMax')).regex(/^[+()\-.\s\d]+$/, t('contactForm.validation.phoneInvalid')),
     company: z.string().max(100, t('contactForm.validation.companyMax')).optional(),
     message: z.string().min(10, t('contactForm.validation.messageMin')).max(500, t('contactForm.validation.messageMax')),
   });

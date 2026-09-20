@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LOGO_URL } from "@/lib/assets";
 
 const PlansSection = lazy(() => import("@/components/billing/PlansSection"));
-const ContactFormDialog = lazy(() => import("@/components/shared/ContactFormDialog").then((module) => ({ default: module.ContactFormDialog })));
+const LandingContactForm = lazy(() => import("@/components/landing/LandingContactForm"));
 
 const DeferredPlans = () => {
   const container = useRef<HTMLElement>(null);
@@ -200,7 +200,7 @@ const ScrollyLanding = () => {
 
       <section className="story-scene border-b border-border/50">
         <DeferredPlans />
-        <div className="relative flex min-h-[78svh] items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center"><ConnectionField id="line-footer" className="opacity-20" /><div className="relative z-10 max-w-5xl"><h2 className="text-4xl font-bold leading-tight md:text-7xl">Sua operação já é complexa. A documentação não precisa ser.</h2><img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-8 h-16 w-auto md:h-20" /><p className="mb-8 text-lg text-muted-foreground md:text-2xl">Menos trabalho manual. Mais tempo para a operação.</p><Suspense fallback={<Button size="lg" disabled className="rounded-full px-8">Solicitar demonstração</Button>}><ContactFormDialog trigger={<Button size="lg" className="group rounded-full bg-accent px-8 text-accent-foreground hover:bg-accent/90">Solicitar demonstração <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button>} /></Suspense></div></div>
+        <div id="contato" className="relative flex min-h-[78svh] scroll-mt-24 items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center"><ConnectionField id="line-footer" className="opacity-20" /><div className="relative z-10 w-full max-w-6xl"><h2 className="text-4xl font-bold leading-tight md:text-7xl">Sua operação já é complexa. A documentação não precisa ser.</h2><img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-8 h-16 w-auto md:h-20" /><p className="mb-3 text-lg text-muted-foreground md:text-2xl">Menos trabalho manual. Mais tempo para a operação.</p><p className="mb-10 text-base font-semibold text-foreground md:text-lg">Solicitar demonstração</p><Suspense fallback={<div className="mx-auto min-h-80 max-w-4xl" />}><LandingContactForm /></Suspense></div></div>
       </section>
     </div>
   );

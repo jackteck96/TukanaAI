@@ -43,6 +43,9 @@ const Header = () => {
             <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.plans')}
             </a>
+            <a href="#contato" className="text-muted-foreground hover:text-primary transition-colors">
+              {t('header.nav.contact')}
+            </a>
           </nav>
 
           {/* Desktop CTA */}
@@ -92,6 +95,9 @@ const Header = () => {
               </a>
               <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.plans')}
+              </a>
+              <a href="#contato" className="text-muted-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
+                {t('header.nav.contact')}
               </a>
               <div className="pt-2">
                 <LanguageSwitcher />

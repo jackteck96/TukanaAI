@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin } from "lucide-react";
 import { LOGO_URL as logo } from "@/lib/assets";
 import { useTranslation } from "react-i18next";
-import { ContactFormDialog } from "@/components/shared/ContactFormDialog";
 
 const Footer = () => {
   const { t, i18n } = useTranslation();
@@ -13,7 +11,7 @@ const Footer = () => {
     <footer className="bg-muted/50 border-t border-border">
       <div className="rainbow-rule rounded-none" />
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo e descrição */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center">
@@ -39,13 +37,6 @@ const Footer = () => {
               <Link to="/sobre" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
                 {t('footer.quickLinks.about')}
               </Link>
-              <ContactFormDialog
-                trigger={
-                  <button className="block text-muted-foreground hover:text-primary transition-colors text-sm text-left">
-                    {t('footer.quickLinks.contact')}
-                  </button>
-                }
-              />
             </div>
           </div>
 
@@ -66,25 +57,6 @@ const Footer = () => {
               <Link to="/status" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
                 {t('footer.support.status')}
               </Link>
-            </div>
-          </div>
-
-          {/* Contato */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">{t('footer.contact.title')}</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <span>contato@fuzen.com</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>+55 (11) 9999-9999</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>{t('footer.contact.location')}</span>
-              </div>
             </div>
           </div>
         </div>
