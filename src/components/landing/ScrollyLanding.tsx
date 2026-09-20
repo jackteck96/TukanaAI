@@ -47,17 +47,17 @@ const teamTasks = ["Pesquisar informações", "Preencher documentos", "Encontrar
 const ConnectionField = ({ id = "story-line", className = "" }: { id?: string; className?: string }) => (
   <svg aria-hidden="true" viewBox="0 0 1000 600" className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}>
     <defs>
-      <linearGradient id="story-line-$RANDOM" x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stopColor="hsl(var(--brand-blue))" />
         <stop offset="0.45" stopColor="hsl(var(--primary))" />
         <stop offset="0.72" stopColor="hsl(var(--accent))" />
         <stop offset="1" stopColor="hsl(var(--brand-orange))" />
       </linearGradient>
     </defs>
-    <path data-line d="M500 300 C330 280 280 140 130 145" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
-    <path data-line d="M500 300 C680 285 720 145 875 145" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
-    <path data-line d="M500 300 C340 330 290 470 145 475" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
-    <path data-line d="M500 300 C665 340 720 465 860 470" fill="none" stroke="url(#story-line-{id})" strokeWidth="1.5" />
+    <path data-line d="M500 300 C330 280 280 140 130 145" fill="none" stroke={`url(#${id})`} strokeWidth="1.5" />
+    <path data-line d="M500 300 C680 285 720 145 875 145" fill="none" stroke={`url(#${id})`} strokeWidth="1.5" />
+    <path data-line d="M500 300 C340 330 290 470 145 475" fill="none" stroke={`url(#${id})`} strokeWidth="1.5" />
+    <path data-line d="M500 300 C665 340 720 465 860 470" fill="none" stroke={`url(#${id})`} strokeWidth="1.5" />
     <circle cx="500" cy="300" r="115" fill="none" stroke="hsl(var(--border))" strokeOpacity="0.45" />
     <circle cx="500" cy="300" r="190" fill="none" stroke="hsl(var(--border))" strokeOpacity="0.22" />
   </svg>
@@ -119,21 +119,16 @@ const ScrollyLanding = () => {
           .fromTo("[data-product-node]", { opacity: 0, scale: 0.3, x: 0, y: 0 }, { opacity: 1, scale: 1, x: (i) => [-150, 0, 150][i], y: -25, stagger: 0.12, duration: 0.55 }, 0.3)
           .fromTo("[data-product-message='0']", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 0.4)
           .to("[data-product-message='0']", { opacity: 0, y: -18, duration: 0.35 }, 1.0)
-          .to("[data-product-cnpj]", { opacity: 0, scale: 0.45, duration: 0.35 }, 0.92)
-          .to("[data-product-message='0']", { opacity: 0, y: -12, duration: 0.3 }, 0.95)
           .to("[data-product-node]", { x: 0, y: 12, scale: 0.55, opacity: 0.35, stagger: 0.05, duration: 0.5 }, 1.0)
           .fromTo("[data-info-core]", { opacity: 0, scale: 0.45 }, { opacity: 1, scale: 1, duration: 0.5 }, 1.05)
           .fromTo("[data-product-message='1']", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 1.1)
           .to("[data-product-message='1']", { opacity: 0, y: -18, duration: 0.35 }, 1.65)
-          .to("[data-product-message='1']", { opacity: 0, y: -12, duration: 0.3 }, 1.58)
           .to("[data-info-core]", { opacity: 0, scale: 0.4, y: 55, duration: 0.5 }, 1.65)
-          .to("[data-product-node]", { opacity: 0, scale: 0.25, duration: 0.35 }, 1.6)
           .fromTo("[data-product-doc]", { opacity: 0, scale: 0.35, rotate: (i) => (i - 1) * 12 }, { opacity: 1, scale: 0.8, rotate: (i) => (i - 1) * 5, x: (i) => (i - 1) * 115, stagger: 0.08, duration: 0.65 }, 1.65)
           .fromTo("[data-product-message='2']", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 1.72)
           .to("[data-product-message='2']", { opacity: 0, y: -18, duration: 0.35 }, 2.45)
           .to("[data-product-fill]", { scaleX: 1, stagger: 0.025, duration: 0.55 }, 2.15)
           .to("[data-product-doc]", { rotate: 0, x: (i) => (i - 1) * 72, y: -8, scale: 0.9, stagger: 0.05, duration: 0.55 }, 2.45)
-          .to("[data-product-message='2']", { opacity: 0, y: -12, duration: 0.3 }, 2.45)
           .fromTo("[data-product-final]", { opacity: 0, y: 24, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6 }, 2.55)
           .fromTo("[data-process-organized]", { opacity: 0, scale: 0.6, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.55 }, 3.05);
 
@@ -193,7 +188,7 @@ const ScrollyLanding = () => {
 
       <PinnedScene sceneRef={product} id="como-funciona" className="bg-card/20">
         <ConnectionField id="line-product" className="opacity-55" />
-        <div className="absolute inset-x-5 top-24 z-30 text-center md:top-20"><h2 className="text-2xl font-bold md:text-5xl">Você fornece um CNPJ. A Tukana faz o resto.</h2></div>
+        <div className="absolute inset-x-5 top-14 z-30 text-center md:top-20"><h2 className="text-2xl font-bold md:text-5xl">Você fornece um CNPJ. A Tukana faz o resto.</h2></div>
         <div className="absolute left-1/2 top-[46%] h-[56vh] w-full max-w-5xl -translate-x-1/2 -translate-y-1/2">
           <div data-product-cnpj className="absolute left-1/2 top-1/2 z-20 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-background shadow-glow md:h-36 md:w-36"><span className="text-xl font-bold text-accent md:text-2xl">CNPJ</span></div>
           <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">{productNodes.map((node) => <span key={node} data-product-node className="absolute left-1/2 top-1/2 min-w-28 -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-card/95 px-3 py-2 text-center text-[9px] font-semibold shadow-md md:min-w-36 md:text-xs">{node}</span>)}</div>

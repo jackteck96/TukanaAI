@@ -235,6 +235,10 @@
     .story-stage [data-audience-item] {
       opacity: 1;
     }
+
+    .story-stage [data-product-fill] {
+      transform: scaleX(1);
+    }
   }
 }
 
