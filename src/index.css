@@ -219,8 +219,25 @@
     .story-stage [data-transform-doc],
     .story-stage [data-less],
     .story-stage [data-how-item],
-    .story-stage [data-team-task] {
+    .story-stage [data-team-task],
+    .story-stage [data-product-node],
+    .story-stage [data-info-core],
+    .story-stage [data-product-doc],
+    .story-stage [data-product-message],
+    .story-stage [data-product-final],
+    .story-stage [data-process-organized],
+    .story-stage [data-operation-item],
+    .story-stage [data-operation-copy],
+    .story-stage [data-cost-final],
+    .story-stage [data-more],
+    .story-stage [data-more-copy],
+    .story-stage [data-team-final],
+    .story-stage [data-audience-item] {
       opacity: 1;
+    }
+
+    .story-stage [data-product-fill] {
+      transform: scaleX(1);
     }
   }
 }
