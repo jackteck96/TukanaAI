@@ -31,3 +31,9 @@ Reorganizar e compactar a landing existente para explicar a Tukana imediatamente
 - Verificar desktop e mobile, incluindo scroll para baixo e reverso.
 - Confirmar que a proposta fica clara no primeiro bloco e que a demonstração completa aparece logo em seguida.
 - Confirmar ausência de telas vazias, sobreposições e erros, além do funcionamento de login, planos e CTAs.
+
+## Correção estrutural do scroll
+- Consolidar a narrativa em seis grandes momentos, removendo cenas separadas para operação, equipe e público.
+- Reservar o pin somente para produto, demonstração, custo e convergência; cada sequência terá distância curta e uma única composição.
+- Reunir “Como funciona” e “Para quem é” em uma seção compacta, sem repetição da demonstração.
+- Manter planos, cadastro, checkout e contato sem alterações funcionais.
