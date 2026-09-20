@@ -7,3 +7,6 @@
 - [x] Reordenar a landing para apresentar produto e demonstração antes do problema.
 - [x] Compactar distâncias de scroll mantendo pin, scrub e reversibilidade.
 - [x] Validar narrativa, CTAs, planos e experiência em desktop e mobile.
+- [ ] Reduzir a landing para seis momentos, com pin apenas nas transformações principais.
+- [ ] Encurtar drasticamente o scroll e eliminar cenas narrativas repetidas.
+- [ ] Validar ritmo, reversibilidade e clareza em desktop e mobile.
