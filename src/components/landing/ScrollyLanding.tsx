@@ -104,10 +104,8 @@ const ScrollyLanding = () => {
         productTl
           .to("[data-scroll-cue]", { opacity: 0, y: 12, duration: 0.12 }, 0)
           .to("[data-product-copy]", { y: -28, opacity: 0.18, duration: 0.28 }, 0)
-          .to("[data-product-core]", { scale: 1.12, y: -38, duration: 0.2 }, 0)
           .fromTo("[data-product-flow]", { opacity: 0, y: 18 }, { opacity: 1, y: 0, stagger: 0.08, duration: 0.18 }, 0.12)
-          .fromTo("[data-product-rail]", { scaleX: 0 }, { scaleX: 1, ease: "none", duration: 0.5 }, 0.12)
-          .to("[data-product-core]", { x: -165, scale: 0.72, duration: 0.35 }, 0.26);
+          .fromTo("[data-product-rail]", { scaleX: 0 }, { scaleX: 1, ease: "none", duration: 0.5 }, 0.12);
 
         const demoTl = pinTimeline(demo.current, 105);
         demoTl
@@ -160,7 +158,6 @@ const ScrollyLanding = () => {
           <div data-product-rail className="absolute left-[8%] right-[8%] top-1/2 h-px origin-left bg-rainbow" />
           <div className="relative grid grid-cols-5 gap-1 text-center">{["CNPJ", "EMPRESA + SÓCIOS", "DADOS", "DOCUMENTAÇÃO", "PROCESSO ORGANIZADO"].map((item, index) => <span key={item} data-product-flow className={`flex min-h-10 items-center justify-center text-[8px] font-bold md:text-xs ${index === 0 ? "text-accent" : "text-foreground"}`}>{item}</span>)}</div>
         </div>
-        <div data-product-core className="pointer-events-none absolute bottom-28 left-1/2 z-10 -translate-x-1/2 rounded-full border border-accent/50 bg-background px-5 py-3 text-sm font-bold text-accent opacity-0 md:opacity-100">CNPJ</div>
         <div data-scroll-cue className="absolute bottom-4 flex flex-col items-center gap-1 text-xs text-muted-foreground" aria-hidden="true"><ArrowDown className="h-4 w-4" /></div>
       </PinnedScene>
 
