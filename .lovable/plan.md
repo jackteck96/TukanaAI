@@ -1,30 +1,33 @@
-# Landing Tukana AI — narrativa controlada pelo scroll
+# Refinamento da landing Tukana AI — produto primeiro
 
 ## Objetivo
-Transformar a landing atual em uma experiência contínua de scrollytelling, preservando a identidade visual, a logo, o acesso, o contato e o fluxo de assinatura existentes. A copy exibida seguirá exatamente o texto fornecido.
+Reorganizar e compactar a landing existente para explicar a Tukana imediatamente, mantendo a identidade, os elementos visuais e toda a experiência GSAP/ScrollTrigger já implementada.
 
 ## Implementação
-1. **Base da experiência**
-   - Adicionar GSAP e ScrollTrigger.
-   - Manter o cabeçalho atual e a identidade navy com o espectro azul, verde, amarelo e laranja da Tukana.
-   - Respeitar `prefers-reduced-motion`, oferecendo a mesma narrativa sem pin prolongado para quem reduz animações.
+1. **Hero com proposta clara**
+   - Manter “Tudo começa com um CNPJ.” e adicionar a explicação direta do produto e o CTA “Conhecer a Tukana”.
+   - Fazer o CNPJ iniciar a transformação ainda no hero, conectando-o visualmente à demonstração seguinte.
 
-2. **Cenas controladas pelo scroll**
-   - Criar sequências pinned com `scrub` para: CNPJ e inteligência; dados virando documentação; fluxo completo CNPJ → revisão; caos de M&A → organização; números de custo; transformação operacional; convergência em “Mais controle”; e Identifica → Preenche → Organiza.
-   - Fazer os elementos mudarem posição, escala e profundidade de forma reversível ao voltar o scroll.
-   - Conectar visualmente cenas consecutivas, reaproveitando linhas, nós, dados e folhas documentais na transição.
+2. **Demonstração principal unificada**
+   - Unir as cenas atuais de inteligência, documentação e revisão em uma sequência principal compacta.
+   - Mostrar a transformação contínua CNPJ → empresa/sócios/qualificações → informações da IA → documentação-base → documentos preenchidos → revisão → processo organizado.
+   - Destacar as quatro mensagens de valor na ordem fornecida, com movimento real dos nós e documentos, não apenas aparição de texto.
 
-3. **Conteúdo e fluxos existentes**
-   - Transformar a composição atual nas 13 cenas e usar exatamente a copy revisada do pedido.
-   - Preservar os botões de login, contato e assinatura, incluindo cadastro e redirecionamento ao checkout.
-   - Manter a seção de planos carregada integralmente do cadastro atual, sem alterar ou inventar nomes, preços, limites, funcionalidades ou CTAs.
+3. **Narrativa reordenada e curta**
+   - Após a demonstração, mostrar “E a operação continua organizada” com documentos, processos, prazos, assinaturas e etapas convergindo para um ambiente centralizado.
+   - Em seguida apresentar custo manual, convergência “Menos…” → “Mais controle”, fluxo em três passos, impacto na equipe e públicos-alvo.
+   - Reduzir distâncias de pin e espaços verticais, preservando scrub, reversibilidade e continuidade visual.
 
-4. **Responsividade e desempenho**
-   - Desktop terá a composição completa em camadas.
-   - Mobile manterá as transformações essenciais com menos elementos e trajetórias mais curtas, sem virar uma página estática.
-   - Animar principalmente `transform` e `opacity`, limitar filtros e remover timelines corretamente ao desmontar a página.
+4. **Planos e encerramento**
+   - Manter a seção de planos carregada dos dados reais, sem alterar nomes, preços, limites, funcionalidades, CTAs, cadastro, assinatura ou checkout.
+   - Preservar o fechamento e o formulário atual de solicitação de demonstração.
 
-5. **Validação**
-   - Verificar a landing em desktop e mobile com rolagem para baixo e para cima.
-   - Confirmar pelo menos três cenas pinned, números animados individualmente, transformação CNPJ → documentação e caos → organização.
-   - Confirmar ausência de sobreposição, erros no console e regressões nos CTAs.
+## Detalhes técnicos
+- Reaproveitar o componente e os seletores atuais, consolidando timelines e removendo somente cenas redundantes.
+- Manter carregamento adiado do GSAP e dos planos, limpeza dos ScrollTriggers e suporte a `prefers-reduced-motion`.
+- Adaptar deslocamentos e densidade para mobile sem tornar a página estática.
+
+## Validação
+- Verificar desktop e mobile, incluindo scroll para baixo e reverso.
+- Confirmar que a proposta fica clara no primeiro bloco e que a demonstração completa aparece logo em seguida.
+- Confirmar ausência de telas vazias, sobreposições e erros, além do funcionamento de login, planos e CTAs.
