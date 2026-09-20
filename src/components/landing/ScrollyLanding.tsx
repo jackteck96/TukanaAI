@@ -126,7 +126,7 @@ const ScrollyLanding = () => {
         costsTl.fromTo("[data-cost-final]", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.2 }, 0.56);
 
         const controlTl = pinTimeline(control.current, 50);
-        [0, 1, 2].forEach((index) => controlTl.fromTo(`[data-less='${index}']`, { opacity: 0, xPercent: index % 2 ? 30 : -30 }, { opacity: 1, xPercent: 0, duration: 0.18 }, index * 0.12));
+        [0, 1, 2].forEach((index) => controlTl.fromTo(`[data-less='${index}']`, { opacity: 0.22, xPercent: index % 2 ? 30 : -30 }, { opacity: 1, xPercent: 0, duration: 0.18 }, index * 0.12));
         controlTl
           .to("[data-less]", { scale: 0.35, opacity: 0, x: 0, y: 0, stagger: 0.025, duration: 0.2 }, 0.4)
           .fromTo("[data-more]", { opacity: 0, scale: 0.68 }, { opacity: 1, scale: 1, duration: 0.24 }, 0.5)
@@ -166,7 +166,7 @@ const ScrollyLanding = () => {
 
       <PinnedScene sceneRef={demo} id="como-funciona" className="bg-card/20">
         <ConnectionField id="line-demo" className="opacity-45" />
-        <div className="absolute inset-x-5 top-12 z-30 text-center md:top-16"><h2 className="text-2xl font-bold md:text-5xl">Você fornece um CNPJ. A Tukana faz o resto.</h2></div>
+        <div className="absolute inset-x-5 top-24 z-30 text-center md:top-20"><h2 className="text-2xl font-bold md:text-5xl">Você fornece um CNPJ. A Tukana faz o resto.</h2></div>
         <div className="absolute left-1/2 top-[46%] h-[58vh] w-full max-w-5xl -translate-x-1/2 -translate-y-1/2">
           <div data-demo-cnpj className="absolute left-1/2 top-1/2 z-20 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-background shadow-glow md:h-32 md:w-32"><span className="text-lg font-bold text-accent md:text-2xl">CNPJ</span></div>
           <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">{productNodes.map((node) => <span key={node} data-demo-node className="absolute left-1/2 top-1/2 min-w-24 -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-card/95 px-2 py-2 text-center text-[8px] font-semibold shadow-md md:min-w-36 md:text-xs">{node}</span>)}</div>
@@ -180,7 +180,7 @@ const ScrollyLanding = () => {
       </PinnedScene>
 
       <PinnedScene sceneRef={costs} className="bg-card/20">
-        <h2 className="absolute inset-x-5 top-12 text-center text-2xl font-bold md:top-16 md:text-4xl">Quanto sua equipe perde fazendo isso manualmente?</h2>
+        <h2 className="absolute inset-x-5 top-24 text-center text-2xl font-bold md:top-20 md:text-4xl">Quanto sua equipe perde fazendo isso manualmente?</h2>
         <div className="grid w-full max-w-6xl grid-cols-2 gap-2 px-4 md:gap-5 md:px-8">{metrics.map(([value, label], index) => <div key={value} data-metric={index} className="flex min-h-32 flex-col justify-center border-l border-border px-3 opacity-0 md:min-h-44 md:px-7"><p className="text-4xl font-bold text-accent md:text-7xl">{value}</p><p className="mt-2 text-[11px] leading-relaxed text-muted-foreground md:text-base">{label}</p></div>)}</div>
         <p data-cost-final className="absolute bottom-8 text-lg font-semibold opacity-0 md:text-3xl">E isso antes do retrabalho.</p>
       </PinnedScene>
