@@ -1,39 +1,16 @@
-# Refinamento da landing Tukana AI — produto primeiro
+# Formulário de contato no fim da landing
 
-## Objetivo
-Reorganizar e compactar a landing existente para explicar a Tukana imediatamente, mantendo a identidade, os elementos visuais e toda a experiência GSAP/ScrollTrigger já implementada.
+## Alterações
+- Remover do rodapé a coluna com e-mail, telefone e localização, além do atalho de contato em janela.
+- Adicionar ao fim da landing um formulário integrado ao visual atual, com nome, e-mail, celular e mensagem.
+- Fazer o envio pelo serviço de e-mail já conectado, direcionado a `raul-cordoni@hotmail.com`.
+- Manter o botão final “Solicitar demonstração” apontando para o novo formulário na própria página.
 
-## Implementação
-1. **Hero com proposta clara**
-   - Manter “Tudo começa com um CNPJ.” e adicionar a explicação direta do produto e o CTA “Conhecer a Tukana”.
-   - Fazer o CNPJ iniciar a transformação ainda no hero, conectando-o visualmente à demonstração seguinte.
+## Validação e segurança
+- Validar os quatro campos no navegador, com mensagens claras e limites de tamanho.
+- Revalidar e normalizar os dados no envio antes de gerar o e-mail.
+- Escapar o conteúdo inserido pelo visitante para impedir a inclusão de código no e-mail.
 
-2. **Demonstração principal unificada**
-   - Unir as cenas atuais de inteligência, documentação e revisão em uma sequência principal compacta.
-   - Mostrar a transformação contínua CNPJ → empresa/sócios/qualificações → informações da IA → documentação-base → documentos preenchidos → revisão → processo organizado.
-   - Destacar as quatro mensagens de valor na ordem fornecida, com movimento real dos nós e documentos, não apenas aparição de texto.
-
-3. **Narrativa reordenada e curta**
-   - Após a demonstração, mostrar “E a operação continua organizada” com documentos, processos, prazos, assinaturas e etapas convergindo para um ambiente centralizado.
-   - Em seguida apresentar custo manual, convergência “Menos…” → “Mais controle”, fluxo em três passos, impacto na equipe e públicos-alvo.
-   - Reduzir distâncias de pin e espaços verticais, preservando scrub, reversibilidade e continuidade visual.
-
-4. **Planos e encerramento**
-   - Manter a seção de planos carregada dos dados reais, sem alterar nomes, preços, limites, funcionalidades, CTAs, cadastro, assinatura ou checkout.
-   - Preservar o fechamento e o formulário atual de solicitação de demonstração.
-
-## Detalhes técnicos
-- Reaproveitar o componente e os seletores atuais, consolidando timelines e removendo somente cenas redundantes.
-- Manter carregamento adiado do GSAP e dos planos, limpeza dos ScrollTriggers e suporte a `prefers-reduced-motion`.
-- Adaptar deslocamentos e densidade para mobile sem tornar a página estática.
-
-## Validação
-- Verificar desktop e mobile, incluindo scroll para baixo e reverso.
-- Confirmar que a proposta fica clara no primeiro bloco e que a demonstração completa aparece logo em seguida.
-- Confirmar ausência de telas vazias, sobreposições e erros, além do funcionamento de login, planos e CTAs.
-
-## Correção estrutural do scroll
-- Consolidar a narrativa em seis grandes momentos, removendo cenas separadas para operação, equipe e público.
-- Reservar o pin somente para produto, demonstração, custo e convergência; cada sequência terá distância curta e uma única composição.
-- Reunir “Como funciona” e “Para quem é” em uma seção compacta, sem repetição da demonstração.
-- Manter planos, cadastro, checkout e contato sem alterações funcionais.
+## Verificação
+- Testar preenchimento, validações, envio e confirmação visual.
+- Conferir a landing e o rodapé em celular e computador.
