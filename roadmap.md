@@ -10,4 +10,5 @@
 - [x] Reduzir a landing para seis momentos, com pin apenas nas transformações principais.
 - [x] Encurtar drasticamente o scroll e eliminar cenas narrativas repetidas.
 - [x] Validar ritmo, reversibilidade e clareza em desktop e mobile.
-- [ ] Fazer o contato no topo apontar para o formulário na parte inferior da landing.
+- [x] Fazer o contato no topo apontar para o formulário na parte inferior da landing.
+- [x] Adicionar formulário de contato na parte inferior e remover os dados de contato do rodapé.
