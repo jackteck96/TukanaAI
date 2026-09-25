@@ -31,19 +31,22 @@ const Header = () => {
             <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.home')}
             </Link>
-            <a href="#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="/#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.howItWorks')}
             </a>
-            <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="/#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.benefits')}
             </a>
-            <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="/#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.forWho')}
             </a>
-            <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
+            <a href="/#planos" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.plans')}
             </a>
-            <a href="#contato" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/conteudos" className="text-muted-foreground hover:text-primary transition-colors">
+              Conteúdos
+            </Link>
+            <a href="/#contato" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.contact')}
             </a>
           </nav>
@@ -61,7 +64,7 @@ const Header = () => {
                 <Link to="/auth">
                   <Button variant="outline">{t('header.login')}</Button>
                 </Link>
-                <a href="#planos">
+                <a href="/#planos">
                   <Button variant="hero">{t('header.subscribe')}</Button>
                 </a>
               </>
@@ -84,19 +87,22 @@ const Header = () => {
               <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.home')}
               </Link>
-              <a href="#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="/#como-funciona" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.howItWorks')}
               </a>
-              <a href="#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="/#beneficios" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.benefits')}
               </a>
-              <a href="#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="/#para-quem" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.forWho')}
               </a>
-              <a href="#planos" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="/#planos" className="text-muted-foreground hover:text-primary transition-colors">
                 {t('header.nav.plans')}
               </a>
-              <a href="#contato" className="text-muted-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/conteudos" className="text-muted-foreground hover:text-primary transition-colors">
+                Conteúdos
+              </Link>
+              <a href="/#contato" className="text-muted-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                 {t('header.nav.contact')}
               </a>
               <div className="pt-2">
@@ -113,7 +119,7 @@ const Header = () => {
                     <Link to="/auth">
                       <Button variant="outline" className="w-full">{t('header.login')}</Button>
                     </Link>
-                    <a href="#planos">
+                    <a href="/#planos">
                       <Button variant="hero" className="w-full">{t('header.subscribe')}</Button>
                     </a>
                   </>

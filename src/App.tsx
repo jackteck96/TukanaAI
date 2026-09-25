@@ -47,6 +47,9 @@ const GestaoClientesQualificacao = lazy(() => import("./pages/GestaoClientesQual
 const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
 const PoliticaPrivacidade = lazy(() => import("./pages/PoliticaPrivacidade"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Conteudos = lazy(() => import("./pages/Conteudos"));
+const ConteudoDetalhe = lazy(() => import("./pages/ConteudoDetalhe"));
+const AdminConteudos = lazy(() => import("./pages/AdminConteudos"));
 const MeusDadosPessoais = lazy(() => import("./pages/MeusDadosPessoais"));
 
 const PageFallback = () => (
@@ -82,6 +85,9 @@ const App = () => (
                 <Route path="/termos-de-uso" element={<TermsOfService />} />
                 <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/conteudos" element={<Conteudos />} />
+                <Route path="/conteudos/:slug" element={<ConteudoDetalhe />} />
+                <Route path="/admin/conteudos" element={<AdminRoute><AdminConteudos /></AdminRoute>} />
                 <Route path="/verify-signature/:signatureHash" element={<VerifySignature />} />
               <Route path="/gestao-colaboradores" element={
                 <ProtectedRoute>
