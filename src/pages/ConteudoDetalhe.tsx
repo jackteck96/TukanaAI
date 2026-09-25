@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -8,6 +9,7 @@ import ContentBody from "@/components/content/ContentBody";
 import { Content, contentsTable, formatDate } from "@/lib/contents";
 
 const ConteudoDetalhe = () => {
+  const { t, i18n } = useTranslation();
   const { slug } = useParams();
   const [c, setC] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
