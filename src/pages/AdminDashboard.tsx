@@ -689,6 +689,9 @@ const AdminDashboard = () => {
               Gerencie tipos de documentos, modelos e treinamento da IA para toda a plataforma
             </p>
           </div>
+          <Button className="ml-auto" variant="outline" onClick={() => navigate('/admin/conteudos')}>
+            Conteúdos da landing
+          </Button>
         </div>
 
         <Tabs defaultValue="clients" className="space-y-6">
