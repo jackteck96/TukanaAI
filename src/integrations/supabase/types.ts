@@ -735,6 +735,57 @@ export type Database = {
         }
         Relationships: []
       }
+      contents: {
+        Row: {
+          author: string | null
+          body: string
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          published_at: string | null
+          reading_minutes: number | null
+          slug: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          body?: string
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published_at?: string | null
+          reading_minutes?: number | null
+          slug: string
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          body?: string
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published_at?: string | null
+          reading_minutes?: number | null
+          slug?: string
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coupon_usage_history: {
         Row: {
           client_id: string | null
