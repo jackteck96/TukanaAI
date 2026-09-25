@@ -40,12 +40,12 @@ const ConteudoDetalhe = () => {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12 max-w-3xl">
         <Link to="/conteudos" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-8">
-          <ArrowLeft className="h-4 w-4" /> Todos os conteúdos
+          <ArrowLeft className="h-4 w-4" /> {t("contents.backToAll")}
         </Link>
         {loading ? (
           <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
         ) : !c ? (
-          <p className="text-muted-foreground">Conteúdo não encontrado.</p>
+          <p className="text-muted-foreground">{t("contents.notFound")}</p>
         ) : (
           <article>
             <span className="text-xs font-semibold uppercase tracking-wide text-primary">{c.category}</span>
@@ -53,8 +53,8 @@ const ConteudoDetalhe = () => {
             {c.summary && <p className="text-lg text-muted-foreground mb-4">{c.summary}</p>}
             <p className="text-sm text-muted-foreground mb-8">
               {c.author ? `${c.author} · ` : ""}
-              {formatDate(c.published_at)}
-              {c.reading_minutes ? ` · ${c.reading_minutes} min de leitura` : ""}
+              {formatDate(c.published_at, i18n.language)}
+              {c.reading_minutes ? ` · ${t("contents.readingTime", { minutes: c.reading_minutes })}` : ""}
             </p>
             {c.cover_image_url && <img src={c.cover_image_url} alt="" className="w-full rounded-xl mb-10" />}
             <ContentBody body={c.body} />
