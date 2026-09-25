@@ -32,7 +32,7 @@ export const slugify = (s: string) =>
 export const estimateReading = (body: string) =>
   Math.max(1, Math.round(body.trim().split(/\s+/).filter(Boolean).length / 200));
 
-export const formatDate = (d: string | null) =>
-  d ? new Date(d).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" }) : "";
+export const formatDate = (d: string | null, locale = "pt-BR") =>
+  d ? new Date(d).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }) : "";
 
 export const CONTENT_CATEGORIES = ["M&A", "Jurídico", "Tecnologia", "Financeiro", "Operações", "Notícias"];

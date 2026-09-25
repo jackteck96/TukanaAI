@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Content, contentsTable, formatDate } from "@/lib/contents";
 
 const Conteudos = () => {
+  const { t, i18n } = useTranslation();
   const [items, setItems] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,21 +25,21 @@ const Conteudos = () => {
   return (
     <>
       <Helmet>
-        <title>Conteúdos | Tukana AI</title>
-        <meta name="description" content="Artigos, análises e notícias sobre M&A, jurídico e tecnologia pela Tukana AI." />
+        <title>{`${t("contents.title")} | Tukana AI`}</title>
+        <meta name="description" content={t("contents.metaDescription")} />
         <link rel="canonical" href="https://fuzen.online/conteudos" />
       </Helmet>
       <div className="dark min-h-screen bg-background text-foreground flex flex-col">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-14">
-          <h1 className="text-3xl md:text-5xl font-bold mb-3">Conteúdos</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-3">{t("contents.title")}</h1>
           <p className="text-muted-foreground mb-10 max-w-2xl">
-            Artigos, análises e notícias sobre M&A, jurídico, tecnologia e operações.
+            {t("contents.subtitle")}
           </p>
           {loading ? (
             <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           ) : items.length === 0 ? (
-            <p className="text-muted-foreground">Nenhum conteúdo publicado ainda.</p>
+            <p className="text-muted-foreground">{t("contents.empty")}</p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((c) => (
@@ -56,8 +58,8 @@ const Conteudos = () => {
                     <h2 className="text-lg font-semibold leading-snug">{c.title}</h2>
                     {c.summary && <p className="text-sm text-muted-foreground line-clamp-3">{c.summary}</p>}
                     <p className="text-xs text-muted-foreground pt-1">
-                      {formatDate(c.published_at)}
-                      {c.reading_minutes ? ` · ${c.reading_minutes} min de leitura` : ""}
+                      {formatDate(c.published_at, i18n.language)}
+                      {c.reading_minutes ? ` · ${t("contents.readingTime", { minutes: c.reading_minutes })}` : ""}
                     </p>
                   </div>
                 </Link>

@@ -12,6 +12,15 @@
     "subscribe": "Subscribe now",
     "logout": "Sign out"
   },
+  "contents": {
+    "title": "Content",
+    "metaDescription": "Articles, analyses and news about M&A, legal and technology by Tukana AI.",
+    "subtitle": "Articles, analyses and news about M&A, legal, technology and operations.",
+    "empty": "No content published yet.",
+    "readingTime": "{{minutes}} min read",
+    "backToAll": "All content",
+    "notFound": "Content not found."
+  },
   "footer": {
     "description": "Complete platform for business document management with security and efficiency.",
     "quickLinks": {

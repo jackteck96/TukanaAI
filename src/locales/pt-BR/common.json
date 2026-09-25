@@ -12,6 +12,15 @@
     "subscribe": "Assine já",
     "logout": "Sair"
   },
+  "contents": {
+    "title": "Conteúdos",
+    "metaDescription": "Artigos, análises e notícias sobre M&A, jurídico e tecnologia pela Tukana AI.",
+    "subtitle": "Artigos, análises e notícias sobre M&A, jurídico, tecnologia e operações.",
+    "empty": "Nenhum conteúdo publicado ainda.",
+    "readingTime": "{{minutes}} min de leitura",
+    "backToAll": "Todos os conteúdos",
+    "notFound": "Conteúdo não encontrado."
+  },
   "footer": {
     "description": "Plataforma completa para gestão de documentos empresariais com segurança e eficiência.",
     "quickLinks": {
