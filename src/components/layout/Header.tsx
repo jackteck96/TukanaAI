@@ -44,7 +44,7 @@ const Header = () => {
               {t('header.nav.plans')}
             </a>
             <Link to="/conteudos" className="text-muted-foreground hover:text-primary transition-colors">
-              Conteúdos
+              {t('header.nav.contents')}
             </Link>
             <a href="/#contato" className="text-muted-foreground hover:text-primary transition-colors">
               {t('header.nav.contact')}
@@ -100,7 +100,7 @@ const Header = () => {
                 {t('header.nav.plans')}
               </a>
               <Link to="/conteudos" className="text-muted-foreground hover:text-primary transition-colors">
-                Conteúdos
+                {t('header.nav.contents')}
               </Link>
               <a href="/#contato" className="text-muted-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                 {t('header.nav.contact')}
