@@ -380,6 +380,82 @@
           "Deliver faster"
         ]
       }
+    },
+    "story": {
+      "heroTitle": "It all starts with a CNPJ.",
+      "heroText": "You provide a CNPJ (Brazilian company ID). Tukana finds the company and its partners, prepares the documentation and organizes the M&A process for you.",
+      "heroCta": "Discover Tukana",
+      "flow": [
+        "CNPJ",
+        "COMPANY + PARTNERS",
+        "DATA",
+        "DOCUMENTATION",
+        "ORGANIZED PROCESS"
+      ],
+      "demoTitle": "You provide a CNPJ. Tukana does the rest.",
+      "nodes": [
+        "COMPANY",
+        "PARTNERS",
+        "QUALIFICATIONS"
+      ],
+      "aiInfo": "INFORMATION FOUND BY AI",
+      "readyForReview": "Ready for review",
+      "demoFinalTitle": "You receive the documentation ready for review.",
+      "demoFinalText": "Completed documents and an organized process.",
+      "costsTitle": "How much does your team lose doing this manually?",
+      "metrics": [
+        [
+          "4–6",
+          "different systems to find and organize information"
+        ],
+        [
+          "11h",
+          "per week searching for files"
+        ],
+        [
+          "30%",
+          "of contracts with outdated versions"
+        ],
+        [
+          "1 in 5",
+          "deadlines discovered at the last minute"
+        ]
+      ],
+      "costsFinal": "And that's before the rework.",
+      "less": [
+        "Less searching.",
+        "Less form-filling.",
+        "Less rework."
+      ],
+      "more": "More control",
+      "moreText": "Documents, processes, deadlines and signatures centralized and traceable in a single environment.",
+      "stepsEyebrow": "How it works",
+      "stepsTitle": "From CNPJ to M&A process.",
+      "workflow": [
+        [
+          "01 — IDENTIFIES",
+          "AI finds the company, its partners and their qualifications."
+        ],
+        [
+          "02 — FILLS IN",
+          "Tukana's base documentation is filled in with this information."
+        ],
+        [
+          "03 — ORGANIZES",
+          "Documents, stages, deadlines and signatures are centralized and traceable."
+        ]
+      ],
+      "audienceTitle": "For those who run complex operations.",
+      "audiences": [
+        "M&A",
+        "Legal",
+        "Finance",
+        "Operations"
+      ],
+      "closingTitle": "Your operation is already complex. Your documentation doesn't have to be.",
+      "closingText": "Less manual work. More time for the operation.",
+      "closingCta": "Request a demo",
+      "plansLabel": "Plans"
     }
   },
   "auth": {

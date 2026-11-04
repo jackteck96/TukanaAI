@@ -2,11 +2,13 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowRight, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LOGO_URL } from "@/lib/assets";
+import { useTranslation } from "react-i18next";
 
 const PlansSection = lazy(() => import("@/components/billing/PlansSection"));
 const LandingContactForm = lazy(() => import("@/components/landing/LandingContactForm"));
 
 const DeferredPlans = () => {
+  const { t } = useTranslation();
   const container = useRef<HTMLElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -23,24 +25,14 @@ const DeferredPlans = () => {
   }, [ready]);
 
   return (
-    <section ref={container} id="planos" className={ready ? undefined : "min-h-[36rem]"} aria-label={ready ? undefined : "Planos"}>
+    <section ref={container} id="planos" className={ready ? undefined : "min-h-[36rem]"} aria-label={ready ? undefined : t("landing.story.plansLabel")}>
       {ready && <Suspense fallback={<div className="min-h-[36rem]" />}><PlansSection /></Suspense>}
     </section>
   );
 };
 
-const productNodes = ["EMPRESA", "SÓCIOS", "QUALIFICAÇÕES"];
-const metrics = [
-  ["4–6", "sistemas diferentes para encontrar e organizar informações"],
-  ["11h", "por semana procurando arquivos"],
-  ["30%", "dos contratos com versões desatualizadas"],
-  ["1 em 5", "prazos descobertos na última hora"],
-];
-const workflow = [
-  ["01 — IDENTIFICA", "A IA encontra a empresa, os sócios e suas qualificações."],
-  ["02 — PREENCHE", "A documentação-base da Tukana é preenchida com essas informações."],
-  ["03 — ORGANIZA", "Documentos, etapas, prazos e assinaturas ficam centralizados e rastreáveis."],
-];
+// Number of cost metrics animated in the costs scene (texts live in landing.story.metrics).
+const METRIC_COUNT = 4;
 
 const ConnectionField = ({ id, className = "" }: { id: string; className?: string }) => (
   <svg aria-hidden="true" viewBox="0 0 1000 600" className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}>
@@ -61,16 +53,19 @@ const ConnectionField = ({ id, className = "" }: { id: string; className?: strin
   </svg>
 );
 
-const DocumentSheet = ({ index }: { index: number }) => (
+const DocumentSheet = ({ index }: { index: number }) => {
+  const { t } = useTranslation();
+  return (
   <div data-demo-doc className="absolute left-1/2 top-1/2 h-40 w-28 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-md border border-border bg-card p-3 shadow-lg md:h-52 md:w-36">
     <div className="mb-4 flex items-center justify-between border-b border-border pb-2">
       <FileText className="h-4 w-4 text-accent" />
       <span className="text-[8px] font-semibold text-muted-foreground">DOC {index + 1}</span>
     </div>
     <div className="space-y-3">{[0, 1, 2, 3].map((line) => <div key={line} className="h-1.5 overflow-hidden rounded-full bg-secondary"><span data-demo-fill className="block h-full origin-left scale-x-0 rounded-full bg-primary" /></div>)}</div>
-    <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 border-t border-border pt-2"><Check className="h-3 w-3 text-primary" /><span className="text-[7px] uppercase text-muted-foreground">Pronto para revisão</span></div>
+    <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 border-t border-border pt-2"><Check className="h-3 w-3 text-primary" /><span className="text-[7px] uppercase text-muted-foreground">{t("landing.story.readyForReview")}</span></div>
   </div>
-);
+  );
+};
 
 const PinnedScene = ({ id, sceneRef, children, className = "" }: { id?: string; sceneRef: React.RefObject<HTMLElement>; children: React.ReactNode; className?: string }) => (
   <section id={id} ref={sceneRef} className={`story-scene relative min-h-screen overflow-hidden border-b border-border/50 ${className}`}>
@@ -79,6 +74,11 @@ const PinnedScene = ({ id, sceneRef, children, className = "" }: { id?: string; 
 );
 
 const ScrollyLanding = () => {
+  const { t } = useTranslation();
+  const list = <T,>(key: string) => t(key, { returnObjects: true }) as unknown as T[];
+  const productNodes = list<string>("landing.story.nodes");
+  const metrics = list<[string, string]>("landing.story.metrics");
+  const workflow = list<[string, string]>("landing.story.workflow");
   const root = useRef<HTMLDivElement>(null);
   const product = useRef<HTMLElement>(null);
   const demo = useRef<HTMLElement>(null);
@@ -120,7 +120,7 @@ const ScrollyLanding = () => {
           .fromTo("[data-demo-final]", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.25 }, 0.82);
 
         const costsTl = pinTimeline(costs.current, 50);
-        metrics.forEach((_, index) => costsTl.fromTo(`[data-metric='${index}']`, { opacity: 0, y: 24, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.2 }, index * 0.13));
+        Array.from({ length: METRIC_COUNT }).forEach((_, index) => costsTl.fromTo(`[data-metric='${index}']`, { opacity: 0, y: 24, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.2 }, index * 0.13));
         costsTl.fromTo("[data-cost-final]", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.2 }, 0.56);
 
         const controlTl = pinTimeline(control.current, 50);
@@ -149,54 +149,54 @@ const ScrollyLanding = () => {
         <ConnectionField id="line-product-intro" className="opacity-35" />
         <div data-product-copy className="relative z-20 flex max-w-5xl flex-col items-center px-5 text-center">
           <img src={LOGO_URL} alt="Tukana AI" className="mb-6 h-20 w-auto drop-shadow-[0_0_18px_hsl(var(--accent)/0.2)] md:mb-8 md:h-32 md:drop-shadow-[0_0_28px_hsl(var(--accent)/0.22)]" />
-          <h1 className="text-4xl font-bold leading-tight md:text-7xl">Tudo começa com um CNPJ.</h1>
-          <p className="mt-5 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-xl">Você fornece um CNPJ. A Tukana encontra a empresa e seus sócios, prepara a documentação e organiza o processo de M&amp;A para você.</p>
-          <a href="#como-funciona" className="mt-6"><Button size="lg" className="group rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90">Conhecer a Tukana <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button></a>
+          <h1 className="text-4xl font-bold leading-tight md:text-7xl">{t("landing.story.heroTitle")}</h1>
+          <p className="mt-5 max-w-3xl text-base leading-relaxed text-muted-foreground md:text-xl">{t("landing.story.heroText")}</p>
+          <a href="#como-funciona" className="mt-6"><Button size="lg" className="group rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90">{t("landing.story.heroCta")} <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /></Button></a>
         </div>
         <div className="pointer-events-none absolute inset-x-4 bottom-16 z-30 mx-auto max-w-5xl md:bottom-20">
           <div data-product-rail className="absolute left-[8%] right-[8%] top-1/2 h-px origin-left -translate-y-1/2 bg-rainbow" />
-          <div className="relative grid grid-cols-5 gap-1 text-center md:gap-2">{["CNPJ", "EMPRESA + SÓCIOS", "DADOS", "DOCUMENTAÇÃO", "PROCESSO ORGANIZADO"].map((item, index) => <span key={item} data-product-flow className={`flex min-h-12 items-center justify-center rounded-full border px-1 py-2 text-[9px] font-bold leading-tight md:min-h-14 md:px-3 md:text-xs ${index === 0 ? "border-accent/60 bg-background text-accent shadow-glow" : "border-border bg-background text-foreground"}`}>{item}</span>)}</div>
+          <div className="relative grid grid-cols-5 gap-1 text-center md:gap-2">{list<string>("landing.story.flow").map((item, index) => <span key={index} data-product-flow className={`flex min-h-12 items-center justify-center rounded-full border px-1 py-2 text-[9px] font-bold leading-tight md:min-h-14 md:px-3 md:text-xs ${index === 0 ? "border-accent/60 bg-background text-accent shadow-glow" : "border-border bg-background text-foreground"}`}>{item}</span>)}</div>
         </div>
         <div data-scroll-cue className="absolute bottom-4 flex flex-col items-center gap-1 text-xs text-muted-foreground" aria-hidden="true"><ArrowDown className="h-4 w-4" /></div>
       </PinnedScene>
 
       <PinnedScene sceneRef={demo} id="como-funciona" className="bg-card/20">
         <ConnectionField id="line-demo" className="opacity-45" />
-        <div className="absolute inset-x-5 top-24 z-30 text-center md:top-20"><h2 className="text-2xl font-bold md:text-5xl">Você fornece um CNPJ. A Tukana faz o resto.</h2></div>
+        <div className="absolute inset-x-5 top-24 z-30 text-center md:top-20"><h2 className="text-2xl font-bold md:text-5xl">{t("landing.story.demoTitle")}</h2></div>
         <div className="absolute left-1/2 top-[46%] h-[58vh] w-full max-w-5xl -translate-x-1/2 -translate-y-1/2">
           <div data-demo-cnpj className="absolute left-1/2 top-1/2 z-20 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-background shadow-glow md:h-32 md:w-32"><span className="text-lg font-bold text-accent md:text-2xl">CNPJ</span></div>
-          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">{productNodes.map((node) => <span key={node} data-demo-node className="absolute left-1/2 top-1/2 min-w-24 -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-card/95 px-2 py-2 text-center text-[8px] font-semibold shadow-md md:min-w-36 md:text-xs">{node}</span>)}</div>
-          <div data-demo-info className="absolute left-1/2 top-1/2 z-20 max-w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/50 bg-background px-4 py-3 text-center text-[9px] font-bold text-primary shadow-glow md:max-w-none md:text-sm">INFORMAÇÕES ENCONTRADAS PELA IA</div>
+          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">{productNodes.map((node, i) => <span key={i} data-demo-node className="absolute left-1/2 top-1/2 min-w-24 -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-card/95 px-2 py-2 text-center text-[8px] font-semibold shadow-md md:min-w-36 md:text-xs">{node}</span>)}</div>
+          <div data-demo-info className="absolute left-1/2 top-1/2 z-20 max-w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/50 bg-background px-4 py-3 text-center text-[9px] font-bold text-primary shadow-glow md:max-w-none md:text-sm">{t("landing.story.aiInfo")}</div>
           {[0, 1, 2].map((index) => <DocumentSheet key={index} index={index} />)}
         </div>
         <div data-demo-final className="pointer-events-none absolute inset-x-4 bottom-7 z-30 mx-auto max-w-4xl text-center opacity-0 md:bottom-10">
-          <h3 className="text-2xl font-bold text-accent md:text-4xl">Você recebe a documentação pronta para revisar.</h3>
-          <p className="mt-2 text-sm text-muted-foreground md:text-lg">Documentos preenchidos e processo organizado.</p>
+          <h3 className="text-2xl font-bold text-accent md:text-4xl">{t("landing.story.demoFinalTitle")}</h3>
+          <p className="mt-2 text-sm text-muted-foreground md:text-lg">{t("landing.story.demoFinalText")}</p>
         </div>
       </PinnedScene>
 
       <PinnedScene sceneRef={costs} className="bg-card/20">
-        <h2 className="absolute inset-x-5 top-24 text-center text-2xl font-bold md:top-20 md:text-4xl">Quanto sua equipe perde fazendo isso manualmente?</h2>
-        <div className="grid w-full max-w-6xl grid-cols-2 gap-2 px-4 md:gap-5 md:px-8">{metrics.map(([value, label], index) => <div key={value} data-metric={index} className="flex min-h-32 flex-col justify-center border-l border-border px-3 opacity-0 md:min-h-44 md:px-7"><p className="text-4xl font-bold text-accent md:text-7xl">{value}</p><p className="mt-2 text-[11px] leading-relaxed text-muted-foreground md:text-base">{label}</p></div>)}</div>
-        <p data-cost-final className="absolute bottom-8 text-lg font-semibold opacity-0 md:text-3xl">E isso antes do retrabalho.</p>
+        <h2 className="absolute inset-x-5 top-24 text-center text-2xl font-bold md:top-20 md:text-4xl">{t("landing.story.costsTitle")}</h2>
+        <div className="grid w-full max-w-6xl grid-cols-2 gap-2 px-4 md:gap-5 md:px-8">{metrics.map(([value, label], index) => <div key={index} data-metric={index} className="flex min-h-32 flex-col justify-center border-l border-border px-3 opacity-0 md:min-h-44 md:px-7"><p className="text-4xl font-bold text-accent md:text-7xl">{value}</p><p className="mt-2 text-[11px] leading-relaxed text-muted-foreground md:text-base">{label}</p></div>)}</div>
+        <p data-cost-final className="absolute bottom-8 text-lg font-semibold opacity-0 md:text-3xl">{t("landing.story.costsFinal")}</p>
       </PinnedScene>
 
       <PinnedScene sceneRef={control} id="beneficios">
-        <div className="relative flex h-72 w-full max-w-5xl items-center justify-center">{["Menos procura.", "Menos preenchimento.", "Menos retrabalho."].map((text, index) => <p key={text} data-less={index} className={`absolute text-2xl font-bold md:text-5xl ${index === 0 ? "left-[5%] top-[8%]" : index === 1 ? "right-[4%] top-[42%]" : "bottom-[4%] left-[12%]"}`}>{text}</p>)}<h2 data-more className="absolute max-w-4xl px-5 text-center text-5xl font-bold uppercase text-accent opacity-0 md:text-8xl">Mais controle</h2></div>
-        <p data-more-copy className="absolute inset-x-5 bottom-10 mx-auto max-w-3xl text-center text-sm text-muted-foreground opacity-0 md:text-lg">Documentos, processos, prazos e assinaturas centralizados e rastreáveis em um único ambiente.</p>
+        <div className="relative flex h-72 w-full max-w-5xl items-center justify-center">{list<string>("landing.story.less").map((text, index) => <p key={index} data-less={index} className={`absolute text-2xl font-bold md:text-5xl ${index === 0 ? "left-[5%] top-[8%]" : index === 1 ? "right-[4%] top-[42%]" : "bottom-[4%] left-[12%]"}`}>{text}</p>)}<h2 data-more className="absolute max-w-4xl px-5 text-center text-5xl font-bold uppercase text-accent opacity-0 md:text-8xl">{t("landing.story.more")}</h2></div>
+        <p data-more-copy className="absolute inset-x-5 bottom-10 mx-auto max-w-3xl text-center text-sm text-muted-foreground opacity-0 md:text-lg">{t("landing.story.moreText")}</p>
       </PinnedScene>
 
       <section id="passos" className="story-scene relative border-b border-border/50 px-5 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center"><p className="mb-3 text-xs font-bold uppercase text-primary">Como funciona</p><h2 className="text-3xl font-bold md:text-5xl">Do CNPJ ao processo de M&amp;A.</h2></div>
-          <div className="relative grid gap-8 md:grid-cols-3 md:gap-10"><div className="absolute left-[12%] right-[12%] top-5 hidden h-px bg-rainbow md:block" />{workflow.map(([title, text]) => <div key={title} className="relative text-center"><span className="mx-auto mb-5 block h-10 w-10 rounded-full border border-accent bg-background" /><p className="text-sm font-bold text-accent md:text-lg">{title}</p><p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">{text}</p></div>)}</div>
-          <div id="para-quem" className="mt-20 border-t border-border/60 pt-16 text-center"><h3 className="text-2xl font-bold md:text-4xl">Para quem conduz operações complexas.</h3><div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">{["M&A", "Jurídico", "Financeiro", "Operações"].map((item) => <div key={item} className="flex min-h-24 items-center justify-center bg-card p-4 text-base font-semibold md:min-h-32 md:text-xl">{item}</div>)}</div></div>
+          <div className="mb-12 text-center"><p className="mb-3 text-xs font-bold uppercase text-primary">{t("landing.story.stepsEyebrow")}</p><h2 className="text-3xl font-bold md:text-5xl">{t("landing.story.stepsTitle")}</h2></div>
+          <div className="relative grid gap-8 md:grid-cols-3 md:gap-10"><div className="absolute left-[12%] right-[12%] top-5 hidden h-px bg-rainbow md:block" />{workflow.map(([title, text], i) => <div key={i} className="relative text-center"><span className="mx-auto mb-5 block h-10 w-10 rounded-full border border-accent bg-background" /><p className="text-sm font-bold text-accent md:text-lg">{title}</p><p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">{text}</p></div>)}</div>
+          <div id="para-quem" className="mt-20 border-t border-border/60 pt-16 text-center"><h3 className="text-2xl font-bold md:text-4xl">{t("landing.story.audienceTitle")}</h3><div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">{list<string>("landing.story.audiences").map((item, i) => <div key={i} className="flex min-h-24 items-center justify-center bg-card p-4 text-base font-semibold md:min-h-32 md:text-xl">{item}</div>)}</div></div>
         </div>
       </section>
 
       <section className="story-scene border-b border-border/50">
         <DeferredPlans />
-        <div id="contato" className="relative flex min-h-[78svh] scroll-mt-24 items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center"><ConnectionField id="line-footer" className="opacity-20" /><div className="relative z-10 w-full max-w-6xl"><h2 className="text-4xl font-bold leading-tight md:text-7xl">Sua operação já é complexa. A documentação não precisa ser.</h2><img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-8 h-16 w-auto md:h-20" /><p className="mb-3 text-lg text-muted-foreground md:text-2xl">Menos trabalho manual. Mais tempo para a operação.</p><p className="mb-10 text-base font-semibold text-foreground md:text-lg">Solicitar demonstração</p><Suspense fallback={<div className="mx-auto min-h-80 max-w-4xl" />}><LandingContactForm /></Suspense></div></div>
+        <div id="contato" className="relative flex min-h-[78svh] scroll-mt-24 items-center justify-center overflow-hidden border-t border-border/50 px-5 py-24 text-center"><ConnectionField id="line-footer" className="opacity-20" /><div className="relative z-10 w-full max-w-6xl"><h2 className="text-4xl font-bold leading-tight md:text-7xl">{t("landing.story.closingTitle")}</h2><img src={LOGO_URL} alt="Tukana AI" className="mx-auto my-8 h-16 w-auto md:h-20" /><p className="mb-3 text-lg text-muted-foreground md:text-2xl">{t("landing.story.closingText")}</p><p className="mb-10 text-base font-semibold text-foreground md:text-lg">{t("landing.story.closingCta")}</p><Suspense fallback={<div className="mx-auto min-h-80 max-w-4xl" />}><LandingContactForm /></Suspense></div></div>
       </section>
     </div>
   );
