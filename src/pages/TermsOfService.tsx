@@ -46,7 +46,7 @@ const TermsOfService = () => {
               <span className="text-sm font-normal text-muted-foreground">{copy.updated}</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="prose prose-slate dark:prose-invert max-w-none">
+          <CardContent className="content-prose [&_h2]:text-xl [&_h2]:mt-8">
             <ReactMarkdown>{copy.content}</ReactMarkdown>
           </CardContent>
         </Card>
