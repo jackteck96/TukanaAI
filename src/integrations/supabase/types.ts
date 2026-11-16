@@ -1986,6 +1986,7 @@ export type Database = {
           process_type: string
           progress: number
           project_name: string | null
+          required_documents: string[] | null
           status: string
           updated_at: string
         }
@@ -2006,6 +2007,7 @@ export type Database = {
           process_type: string
           progress?: number
           project_name?: string | null
+          required_documents?: string[] | null
           status?: string
           updated_at?: string
         }
@@ -2026,6 +2028,7 @@ export type Database = {
           process_type?: string
           progress?: number
           project_name?: string | null
+          required_documents?: string[] | null
           status?: string
           updated_at?: string
         }
