@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from 'bun:test';
 import { buildDocumentRequests, changeOperationDocuments, maOperations } from './maOperations';
 import { explicitDocumentSelection } from '../../supabase/functions/ensure-requests-for-process/documentSelection';
