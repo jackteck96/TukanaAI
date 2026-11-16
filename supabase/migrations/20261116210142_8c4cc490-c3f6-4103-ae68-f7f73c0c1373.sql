@@ -1,0 +1,2 @@
+ALTER TABLE public.processes ADD COLUMN required_documents text[];
+COMMENT ON COLUMN public.processes.required_documents IS 'Exact document names explicitly chosen at creation; null preserves legacy checklist inference.';

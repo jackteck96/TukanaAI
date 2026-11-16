@@ -35,6 +35,7 @@ export interface CustomDocumentConfig {
 
 interface DocumentSelectorProps {
   selectedDocuments: string[];
+  operationDocuments?: { name: string; purpose: string }[];
   onSelectionChange: (documents: string[]) => void;
   customDocuments?: CustomDocumentConfig[];
   onCustomDocumentsChange?: (docs: CustomDocumentConfig[]) => void;
@@ -43,6 +44,7 @@ interface DocumentSelectorProps {
 const DocumentSelector = ({ 
   selectedDocuments, 
   onSelectionChange,
+  operationDocuments = [],
   customDocuments = [],
   onCustomDocumentsChange 
 }: DocumentSelectorProps) => {
@@ -234,6 +236,23 @@ const DocumentSelector = ({
           className="pl-9"
         />
       </div>
+
+      {operationDocuments.length > 0 && (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="px-4 py-2 bg-muted/30 text-sm font-medium">Instrumentos da operação</div>
+          <div className="max-h-64 overflow-y-auto divide-y">
+            {operationDocuments.filter(doc => !searchTerm.trim() || `${doc.name} ${doc.purpose}`.toLowerCase().includes(searchTerm.toLowerCase())).map((doc, index) => (
+              <div key={doc.name} className="flex items-start gap-3 px-4 py-3">
+                <Checkbox id={`operation-doc-${index}`} className="mt-0.5" checked={selectedDocuments.includes(doc.name)} onCheckedChange={() => handleToggleDocument(doc.name)} />
+                <Label htmlFor={`operation-doc-${index}`} className="flex-1 cursor-pointer leading-5">
+                  {doc.name}
+                  <span className="block text-xs text-muted-foreground font-normal mt-1">{doc.purpose}</span>
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Document Selection */}
       <div className="border rounded-lg bg-muted/20 overflow-hidden">
@@ -454,13 +473,16 @@ const DocumentSelector = ({
             {selectedDocuments.map((doc) => (
               <Badge key={doc} variant="secondary" className="text-xs flex items-center gap-1 pr-1">
                 {doc}
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Remover ${doc}`}
                   onClick={() => handleRemoveDocument(doc)}
-                  className="ml-1 hover:text-destructive rounded-full p-0.5 hover:bg-destructive/10 transition-colors"
+                  className="ml-1 h-5 w-5 shrink-0 hover:text-destructive"
                 >
                   <X className="h-3 w-3" />
-                </button>
+                </Button>
               </Badge>
             ))}
           </div>

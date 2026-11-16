@@ -12,3 +12,7 @@
 - [x] Validar ritmo, reversibilidade e clareza em desktop e mobile.
 - [x] Fazer o contato no topo apontar para o formulário na parte inferior da landing.
 - [x] Adicionar formulário de contato na parte inferior e remover os dados de contato do rodapé.
+- [x] Adicionar oito tipos de operação com instrumentos pré-selecionados do PDF e seleção livre.
+- [x] Salvar o tipo da operação e todos os documentos escolhidos sem alterar processos existentes.
+- [x] Testar regras de seleção, troca de operação e preparação dos documentos para salvar (11 testes).
+- [ ] Verificar criação e leitura de um processo pela interface com sessão conectada — bloqueado: Supabase externo sem sessão disponível para teste autenticado.
