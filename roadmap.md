@@ -12,3 +12,6 @@
 - [x] Validar ritmo, reversibilidade e clareza em desktop e mobile.
 - [x] Fazer o contato no topo apontar para o formulário na parte inferior da landing.
 - [x] Adicionar formulário de contato na parte inferior e remover os dados de contato do rodapé.
+- [ ] Adicionar oito tipos de operação com instrumentos pré-selecionados do PDF e seleção livre.
+- [ ] Salvar o tipo da operação e todos os documentos escolhidos sem alterar processos existentes.
+- [ ] Testar seleção, troca de operação e persistência dos documentos.
