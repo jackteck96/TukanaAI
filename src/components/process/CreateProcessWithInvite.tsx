@@ -13,6 +13,8 @@ import { Mail, Plus, Copy, CheckCircle } from "lucide-react";
 import { ProcessClientsManager, ProcessClient } from "./ProcessClientsManager";
 import DocumentSelector, { CustomDocumentConfig } from "../documents/DocumentSelector";
 import { ensureCanAdd } from "@/lib/planLimits";
+import { OperationSelector } from './OperationSelector';
+import { buildDocumentRequests, changeOperationDocuments, maOperations } from '@/lib/maOperations';
 
 interface CreateProcessForm {
   projectName: string;
@@ -29,6 +31,12 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [requiredDocuments, setRequiredDocuments] = useState<string[]>([]);
+  const [operationId, setOperationId] = useState('manual');
+  const operation = maOperations.find(item => item.id === operationId);
+  const handleOperationChange = (nextId: string) => {
+    setRequiredDocuments(current => changeOperationDocuments(current, operationId, nextId));
+    setOperationId(nextId);
+  };
   const [customDocuments, setCustomDocuments] = useState<CustomDocumentConfig[]>([]);
   const [showInviteLink, setShowInviteLink] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
@@ -54,6 +62,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
     });
     setProcessClients([]);
     setRequiredDocuments([]);
+    setOperationId('manual');
     setCustomDocuments([]);
   };
 
@@ -121,7 +130,8 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
           client_name: primaryClient.client_name,
           client_email: primaryClient.client_email,
           cpf_cnpj: primaryClient.cpf_cnpj || null,
-          process_type: requiredDocuments.length > 0 ? `Documentação: ${requiredDocuments.join(", ")}` : "Processo Documental",
+          process_type: operation?.name ?? 'Processo Documental',
+          required_documents: requiredDocuments,
           description: formData.description,
           priority: formData.priority,
           due_date: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
@@ -215,18 +225,9 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
         }
       }
 
-      // 2.6 Criar document_requests para documentos personalizados
-      if (customDocuments.length > 0) {
-        const customDocRequestsToInsert = customDocuments.map(doc => ({
-          process_id: processData.id,
-          company_id: company.id,
-          document_name: doc.name,
-          required: true,
-          current_status: 'pendente',
-          has_issue_date: doc.hasIssueDate,
-          has_expiration_date: doc.hasExpirationDate,
-          requires_issuing_location: doc.requiresIssuingLocation
-        }));
+      // Salvar exatamente os documentos selecionados, incluindo os instrumentos e os extras.
+      if (requiredDocuments.length > 0) {
+        const customDocRequestsToInsert = buildDocumentRequests(requiredDocuments, customDocuments, processData.id, company.id);
 
         const { error: customDocsError } = await supabase
           .from('document_requests')
@@ -234,6 +235,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
         if (customDocsError) {
           console.error('Error creating custom document requests:', customDocsError);
+          throw customDocsError;
         }
       }
 
@@ -356,6 +358,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
           <form onSubmit={handleSubmit} className="flex flex-col min-h-0 gap-4">
             <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
+              <OperationSelector value={operationId} onChange={handleOperationChange} />
               <div>
                 <Label htmlFor="projectName">Nome do Processo *</Label>
                 <Input
@@ -425,6 +428,7 @@ const CreateProcessWithInvite = ({ onProcessCreated }: CreateProcessWithInvitePr
 
               {/* Document Types Selection */}
               <DocumentSelector
+                operationDocuments={operation?.documents}
                 selectedDocuments={requiredDocuments}
                 onSelectionChange={setRequiredDocuments}
                 customDocuments={customDocuments}

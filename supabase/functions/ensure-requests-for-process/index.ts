@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
+import { explicitDocumentSelection } from './documentSelection.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -129,14 +130,15 @@ serve(async (req: Request): Promise<Response> => {
       console.error('[ensure-requests-for-process] Erro ao buscar tasks:', tasksError);
     }
 
-    let desiredNames: string[] = [];
-    if (tasks && tasks.length > 0) {
+    const explicitSelection = explicitDocumentSelection(process.required_documents);
+    let desiredNames: string[] = explicitSelection ?? [];
+    if (explicitSelection === null && tasks && tasks.length > 0) {
       desiredNames = Array.from(new Set((tasks || []).map((t: any) => (t.document_type || t.title || '').toString().trim()).filter(Boolean)));
       console.log('[ensure-requests-for-process] Fonte: tasks →', desiredNames);
     }
 
     // 1.b) Campo process.process_type (ex.: "Documento: RG, CPF")
-    if (desiredNames.length === 0) {
+    if (explicitSelection === null && desiredNames.length === 0) {
       const rawType: string = (process.process_type || '').toString();
       if (rawType) {
         const afterColon = rawType.includes(':') ? (rawType.split(':').pop() || rawType) : rawType;
@@ -146,7 +148,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     // 1.c) Tipos cadastrados na empresa (catálogo) como último recurso
-    if (desiredNames.length === 0) {
+    if (explicitSelection === null && desiredNames.length === 0) {
       const { data: types, error: typesError } = await supabase
         .from('document_types')
         .select('name, notes')
