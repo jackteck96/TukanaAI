@@ -27,7 +27,7 @@ serve(async (req) => {
       .from('user_invites')
       .select('*')
       .eq('token', token)
-      .eq('email', email)
+      .ilike('email', String(email).trim())
       .eq('status', 'pending')
       .is('company_id', null) // Admin de plataforma
       .single();
@@ -60,13 +60,13 @@ serve(async (req) => {
     // Criar perfil
     const { error: profileError } = await supabase
       .from('profiles')
-      .insert({
+      .upsert({
         id: userId,
         email: email,
         full_name: full_name || invite.full_name,
         role: 'admin', // Para compatibilidade com código legado
         company_id: null
-      });
+      }, { onConflict: 'id' });
 
     if (profileError) {
       console.error('Erro ao criar profile:', profileError);
@@ -85,7 +85,7 @@ serve(async (req) => {
         client_email: null
       });
 
-    if (roleError) {
+    if (roleError && roleError.code !== '23505') {
       console.error('Erro ao adicionar role:', roleError);
       // Tentar deletar o usuário e perfil criados se falhar
       await supabase.from('profiles').delete().eq('id', userId);

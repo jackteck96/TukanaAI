@@ -21,7 +21,7 @@ const ApproveAdmin = () => {
     setIsProcessing(true);
     try {
       const { data, error } = await supabase.functions.invoke('approve-admin-invite', {
-        body: { token, action }
+        body: { token, action, origin: window.location.origin }
       });
 
       if (error) throw error;

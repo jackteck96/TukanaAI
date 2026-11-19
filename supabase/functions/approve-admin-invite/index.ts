@@ -16,7 +16,8 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { token, action } = await req.json();
+    const { token, action, origin } = await req.json();
+    const appOrigin = typeof origin === 'string' && /^https?:\/\//.test(origin) ? origin.replace(/\/$/, '') : 'https://tukanaai.com';
 
     if (!token) {
       throw new Error('Token é obrigatório');
@@ -76,10 +77,11 @@ serve(async (req) => {
 
       if (userInviteError) {
         console.error('Erro ao criar user_invite:', userInviteError);
+        throw new Error('Erro ao gerar o link de cadastro do administrador');
       }
 
       // Enviar email para o novo admin com link de cadastro
-      const signupLink = `${supabaseUrl.replace('.supabase.co', '')}/cadastro-via-convite?token=${inviteToken}`;
+      const signupLink = `${appOrigin}/cadastro-via-convite?token=${inviteToken}`;
       
       await supabase.functions.invoke('send-unified-email', {
         body: {
